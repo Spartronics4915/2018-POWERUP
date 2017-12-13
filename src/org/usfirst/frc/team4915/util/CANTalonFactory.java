@@ -6,14 +6,19 @@ import com.ctre.CANTalon;
 import com.ctre.CANTalon.TalonControlMode;
 
 /**
- * Based upon https://github.com/Team254/FRC-2017-Public/blob/master/src/com/team254/lib/util/drivers/CANTalonFactory.java.
+ * Based upon
+ * https://github.com/Team254/FRC-2017-Public/blob/master/src/com/team254/lib/util/drivers/CANTalonFactory.java.
  * 
- * Creates CANTalon objects and configures all the parameters we care about to factory defaults. Closed-loop and sensor
+ * Creates CANTalon objects and configures all the parameters we care about to
+ * factory defaults. Closed-loop and sensor
  * parameters are not set, as these are expected to be set by the application.
  */
-public class CANTalonFactory {
+public class CANTalonFactory
+{
 
-    public static class Configuration {
+    public static class Configuration
+    {
+
         public boolean LIMIT_SWITCH_NORMALLY_OPEN = true;
         public double MAX_OUTPUT_VOLTAGE = 12;
         public double NOMINAL_VOLTAGE = 0;
@@ -48,7 +53,8 @@ public class CANTalonFactory {
     private static final Configuration kDefaultConfiguration = new Configuration();
     private static final Configuration kSlaveConfiguration = new Configuration();
 
-    static {
+    static
+    {
         kSlaveConfiguration.CONTROL_FRAME_PERIOD_MS = 1000;
         kSlaveConfiguration.MOTION_CONTROL_FRAME_PERIOD_MS = 1000;
         kSlaveConfiguration.GENERAL_STATUS_FRAME_RATE_MS = 1000;
@@ -59,18 +65,21 @@ public class CANTalonFactory {
     }
 
     // Create a CANTalon with the default (out of the box) configuration.
-    public static CANTalon createDefaultTalon(int id) {
+    public static CANTalon createDefaultTalon(int id)
+    {
         return createTalon(id, kDefaultConfiguration);
     }
 
-    public static CANTalon createPermanentSlaveTalon(int id, int master_id) {
+    public static CANTalon createPermanentSlaveTalon(int id, int master_id)
+    {
         final CANTalon talon = createTalon(id, kSlaveConfiguration);
         talon.changeControlMode(TalonControlMode.Follower);
         talon.set(master_id);
         return talon;
     }
 
-    public static CANTalon createTalon(int id, Configuration config) {
+    public static CANTalon createTalon(int id, Configuration config)
+    {
         CANTalon talon = new LazyCANTalon(id, config.CONTROL_FRAME_PERIOD_MS);
         talon.changeControlMode(CANTalon.TalonControlMode.Voltage);
         talon.changeMotionControlFramePeriod(config.MOTION_CONTROL_FRAME_PERIOD_MS);
@@ -123,7 +132,8 @@ public class CANTalonFactory {
     /**
      * Run this on a fresh talon to produce good values for the defaults.
      */
-    public static String getFullTalonInfo(CANTalon talon) {
+    public static String getFullTalonInfo(CANTalon talon)
+    {
         StringBuilder sb = new StringBuilder().append("isRevLimitSwitchClosed = ")
                 .append(talon.isRevLimitSwitchClosed()).append("\n").append("getBusVoltage = ")
                 .append(talon.getBusVoltage()).append("\n").append("isForwardSoftLimitEnabled = ")
@@ -205,4 +215,3 @@ public class CANTalonFactory {
         return sb.toString();
     }
 }
-

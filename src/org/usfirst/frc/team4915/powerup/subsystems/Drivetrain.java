@@ -12,38 +12,38 @@ import com.ctre.CANTalon;
  * 
  * A note on motor naming:
  * We're doing port and starboard again. That's all that really matters here.
- * These directions are relative to the front of the robot, which removes as 
+ * These directions are relative to the front of the robot, which removes as
  * much possible ambiguity as you can with directions (in this context).
  * Port and starboard refer respectively to left and right, relative to the
  * front of the robot.
  */
-public class Drivetrain extends SpartronicsSubsystem {
+public class Drivetrain extends SpartronicsSubsystem
+{
 
     // This is public to stop logger proliferation by giving Commands a logger
     public Logger m_logger;
-    
+
     /*
      * FIXME: I have the motors set up as if our drivetrain has two port
      * and two starboard motors, each side connected together. This assumes
      * that the drivetrain will look like that, because it's just an example
      * of how to use the new CANTalonFactory and set up these motors.
-     * 
      * We don't know what our drivetrain will look like. Fix the motors
      * when we do.
      */
-    
+
     // Port motors
     private CANTalon m_portMaster;
     private CANTalon m_portFollower;
-    
+
     // Starboard motors
     private CANTalon m_starboardMaster;
     private CANTalon m_starboardFollower;
-    
+
     public Drivetrain()
     {
         m_logger = new Logger("Drivetrain", Logger.Level.DEBUG);
-        
+
         // Pretty much everything should go in the try block, 
         // because certain initializations can throw exceptions
         // which we want to print, and because we want m_initalized
@@ -52,15 +52,15 @@ public class Drivetrain extends SpartronicsSubsystem {
         {
             m_portMaster = CANTalonFactory.createDefaultTalon(RobotMap.DRIVETRAIN_MOTOR_PORT_MASTER);
             m_starboardMaster = CANTalonFactory.createDefaultTalon(RobotMap.DRIVETRAIN_MOTOR_STARBOARD_MASTER);
-            
+
             m_portFollower = CANTalonFactory.createPermanentSlaveTalon(RobotMap.DRIVETRAIN_MOTOR_PORT_FOLLOWER,
                     RobotMap.DRIVETRAIN_MOTOR_PORT_MASTER);
             m_starboardFollower = CANTalonFactory.createPermanentSlaveTalon(RobotMap.DRIVETRAIN_MOTOR_STARBOARD_FOLLOWER,
                     RobotMap.DRIVETRAIN_MOTOR_STARBOARD_MASTER);
-            
+
             m_portMaster.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
             m_starboardMaster.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
-            
+
             // This needs to go at the end. We *don't* set
             // m_initalized here (we only set it on faliure).
             m_logger.info("initialized successfully");
@@ -71,7 +71,7 @@ public class Drivetrain extends SpartronicsSubsystem {
             m_initialized = false;
         }
     }
-    
+
     @Override
     public void initDefaultCommand()
     {
@@ -80,13 +80,14 @@ public class Drivetrain extends SpartronicsSubsystem {
             setDefaultCommand(new StopCommand(this));
         }
     }
-    
+
     @Override
-    public void validate() {}
+    public void validate()
+    {
+    }
 
     public void stop()
     {
         // FIXME: Actually stop the motors
     }
 }
-

@@ -16,21 +16,22 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  * interface to the commands and command groups that allow control of the robot.
  */
 public class OI
-{   
+{
+
     private Logger m_logger;
     private Robot m_robot;
-    
+
     public OI(Robot robot)
-	{
+    {
         m_robot = robot;
         m_logger = new Logger("OI", Logger.Level.DEBUG);
-        
+
         initAutoOI();
         initDrivetrainOI();
-        
+
         // Init loggers last, as this uses special values generated when other loggers are created.
         initLoggers();
-        
+
         // Version string and related information
         try (InputStream manifest = getClass().getClassLoader().getResourceAsStream("META-INF/MANIFEST.MF"))
         {
@@ -54,32 +55,34 @@ public class OI
             m_logger.error("Build version not found!");
             m_logger.exception(e, true /* no stack trace needed */);
         }
-	}
-    
+    }
+
     private void initAutoOI()
     {
         // Add autonomous options to SmartDashboard here
         // FIXME
     }
-    
+
     // getAutoCommand should happen during autonomous init (so long after robotInit).
     // Timing is important here.
     public Command getAutoCommand()
     {
-        return new Command() {
+        return new Command()
+        {
 
             @Override
             protected boolean isFinished()
             {
                 return false;
-            }}; // FIXME
+            }
+        }; // FIXME
     }
-    
+
     private void initDrivetrainOI()
     {
         // Initalize the drivetrain
     }
-    
+
     private void initLoggers()
     {
 
