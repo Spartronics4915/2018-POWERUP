@@ -35,6 +35,7 @@ public class Drivetrain extends SpartronicsSubsystem {
         }
     }
     
+    @Override
     public void initDefaultCommand()
     {
         if (initialized())
@@ -42,6 +43,9 @@ public class Drivetrain extends SpartronicsSubsystem {
             setDefaultCommand(new StopCommand(this));
         }
     }
+    
+    @Override
+    public void validate() {}
 
     public void stop()
     {

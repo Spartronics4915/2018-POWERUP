@@ -31,4 +31,5 @@ public abstract class SpartronicsSubsystem extends Subsystem
         return m_initialized;
     }
 
+    abstract void validate();
 }
