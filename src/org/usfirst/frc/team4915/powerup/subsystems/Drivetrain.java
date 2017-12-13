@@ -4,6 +4,9 @@ import org.usfirst.frc.team4915.powerup.Logger;
 import org.usfirst.frc.team4915.powerup.commands.StopCommand;
 
 /**
+ * The subsystem that controls the Drivetrain.
+ * 
+ * A note on motor naming:
  * We're doing port and starboard again. That's all that really matters here.
  * These directions are relative to the front of the robot, which removes as 
  * much possible ambiguity as you can with directions (in this context).
