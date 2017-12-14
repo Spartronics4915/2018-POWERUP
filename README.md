@@ -3,6 +3,7 @@
 
 Repository with the Spartronics code for the FRC 2018-POWERUP game.
 ### Helpful Links
+### You SHould Read This Really Carefully
 
 [WPILib](http://wpilib.screenstepslive.com/s/4485) | 
 [WPILib Java Ref](http://first.wpi.edu/FRC/roborio/release/docs/java) |
