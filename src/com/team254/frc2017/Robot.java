@@ -55,7 +55,7 @@ public class Robot extends IterativeRobot {
 
     private Looper mEnabledLooper = new Looper();
 
-    private VisionServer mVisionServer = VisionServer.getInstance();
+//    private VisionServer mVisionServer = VisionServer.getInstance();
 
     private AnalogInput mCheckLightButton = new AnalogInput(Constants.kLEDOnId);
 
@@ -86,7 +86,7 @@ public class Robot extends IterativeRobot {
             mEnabledLooper.register(VisionProcessor.getInstance());
             mEnabledLooper.register(RobotStateEstimator.getInstance());
 
-            mVisionServer.addVisionUpdateReceiver(VisionProcessor.getInstance());
+//            mVisionServer.addVisionUpdateReceiver(VisionProcessor.getInstance());
 
             AutoModeSelector.initAutoModeSelector();
 
@@ -379,7 +379,7 @@ public class Robot extends IterativeRobot {
         mSubsystemManager.outputToSmartDashboard();
         mSubsystemManager.writeToLog();
         mEnabledLooper.outputToSmartDashboard();
-        SmartDashboard.putBoolean("camera_connected", mVisionServer.isConnected());
+//        SmartDashboard.putBoolean("camera_connected", mVisionServer.isConnected());
 
         ConnectionMonitor.getInstance().setLastPacketTime(Timer.getFPGATimestamp());
     }
