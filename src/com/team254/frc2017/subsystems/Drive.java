@@ -1,7 +1,6 @@
 package com.team254.frc2017.subsystems;
 
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -22,8 +21,8 @@ import com.team254.lib.util.Util;
 import com.team254.lib.util.control.Lookahead;
 import com.team254.lib.util.control.Path;
 import com.team254.lib.util.control.PathFollower;
+import com.team254.lib.util.drivers.BetterBNO;
 import com.team254.lib.util.drivers.CANTalonFactory;
-import com.team254.lib.util.drivers.NavX;
 import com.team254.lib.util.math.RigidTransform2d;
 import com.team254.lib.util.math.Rotation2d;
 import com.team254.lib.util.math.Twist2d;
@@ -90,7 +89,7 @@ public class Drive extends Subsystem {
     // Hardware
     private final CANTalon mLeftMaster, mRightMaster, mLeftSlave, mRightSlave;
     private final Solenoid mShifter;
-    private final NavX mNavXBoard;
+    private final BetterBNO mIMU;
 
     // Controllers
     private RobotState mRobotState = RobotState.getInstance();
@@ -116,7 +115,7 @@ public class Drive extends Subsystem {
                 setOpenLoop(DriveSignal.NEUTRAL);
                 setBrakeMode(false);
                 setVelocitySetpoint(0, 0);
-                mNavXBoard.reset();
+                mIMU.reset();
             }
         }
 
@@ -210,7 +209,7 @@ public class Drive extends Subsystem {
         setOpenLoop(DriveSignal.NEUTRAL);
 
         // Path Following stuff
-        mNavXBoard = new NavX(SPI.Port.kMXP);
+        mIMU = new BetterBNO();
 
         // Force a CAN message across.
         mIsBrakeMode = true;
@@ -301,7 +300,6 @@ public class Drive extends Subsystem {
         }
         SmartDashboard.putNumber("left position (rotations)", mLeftMaster.getPosition());
         SmartDashboard.putNumber("right position (rotations)", mRightMaster.getPosition());
-        SmartDashboard.putNumber("gyro vel", getGyroVelocityDegreesPerSec());
         SmartDashboard.putNumber("gyro pos", getGyroAngle().getDegrees());
         SmartDashboard.putBoolean("drive on target", isOnTarget());
     }
@@ -318,7 +316,7 @@ public class Drive extends Subsystem {
     @Override
     public void zeroSensors() {
         resetEncoders();
-        mNavXBoard.zeroYaw();
+        mIMU.zeroYaw();
     }
 
     /**
@@ -443,20 +441,19 @@ public class Drive extends Subsystem {
     }
 
     public synchronized Rotation2d getGyroAngle() {
-        return mNavXBoard.getYaw();
+        return mIMU.getYaw();
     }
 
-    public synchronized NavX getNavXBoard() {
-        return mNavXBoard;
+    public synchronized BetterBNO getIMU() {
+        return mIMU;
     }
 
+    /* 
+     * XXX: This method appears to not set the actual gyro angle, but the offset.
+     * This is bad naming... Maybe TODO refactor?
+     */
     public synchronized void setGyroAngle(Rotation2d angle) {
-        mNavXBoard.reset();
-        mNavXBoard.setAngleAdjustment(angle);
-    }
-
-    public synchronized double getGyroVelocityDegreesPerSec() {
-        return mNavXBoard.getYawRateDegreesPerSec();
+        mIMU.setAngleAdjustment(angle);
     }
 
     /**
@@ -731,7 +728,7 @@ public class Drive extends Subsystem {
     }
 
     public synchronized double getAccelX() {
-        return mNavXBoard.getRawAccelX();
+        return mIMU.getRawAccelX();
     }
 
     @Override
