@@ -1,10 +1,10 @@
 package com.team254.lib.util.drivers;
 
-import edu.wpi.first.wpilibj.AnalogInput;
-import edu.wpi.first.wpilibj.Notifier;
-
 import com.team254.lib.util.CrashTrackingRunnable;
 import com.team254.lib.util.math.Rotation2d;
+
+import edu.wpi.first.wpilibj.AnalogInput;
+import edu.wpi.first.wpilibj.Notifier;
 
 /**
  * A 10-bit analog MA3 absolute encoder. http://cdn.usdigital.com/assets/datasheets/MA3_datasheet.pdf

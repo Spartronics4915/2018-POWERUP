@@ -1,10 +1,10 @@
 package com.team254.lib.util.drivers;
 
+import java.util.TimerTask;
+
 import edu.wpi.first.wpilibj.I2C;
 import edu.wpi.first.wpilibj.I2C.Port;
 import edu.wpi.first.wpilibj.Timer;
-
-import java.util.TimerTask;
 
 /**
  * Driver for a Lidar Lite sensor

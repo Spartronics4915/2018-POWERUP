@@ -1,9 +1,9 @@
 package com.team254.lib.util.drivers;
 
-import edu.wpi.first.wpilibj.MotorSafety;
-
 import com.ctre.CANTalon;
 import com.ctre.CANTalon.TalonControlMode;
+
+import edu.wpi.first.wpilibj.MotorSafety;
 
 /**
  * Creates CANTalon objects and configures all the parameters we care about to factory defaults. Closed-loop and sensor

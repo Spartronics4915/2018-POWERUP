@@ -8,6 +8,9 @@
 
 package com.team254.lib.util.drivers;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GyroBase;
 import edu.wpi.first.wpilibj.PIDSource;
@@ -16,9 +19,6 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.interfaces.Gyro;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.livewindow.LiveWindowSendable;
-
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 
 /**
  * Use a rate gyro to return the robots heading relative to a starting position. The Gyro class tracks the robots

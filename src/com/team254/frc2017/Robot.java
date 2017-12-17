@@ -1,22 +1,29 @@
 package com.team254.frc2017;
 
-import edu.wpi.first.wpilibj.AnalogInput;
-import edu.wpi.first.wpilibj.IterativeRobot;
-import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import java.util.Arrays;
+import java.util.Map;
 
 import com.team254.frc2017.auto.AutoModeExecuter;
 import com.team254.frc2017.loops.Looper;
 import com.team254.frc2017.loops.RobotStateEstimator;
 import com.team254.frc2017.loops.VisionProcessor;
 import com.team254.frc2017.paths.profiles.PathAdapter;
-import com.team254.frc2017.subsystems.*;
-import com.team254.frc2017.vision.VisionServer;
-import com.team254.lib.util.*;
+import com.team254.frc2017.subsystems.ConnectionMonitor;
+import com.team254.frc2017.subsystems.Drive;
+import com.team254.frc2017.subsystems.LED;
+import com.team254.frc2017.subsystems.Superstructure;
+import com.team254.lib.util.CheesyDriveHelper;
+import com.team254.lib.util.CrashTracker;
+import com.team254.lib.util.DelayedBoolean;
+import com.team254.lib.util.DriveSignal;
+import com.team254.lib.util.InterpolatingDouble;
+import com.team254.lib.util.InterpolatingTreeMap;
+import com.team254.lib.util.LatchedBoolean;
 import com.team254.lib.util.math.RigidTransform2d;
 
-import java.util.Arrays;
-import java.util.Map;
+import edu.wpi.first.wpilibj.AnalogInput;
+import edu.wpi.first.wpilibj.IterativeRobot;
+import edu.wpi.first.wpilibj.Timer;
 
 /**
  * The main robot class, which instantiates all robot parts and helper classes and initializes all loops. Some classes

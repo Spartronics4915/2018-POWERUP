@@ -1,6 +1,6 @@
 package com.team254.frc2017.auto.actions;
 
-import edu.wpi.first.wpilibj.Timer;
+import java.util.Optional;
 
 import com.team254.frc2017.RobotState;
 import com.team254.frc2017.ShooterAimingParameters;
@@ -8,7 +8,7 @@ import com.team254.frc2017.subsystems.Drive;
 import com.team254.frc2017.subsystems.LED;
 import com.team254.lib.util.DriveSignal;
 
-import java.util.Optional;
+import edu.wpi.first.wpilibj.Timer;
 
 /**
  * Runs the drivebase in open loop until the robot sees the boiler.

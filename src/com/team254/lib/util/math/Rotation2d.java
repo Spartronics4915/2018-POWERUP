@@ -2,9 +2,9 @@ package com.team254.lib.util.math;
 
 import static com.team254.lib.util.Util.epsilonEquals;
 
-import com.team254.lib.util.Interpolable;
-
 import java.text.DecimalFormat;
+
+import com.team254.lib.util.Interpolable;
 
 /**
  * A rotation in a 2d coordinate frame represented a point on the unit circle (cosine and sine).

@@ -1,12 +1,12 @@
 package com.team254.lib.util.drivers;
 
+import com.team254.lib.util.CrashTrackingRunnable;
+import com.team254.lib.util.math.Rotation2d;
+
 import edu.wpi.first.wpilibj.Counter;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Notifier;
-
-import com.team254.lib.util.CrashTrackingRunnable;
-import com.team254.lib.util.math.Rotation2d;
 
 /**
  * A 12-bit PWM MA3 absolute encoder. http://cdn.usdigital.com/assets/datasheets/MA3_datasheet.pdf

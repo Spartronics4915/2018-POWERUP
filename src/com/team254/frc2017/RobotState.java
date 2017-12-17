@@ -1,19 +1,20 @@
 package com.team254.frc2017;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
 import com.team254.frc2017.GoalTracker.TrackReport;
 import com.team254.frc2017.vision.TargetInfo;
-import com.team254.lib.util.*;
+import com.team254.lib.util.InterpolatingDouble;
+import com.team254.lib.util.InterpolatingTreeMap;
 import com.team254.lib.util.math.RigidTransform2d;
 import com.team254.lib.util.math.Rotation2d;
 import com.team254.lib.util.math.Translation2d;
 import com.team254.lib.util.math.Twist2d;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
 /**
  * RobotState keeps track of the poses of various coordinate frames throughout the match. A coordinate frame is simply a

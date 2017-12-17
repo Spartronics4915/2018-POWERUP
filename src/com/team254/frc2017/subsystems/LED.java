@@ -1,10 +1,10 @@
 package com.team254.frc2017.subsystems;
 
-import edu.wpi.first.wpilibj.DigitalOutput;
-
 import com.team254.frc2017.Constants;
 import com.team254.frc2017.loops.Loop;
 import com.team254.frc2017.loops.Looper;
+
+import edu.wpi.first.wpilibj.DigitalOutput;
 
 /**
  * The LED subsystem consists of the green ring light on the front of the robot used for aiming and communicating

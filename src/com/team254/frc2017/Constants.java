@@ -1,16 +1,15 @@
 package com.team254.frc2017;
 
-import edu.wpi.first.wpilibj.Solenoid;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.util.Enumeration;
 
 import com.team254.lib.util.ConstantsBase;
 import com.team254.lib.util.InterpolatingDouble;
 import com.team254.lib.util.InterpolatingTreeMap;
 import com.team254.lib.util.math.PolynomialRegression;
 
-import java.net.NetworkInterface;
-import java.net.SocketException;
-import java.util.Enumeration;
-import java.util.HashMap;
+import edu.wpi.first.wpilibj.Solenoid;
 
 /**
  * A list of constants used by the rest of the robot code. This include physics constants as well as constants

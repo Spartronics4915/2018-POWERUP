@@ -1,12 +1,12 @@
 package com.team254.lib.util.control;
 
-import com.team254.frc2017.Constants;
-import com.team254.lib.util.math.Translation2d;
-import com.team254.lib.util.motion.MotionState;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+
+import com.team254.frc2017.Constants;
+import com.team254.lib.util.math.Translation2d;
+import com.team254.lib.util.motion.MotionState;
 
 /**
  * Class representing the robot's autonomous path.

@@ -1,9 +1,5 @@
 package com.team254.lib.util;
 
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
-
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -17,6 +13,10 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
+
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 /**
  * ConstantsBase

@@ -1,10 +1,16 @@
 package com.team254.frc2017;
 
-import edu.wpi.first.wpilibj.DriverStation;
-
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.*;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
+import java.nio.file.StandardWatchEventKinds;
+import java.nio.file.WatchEvent;
+import java.nio.file.WatchKey;
+import java.nio.file.WatchService;
+
+import edu.wpi.first.wpilibj.DriverStation;
 
 /**
  * Controls the first person view stream, ensuring that the service will be restarted and if the webcam is unplugged and

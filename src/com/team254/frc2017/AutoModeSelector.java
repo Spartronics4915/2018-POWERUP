@@ -1,14 +1,14 @@
 package com.team254.frc2017;
 
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-
-import com.team254.frc2017.auto.AutoModeBase;
-import com.team254.frc2017.auto.modes.*;
+import java.util.function.Supplier;
 
 import org.json.simple.JSONArray;
 
-import java.util.function.Supplier;
+import com.team254.frc2017.auto.AutoModeBase;
+import com.team254.frc2017.auto.modes.StandStillMode;
+
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
  * Class that allows a user to select which autonomous mode to execute from the web dashboard.

@@ -1,9 +1,9 @@
 package com.team254.frc2017.auto.actions;
 
-import edu.wpi.first.wpilibj.Timer;
-
 import com.team254.frc2017.RobotState;
 import com.team254.lib.util.math.RigidTransform2d;
+
+import edu.wpi.first.wpilibj.Timer;
 
 /**
  * Transform's the robot's current pose by a correction constant. Used to correct for error in robot position

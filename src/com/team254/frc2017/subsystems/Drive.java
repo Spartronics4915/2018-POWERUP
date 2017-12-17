@@ -1,14 +1,11 @@
 package com.team254.frc2017.subsystems;
 
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Solenoid;
-import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import java.util.Arrays;
+import java.util.Optional;
 
 import com.ctre.CANTalon;
 import com.ctre.CANTalon.StatusFrameRate;
 import com.ctre.CANTalon.VelocityMeasurementPeriod;
-
 import com.team254.frc2017.Constants;
 import com.team254.frc2017.Kinematics;
 import com.team254.frc2017.RobotState;
@@ -27,8 +24,10 @@ import com.team254.lib.util.math.RigidTransform2d;
 import com.team254.lib.util.math.Rotation2d;
 import com.team254.lib.util.math.Twist2d;
 
-import java.util.Arrays;
-import java.util.Optional;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Solenoid;
+import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
  * This subsystem consists of the robot's drivetrain: 4 CIM motors, 4 talons, one solenoid and 2 pistons to shift gears,

@@ -1,13 +1,13 @@
 package com.team254.frc2017.paths;
 
+import java.util.List;
+
 import com.team254.frc2017.auto.actions.WaitForPathMarkerAction;
 import com.team254.lib.util.control.Path;
 import com.team254.lib.util.control.PathSegment;
 import com.team254.lib.util.math.RigidTransform2d;
 import com.team254.lib.util.math.Rotation2d;
 import com.team254.lib.util.math.Translation2d;
-
-import java.util.List;
 
 /**
  * Class used to convert a list of Waypoints into a Path object consisting of arc and line PathSegments
