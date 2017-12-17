@@ -5,10 +5,7 @@ import static org.junit.Assert.*;
 import org.junit.Test;
 
 import com.team254.frc2017.Constants;
-import com.team254.frc2017.paths.BoilerGearToHopperBlue;
-import com.team254.frc2017.paths.BoilerGearToHopperRed;
 import com.team254.frc2017.paths.PathContainer;
-import com.team254.frc2017.paths.StartToBoilerGearBlue;
 import com.team254.frc2017.paths.StartToBoilerGearRed;
 import com.team254.lib.util.ReflectingCSVWriter;
 import com.team254.lib.util.control.PathFollower;
@@ -72,7 +69,7 @@ public class PathFollowerTest {
 
     @Test
     public void testStartToBoilerGearBlue() {
-        PathContainer container = new StartToBoilerGearBlue();
+        PathContainer container = new StartToBoilerGearRed();
         PathFollower controller = new PathFollower(container.buildPath(), container.isReversed(), kParameters);
 
         final double dt = 0.01;
@@ -138,7 +135,7 @@ public class PathFollowerTest {
         assertTrue(controller.getCrossTrackError() < 1.0);
 
         displacement = 0.0;
-        container = new BoilerGearToHopperRed();
+        container = new StartToBoilerGearRed();
         controller = new PathFollower(container.buildPath(), container.isReversed(), kParameters);
         boolean has_tweaked = false;
         while (!controller.isFinished() && t < 25.0) {

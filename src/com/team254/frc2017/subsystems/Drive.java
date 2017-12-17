@@ -133,11 +133,6 @@ public class Drive extends Subsystem {
                         mCSVWriter.add(mPathFollower.getDebug());
                     }
                     return;
-                case AIM_TO_GOAL:
-                    if (!Superstructure.getInstance().isShooting()) {
-                        updateGoalHeading(timestamp);
-                    }
-                    // fallthrough intended
                 case TURN_TO_HEADING:
                     updateTurnToHeading(timestamp);
                     return;
@@ -474,11 +469,6 @@ public class Drive extends Subsystem {
      * Is called periodically when the robot is auto-aiming towards the boiler.
      */
     private void updateTurnToHeading(double timestamp) {
-        if (Superstructure.getInstance().isShooting()) {
-            // Do not update heading while shooting - just base lock. By not updating the setpoint, we will fight to
-            // keep position.
-            return;
-        }
         final Rotation2d field_to_robot = mRobotState.getLatestFieldToVehicle().getValue().getRotation();
 
         // Figure out the rotation necessary to turn to face the goal.
