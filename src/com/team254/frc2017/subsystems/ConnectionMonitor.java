@@ -48,6 +48,7 @@ public class ConnectionMonitor extends Subsystem {
                 synchronized (ConnectionMonitor.this) {
                     boolean has_connection = true;
                     if (timestamp - mLastPacketTime > kConnectionTimeoutSec) {
+                        System.out.println("Connection lost or timed out.");
                         mLED.setWantedState(LED.WantedState.BLINK);
                         has_connection = false;
                     }

@@ -54,7 +54,7 @@ public class Robot extends IterativeRobot {
 
     // Initialize other helper objects
     private CheesyDriveHelper mCheesyDriveHelper = new CheesyDriveHelper();
-    private ControlBoardInterface mControlBoard = ControlBoard.getInstance();
+    private ControlBoardInterface mControlBoard = new XboxControlBoard();
 
     private Looper mEnabledLooper = new Looper();
 
@@ -64,7 +64,6 @@ public class Robot extends IterativeRobot {
 
     private DelayedBoolean mDelayedAimButton;
 
-    private LatchedBoolean mCommitTuning = new LatchedBoolean();
     private InterpolatingTreeMap<InterpolatingDouble, InterpolatingDouble> mTuningFlywheelMap = new InterpolatingTreeMap<>();
 
     public Robot() {

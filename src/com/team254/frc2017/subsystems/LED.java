@@ -142,7 +142,7 @@ public class LED extends Subsystem {
         return defaultStateTransfer();
     }
 
-    public synchronized void setRangeBlicking(boolean isBlinking) {
+    public synchronized void setRangeBlinking(boolean isBlinking) {
         mIsBlinking = isBlinking;
     }
 

@@ -154,27 +154,6 @@ public class Constants extends ConstantsBase {
     public static final int kRightDriveMasterId = 4;
     public static final int kRightDriverSlaveId = 2;
 
-    // Feeder
-    public static final int kFeederMasterId = 8;
-    public static final int kFeederSlaveId = 7;
-
-    // Intake
-    public static final int kIntakeMasterId = 5;
-    public static final int kIntakeSlaveId = 10;
-
-    // Hopper / Floor
-    public static final int kHopperMasterId = 6;
-    public static final int kHopperSlaveId = 9;
-
-    // Shooter
-    public static final int kRightShooterMasterId = 2;
-    public static final int kRightShooterSlaveId = 1;
-    public static final int kLeftShooterSlave1Id = 13;
-    public static final int kLeftShooterSlave2Id = 14;
-
-    // Gear Grabber
-    public static final int kGearGrabberId = 15;
-
     // Solenoids
     public static final int kShifterSolenoidId = 0; // PCM 0, Solenoid 0
     public static final int kIntakeDeploySolenoidId = 1; // PCM 0, Solenoid 1

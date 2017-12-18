@@ -47,4 +47,8 @@ public class BetterBNO {
     public double getRawAccelX() {
         return mBNO055.getAccel()[0]; // XXX: I'm pretty sure that index 0 is the X-axis, but there isn't any documentation on it
     }
+    
+    public boolean isPresent() {
+        return mBNO055.isSensorPresent();
+    }
 }

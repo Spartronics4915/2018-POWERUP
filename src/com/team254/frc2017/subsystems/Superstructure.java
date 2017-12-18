@@ -16,10 +16,6 @@ import edu.wpi.first.wpilibj.Timer;
  * 
  * The superstructure also coordinates actions between different subsystems like the feeder and shooter.
  * 
- * @see Intake
- * @see Hopper
- * @see Feeder
- * @see Shooter
  * @see LED
  * @see Subsystem
  */

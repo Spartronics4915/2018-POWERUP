@@ -159,11 +159,11 @@ public class Drive extends Subsystem {
         // Start all Talons in open loop mode.
         mLeftMaster = CANTalonFactory.createDefaultTalon(Constants.kLeftDriveMasterId);
         mLeftMaster.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
-        mLeftMaster.setFeedbackDevice(CANTalon.FeedbackDevice.CtreMagEncoder_Relative);
+        mLeftMaster.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
         mLeftMaster.reverseSensor(true);
         mLeftMaster.reverseOutput(false);
         CANTalon.FeedbackDeviceStatus leftSensorPresent = mLeftMaster
-                .isSensorPresent(CANTalon.FeedbackDevice.CtreMagEncoder_Relative);
+                .isSensorPresent(CANTalon.FeedbackDevice.QuadEncoder);
         if (leftSensorPresent != CANTalon.FeedbackDeviceStatus.FeedbackStatusPresent) {
             DriverStation.reportError("Could not detect left encoder: " + leftSensorPresent, false);
         }
@@ -177,9 +177,9 @@ public class Drive extends Subsystem {
         mRightMaster.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
         mRightMaster.reverseSensor(false);
         mRightMaster.reverseOutput(true);
-        mRightMaster.setFeedbackDevice(CANTalon.FeedbackDevice.CtreMagEncoder_Relative);
+        mRightMaster.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
         CANTalon.FeedbackDeviceStatus rightSensorPresent = mRightMaster
-                .isSensorPresent(CANTalon.FeedbackDevice.CtreMagEncoder_Relative);
+                .isSensorPresent(CANTalon.FeedbackDevice.QuadEncoder);
         if (rightSensorPresent != CANTalon.FeedbackDeviceStatus.FeedbackStatusPresent) {
             DriverStation.reportError("Could not detect right encoder: " + rightSensorPresent, false);
         }
@@ -205,6 +205,9 @@ public class Drive extends Subsystem {
         // Path Following stuff
         mIMU = new BetterBNO();
 
+        if (!mIMU.isPresent())
+            DriverStation.reportError("Could not detect the BNO055 IMU. Is it plugged in?", false);
+        
         // Force a CAN message across.
         mIsBrakeMode = true;
         setBrakeMode(false);
