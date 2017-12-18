@@ -6,6 +6,7 @@ import org.json.simple.JSONArray;
 
 import com.team254.frc2017.auto.AutoModeBase;
 import com.team254.frc2017.auto.modes.StandStillMode;
+import com.team254.frc2017.auto.modes.TestMode;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -32,6 +33,7 @@ public class AutoModeSelector {
             "Do Nothing",
             () -> new StandStillMode());
     private static final AutoModeCreator[] mAllModes = {
+            new AutoModeCreator("Test Mode", () -> new TestMode())
             // e.g. new AutoModeCreator("Boiler Gear then 10 Ball Shoot Red", () -> new BoilerGearThenShootModeRed()),
     };
 
