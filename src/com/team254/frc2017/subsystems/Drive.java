@@ -441,10 +441,6 @@ public class Drive extends Subsystem {
         return mIMU.getYaw();
     }
 
-    public synchronized BetterBNO getIMU() {
-        return mIMU;
-    }
-
     /* 
      * XXX: This method appears to not set the actual gyro angle, but the offset.
      * This is bad naming... Maybe TODO refactor?
