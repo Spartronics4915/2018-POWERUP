@@ -153,7 +153,8 @@ public class Constants extends ConstantsBase {
     public static final int kLeftDriveSlaveId = 1;
     public static final int kRightDriveMasterId = 4;
     public static final int kRightDriverSlaveId = 2;
-
+    public static final int kIMUTalonId = 6;
+    
     // Solenoids
     public static final int kShifterSolenoidId = 0; // PCM 0, Solenoid 0
     public static final int kIntakeDeploySolenoidId = 1; // PCM 0, Solenoid 1

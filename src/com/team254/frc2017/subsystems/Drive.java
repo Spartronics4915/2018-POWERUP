@@ -6,6 +6,8 @@ import java.util.Optional;
 import com.ctre.CANTalon;
 import com.ctre.CANTalon.StatusFrameRate;
 import com.ctre.CANTalon.VelocityMeasurementPeriod;
+import com.ctre.PigeonImu;
+import com.ctre.PigeonImu.PigeonState;
 import com.team254.frc2017.Constants;
 import com.team254.frc2017.Kinematics;
 import com.team254.frc2017.RobotState;
@@ -18,7 +20,6 @@ import com.team254.lib.util.Util;
 import com.team254.lib.util.control.Lookahead;
 import com.team254.lib.util.control.Path;
 import com.team254.lib.util.control.PathFollower;
-import com.team254.lib.util.drivers.BetterBNO;
 import com.team254.lib.util.drivers.CANTalonFactory;
 import com.team254.lib.util.math.RigidTransform2d;
 import com.team254.lib.util.math.Rotation2d;
@@ -86,9 +87,9 @@ public class Drive extends Subsystem {
     private DriveControlState mDriveControlState;
 
     // Hardware
-    private final CANTalon mLeftMaster, mRightMaster, mLeftSlave, mRightSlave;
+    private final CANTalon mLeftMaster, mRightMaster, mLeftSlave, mRightSlave, mIMUTalon;
     private final Solenoid mShifter;
-    private final BetterBNO mIMU;
+    private final PigeonImu mIMU;
 
     // Controllers
     private RobotState mRobotState = RobotState.getInstance();
@@ -114,7 +115,11 @@ public class Drive extends Subsystem {
                 setOpenLoop(DriveSignal.NEUTRAL);
                 setBrakeMode(false);
                 setVelocitySetpoint(0, 0);
-                mIMU.reset();
+                if (mIMU.GetState() != PigeonState.Ready) {
+                    DriverStation.reportError("IMU in non-ready state. Is it plugged in?", false);
+                    return;
+                }
+                mIMU.SetYaw(0);
             }
         }
 
@@ -203,10 +208,11 @@ public class Drive extends Subsystem {
         setOpenLoop(DriveSignal.NEUTRAL);
 
         // Path Following stuff
-        mIMU = new BetterBNO();
-
-        if (!mIMU.isPresent())
-            DriverStation.reportError("Could not detect the BNO055 IMU. Is it plugged in?", false);
+        mIMUTalon = new CANTalon(Constants.kIMUTalonId); // FIXME: Don't use the pigeon, or at least wire it directly into the CAN bus
+        mIMU = new PigeonImu(mIMUTalon);
+        
+        if (mIMU.GetState() == PigeonState.NoComm)
+            DriverStation.reportError("Could not detect the IMU. Is it plugged in?", false);
         
         // Force a CAN message across.
         mIsBrakeMode = true;
@@ -297,7 +303,7 @@ public class Drive extends Subsystem {
         }
         SmartDashboard.putNumber("left position (rotations)", mLeftMaster.getPosition());
         SmartDashboard.putNumber("right position (rotations)", mRightMaster.getPosition());
-        SmartDashboard.putNumber("gyro pos", getGyroAngle().getDegrees());
+        SmartDashboard.putNumber("imu yaw", getGyroAngle().getDegrees());
         SmartDashboard.putBoolean("drive on target", isOnTarget());
     }
 
@@ -313,7 +319,11 @@ public class Drive extends Subsystem {
     @Override
     public void zeroSensors() {
         resetEncoders();
-        mIMU.zeroYaw();
+        if (mIMU.GetState() != PigeonState.Ready) {
+            DriverStation.reportError("IMU in non-ready state. Is it plugged in?", false);
+            return;
+        }
+        mIMU.SetYaw(0.0);
     }
 
     /**
@@ -438,15 +448,23 @@ public class Drive extends Subsystem {
     }
 
     public synchronized Rotation2d getGyroAngle() {
-        return mIMU.getYaw();
+        if (mIMU.GetState() != PigeonState.Ready) {
+            DriverStation.reportError("IMU in non-ready state. Is it plugged in?", false);
+            return Rotation2d.fromDegrees(0);
+        }
+        double[] ypr = new double[3]; // This is ridiculous. Quick fix: don't use the pigeon!
+        mIMU.GetYawPitchRoll(ypr);
+        return Rotation2d.fromDegrees(ypr[0]); // Rotation2d normalizes between -180 and 180 automatically
     }
 
     /* 
      * XXX: This method appears to not set the actual gyro angle, but the offset.
-     * This is bad naming... Maybe TODO refactor?
+     * I think this is bad naming... Maybe TODO refactor?
      */
     public synchronized void setGyroAngle(Rotation2d angle) {
-        mIMU.setAngleAdjustment(angle);
+        if (mIMU.GetState() == PigeonState.NoComm)
+            DriverStation.reportError("Could not detect the IMU. Is it plugged in?", false);
+        mIMU.AddYaw(angle.getDegrees());
     }
 
     /**
@@ -713,10 +731,6 @@ public class Drive extends Subsystem {
                 kHighGearVelocityControlSlot);
         mLeftMaster.setVoltageCompensationRampRate(Constants.kDriveVoltageCompensationRampRate);
         mRightMaster.setVoltageCompensationRampRate(Constants.kDriveVoltageCompensationRampRate);
-    }
-
-    public synchronized double getAccelX() {
-        return mIMU.getRawAccelX();
     }
 
     @Override

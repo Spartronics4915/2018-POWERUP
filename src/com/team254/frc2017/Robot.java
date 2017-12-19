@@ -73,7 +73,6 @@ public class Robot extends IterativeRobot {
     public void zeroAllSensors() {
         mSubsystemManager.zeroSensors();
         mRobotState.reset(Timer.getFPGATimestamp(), new RigidTransform2d());
-        mDrive.zeroSensors();
     }
 
     /**
