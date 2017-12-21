@@ -36,8 +36,8 @@ public class Constants extends ConstantsBase {
     /* ROBOT PHYSICAL CONSTANTS */
 
     // Wheels
-    public static double kDriveWheelDiameterInches = 3.419;
-    public static double kTrackWidthInches = 26.655;
+    public static double kDriveWheelDiameterInches = 6;
+    public static double kTrackWidthInches = 27.75;
     public static double kTrackScrubFactor = 0.924;
 
     // Geometry

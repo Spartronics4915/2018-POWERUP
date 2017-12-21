@@ -35,7 +35,7 @@ public class DrivePathAction implements Action {
 
     @Override
     public void done() {
-        // TODO: Perhaps set wheel velocity to 0?
+        mDrive.setVelocitySetpoint(0, 0);
     }
 
     @Override

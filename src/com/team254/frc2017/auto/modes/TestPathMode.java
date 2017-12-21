@@ -8,7 +8,7 @@ import com.team254.frc2017.auto.actions.WaitAction;
 import com.team254.frc2017.paths.PathContainer;
 import com.team254.frc2017.paths.TestPath;
 
-public class TestMode extends AutoModeBase {
+public class TestPathMode extends AutoModeBase {
 
     @Override
     protected void routine() throws AutoModeEndedException {
