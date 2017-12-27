@@ -219,14 +219,6 @@ public class Robot extends IterativeRobot {
             mDrive.setOpenLoop(DriveSignal.NEUTRAL);
 
             PathAdapter.calculatePaths();
-            
-            // If are tuning, dump map so far.
-            if (Constants.kIsShooterTuning) {
-                for (Map.Entry<InterpolatingDouble, InterpolatingDouble> entry : mTuningFlywheelMap.entrySet()) {
-                    System.out.println("{" +
-                            entry.getKey().value + ", " + entry.getValue().value + "},");
-                }
-            }
         } catch (Throwable t) {
             CrashTracker.logThrowableCrash(t);
             throw t;

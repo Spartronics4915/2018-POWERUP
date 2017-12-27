@@ -26,34 +26,18 @@ public class Constants extends ConstantsBase {
     public static double kBoilerTargetTopHeight = 88.0;
     public static double kBoilerRadius = 7.5;
 
-    // Shooter tuning parameters
-    public static boolean kIsShooterTuning = false;
-    public static double kShooterTuningRpmFloor = 2900;
-    public static double kShooterTuningRpmCeiling = 3500;
-    public static double kShooterTuningRpmStep = 50;
-    public static double kShooterTuningRpm = 3500.0;
-
     /* ROBOT PHYSICAL CONSTANTS */
 
     // Wheels
     public static double kDriveWheelDiameterInches = 6;
     public static double kTrackWidthInches = 27.75;
-    public static double kTrackScrubFactor = 0.924;
+    public static double kTrackScrubFactor = 0.624;
 
     // Geometry
-    public static double kCenterToFrontBumperDistance = 16.33;
-    public static double kCenterToIntakeDistance = 23.11;
-    public static double kCenterToRearBumperDistance = 16.99;
-    public static double kCenterToSideBumperDistance = 17.225;
-
-    // Shooting suggestions
-    public static double kOnTargetErrorThreshold = 3.0;
-
-    // Intake Voltages
-    public static double kIntakeVoltageMax = 7.5;
-    public static double kIntakeVoltageMin = 5.5;
-    public static double kIntakeShootingVoltage = 4.0;
-    public static final double kIntakeVoltageDifference = kIntakeVoltageMax - kIntakeVoltageMin;
+    public static double kCenterToFrontBumperDistance = 14.1875;
+    public static double kCenterToIntakeDistance = 20.9675;
+    public static double kCenterToRearBumperDistance = 14.1875;
+    public static double kCenterToSideBumperDistance = 15.75;
 
     /* CONTROL LOOP GAINS */
 
@@ -68,76 +52,21 @@ public class Constants extends ConstantsBase {
     public static double kDriveHighGearNominalOutput = 0.5;
     public static double kDriveHighGearMaxSetpoint = 17.0 * 12.0; // 17 fps
 
-    // PID gains for drive velocity loop (LOW GEAR)
+    // PID gains for drive position loop (LOW GEAR)
     // Units: setpoint, error, and output are in inches per second.
-    public static double kDriveLowGearPositionKp = 1.0;
+    public static double kDriveLowGearPositionKp = 0.85;
     public static double kDriveLowGearPositionKi = 0.002;
     public static double kDriveLowGearPositionKd = 100.0;
     public static double kDriveLowGearPositionKf = .45;
     public static int kDriveLowGearPositionIZone = 700;
-    public static double kDriveLowGearPositionRampRate = 240.0; // V/s
+    public static double kDriveLowGearPositionRampRate = 48.0; // V/s
     public static double kDriveLowGearNominalOutput = 0.5; // V
-    public static double kDriveLowGearMaxVelocity = 6.0 * 12.0 * 60.0 / (Math.PI * kDriveWheelDiameterInches); // 6 fps
+    public static double kDriveLowGearMaxVelocity = 3.0 * 12.0 * 60.0 / (Math.PI * kDriveWheelDiameterInches); // 6 fps
                                                                                                                // in RPM
-    public static double kDriveLowGearMaxAccel = 18.0 * 12.0 * 60.0 / (Math.PI * kDriveWheelDiameterInches); // 18 fps/s
+    public static double kDriveLowGearMaxAccel = 15.0 * 12.0 * 60.0 / (Math.PI * kDriveWheelDiameterInches); // 18 fps/s
                                                                                                              // in RPM/s
 
     public static double kDriveVoltageCompensationRampRate = 0.0;
-
-    // Turn to heading gains
-    public static double kDriveTurnKp = 3.0;
-    public static double kDriveTurnKi = 1.5;
-    public static double kDriveTurnKv = 0.0;
-    public static double kDriveTurnKffv = 1.0;
-    public static double kDriveTurnKffa = 0.0;
-    public static double kDriveTurnMaxVel = 360.0;
-    public static double kDriveTurnMaxAcc = 720.0;
-
-    // Shooter gains
-    public static double kShooterTalonKP = 0.16;
-    public static double kShooterTalonKI = 0.00008;
-    public static double kShooterTalonKD = 0.0;
-    public static double kShooterTalonKF = 0.035;
-    public static double kShooterRampRate = 60.0;
-
-    public static double kShooterTalonHoldKP = 0.0;
-    public static double kShooterTalonHoldKI = 0.0;
-    public static double kShooterTalonHoldKD = 0.0;
-
-    public static double kShooterHoldRampRate = 720.0;
-
-    public static int kShooterTalonIZone = 1000;// 73 rpm
-    public static int kShooterOpenLoopCurrentLimit = 35;
-
-    public static double kShooterSetpointDeadbandRpm = 1.0;
-
-    // Used to determine when to switch to hold profile.
-    public static double kShooterMinTrackStability = 0.25;
-    public static double kShooterStartOnTargetRpm = 50.0;
-    public static double kShooterStopOnTargetRpm = 150.0;
-    public static int kShooterKfBufferSize = 20;
-    public static int kShooterMinOnTargetSamples = 20; // Should be <= kShooterKvBufferSize
-
-    public static int kShooterJamBufferSize = 30;
-    public static double kShooterDisturbanceThreshold = 25;
-    public static double kShooterJamTimeout = 1.5; // In secs
-    public static double kShooterUnjamDuration = 0.5; // In secs
-    public static double kShooterMinShootingTime = 1.0; // In secs
-
-    public static double kShooterSpinDownTime = 0.25;
-
-    // Feeder gains
-    public static double kFeederKP = 0.02;
-    public static double kFeederKI = 0.0;
-    public static double kFeederKD = 0.2;
-    public static double kFeederKF = 0.009;
-    public static double kFeederRampRate = 240.0;
-    public static double kFeederVoltageCompensationRampRate = 10.0;
-    public static double kFeederFeedSpeedRpm = 5400.0;
-    public static double kFeederSensorGearReduction = 3.0;
-
-    // Hopper gains
-    public static double kHopperRampRate = 48.0;
 
     // Do not change anything after this line unless you rewire the robot and
     // update the spreadsheet!
@@ -154,6 +83,7 @@ public class Constants extends ConstantsBase {
     public static final int kRightDriveMasterId = 4;
     public static final int kRightDriverSlaveId = 2;
     public static final int kIMUTalonId = 6;
+    public static final int kEncoderCodesPerRev = 250; // Not ticks, codes; ticks would be kEncoderCodesPerRev * 4 (for quadrature encoders at least)
     
     // Solenoids
     public static final int kShifterSolenoidId = 0; // PCM 0, Solenoid 0

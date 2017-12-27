@@ -165,7 +165,8 @@ public class Drive extends Subsystem {
         mLeftMaster = CANTalonFactory.createDefaultTalon(Constants.kLeftDriveMasterId);
         mLeftMaster.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
         mLeftMaster.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
-        mLeftMaster.reverseSensor(true);
+        mLeftMaster.configEncoderCodesPerRev(Constants.kEncoderCodesPerRev);
+        mLeftMaster.reverseSensor(false); // If these aren't correctly reversed your PID will just spiral out of control
         mLeftMaster.reverseOutput(false);
         CANTalon.FeedbackDeviceStatus leftSensorPresent = mLeftMaster
                 .isSensorPresent(CANTalon.FeedbackDevice.QuadEncoder);
@@ -180,9 +181,10 @@ public class Drive extends Subsystem {
 
         mRightMaster = CANTalonFactory.createDefaultTalon(Constants.kRightDriveMasterId);
         mRightMaster.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
-        mRightMaster.reverseSensor(false);
+        mRightMaster.reverseSensor(true);
         mRightMaster.reverseOutput(true);
         mRightMaster.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
+        mRightMaster.configEncoderCodesPerRev(Constants.kEncoderCodesPerRev);
         CANTalon.FeedbackDeviceStatus rightSensorPresent = mRightMaster
                 .isSensorPresent(CANTalon.FeedbackDevice.QuadEncoder);
         if (rightSensorPresent != CANTalon.FeedbackDeviceStatus.FeedbackStatusPresent) {
@@ -483,10 +485,11 @@ public class Drive extends Subsystem {
      * Turn the robot to a target heading.
      * 
      * Is called periodically when the robot is auto-aiming towards the boiler.
+     * 
+     * This actually doesn't use the IMU... Only the wheel encoders and kinematics.
      */
     private void updateTurnToHeading(double timestamp) {
-        final Rotation2d field_to_robot = mRobotState.getLatestFieldToVehicle().getValue().getRotation();
-
+        final Rotation2d field_to_robot = mRobotState.getLatestFieldToVehicle().getValue().getRotation(); // We need the field frame because this is specified in field coordinates, not robot ones
         // Figure out the rotation necessary to turn to face the goal.
         final Rotation2d robot_to_target = field_to_robot.inverse().rotateBy(mTargetHeading);
 
@@ -504,6 +507,7 @@ public class Drive extends Subsystem {
 
         Kinematics.DriveVelocity wheel_delta = Kinematics
                 .inverseKinematics(new Twist2d(0, 0, robot_to_target.getRadians()));
+        System.out.println(wheel_delta.left + "," + robot_to_target.getDegrees());
         updatePositionSetpoint(wheel_delta.left + getLeftDistanceInches(),
                 wheel_delta.right + getRightDistanceInches());
     }
@@ -577,6 +581,9 @@ public class Drive extends Subsystem {
         RigidTransform2d robot_pose = mRobotState.getLatestFieldToVehicle().getValue();
         Twist2d command = mPathFollower.update(timestamp, robot_pose,
                 RobotState.getInstance().getDistanceDriven(), RobotState.getInstance().getPredictedVelocity().dx);
+        
+        System.out.println(robot_pose.getRotation().getDegrees() + "," + RobotState.getInstance().getDistanceDriven() + "," + RobotState.getInstance().getPredictedVelocity().dx);
+        
         if (!mPathFollower.isFinished()) {
             Kinematics.DriveVelocity setpoint = Kinematics.inverseKinematics(command);
             updateVelocitySetpoint(setpoint.left, setpoint.right);

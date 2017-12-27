@@ -17,7 +17,7 @@ public class Kinematics {
      * motion)
      */
     public static Twist2d forwardKinematics(double left_wheel_delta, double right_wheel_delta) {
-        double delta_v = (right_wheel_delta - left_wheel_delta) / 2 * Constants.kTrackScrubFactor;
+        double delta_v = (right_wheel_delta - left_wheel_delta) / 2 * Constants.kTrackScrubFactor; // Scrub factor is the skidding fudge factor
         double delta_rotation = delta_v * 2 / Constants.kTrackWidthInches;
         return forwardKinematics(left_wheel_delta, right_wheel_delta, delta_rotation);
     }
@@ -67,13 +67,18 @@ public class Kinematics {
             this.left = left;
             this.right = right;
         }
+        
+        @Override
+        public String toString() {
+            return "Left velocity: " + left + ", Right velocity: " + right;
+        }
     }
 
     /**
      * Uses inverse kinematics to convert a Twist2d into left and right wheel velocities
      */
     public static DriveVelocity inverseKinematics(Twist2d velocity) {
-        if (Math.abs(velocity.dtheta) < kEpsilon) {
+        if (Math.abs(velocity.dtheta) < kEpsilon) { // dtheta is turning
             return new DriveVelocity(velocity.dx, velocity.dx);
         }
         double delta_v = Constants.kTrackWidthInches * velocity.dtheta / (2 * Constants.kTrackScrubFactor);
