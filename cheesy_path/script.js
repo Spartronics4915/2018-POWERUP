@@ -424,15 +424,15 @@ function getDataString() {
 	var startPoint = "new Translation2d(" + waypoints[0].position.x + ", " + waypoints[0].position.y + ")";
 	var importStr = "WAYPOINT_DATA: " + JSON.stringify(waypoints);
 	var isReversed = $("#isReversed").is(':checked');
-	var str = `package com.team254.frc2017.paths;
+	var str = `package com.spartronics4915.frc2018.paths;
 
 import java.util.ArrayList;
 
-import com.team254.frc2017.paths.PathBuilder.Waypoint;
-import com.team254.lib.util.control.Path;
-import com.team254.lib.util.math.RigidTransform2d;
-import com.team254.lib.util.math.Rotation2d;
-import com.team254.lib.util.math.Translation2d;
+import com.spartronics4915.frc2018.paths.PathBuilder.Waypoint;
+import com.spartronics4915.lib.util.control.Path;
+import com.spartronics4915.lib.util.math.RigidTransform2d;
+import com.spartronics4915.lib.util.math.Rotation2d;
+import com.spartronics4915.lib.util.math.Translation2d;
 
 public class ${title} implements PathContainer {
     

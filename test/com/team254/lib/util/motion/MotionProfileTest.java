@@ -8,6 +8,11 @@ import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.Test;
+
+import com.spartronics4915.lib.util.motion.MotionProfile;
+import com.spartronics4915.lib.util.motion.MotionSegment;
+import com.spartronics4915.lib.util.motion.MotionState;
+
 import static org.hamcrest.CoreMatchers.*;
 
 public class MotionProfileTest {

@@ -1,7 +1,5 @@
 package com.team254.lib.util;
 
-import com.team254.frc2017.AutoModeSelector;
-import com.team254.frc2017.auto.modes.StandStillMode;
 import edu.wpi.first.wpilibj.HLUsageReporting;
 import edu.wpi.first.wpilibj.networktables.NetworkTable;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -14,6 +12,9 @@ import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
+
+import com.spartronics4915.frc2018.AutoModeSelector;
+import com.spartronics4915.frc2018.auto.modes.StandStillMode;
 
 import java.util.ArrayList;
 

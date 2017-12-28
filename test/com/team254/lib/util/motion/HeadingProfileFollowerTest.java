@@ -4,7 +4,12 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
-import com.team254.lib.util.motion.MotionProfileGoal.CompletionBehavior;
+import com.spartronics4915.lib.util.motion.HeadingProfileFollower;
+import com.spartronics4915.lib.util.motion.MotionProfileConstraints;
+import com.spartronics4915.lib.util.motion.MotionProfileGoal;
+import com.spartronics4915.lib.util.motion.MotionState;
+import com.spartronics4915.lib.util.motion.ProfileFollower;
+import com.spartronics4915.lib.util.motion.MotionProfileGoal.CompletionBehavior;
 import com.team254.lib.util.motion.MotionTestUtil.Dynamics;
 import com.team254.lib.util.motion.MotionTestUtil.IdealDynamics;
 import com.team254.lib.util.motion.MotionTestUtil.ScaledDynamics;

@@ -51,68 +51,68 @@ FRC-2017
 	[Cheezdroid](vision_app), an android-based vision processing system, is used for image processing and target detection.  The app runs on a Nexus 5 phone.  Since all processing is done on the Nexus 5 itself, the app is able to maintain a smooth 30 FPS output for maximum performance.
 
 ## Package Functions
-- com.team254.frc2017
+- com.spartronics4915.frc2018
 
 	Contains the robot's central functions and holds a file with all numerical constants used throughout the code. For example, the Robot member class controls all routines depending on the robot state.
 
-- com.team254.frc2017.auto
+- com.spartronics4915.frc2018.auto
 
 	Handles the excecution of autonomous routines.  Also contains the auto actions and auto modes packages..
 	
-- com.team254.frc2017.auto.actions
+- com.spartronics4915.frc2018.auto.actions
 
 	Contains all actions used during the autonomous period, which all share a common interface, Action (also in this package). Examples include deploying the intake, driving a path, or scoring a gear. Routines interact with the Subsystems, which interact with the hardware.
 	
-- com.team254.frc2017.auto.modes
+- com.spartronics4915.frc2018.auto.modes
 	
 	Contains all autonomous modes. Autonomous modes consist of a list of autonomous actions excecuted in a certain order.
 	
-- com.team254.frc2017.loops
+- com.spartronics4915.frc2018.loops
 
 	Loops are routines that run periodically on the robot, such as calculating robot pose, processing vision feedback, or updating subsystems. All Loops implement the Loop interface and are handled (started, stopped, added) by the Looper class, which runs att 200 Hz.
 	The Robot class has one main Looper, mEnabledLooper, that runs all loops when the robot is enabled.
 	
-- com.team254.frc2017.paths
+- com.spartronics4915.frc2018.paths
 
 	Contains all paths that the robot drives during autonomous mode.  Each path is made up of a list of Waypoints.  The PathBuilder class, which is also included in this package, transforms these waypoints into a series of arcs and line segments.
 	
-- com.team254.frc2017.paths.profiles
+- com.spartronics4915.frc2018.paths.profiles
 
 	Contains a set of field and robot profiles.  Field profiles contain field measurements that are read by the PathAdapter class, which then builds a set of paths to match a specific field's measurements.  Robot profiles contain robot driving error measurements.  Due to the simplified nature of our kinematics model, the robot often calculates that it is in a different position than it actually is.  Robot profiles help the robot compensate for this error between actual position and calculated position.
 	
-- com.team254.frc2017.subsystems
+- com.spartronics4915.frc2018.subsystems
 	
 	Subsystems are consolidated into one central class per subsystem, all of which implement the Subsystem abstract class. Each Subsystem uses state machines for control.
 	Each Subsystem is also a singleton, meaning that there is only one instance of each Subsystem class. To modify a subsystem, one would get the instance of the subsystem and change its desired state. The Subsystem class will work on setting the desired state.
 	
-- com.team254.frc2017.vision
+- com.spartronics4915.frc2018.vision
 
 	Handles the Android vision tracking system. This includes handling all ADB (Android Debug Bridge) communications with the phone and creating VisionUpdate data with the data from the phone.
 	VisionUpdates consist of TargetInfo objects (the target's coordinates in 3D space), a timestamp, and a "valid" value (if the update is valid). This represents the target data from each frame processed by the phone.
 	The VisionServer class unifies the vision system. Like the Subsystems, there is only one instance of the VisionServer.
 
-- com.team254.frc2017.vision.messages
+- com.spartronics4915.frc2018.vision.messages
 
 	Contains messages used by the vision system: a heartbeat signal that's regularly sent out and a "camera mode" message that contains information about the camera's state.
 	All Messages implement the VisionMessage abstract class.
 	
-- com.team254.lib.util
+- com.spartronics4915.lib.util
 
 	A collection of assorted utilities classes used in the robot code. This includes custom classes for hardware devices (encoders, gyroscopes, etc.) as well as mathematical helper functions, especially regarding translations and rotations. Check each .java file for more information.
 	
-- com.team254.lib.util.control
+- com.spartronics4915.lib.util.control
 
 	Contains all the classes used for the robot's steering controller during autonomous driving.  The robot uses an adaptive pure pursuit controller to control steering.  You can read about it [here](https://www.mathworks.com/help/robotics/ug/pure-pursuit-controller.html)
 	
-- com.team254.lib.util.drivers
+- com.spartronics4915.lib.util.drivers
 
 	Contains a set of custom classes for hardware devices (pressure sensors, ultrasonic sensors, NavX board, etc.)
 
-- com.team254.lib.util.math
+- com.spartronics4915.lib.util.math
 
 	Contains a set of helper classes for mathmatical calculations.
 
-- com.team254.lib.util.control
+- com.spartronics4915.lib.util.control
 
 	Contains all motion profiling code used for autonomous driving.  We use trapezoidal motion profiles for smooth acceleration and minimal slip.
 	

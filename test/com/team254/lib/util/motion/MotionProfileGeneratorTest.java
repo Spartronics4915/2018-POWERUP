@@ -4,10 +4,16 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
-import com.team254.lib.util.motion.MotionProfileGoal.CompletionBehavior;
+import com.spartronics4915.lib.util.motion.MotionProfile;
+import com.spartronics4915.lib.util.motion.MotionProfileConstraints;
+import com.spartronics4915.lib.util.motion.MotionProfileGenerator;
+import com.spartronics4915.lib.util.motion.MotionProfileGoal;
+import com.spartronics4915.lib.util.motion.MotionSegment;
+import com.spartronics4915.lib.util.motion.MotionState;
+import com.spartronics4915.lib.util.motion.MotionProfileGoal.CompletionBehavior;
 
+import static com.spartronics4915.lib.util.motion.MotionUtil.*;
 import static com.team254.lib.util.TestUtil.*;
-import static com.team254.lib.util.motion.MotionUtil.*;
 
 public class MotionProfileGeneratorTest {
 

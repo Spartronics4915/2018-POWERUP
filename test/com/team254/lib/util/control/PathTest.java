@@ -2,11 +2,11 @@ package com.team254.lib.util.control;
 
 import static org.junit.Assert.*;
 
-import com.team254.lib.util.control.PathSegment;
-import com.team254.lib.util.math.Translation2d;
-import com.team254.lib.util.motion.MotionState;
-
 import org.junit.Test;
+
+import com.spartronics4915.lib.util.control.PathSegment;
+import com.spartronics4915.lib.util.math.Translation2d;
+import com.spartronics4915.lib.util.motion.MotionState;
 
 public class PathTest {
     public static final double kTestEpsilon = 1E-9;

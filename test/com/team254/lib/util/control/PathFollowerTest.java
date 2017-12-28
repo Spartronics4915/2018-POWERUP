@@ -4,8 +4,9 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
-import com.team254.frc2017.Constants;
-import com.team254.lib.util.control.PathFollower;
+import com.spartronics4915.frc2018.Constants;
+import com.spartronics4915.lib.util.control.Lookahead;
+import com.spartronics4915.lib.util.control.PathFollower;
 
 public class PathFollowerTest {
 

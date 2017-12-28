@@ -4,6 +4,9 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
+import com.spartronics4915.lib.util.motion.MotionSegment;
+import com.spartronics4915.lib.util.motion.MotionState;
+
 public class MotionSegmentTest {
 
     @Test

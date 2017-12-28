@@ -3,6 +3,9 @@ package com.team254.lib.util.motion;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
+
+import com.spartronics4915.lib.util.motion.MotionState;
+
 import static org.hamcrest.CoreMatchers.*;
 
 public class MotionStateTest {

@@ -4,6 +4,11 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
+import com.spartronics4915.lib.util.motion.MotionProfileConstraints;
+import com.spartronics4915.lib.util.motion.MotionProfileGoal;
+import com.spartronics4915.lib.util.motion.MotionState;
+import com.spartronics4915.lib.util.motion.SetpointGenerator;
+
 public class SetpointGeneratorTest {
 
     public MotionState followProfile(SetpointGenerator spg, MotionProfileConstraints constraints,

@@ -1,5 +1,8 @@
 package com.team254.lib.util.motion;
 
+import com.spartronics4915.lib.util.motion.MotionState;
+import com.spartronics4915.lib.util.motion.ProfileFollower;
+
 public class MotionTestUtil {
 
     protected abstract static class Dynamics {

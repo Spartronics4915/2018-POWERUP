@@ -1,9 +1,10 @@
 package com.team254.lib.util;
 
-import com.team254.lib.util.Util;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
+
+import com.spartronics4915.lib.util.Util;
 
 /**
  * Created by leighpauls on 2/16/17.
