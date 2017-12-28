@@ -64,8 +64,6 @@ public class Robot extends IterativeRobot {
 
     private DelayedBoolean mDelayedAimButton;
 
-    private InterpolatingTreeMap<InterpolatingDouble, InterpolatingDouble> mTuningFlywheelMap = new InterpolatingTreeMap<>();
-
     public Robot() {
         CrashTracker.logRobotConstruction();
     }

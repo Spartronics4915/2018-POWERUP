@@ -7,20 +7,6 @@ package com.team254.frc2017.paths.profiles;
  */
 public interface FieldProfile {
 
-    public double getRedCenterToBoiler();
-
-    public double getRedWallToAirship();
-
-    public double getRedCenterToHopper();
-
-    public double getRedWallToHopper();
-
-    public double getBlueCenterToBoiler();
-
-    public double getBlueWallToAirship();
-
-    public double getBlueCenterToHopper();
-
-    public double getBlueWallToHopper();
+    // TODO: Add important field measurements as methods here
 
 }
