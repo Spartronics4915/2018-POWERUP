@@ -305,7 +305,7 @@ public class Drive extends Subsystem {
         }
         SmartDashboard.putNumber("left position (rotations)", mLeftMaster.getPosition());
         SmartDashboard.putNumber("right position (rotations)", mRightMaster.getPosition());
-        SmartDashboard.putNumber("imu yaw", getGyroAngle().getDegrees());
+        SmartDashboard.putNumber("Drivetrain_IMU_Heading", getGyroAngle().getDegrees());
         SmartDashboard.putBoolean("drive on target", isOnTarget());
     }
 

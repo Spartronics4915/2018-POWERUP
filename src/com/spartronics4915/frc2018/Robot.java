@@ -1,7 +1,12 @@
 package com.spartronics4915.frc2018;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Map;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
 
 import com.spartronics4915.frc2018.auto.AutoModeExecuter;
 import com.spartronics4915.frc2018.loops.Looper;
@@ -12,18 +17,18 @@ import com.spartronics4915.frc2018.subsystems.ConnectionMonitor;
 import com.spartronics4915.frc2018.subsystems.Drive;
 import com.spartronics4915.frc2018.subsystems.LED;
 import com.spartronics4915.frc2018.subsystems.Superstructure;
+import com.spartronics4915.lib.util.CANProbe;
 import com.spartronics4915.lib.util.CheesyDriveHelper;
 import com.spartronics4915.lib.util.CrashTracker;
 import com.spartronics4915.lib.util.DelayedBoolean;
 import com.spartronics4915.lib.util.DriveSignal;
-import com.spartronics4915.lib.util.InterpolatingDouble;
-import com.spartronics4915.lib.util.InterpolatingTreeMap;
-import com.spartronics4915.lib.util.LatchedBoolean;
 import com.spartronics4915.lib.util.math.RigidTransform2d;
 
 import edu.wpi.first.wpilibj.AnalogInput;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
  * The main robot class, which instantiates all robot parts and helper classes and initializes all loops. Some classes
@@ -78,9 +83,39 @@ public class Robot extends IterativeRobot {
      */
     @Override
     public void robotInit() {
+        // Version string and related information
+        try (InputStream manifest = getClass().getClassLoader().getResourceAsStream("META-INF/MANIFEST.MF"))
+        {
+            // build a version string
+            Attributes attributes = new Manifest(manifest).getMainAttributes();
+            String buildStr = "by: " + attributes.getValue("Built-By") +
+                    "  on: " + attributes.getValue("Built-At") +
+                    "  (" + attributes.getValue("Code-Version") + ")";
+            SmartDashboard.putString("Build", buildStr);
+
+            System.out.println("=================================================");
+            System.out.println(Instant.now().toString());
+            System.out.println("Built " + buildStr);
+            System.out.println("=================================================");
+
+        }
+        catch (IOException e)
+        {
+            SmartDashboard.putString("Build", "version not found!");
+            System.out.println("Build version not found!");
+            DriverStation.reportError(e.getMessage(), false /* no stack trace needed */);
+        }
+        
         try {
             CrashTracker.logRobotInit();
-
+            
+            CANProbe cp = new CANProbe();
+            ArrayList<String> canDevices = cp.Find();
+            System.out.println("CANDevicesFound:\n" + canDevices);
+            SmartDashboard.putString("CANBusStatus", 
+                                canDevices.size() == Constants.kNumCANDevices ? "OK" : 
+                                (""+canDevices.size()+"/"+Constants.kNumCANDevices));
+            
             mSubsystemManager.registerEnabledLoops(mEnabledLooper);
             mEnabledLooper.register(VisionProcessor.getInstance());
             mEnabledLooper.register(RobotStateEstimator.getInstance());

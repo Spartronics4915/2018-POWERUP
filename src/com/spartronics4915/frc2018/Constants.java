@@ -68,11 +68,6 @@ public class Constants extends ConstantsBase {
 
     public static double kDriveVoltageCompensationRampRate = 0.0;
 
-    // Do not change anything after this line unless you rewire the robot and
-    // update the spreadsheet!
-    // Port assignments should match up with the spreadsheet here:
-    // https://docs.google.com/spreadsheets/d/12_Mrd6xKmxCjKtsWNpWZDqT7ukrB9-1KKFCuRrO4aPM/edit#gid=0
-
     /* TALONS */
     // (Note that if multiple talons are dedicated to a mechanism, any sensors
     // are attached to the master)
@@ -84,6 +79,7 @@ public class Constants extends ConstantsBase {
     public static final int kRightDriverSlaveId = 2;
     public static final int kIMUTalonId = 6;
     public static final int kEncoderCodesPerRev = 250; // Not ticks, codes; ticks would be kEncoderCodesPerRev * 4 (for quadrature encoders at least)
+    public static final int kNumCANDevices = 8;
     
     // Solenoids
     public static final int kShifterSolenoidId = 0; // PCM 0, Solenoid 0
@@ -191,36 +187,5 @@ public class Constants extends ConstantsBase {
     @Override
     public String getFileLocation() {
         return "~/constants.txt";
-    }
-
-    /**
-     * @return the MAC address of the robot
-     */
-    public static String getMACAddress() {
-        try {
-            Enumeration<NetworkInterface> nwInterface = NetworkInterface.getNetworkInterfaces();
-            StringBuilder ret = new StringBuilder();
-            while (nwInterface.hasMoreElements()) {
-                NetworkInterface nis = nwInterface.nextElement();
-                if (nis != null) {
-                    byte[] mac = nis.getHardwareAddress();
-                    if (mac != null) {
-                        for (int i = 0; i < mac.length; i++) {
-                            ret.append(String.format("%02X%s", mac[i], (i < mac.length - 1) ? "-" : ""));
-                        }
-                        return ret.toString();
-                    } else {
-                        System.out.println("Address doesn't exist or is not accessible");
-                    }
-                } else {
-                    System.out.println("Network Interface for the specified address is not found.");
-                }
-            }
-        } catch (SocketException e) {
-            e.printStackTrace();
-        } catch (NullPointerException e) {
-            e.printStackTrace();
-        }
-        return "";
     }
 }
