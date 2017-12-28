@@ -24,13 +24,11 @@ public class RobotStateEstimator implements Loop {
     Drive drive_ = Drive.getInstance();
     double left_encoder_prev_distance_ = 0;
     double right_encoder_prev_distance_ = 0;
-    Rotation2d imu_prev_heading_ = Rotation2d.identity();
 
     @Override
     public synchronized void onStart(double timestamp) {
         left_encoder_prev_distance_ = drive_.getLeftDistanceInches();
         right_encoder_prev_distance_ = drive_.getRightDistanceInches();
-        imu_prev_heading_ = drive_.getGyroAngle();
     }
 
     @Override
@@ -40,12 +38,11 @@ public class RobotStateEstimator implements Loop {
         final Rotation2d gyro_angle = drive_.getGyroAngle();
         final Twist2d odometry_velocity = robot_state_.generateOdometryFromSensors(
                 left_distance - left_encoder_prev_distance_, right_distance - right_encoder_prev_distance_, gyro_angle);
-        final Twist2d predicted_velocity = Kinematics.forwardKinematics(imu_prev_heading_, drive_.getLeftVelocityInchesPerSec(),
-                drive_.getRightVelocityInchesPerSec(), gyro_angle);
+        final Twist2d predicted_velocity = Kinematics.forwardKinematics(drive_.getLeftVelocityInchesPerSec(),
+                drive_.getRightVelocityInchesPerSec()); // DEBUG: Try using the overloaded function that takes gyro delta v
         robot_state_.addObservations(timestamp, odometry_velocity, predicted_velocity);
         left_encoder_prev_distance_ = left_distance;
         right_encoder_prev_distance_ = right_distance;
-        imu_prev_heading_ = gyro_angle;
     }
 
     @Override

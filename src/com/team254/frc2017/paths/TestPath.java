@@ -14,22 +14,23 @@ public class TestPath implements PathContainer {
     public Path buildPath() {
         ArrayList<Waypoint> sWaypoints = new ArrayList<Waypoint>();
         sWaypoints.add(new Waypoint(50,50,0,0));
-        sWaypoints.add(new Waypoint(70,100,30,60));
-        sWaypoints.add(new Waypoint(100,100,0,60));
+        sWaypoints.add(new Waypoint(50,90,20,50));
+        sWaypoints.add(new Waypoint(90,90,20,30));
+        sWaypoints.add(new Waypoint(90,130,0,30));
 
         return PathBuilder.buildPathFromWaypoints(sWaypoints);
     }
     
     @Override
     public RigidTransform2d getStartPose() {
-        return new RigidTransform2d(new Translation2d(50, 50), Rotation2d.fromDegrees(180.0)); 
+        return new RigidTransform2d(new Translation2d(50, 50), Rotation2d.fromDegrees(90.0)); // XXX: I have no idea why this needs to be 90 instead of 180, but if it isn't things get reversed
     }
 
     @Override
     public boolean isReversed() {
         return false; 
     }
-    // WAYPOINT_DATA: [{"position":{"x":50,"y":50},"speed":0,"radius":0,"comment":""},{"position":{"x":70,"y":100},"speed":60,"radius":30,"comment":""},{"position":{"x":100,"y":100},"speed":60,"radius":0,"comment":""}]
+    // WAYPOINT_DATA: [{"position":{"x":50,"y":50},"speed":0,"radius":0,"comment":""},{"position":{"x":50,"y":90},"speed":50,"radius":20,"comment":""},{"position":{"x":90,"y":90},"speed":30,"radius":20,"comment":""},{"position":{"x":90,"y":130},"speed":30,"radius":0,"comment":""}]
     // IS_REVERSED: false
     // FILE_NAME: TestPath
 }

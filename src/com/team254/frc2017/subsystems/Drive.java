@@ -459,14 +459,10 @@ public class Drive extends Subsystem {
         return Rotation2d.fromDegrees(ypr[0]); // Rotation2d normalizes between -180 and 180 automatically
     }
 
-    /* 
-     * XXX: This method appears to not set the actual gyro angle, but the offset.
-     * I think this is bad naming... Maybe TODO refactor?
-     */
     public synchronized void setGyroAngle(Rotation2d angle) {
         if (mIMU.GetState() == PigeonState.NoComm)
             DriverStation.reportError("Could not detect the IMU. Is it plugged in?", false);
-        mIMU.AddYaw(angle.getDegrees());
+        mIMU.SetYaw(angle.getDegrees());
     }
 
     /**
@@ -507,7 +503,6 @@ public class Drive extends Subsystem {
 
         Kinematics.DriveVelocity wheel_delta = Kinematics
                 .inverseKinematics(new Twist2d(0, 0, robot_to_target.getRadians()));
-        System.out.println(wheel_delta.left + "," + robot_to_target.getDegrees());
         updatePositionSetpoint(wheel_delta.left + getLeftDistanceInches(),
                 wheel_delta.right + getRightDistanceInches());
     }
@@ -581,9 +576,7 @@ public class Drive extends Subsystem {
         RigidTransform2d robot_pose = mRobotState.getLatestFieldToVehicle().getValue();
         Twist2d command = mPathFollower.update(timestamp, robot_pose,
                 RobotState.getInstance().getDistanceDriven(), RobotState.getInstance().getPredictedVelocity().dx);
-        
-        System.out.println(robot_pose.getRotation().getDegrees() + "," + RobotState.getInstance().getDistanceDriven() + "," + RobotState.getInstance().getPredictedVelocity().dx);
-        
+
         if (!mPathFollower.isFinished()) {
             Kinematics.DriveVelocity setpoint = Kinematics.inverseKinematics(command);
             updateVelocitySetpoint(setpoint.left, setpoint.right);

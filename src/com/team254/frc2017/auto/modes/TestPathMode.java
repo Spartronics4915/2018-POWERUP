@@ -12,9 +12,9 @@ public class TestPathMode extends AutoModeBase {
 
     @Override
     protected void routine() throws AutoModeEndedException {
-        runAction(new WaitAction(2));
         PathContainer testPath = new TestPath();
         runAction(new ResetPoseFromPathAction(testPath));
+        runAction(new WaitAction(2)); // Give everything time to get reset
         runAction(new DrivePathAction(testPath));
     }
 
