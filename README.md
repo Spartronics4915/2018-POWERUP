@@ -1,5 +1,17 @@
-# FRC 2017
+# Spartronics 4915 modified clone of Team 254's 2017 Codebase
 
+We've cloned the 254 codebase and modified it to better match our team's
+hardware, vision and electronics conventions.
+
+Modifications include:
+* refactor into our namespaces
+* remove 2017-specific game code
+* support for pigeon imu
+* disabled vision/adb connection to android phone
+
+Many thanks cheese whiz people for sharing your code!
+
+# FRC 2017
 Team 254's 2017 FRC robot code for Misfire. Misfire's code is written in Java and is based off of WPILib's Java control system.
 
 The code is divided into several packages, each responsible for a different aspect of the robot function. This README explains the function of each package, some of the variable naming conventions used, and setup instructions. Additional information about each specific class can be found in that class's java file.
