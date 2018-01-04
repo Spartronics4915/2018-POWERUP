@@ -21,6 +21,20 @@
 
   <!-- Any other property in build.properties can also be overridden. -->
 
+
+  <echo message="Looking for git version tag..." />
+  <exec executable="git" outputproperty="code-version"
+           errorproperty="code-version" failifexecutionfails="false">
+     <arg line="describe --tags --dirty" />
+  </exec>
+  <echo message="git version string: ${code-version}" />
+
+  <tstamp>
+    <!-- current time in this format: Jul 08, 04:34 PM -->
+    <format property="build-date" pattern="MMM dd, hh:mm a" />
+  </tstamp>
+
+
   <property file="${user.home}/wpilib/wpilib.properties"/>
   <property file="build.properties"/>
   <property file="${user.home}/wpilib/java/${version}/ant/build.properties"/>

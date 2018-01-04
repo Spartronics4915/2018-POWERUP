@@ -1,13 +1,18 @@
 # Spartronics 4915 modified clone of Team 254's 2017 Codebase
 
 We've cloned the 254 codebase and modified it to better match our team's
-hardware, vision and electronics conventions.
+hardware, vision and electronics conventions. We've also ported it to
+the 2018 WPI and CTRE interfaces.
 
 Modifications include:
 * refactor into our namespaces
 * remove 2017-specific game code
 * support for pigeon imu
 * disabled vision/adb connection to android phone
+* port to 2018 wpi/ctre interfaces
+* modified ant build for better Travis building
+* removed dash and dash_release
+* removed vision_app
 
 Many thanks cheese whiz people for sharing your code!
 
@@ -15,27 +20,6 @@ Many thanks cheese whiz people for sharing your code!
 Team 254's 2017 FRC robot code for Misfire. Misfire's code is written in Java and is based off of WPILib's Java control system.
 
 The code is divided into several packages, each responsible for a different aspect of the robot function. This README explains the function of each package, some of the variable naming conventions used, and setup instructions. Additional information about each specific class can be found in that class's java file.
-
-## How to Write code in IntelliJ
-- Create a new directory to be the "top level" of your IntelliJ project. I call mine `~/pofs/robot`
-- Check out this repo into that directory:
-```
-~ $ cd ~/pofs/robot/
-~/pofs/robot $ git clone https://github.com/Team254/FRC-2017.git
-~/pofs/robot $ ls
-FRC-2017
-```
-- In IntelliJ, create a new empty project (not a java project, just an empty project) at your "top level". This Should create a `.idea` folder if you did it in the right spot
-```
-# after making the project:
-~/pofs/robot $ ls -a
-.  ..  .idea  FRC-2017
-```
-- In intelliJ, you should be in the "project settings" window. Create a new module from existing sources on the `FRC-2017` folder, IntelliJ should pick up `src/` as the content root.
-- In the project settings window, add a new Java library for wiplib. Select all the jars in `~/wpilib/java/current/libs/`. It'll give it a wonky name like "networktables", but that doesn't matter. Choose to include it in the `FRC-2017` project.
-- In project settings, under the "project section" set your JDK to Java 1.8
-- You can now write code with auto-complete in IntelliJ, but not build/deploy
-- In IntelliJ, in the "ant build" pane, add `FRC-2017/build.xml`. To deploy code to the robot, double click `athena-project-build.build`
 
 ## Code Highlights
 - Lag-compensating auto targeting code
@@ -134,3 +118,28 @@ FRC-2017
 - k_*** (i.e. kTrackWidthInches)    : Final constants, especialy those found in the Constants.java file
 - K_*** (i.e. K_VISION_MODE)    : Static constants
 - m***  (i.e. mIsHighGear): Private instance variables
+## How to Write code in IntelliJ
+
+*Note*: this code can be built via command-line ant, via a java IDE (eg. Eclipse, IntelliJ).  Following are
+instructions to use IntelliJ.
+
+- Create a new directory to be the "top level" of your IntelliJ project. I call mine `~/pofs/robot`
+- Check out this repo into that directory:
+```
+~ $ cd ~/pofs/robot/
+~/pofs/robot $ git clone https://github.com/Team254/FRC-2017.git
+~/pofs/robot $ ls
+FRC-2017
+```
+- In IntelliJ, create a new empty project (not a java project, just an empty project) at your "top level". This Should create a `.idea` folder if you did it in the right spot
+```
+# after making the project:
+~/pofs/robot $ ls -a
+.  ..  .idea  FRC-2017
+```
+- In intelliJ, you should be in the "project settings" window. Create a new module from existing sources on the `FRC-2017` folder, IntelliJ should pick up `src/` as the content root.
+- In the project settings window, add a new Java library for wiplib. Select all the jars in `~/wpilib/java/current/libs/`. It'll give it a wonky name like "networktables", but that doesn't matter. Choose to include it in the `FRC-2017` project.
+- In project settings, under the "project section" set your JDK to Java 1.8
+- You can now write code with auto-complete in IntelliJ, but not build/deploy
+- In IntelliJ, in the "ant build" pane, add `FRC-2017/build.xml`. To deploy code to the robot, double click `athena-project-build.build`
+
