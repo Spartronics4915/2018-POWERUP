@@ -3,11 +3,10 @@ package com.spartronics4915.frc2018.subsystems;
 import java.util.Arrays;
 import java.util.Optional;
 
-import com.ctre.CANTalon;
-import com.ctre.CANTalon.StatusFrameRate;
-import com.ctre.CANTalon.VelocityMeasurementPeriod;
-import com.ctre.PigeonImu;
-import com.ctre.PigeonImu.PigeonState;
+import com.ctre.phoenix.motorcontrol.can.TalonSRX;
+import com.ctre.phoenix.motorcontrol.*;
+import com.ctre.phoenix.sensors.PigeonIMU;
+import com.ctre.phoenix.sensors.PigeonIMU.PigeonState;
 import com.spartronics4915.frc2018.Constants;
 import com.spartronics4915.frc2018.Kinematics;
 import com.spartronics4915.frc2018.RobotState;
@@ -87,9 +86,9 @@ public class Drive extends Subsystem {
     private DriveControlState mDriveControlState;
 
     // Hardware
-    private final CANTalon mLeftMaster, mRightMaster, mLeftSlave, mRightSlave, mIMUTalon;
+    private final TalonSRX mLeftMaster, mRightMaster, mLeftSlave, mRightSlave, mIMUTalon;
     private final Solenoid mShifter;
-    private final PigeonImu mIMU;
+    private final PigeonIMU mIMU;
 
     // Controllers
     private RobotState mRobotState = RobotState.getInstance();
@@ -115,11 +114,11 @@ public class Drive extends Subsystem {
                 setOpenLoop(DriveSignal.NEUTRAL);
                 setBrakeMode(false);
                 setVelocitySetpoint(0, 0);
-                if (mIMU.GetState() != PigeonState.Ready) {
+                if (mIMU.getState() != PigeonState.Ready) {
                     DriverStation.reportError("IMU in non-ready state. Is it plugged in?", false);
                     return;
                 }
-                mIMU.SetYaw(0);
+                mIMU.setYaw(0.0, 5);  // was SetYaw(0)
             }
         }
 
@@ -163,11 +162,11 @@ public class Drive extends Subsystem {
     private Drive() {
         // Start all Talons in open loop mode.
         mLeftMaster = CANTalonFactory.createDefaultTalon(Constants.kLeftDriveMasterId);
-        mLeftMaster.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
-        mLeftMaster.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
+        mLeftMaster.set(ControlMode.PercentOutput, 0); // was PercentVbus
+        mLeftMaster.setFeedbackDevice(FeedbackDevice.QuadEncoder);
         mLeftMaster.configEncoderCodesPerRev(Constants.kEncoderCodesPerRev);
         mLeftMaster.reverseSensor(false); // If these aren't correctly reversed your PID will just spiral out of control
-        mLeftMaster.reverseOutput(false);
+        mLeftMaster.setInverted(false);
         CANTalon.FeedbackDeviceStatus leftSensorPresent = mLeftMaster
                 .isSensorPresent(CANTalon.FeedbackDevice.QuadEncoder);
         if (leftSensorPresent != CANTalon.FeedbackDeviceStatus.FeedbackStatusPresent) {
@@ -265,10 +264,10 @@ public class Drive extends Subsystem {
     public synchronized void setBrakeMode(boolean on) {
         if (mIsBrakeMode != on) {
             mIsBrakeMode = on;
-            mRightMaster.enableBrakeMode(on);
-            mRightSlave.enableBrakeMode(on);
-            mLeftMaster.enableBrakeMode(on);
-            mLeftSlave.enableBrakeMode(on);
+            mRightMaster.setNeutralMode(NeutralMode.Brake);
+            mRightSlave.setNeutralMode(NeutralMode.Brake);
+            mLeftMaster.setNeutralMode(NeutralMode.Brake);
+            mLeftSlave.setNeutralMode(NeutralMode.Brake);
         }
     }
 
@@ -743,7 +742,7 @@ public class Drive extends Subsystem {
         final double kCurrentThres = 0.5;
         final double kRpmThres = 300;
 
-        mRightMaster.changeControlMode(CANTalon.TalonControlMode.Voltage);
+        mRightMaster.changeControlMode(ControlMode.Voltage);
         mRightSlave.changeControlMode(CANTalon.TalonControlMode.Voltage);
         mLeftMaster.changeControlMode(CANTalon.TalonControlMode.Voltage);
         mLeftSlave.changeControlMode(CANTalon.TalonControlMode.Voltage);

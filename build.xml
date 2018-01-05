@@ -22,6 +22,7 @@
   <!-- Any other property in build.properties can also be overridden. -->
 
 
+  <!-- 4915 adds begin -->
   <echo message="Looking for git version tag..." />
   <exec executable="git" outputproperty="code-version"
            errorproperty="code-version" failifexecutionfails="false">
@@ -33,12 +34,16 @@
     <!-- current time in this format: Jul 08, 04:34 PM -->
     <format property="build-date" pattern="MMM dd, hh:mm a" />
   </tstamp>
+  <!-- 4915 add end -->
 
-
-  <property file="${user.home}/wpilib/wpilib.properties"/>
+  <!-- 4915 remove: <property file="${user.home}/wpilib/wpilib.properties"/> -->
   <property file="build.properties"/>
-  <property file="${user.home}/wpilib/java/${version}/ant/build.properties"/>
+  <property file="wpilib/java/${version}/ant/build.properties"/>
 
-  <import file="${wpilib.ant.dir}/build.xml"/>
+  <!-- 4915 modified: <import file="${wpilib.ant.dir}/build.xml"/> -->
+  <import file="wpibuild.xml"/>
+
+  <!-- 4915 add for travis -->
+  <target name="test" depends="clean,compile"/>
 
 </project>

@@ -1,14 +1,15 @@
 package com.spartronics4915.lib.util.drivers;
 
-import com.ctre.CANTalon;
+import com.ctre.phoenix.motorcontrol.can.TalonSRX;
+import com.ctre.phoenix.motorcontrol.*;
 
 /**
  * This class is a thin wrapper around the CANTalon that reduces CAN bus / CPU overhead by skipping duplicate set
  * commands. (By default the Talon flushes the Tx buffer on every set call).
  */
-public class LazyCANTalon extends CANTalon {
+public class LazyCANTalon extends TalonSRX {
     protected double mLastSet = Double.NaN;
-    protected TalonControlMode mLastControlMode = null;
+    protected ControlMode mLastControlMode = null;
 
     public LazyCANTalon(int deviceNumber, int controlPeriodMs, int enablePeriodMs) {
         super(deviceNumber, controlPeriodMs, enablePeriodMs);
