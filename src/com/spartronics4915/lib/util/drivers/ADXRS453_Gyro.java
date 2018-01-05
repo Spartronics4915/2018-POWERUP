@@ -18,7 +18,7 @@ import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.interfaces.Gyro;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
-import edu.wpi.first.wpilibj.livewindow.LiveWindowSendable;
+import edu.wpi.first.wpilibj.Sendable;
 
 /**
  * Use a rate gyro to return the robots heading relative to a starting position. The Gyro class tracks the robots
@@ -29,7 +29,7 @@ import edu.wpi.first.wpilibj.livewindow.LiveWindowSendable;
  * This class is for the digital ADXRS453 gyro sensor that connects via SPI. A datasheet can be found here:
  * http://www.analog.com/media/en/technical-documentation/data-sheets/ADXRS453. pdf
  */
-public class ADXRS453_Gyro extends GyroBase implements Gyro, PIDSource, LiveWindowSendable {
+public class ADXRS453_Gyro extends GyroBase implements Gyro, PIDSource, Sendable {
     public static final double kCalibrationSampleTime = 5.0;
 
     private static final double kSamplePeriod = 0.001;
@@ -75,7 +75,8 @@ public class ADXRS453_Gyro extends GyroBase implements Gyro, PIDSource, LiveWind
 
         calibrate();
 
-        LiveWindow.addSensor("ADXRS453_Gyro", port.value, this);
+        // LiveWindow.addSensor("ADXRS453_Gyro", port.value, this);
+        this.setName("ADXR5453_Gyro", port.value); // from SendableBase
     }
 
     /**

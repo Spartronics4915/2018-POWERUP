@@ -3,10 +3,6 @@ package com.spartronics4915.frc2018.subsystems;
 import java.util.Arrays;
 import java.util.Optional;
 
-import com.ctre.phoenix.motorcontrol.can.TalonSRX;
-import com.ctre.phoenix.motorcontrol.*;
-import com.ctre.phoenix.sensors.PigeonIMU;
-import com.ctre.phoenix.sensors.PigeonIMU.PigeonState;
 import com.spartronics4915.frc2018.Constants;
 import com.spartronics4915.frc2018.Kinematics;
 import com.spartronics4915.frc2018.RobotState;
@@ -19,10 +15,18 @@ import com.spartronics4915.lib.util.Util;
 import com.spartronics4915.lib.util.control.Lookahead;
 import com.spartronics4915.lib.util.control.Path;
 import com.spartronics4915.lib.util.control.PathFollower;
-import com.spartronics4915.lib.util.drivers.CANTalonFactory;
 import com.spartronics4915.lib.util.math.RigidTransform2d;
 import com.spartronics4915.lib.util.math.Rotation2d;
 import com.spartronics4915.lib.util.math.Twist2d;
+import com.spartronics4915.lib.util.drivers.CANTalonFactory;
+import com.spartronics4915.lib.util.drivers.CANTalon;
+
+import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.FeedbackDevice;
+import com.ctre.phoenix.motorcontrol.StatusFrameEnhanced;
+import com.ctre.phoenix.motorcontrol.VelocityMeasPeriod;
+import com.ctre.phoenix.sensors.PigeonIMU;
+import com.ctre.phoenix.sensors.PigeonIMU.PigeonState;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Solenoid;
@@ -86,7 +90,7 @@ public class Drive extends Subsystem {
     private DriveControlState mDriveControlState;
 
     // Hardware
-    private final TalonSRX mLeftMaster, mRightMaster, mLeftSlave, mRightSlave, mIMUTalon;
+    private final CANTalon mLeftMaster, mRightMaster, mLeftSlave, mRightSlave, mIMUTalon;
     private final Solenoid mShifter;
     private final PigeonIMU mIMU;
 
@@ -118,7 +122,7 @@ public class Drive extends Subsystem {
                     DriverStation.reportError("IMU in non-ready state. Is it plugged in?", false);
                     return;
                 }
-                mIMU.setYaw(0.0, 5);  // was SetYaw(0)
+                mIMU.setYaw(0, 5); // was SetYaw(0)
             }
         }
 
@@ -162,42 +166,40 @@ public class Drive extends Subsystem {
     private Drive() {
         // Start all Talons in open loop mode.
         mLeftMaster = CANTalonFactory.createDefaultTalon(Constants.kLeftDriveMasterId);
-        mLeftMaster.set(ControlMode.PercentOutput, 0); // was PercentVbus
+        mLeftMaster.changeControlMode(ControlMode.PercentOutput); // XXX: was PercentVBus
         mLeftMaster.setFeedbackDevice(FeedbackDevice.QuadEncoder);
         mLeftMaster.configEncoderCodesPerRev(Constants.kEncoderCodesPerRev);
         mLeftMaster.reverseSensor(false); // If these aren't correctly reversed your PID will just spiral out of control
-        mLeftMaster.setInverted(false);
-        CANTalon.FeedbackDeviceStatus leftSensorPresent = mLeftMaster
-                .isSensorPresent(CANTalon.FeedbackDevice.QuadEncoder);
-        if (leftSensorPresent != CANTalon.FeedbackDeviceStatus.FeedbackStatusPresent) {
-            DriverStation.reportError("Could not detect left encoder: " + leftSensorPresent, false);
+        mLeftMaster.reverseOutput(false);
+        if(!mLeftMaster.isSensorPresent(FeedbackDevice.QuadEncoder))
+        {
+            DriverStation.reportError("Could not detect left encoder", false);
         }
 
         mLeftSlave = CANTalonFactory.createPermanentSlaveTalon(Constants.kLeftDriveSlaveId,
-                Constants.kLeftDriveMasterId);
+                                                                Constants.kLeftDriveMasterId);
         mLeftSlave.reverseOutput(false);
-        mLeftMaster.setStatusFrameRateMs(StatusFrameRate.Feedback, 5);
+        mLeftMaster.setStatusFrameRateMs(StatusFrameEnhanced.Status_2_Feedback0, 5); // XXX: was Feedback
 
         mRightMaster = CANTalonFactory.createDefaultTalon(Constants.kRightDriveMasterId);
-        mRightMaster.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
+        mRightMaster.changeControlMode(ControlMode.PercentOutput); // XXX: was PercentVBus
         mRightMaster.reverseSensor(true);
         mRightMaster.reverseOutput(true);
-        mRightMaster.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
+        mRightMaster.setFeedbackDevice(FeedbackDevice.QuadEncoder);
         mRightMaster.configEncoderCodesPerRev(Constants.kEncoderCodesPerRev);
-        CANTalon.FeedbackDeviceStatus rightSensorPresent = mRightMaster
-                .isSensorPresent(CANTalon.FeedbackDevice.QuadEncoder);
-        if (rightSensorPresent != CANTalon.FeedbackDeviceStatus.FeedbackStatusPresent) {
-            DriverStation.reportError("Could not detect right encoder: " + rightSensorPresent, false);
+        if(!mRightMaster.isSensorPresent(FeedbackDevice.QuadEncoder))
+        {
+            DriverStation.reportError("Could not detect right encoder", false);
         }
 
         mRightSlave = CANTalonFactory.createPermanentSlaveTalon(Constants.kRightDriverSlaveId,
-                Constants.kRightDriveMasterId);
+                                                                Constants.kRightDriveMasterId);
         mRightSlave.reverseOutput(false);
-        mRightMaster.setStatusFrameRateMs(StatusFrameRate.Feedback, 5);
+        mRightMaster.setStatusFrameRateMs(StatusFrameEnhanced.Status_2_Feedback0, 5); // XXX: was Feedback
 
-        mLeftMaster.SetVelocityMeasurementPeriod(VelocityMeasurementPeriod.Period_10Ms);
+        mLeftMaster.SetVelocityMeasurementPeriod(VelocityMeasPeriod.Period_10Ms);
         mLeftMaster.SetVelocityMeasurementWindow(32);
-        mRightMaster.SetVelocityMeasurementPeriod(VelocityMeasurementPeriod.Period_10Ms);
+        mRightMaster.SetVelocityMeasurementPeriod(VelocityMeasPeriod.Period_10Ms);
         mRightMaster.SetVelocityMeasurementWindow(32);
 
         mShifter = Constants.makeSolenoidForId(Constants.kShifterSolenoidId);
@@ -210,9 +212,9 @@ public class Drive extends Subsystem {
 
         // Path Following stuff
         mIMUTalon = new CANTalon(Constants.kIMUTalonId); // FIXME: Don't use the pigeon, or at least wire it directly into the CAN bus
-        mIMU = new PigeonImu(mIMUTalon);
+        mIMU = new PigeonIMU(mIMUTalon);
         
-        if (mIMU.GetState() == PigeonState.NoComm)
+        if (mIMU.getState() == PigeonState.NoComm)
             DriverStation.reportError("Could not detect the IMU. Is it plugged in?", false);
         
         // Force a CAN message across.
@@ -233,8 +235,8 @@ public class Drive extends Subsystem {
      */
     public synchronized void setOpenLoop(DriveSignal signal) {
         if (mDriveControlState != DriveControlState.OPEN_LOOP) {
-            mLeftMaster.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
-            mRightMaster.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
+            mLeftMaster.changeControlMode(ControlMode.PercentOutput); // XXX: was PctVBus
+            mRightMaster.changeControlMode(ControlMode.PercentOutput);
             mLeftMaster.configNominalOutputVoltage(0.0, 0.0);
             mRightMaster.configNominalOutputVoltage(0.0, 0.0);
             mDriveControlState = DriveControlState.OPEN_LOOP;
@@ -264,10 +266,10 @@ public class Drive extends Subsystem {
     public synchronized void setBrakeMode(boolean on) {
         if (mIsBrakeMode != on) {
             mIsBrakeMode = on;
-            mRightMaster.setNeutralMode(NeutralMode.Brake);
-            mRightSlave.setNeutralMode(NeutralMode.Brake);
-            mLeftMaster.setNeutralMode(NeutralMode.Brake);
-            mLeftSlave.setNeutralMode(NeutralMode.Brake);
+            mRightMaster.enableBrakeMode(on);
+            mRightSlave.enableBrakeMode(on);
+            mLeftMaster.enableBrakeMode(on);
+            mLeftSlave.enableBrakeMode(on);
         }
     }
 
@@ -320,11 +322,11 @@ public class Drive extends Subsystem {
     @Override
     public void zeroSensors() {
         resetEncoders();
-        if (mIMU.GetState() != PigeonState.Ready) {
+        if (mIMU.getState() != PigeonState.Ready) {
             DriverStation.reportError("IMU in non-ready state. Is it plugged in?", false);
             return;
         }
-        mIMU.SetYaw(0.0);
+        mIMU.setYaw(0, 5/*timeoutMS*/);
     }
 
     /**
@@ -345,12 +347,12 @@ public class Drive extends Subsystem {
     private void configureTalonsForSpeedControl() {
         if (!usesTalonVelocityControl(mDriveControlState)) {
             // We entered a velocity control state.
-            mLeftMaster.changeControlMode(CANTalon.TalonControlMode.Speed);
+            mLeftMaster.changeControlMode(ControlMode.Velocity); // XXX: was speed
             mLeftMaster.setNominalClosedLoopVoltage(12.0);
             mLeftMaster.setProfile(kHighGearVelocityControlSlot);
             mLeftMaster.configNominalOutputVoltage(Constants.kDriveHighGearNominalOutput,
                     -Constants.kDriveHighGearNominalOutput);
-            mRightMaster.changeControlMode(CANTalon.TalonControlMode.Speed);
+            mRightMaster.changeControlMode(ControlMode.Velocity); // XXX: was speed
             mRightMaster.setNominalClosedLoopVoltage(12.0);
             mRightMaster.setProfile(kHighGearVelocityControlSlot);
             mRightMaster.configNominalOutputVoltage(Constants.kDriveHighGearNominalOutput,
@@ -365,12 +367,12 @@ public class Drive extends Subsystem {
     private void configureTalonsForPositionControl() {
         if (!usesTalonPositionControl(mDriveControlState)) {
             // We entered a position control state.
-            mLeftMaster.changeControlMode(CANTalon.TalonControlMode.MotionMagic);
+            mLeftMaster.changeControlMode(ControlMode.MotionMagic);
             mLeftMaster.setNominalClosedLoopVoltage(12.0);
             mLeftMaster.setProfile(kLowGearPositionControlSlot);
             mLeftMaster.configNominalOutputVoltage(Constants.kDriveLowGearNominalOutput,
                     -Constants.kDriveLowGearNominalOutput);
-            mRightMaster.changeControlMode(CANTalon.TalonControlMode.MotionMagic);
+            mRightMaster.changeControlMode(ControlMode.MotionMagic);
             mRightMaster.setNominalClosedLoopVoltage(12.0);
             mRightMaster.setProfile(kLowGearPositionControlSlot);
             mRightMaster.configNominalOutputVoltage(Constants.kDriveLowGearNominalOutput,
@@ -449,19 +451,19 @@ public class Drive extends Subsystem {
     }
 
     public synchronized Rotation2d getGyroAngle() {
-        if (mIMU.GetState() != PigeonState.Ready) {
+        if (mIMU.getState() != PigeonState.Ready) {
             DriverStation.reportError("IMU in non-ready state. Is it plugged in?", false);
             return Rotation2d.fromDegrees(0);
         }
         double[] ypr = new double[3]; // This is ridiculous. Quick fix: don't use the pigeon!
-        mIMU.GetYawPitchRoll(ypr);
+        mIMU.getYawPitchRoll(ypr);
         return Rotation2d.fromDegrees(ypr[0]); // Rotation2d normalizes between -180 and 180 automatically
     }
 
     public synchronized void setGyroAngle(Rotation2d angle) {
-        if (mIMU.GetState() == PigeonState.NoComm)
+        if (mIMU.getState() == PigeonState.NoComm)
             DriverStation.reportError("Could not detect the IMU. Is it plugged in?", false);
-        mIMU.SetYaw(angle.getDegrees());
+        mIMU.setYaw(angle.getDegrees(), 5 /* delayMS */);
     }
 
     /**
@@ -741,18 +743,19 @@ public class Drive extends Subsystem {
         System.out.println("Testing DRIVE.---------------------------------");
         final double kCurrentThres = 0.5;
         final double kRpmThres = 300;
+        final double kMaxVoltage = 12.0;
 
-        mRightMaster.changeControlMode(ControlMode.Voltage);
-        mRightSlave.changeControlMode(CANTalon.TalonControlMode.Voltage);
-        mLeftMaster.changeControlMode(CANTalon.TalonControlMode.Voltage);
-        mLeftSlave.changeControlMode(CANTalon.TalonControlMode.Voltage);
+        mRightMaster.changeControlMode(ControlMode.PercentOutput); // was Voltage
+        mRightSlave.changeControlMode(ControlMode.PercentOutput);
+        mLeftMaster.changeControlMode(ControlMode.PercentOutput);
+        mLeftSlave.changeControlMode(ControlMode.PercentOutput);
 
         mRightMaster.set(0.0);
         mRightSlave.set(0.0);
         mLeftMaster.set(0.0);
         mLeftSlave.set(0.0);
 
-        mRightMaster.set(-6.0f);
+        mRightMaster.set(-6.0f/kMaxVoltage);
         Timer.delay(4.0);
         final double currentRightMaster = mRightMaster.getOutputCurrent();
         final double rpmRightMaster = mRightMaster.getSpeed();
@@ -760,7 +763,7 @@ public class Drive extends Subsystem {
 
         Timer.delay(2.0);
 
-        mRightSlave.set(-6.0f);
+        mRightSlave.set(-6.0f/kMaxVoltage);
         Timer.delay(4.0);
         final double currentRightSlave = mRightSlave.getOutputCurrent();
         final double rpmRightSlave = mRightMaster.getSpeed();
@@ -768,7 +771,7 @@ public class Drive extends Subsystem {
 
         Timer.delay(2.0);
 
-        mLeftMaster.set(6.0f);
+        mLeftMaster.set(6.0f/kMaxVoltage);
         Timer.delay(4.0);
         final double currentLeftMaster = mLeftMaster.getOutputCurrent();
         final double rpmLeftMaster = mLeftMaster.getSpeed();
@@ -776,19 +779,19 @@ public class Drive extends Subsystem {
 
         Timer.delay(2.0);
 
-        mLeftSlave.set(6.0f);
+        mLeftSlave.set(6.0f/kMaxVoltage);
         Timer.delay(4.0);
         final double currentLeftSlave = mLeftSlave.getOutputCurrent();
         final double rpmLeftSlave = mLeftMaster.getSpeed();
         mLeftSlave.set(0.0);
 
-        mRightMaster.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
-        mLeftMaster.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
+        mRightMaster.changeControlMode(ControlMode.PercentOutput);
+        mLeftMaster.changeControlMode(ControlMode.PercentOutput);
 
-        mRightSlave.changeControlMode(CANTalon.TalonControlMode.Follower);
+        mRightSlave.changeControlMode(ControlMode.Follower);
         mRightSlave.set(Constants.kRightDriveMasterId);
 
-        mLeftSlave.changeControlMode(CANTalon.TalonControlMode.Follower);
+        mLeftSlave.changeControlMode(ControlMode.Follower);
         mLeftSlave.set(Constants.kLeftDriveMasterId);
 
         System.out.println("Drive Right Master Current: " + currentRightMaster + " Drive Right Slave Current: "

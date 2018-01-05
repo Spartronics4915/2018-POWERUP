@@ -1,7 +1,7 @@
 package com.team254.lib.util.drivers;
 
-import com.ctre.CANTalon;
 import com.spartronics4915.lib.util.drivers.CANTalonFactory;
+import com.spartronics4915.lib.util.drivers.CANTalon;
 
 import org.junit.Assert;
 import org.junit.Test;
