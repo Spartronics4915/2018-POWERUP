@@ -1,4 +1,4 @@
-# 2018-POWERUP [![Build Status](https://travis-ci.org/Spartronics4915/2018-POWERUP.svg?branch=master)](https://travis-ci.org/Spartronics4915/2018-POWERUP)
+# 2018-POWERUP [![Build Status](https://travis-ci.com/Spartronics4915/2018-POWERUP.svg?token=fyEWjwiNdUZ8u7W5snBy&branch=master)](https://travis-ci.com/Spartronics4915/2018-POWERUP)
 
 
 Repository with the Spartronics code for the FRC 2018-POWERUP game.
