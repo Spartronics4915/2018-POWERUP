@@ -46,8 +46,10 @@ import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 
 public class CANTalon extends WPI_TalonSRX
 {
-    static final int s_defaultTimeoutMS = 5;
+    static final int s_defaultTimeoutMS = 0; // 0 for no blocking. This is like the old behavior.
     static final int s_pidIdx = 0; // We're unsure about what this does.
+    static final int s_defaultOrdinal = 0; // I have no idea what this does.
+    static final int s_maxVolts = 12;
     
     ControlMode m_controlMode = ControlMode.Disabled;
     NeutralMode m_neutralMode;
@@ -176,45 +178,86 @@ public class CANTalon extends WPI_TalonSRX
     public void setSafetyEnabled(boolean b)
     {
     }
-    public void SetVelocityMeasurementPeriod(VelocityMeasPeriod p)
+    public void setVelocityMeasurementPeriod(VelocityMeasPeriod p)
     {
     }
-    public void SetVelocityMeasurementWindow(int w)
+    public void setVelocityMeasurementWindow(int w)
     {
     }
     public void setVoltageCompensationRampRate(double rampRate)
     {
+        super.configVoltageCompSaturation(rampRate, s_defaultTimeoutMS); // XXX: I have no idea if this is these are the right units.
     }
+    /**
+     * Set the voltage ramp rate.
+     * <b>This is no longer in volts/second, now it's the minimum 
+     * desired time to go from neutral to full throttle</b>
+     * @param rampRate
+     */
     public void setVoltageRampRate(double rampRate)
     {
+        double newRampRate = s_maxVolts / rampRate;
+        super.configClosedloopRamp(newRampRate, s_defaultTimeoutMS);
+        super.configOpenloopRamp(newRampRate, s_defaultTimeoutMS);
     }
     public void setStatusFrameRateMs(StatusFrameEnhanced statFrame, int rate)
     {
+        super.setStatusFramePeriod(statFrame, rate, s_defaultTimeoutMS);
     }
     public void reverseSensor(boolean s)
     {
+        super.setSensorPhase(s);
     }
     public void setAnalogPosition(int pos)
     {
+        super.getSensorCollection().setAnalogPosition(pos, s_defaultTimeoutMS);
     }
+    /**
+     * There is no equivalent in the new api for this.
+     * @deprecated
+     * @return void
+     */
     public void setCurrentLimit(double l)
     {
     }
     public void enableForwardSoftLimit(boolean s)
     {
+        super.configForwardSoftLimitEnable(s, s_defaultTimeoutMS);
     }
+    /**
+     * There is no equivalent in the new api for this.
+     * You have to enable all or none.
+     * @deprecated
+     * @return void
+     */
     public void enableLimitSwitch(boolean fwd, boolean rev)
     {
     }
     public void enableReverseSoftLimit(boolean s)
     {
+        super.configReverseSoftLimitEnable(s, s_defaultTimeoutMS);
     }
+    /**
+     * There is no equivalent in the new api for this.
+     * @deprecated
+     * @return void
+     */
     public void enableZeroSensorPositionOnForwardLimit(boolean s)
     {
     }
+    /**
+     * There is no equivalent in the new api for this.
+     * @deprecated
+     * @return void
+     */
     public void enableZeroSensorPositionOnIndex(boolean fwd, boolean rev)
     {
     }
+    /**
+     * There is no equivalent in the new api for this.
+     * @deprecated
+     * @return void
+     */
     public void enableZeroSensorPositionOnReverseLimit(boolean s)
     {
     }
@@ -232,154 +275,316 @@ public class CANTalon extends WPI_TalonSRX
     }
     public boolean isRevLimitSwitchClosed()
     {
-        return true;
+        return super.getSensorCollection().isRevLimitSwitchClosed();
     }
     public double getBusVoltage()
     {
-        return 0.;
+        // We keep stubs like this around just in case we want to change the API.
+        return super.getBusVoltage();
     }
     public boolean isForwardSoftLimitEnabled()
     {
-        return true;
+        return super.configGetParameter(ParamEnum.eForwardSoftLimitEnable, s_defaultOrdinal, s_defaultTimeoutMS) == 1 ? true : false;
     }
-    public double getFaultRevSoftLim()
-    {
-        return 0.;
-    }
+    /**
+     * There is no equivalent in the new api for this.
+     * @deprecated
+     * @return void
+     */
     public int getStickyFaultOverTemp()
     {
         return 0;
     }
     public boolean isZeroSensorPosOnFwdLimitEnabled()
     {
-       return true;
+        return super.configGetParameter(ParamEnum.eClearPositionOnLimitF, s_defaultOrdinal, s_defaultTimeoutMS) == 1 ? true : false;
     }
+    /**
+     * There is no equivalent in the new api for this.
+     * @deprecated
+     * @return void
+     */
     public int getNumberOfQuadIdxRises()
     {
         return 0;
     }
     public int getPulseWidthRiseToRiseUs()
     {
-        return 0;
+        return super.getSensorCollection().getPulseWidthRiseToRiseUs();
     }
     public double getError()
     {
-        return 0.;
+        return super.getClosedLoopError(s_pidIdx);
     }
+    // FIXME: I can't find how to do this in the new API.
     public boolean isSensorPresent(FeedbackDevice d)
     {
         return true;
     }
+    // FIXME: What's the difference between isControlEnabled and isEnabled?
     public boolean isControlEnabled()
     {
-        return true;
+        return super.getControlMode() != ControlMode.Disabled ? true : false;
     }
     public boolean isEnabled()
     {
-        return true; /* XXX */
+        return super.getControlMode() != ControlMode.Disabled ? true : false;
     }
     public boolean isZeroSensorPosOnRevLimitEnabled()
     {
-        return true; // XXX
+        return super.configGetParameter(ParamEnum.eClearPositionOnLimitR, s_defaultOrdinal, s_defaultTimeoutMS) == 1 ? true : false;
     }
     public double getOutputVoltage()
     {
-        return 0.;
+        return super.getMotorOutputVoltage();
     }
+    /**
+     * There is no equivalent in the new api for this.
+     * @deprecated
+     * @return void
+     */
     public void getSmartDashboardType()
     {
     }
     public int getPulseWidthPosition()
     {
-       return 0;
+       return super.getSensorCollection().getPulseWidthPosition();
     }
     public boolean isZeroSensorPosOnIndexEnabled()
     {
-        return true;
+        return super.configGetParameter(ParamEnum.eClearPositionOnIdx, s_defaultOrdinal, s_defaultTimeoutMS) == 1 ? true : false;
     }
+    /**
+     * Get motion magic cruise velocity.
+     * 
+     * @return Velocity native units.
+     */
     public double getMotionMagicCruiseVelocity()
     {
-        return 0.;
+        return super.configGetParameter(ParamEnum.eMotMag_VelCruise, s_defaultOrdinal, s_defaultTimeoutMS);
     }
-    public int getStickyFaultRevSoftLim()
+    /**
+     * Check if there's a reverse limit switch issue.
+     * 
+     * In the old api this returned an int, but the new one only
+     * returns a boolean. I suspect this is just more bad CTRE code, and
+     * they should have used a boolean. It's also possible that
+     * it meant something else before.
+     * <b>Not backwards compatible</b>
+     * @return Is there limit switch issue.
+     */
+    public boolean getFaultRevSoftLim()
     {
-        return 0;
+        Faults faults = new Faults();
+        super.getFaults(faults);
+        return faults.ForwardLimitSwitch;
     }
-    public int getFaultRevLim()
+    /**
+     * Check if there's a reverse limit switch issue.
+     * 
+     * In the old api this returned an int, but the new one only
+     * returns a boolean. I suspect this is just more bad CTRE code, and
+     * they should have used a boolean. It's also possible that
+     * it meant something else before.
+     * <b>Not backwards compatible</b>
+     * @return Is there limit switch issue.
+     */
+    public boolean getFaultRevLim()
     {
-        return 0;
+        Faults faults = new Faults();
+        super.getFaults(faults);
+        return faults.ReverseLimitSwitch;
     }
+    /**
+     * Check if there's a reverse limit switch issue.
+     * A sticky fault is just one that persists.
+     * 
+     * In the old api this returned an int, but the new one only
+     * returns a boolean. I suspect this is just more bad CTRE code, and
+     * they should have used a boolean. It's also possible that
+     * it meant something else before.
+     * <b>Not backwards compatible</b>
+     * @return Is there a limit switch issue.
+     */
+    public boolean getStickyFaultRevLim()
+    {
+        StickyFaults faults = new StickyFaults();
+        super.getStickyFaults(faults);
+        return faults.ReverseLimitSwitch;
+    }
+    /**
+     * Check if there's a reverse limit switch issue.
+     * A sticky fault is just one that persists.
+     * 
+     * In the old api this returned an int, but the new one only
+     * returns a boolean. I suspect this is just more bad CTRE code, and
+     * they should have used a boolean. It's also possible that
+     * it meant something else before.
+     * <b>Not backwards compatible</b>
+     * @return Is there a limit switch issue.
+     */
+    public boolean getStickyFaultRevSoftLim()
+    {
+        StickyFaults faults = new StickyFaults();
+        super.getStickyFaults(faults);
+        return faults.ReverseSoftLimit;
+    }
+    /**
+     * Get the current encoder position in encoder native units.
+     * 
+     * @return Encoder position.
+     */
     public int getEncPosition()
     {
-        return 0;
+        return super.getSelectedSensorPosition(s_pidIdx);
     }
-    public int getAnalogInPosition()
+    /**
+     * Get the analog position of the encoder, in volts?
+     * 
+     * <b>Not backwards compatible</b>
+     * @return Analog position (probably volts?)
+     */
+    public double getAnalogInPosition()
     {
-        return 0;
+        return super.configGetParameter(ParamEnum.eAnalogPosition, s_defaultOrdinal, s_defaultTimeoutMS);
     }
-    public int getFaultUnderVoltage()
+    /**
+     * Check if the voltage in went under 6.5V.
+     * 
+     * In the old api this returned an int, but the new one only
+     * returns a boolean. I suspect this is just more bad CTRE code, and
+     * they should have used a boolean. It's also possible that
+     * it meant something else before.
+     * <b>Not backwards compatible</b>
+     * @return Is there a hardware failure.
+     */
+    public boolean getFaultUnderVoltage()
     {
-        return 0;
+        Faults faults = new Faults();
+        super.getFaults(faults);
+        return faults.UnderVoltage;
     }
+    /**
+     * The current ramp rate in closed loop mode.
+     * 
+     * @return Closed loop ramp rate.
+     */
     public double getCloseLoopRampRate()
     {
-        return 0.;
+        return super.configGetParameter(ParamEnum.eClosedloopRamp, s_defaultOrdinal, s_defaultTimeoutMS);
     }
+    /**
+     * Get the position of the active trajectory.
+     * 
+     * @return Position of the active trajectory.
+     */
     public double getMotionMagicActTrajPosition()
     {
-        return 0.;
+        return super.getActiveTrajectoryPosition();
     }
+    /**
+     * Get the currently set proportional of the PID.
+     * 
+     * @return Current proportional of the PID.
+     */
     public double getP()
     {
-        return 0.; // XXX
+        return super.configGetParameter(ParamEnum.eProfileParamSlot_P, s_defaultOrdinal, s_defaultTimeoutMS);
     }
+    /**
+     * Get the currently set feedforward of the PID.
+     * 
+     * @return Current proportional of the PID.
+     */
     public double getF()
     {
-        return 0.; // XXX
+        return super.configGetParameter(ParamEnum.eProfileParamSlot_F, s_defaultOrdinal, s_defaultTimeoutMS);
     }
     public int getAnalogInVelocity()
     {
-        return 0;
+        return super.getSensorCollection().getAnalogInVel();
     }
+    /**
+     * Get the currently set integral of the PID.
+     * 
+     * @return Current derivative of the PID.
+     */
     public double getI()
     {
-       return 0.; // XXX
+        return super.configGetParameter(ParamEnum.eProfileParamSlot_I, s_defaultOrdinal, s_defaultTimeoutMS);
     }
+    /**
+     * Sets the integral zone. Who knows what that is.
+     * 
+     * @return The integral zone.
+     */
     public double getIZone()
     {
-        return 0.;
+        return super.configGetParameter(ParamEnum.eProfileParamSlot_IZone, s_defaultOrdinal, s_defaultTimeoutMS);
     }
+    /**
+     * This checks if the soft limit (switch) that's
+     * reversed is enabled? I don't know.
+     * 
+     * @return Is the reverse(d?) soft limit (switch?) enabled
+     */
     public boolean isReverseSoftLimitEnabled()
     {
-        return true;
+        return super.configGetParameter(ParamEnum.eReverseSoftLimitEnable, s_defaultOrdinal, s_defaultTimeoutMS) == 1 ? true : false;
     }
+    /**
+     * There is no equivalent in the new api for this.
+     * @deprecated
+     * @return void
+     */
     public void getPIDSourceType()
     {
         // not implemented - not available in 2018
     }
     public int getEncVelocity()
     {
-        return 0;
+        return super.getSelectedSensorVelocity(s_pidIdx);
     }
-    public VelocityMeasPeriod GetVelocityMeasurementPeriod()
+    /**
+     * I think this is how fast we can get velocity measurements, but that's
+     * just because they use simmilar terminology in their old documentation
+     * when referring to pwm pulses. There's very little to work off here.
+     * 
+     * @return Velocity measurement speed?
+     */
+    public double getVelocityMeasurementPeriod()
     {
-        return VelocityMeasPeriod.Period_1Ms; // FIXME
+        return super.configGetParameter(ParamEnum.eSampleVelocityPeriod, s_defaultOrdinal, s_defaultTimeoutMS);
     }
-    public int GetVelocityMeasurementWindow()
+    /**
+     * This appears to set the amount of time that the Talon is allowed to take
+     * to make velocity measurements?
+     * @return
+     */
+    public double getVelocityMeasurementWindow()
     {
-        return 0;
+        return super.configGetParameter(ParamEnum.eSampleVelocityWindow, s_defaultOrdinal, s_defaultTimeoutMS);
     }
-    public boolean getStickyFaultRevLim()
+    /**
+     * This <i>currently</i> gets if reverse soft limit is enabled.
+     * <b>I don't know if that's what it did in the 
+     * old API</b>, because the documentation of the
+     * old API was crap.
+     * 
+     * @return Is the forward soft limit (switch?) enabled
+     */
+    public double getReverseSoftLimit()
     {
-        return true;
+        return super.configGetParameter(ParamEnum.eReverseSoftLimitEnable, s_defaultOrdinal, s_defaultTimeoutMS);
     }
-    public int getReverseSoftLimit()
-    {
-        return 0;
-    }
+    /**
+     * Get the currently set derivative of the PID.
+     * 
+     * @return Current derivative of the PID.
+     */
     public double getD()
     {
-        return 0.;
+        return super.configGetParameter(ParamEnum.eProfileParamSlot_D, s_defaultOrdinal, s_defaultTimeoutMS);
     }
     /**
      * There is no equivalent in the new api for this.
@@ -398,27 +603,20 @@ public class CANTalon extends WPI_TalonSRX
      * 
      * @return Is the forward soft limit (switch?) enabled
      */
-    public int getForwardSoftLimit()
+    public double getForwardSoftLimit()
     {
-        return super.configGetCustomParam(ParamEnum.eForwardSoftLimitEnable.value, s_defaultTimeoutMS); // Why does this take an int instead of an enum? Who knows!
+        return super.configGetParameter(ParamEnum.eForwardSoftLimitEnable, s_defaultOrdinal, s_defaultTimeoutMS);
     }
     /**
-     * There is no equivalent in the new api for this.
-     * @deprecated
-     * @return 0
+     * <b>Not backwards compatible.</b>
      */
-    public int getPinStateQuadIdx()
+    public boolean getPinStateQuadIdx()
     {
-        return 0;
+        return super.getSensorCollection().getPinStateQuadIdx();
     }
-    /**
-     * There is no equivalent in the new api for this.
-     * @deprecated
-     * @return 0
-     */
     public int getAnalogInRaw()
     {
-        return 0;
+        return super.getSensorCollection().getAnalogInRaw();
     }
     /**
      * Get sensor speed/velocity.
@@ -448,7 +646,7 @@ public class CANTalon extends WPI_TalonSRX
      * <b>Not backwards compatible</b>
      * @return Is there a hardware failure.
      */
-    public boolean getFaultForLimit()
+    public boolean getFaultForLim()
     {
         Faults faults = new Faults();
         super.getFaults(faults);
@@ -483,7 +681,7 @@ public class CANTalon extends WPI_TalonSRX
      * <b>Not backwards compatible</b>
      * @return Is there a hardware failure.
      */
-    public boolean getFaultForSoftLimit()
+    public boolean getFaultForSoftLim()
     {
         Faults faults = new Faults();
         super.getFaults(faults);
@@ -538,25 +736,21 @@ public class CANTalon extends WPI_TalonSRX
      */
     public boolean isFwdLimitSwitchClosed()
     {
-        return super.configGetCustomParam(ParamEnum.eForwardSoftLimitEnable.value, s_defaultTimeoutMS) == 1 ? true : false;
+        return super.getSensorCollection().isFwdLimitSwitchClosed();
     }
     /**
-     * There is no equivalent in the new api for this.
-     * @deprecated
-     * @return 0
+     * <b>Not backwards compatible.</b>
      */
-    public int getPinStateQuadA()
+    public boolean getPinStateQuadA()
     {
-        return 0;
+        return super.getSensorCollection().getPinStateQuadA();
     }
     /**
-     * There is no equivalent in the new api for this.
-     * @deprecated
-     * @return 0
+     * <b>Not backwards compatible.</b>
      */
-    public int getPinStateQuadB()
+    public boolean getPinStateQuadB()
     {
-        return 0;
+        return super.getSensorCollection().getPinStateQuadB();
     }
     /**
      * Gets the integral accumulation of the motor controller.
@@ -619,14 +813,9 @@ public class CANTalon extends WPI_TalonSRX
         super.getStickyFaults(faults);
         return faults.UnderVoltage;
     }
-    /**
-     * There is no equivalent in the new api for this.
-     * @deprecated
-     * @return 0
-     */
     public int getPulseWidthVelocity()
     {
-        return 0;
+        return super.getSensorCollection().getPulseWidthVelocity();
     }
     /**
      * There is no equivalent in the new api for this.
@@ -653,24 +842,19 @@ public class CANTalon extends WPI_TalonSRX
         // 3.3V per 1023 units.
         return super.getSelectedSensorPosition(s_pidIdx);
     }
-    /**
-     * There is no equivalent in the new api for this.
-     * @deprecated
-     * @return 0
-     */
     public int getPulseWidthRiseToFallUs()
     {
-        return 0;
+        return super.getSensorCollection().getPulseWidthRiseToFallUs();
     }
     /**
-     * There is no equivalent method in the new API. This provides
-     * a rough approximation, in raw sensor units. An integer cast
-     * also happens, so this is truncated.
+     * Get the acceleration of the motion magic controller.
+     * If units are configured its in RPM per second,
+     * otherwise it's native units.
      * 
-     * @return 
+     * @return Acceleration of the motion magic controller.
      */
-    public int getMotionMagicAcceleration()
+    public double getMotionMagicAcceleration()
     {
-        return super.configGetCustomParam(ParamEnum.eMotMag_Accel.value, s_defaultTimeoutMS); // Why does this take an int instead of an enum? Who knows!
+        return super.configGetParameter(ParamEnum.eMotMag_Accel, s_defaultOrdinal, s_defaultTimeoutMS);
     }
 }

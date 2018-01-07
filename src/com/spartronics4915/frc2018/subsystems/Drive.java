@@ -197,10 +197,10 @@ public class Drive extends Subsystem {
         mRightSlave.reverseOutput(false);
         mRightMaster.setStatusFrameRateMs(StatusFrameEnhanced.Status_2_Feedback0, 5); // XXX: was Feedback
 
-        mLeftMaster.SetVelocityMeasurementPeriod(VelocityMeasPeriod.Period_10Ms);
-        mLeftMaster.SetVelocityMeasurementWindow(32);
-        mRightMaster.SetVelocityMeasurementPeriod(VelocityMeasPeriod.Period_10Ms);
-        mRightMaster.SetVelocityMeasurementWindow(32);
+        mLeftMaster.setVelocityMeasurementPeriod(VelocityMeasPeriod.Period_10Ms);
+        mLeftMaster.setVelocityMeasurementWindow(32);
+        mRightMaster.setVelocityMeasurementPeriod(VelocityMeasPeriod.Period_10Ms);
+        mRightMaster.setVelocityMeasurementWindow(32);
 
         mShifter = Constants.makeSolenoidForId(Constants.kShifterSolenoidId);
 

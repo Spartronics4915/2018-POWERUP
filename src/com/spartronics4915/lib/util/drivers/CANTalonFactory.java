@@ -103,8 +103,8 @@ public class CANTalonFactory {
         talon.setPulseWidthPosition(0);
         talon.setReverseSoftLimit(config.REVERSE_SOFT_LIMIT);
         talon.setSafetyEnabled(config.SAFETY_ENABLED);
-        talon.SetVelocityMeasurementPeriod(config.VELOCITY_MEASUREMENT_PERIOD);
-        talon.SetVelocityMeasurementWindow(config.VELOCITY_MEASUREMENT_ROLLING_AVERAGE_WINDOW);
+        talon.setVelocityMeasurementPeriod(config.VELOCITY_MEASUREMENT_PERIOD);
+        talon.setVelocityMeasurementWindow(config.VELOCITY_MEASUREMENT_ROLLING_AVERAGE_WINDOW);
         talon.setVoltageCompensationRampRate(config.VOLTAGE_COMPENSATION_RAMP_RATE);
         talon.setVoltageRampRate(config.VOLTAGE_RAMP_RATE);
 
@@ -164,8 +164,8 @@ public class CANTalonFactory {
                 // .append("getPIDSourceType = ").append(talon.getPIDSourceType()).append("\n") // XXX Sendable change
                 .append("getEncVelocity = ")
                 .append(talon.getEncVelocity()).append("\n").append("GetVelocityMeasurementPeriod = ")
-                .append(talon.GetVelocityMeasurementPeriod()).append("\n").append("getP = ").append(talon.getP())
-                .append("\n").append("GetVelocityMeasurementWindow = ").append(talon.GetVelocityMeasurementWindow())
+                .append(talon.getVelocityMeasurementPeriod()).append("\n").append("getP = ").append(talon.getP())
+                .append("\n").append("GetVelocityMeasurementWindow = ").append(talon.getVelocityMeasurementWindow())
                 .append("\n").append("getDeviceID = ").append(talon.getDeviceID()).append("\n")
                 .append("getStickyFaultRevLim = ").append(talon.getStickyFaultRevLim()).append("\n")
                 // .append("getMotionMagicActTrajVelocity =
