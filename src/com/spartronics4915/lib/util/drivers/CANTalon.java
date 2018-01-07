@@ -15,6 +15,26 @@ import com.ctre.phoenix.motorcontrol.FeedbackDevice;
  *  migration to the new API.
  */
 
+// From Phoenix docs:
+// What are the units of my sensor?
+// Position units are in the natural units of the sensor.
+//  Quad (US Digital) 1024 CPR -> 4096
+//  CTRE Quad relative  -> 4096
+//  CTRE Quad absolute -> 4096
+//  Pulse-width encoded position -> 4096 is 100%
+//  AndyMark CIMcode    ->  80  (20 pulse -> 80 edges)
+//
+// Velocity is measured in sensor units per 100ms. This ensures
+//  sufficient resolution regardless of the sensing strategy. For 
+//  example, when using the CTRE Magnetic Encoder, 1u velocity 
+//  represents 1/4096 of a rotation every 100ms. Generally you 
+//  can multiply the velocity units by 600/UnitsPerRotation to obtain RPM.
+//
+// Tachometer velocity measurement is unique in that it measures 
+//  time directly. As a result, the reported velocity is calculated 
+//  where 1024 represents a full "rotation". This means that a velocity 
+//  measurement of 1 represents 1/1024 of a rotation every 100ms.
+
 public class CANTalon extends WPI_TalonSRX
 {
     ControlMode m_controlMode = ControlMode.Disabled;
@@ -91,11 +111,13 @@ public class CANTalon extends WPI_TalonSRX
     public void reverseOutput(boolean s)
     {
     }
-    public void setForwardSoftLimit(double l)
+    public void setForwardSoftLimit(int l)
     {
+        this.configForwardSoftLimitThreshold(l, 0);
     }
-    public void setReverseSoftLimit(double l)
+    public void setReverseSoftLimit(int l)
     {
+        this.configReverseSoftLimitThreshold(l, 0);
     }
     public void setInverted(boolean s)
     {
