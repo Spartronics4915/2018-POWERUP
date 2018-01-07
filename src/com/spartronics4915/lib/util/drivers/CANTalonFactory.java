@@ -23,10 +23,10 @@ public class CANTalonFactory {
         public boolean ENABLE_LIMIT_SWITCH = false;
         public int CURRENT_LIMIT = 0;
         public double EXPIRATION_TIMEOUT_SECONDS = MotorSafety.DEFAULT_SAFETY_EXPIRATION;
-        public double FORWARD_SOFT_LIMIT = 0;
+        public int FORWARD_SOFT_LIMIT = 0;
         public boolean INVERTED = false;
         public double NOMINAL_CLOSED_LOOP_VOLTAGE = 12;
-        public double REVERSE_SOFT_LIMIT = 0;
+        public int REVERSE_SOFT_LIMIT = 0;
         public boolean SAFETY_ENABLED = false;
 
         public int CONTROL_FRAME_PERIOD_MS = 5;
@@ -121,6 +121,7 @@ public class CANTalonFactory {
      * Run this on a fresh talon to produce good values for the defaults.
      */
     public static String getFullTalonInfo(CANTalon talon) {
+        @SuppressWarnings("deprecation") // Things that don't work are deprecated
         StringBuilder sb = new StringBuilder().append("isRevLimitSwitchClosed = ")
                 .append(talon.isRevLimitSwitchClosed()).append("\n").append("getBusVoltage = ")
                 .append(talon.getBusVoltage()).append("\n").append("isForwardSoftLimitEnabled = ")
@@ -172,7 +173,7 @@ public class CANTalonFactory {
                 .append("getReverseSoftLimit = ").append(talon.getReverseSoftLimit()).append("\n").append("getD = ")
                 .append(talon.getD()).append("\n").append("getFaultOverTemp = ").append(talon.getFaultOverTemp())
                 .append("\n").append("getForwardSoftLimit = ").append(talon.getForwardSoftLimit()).append("\n")
-                .append("GetFirmwareVersion = ").append(talon.GetFirmwareVersion()).append("\n")
+                .append("GetFirmwareVersion = ").append(talon.getFirmwareVersion()).append("\n")
                 .append("getLastError = ").append(talon.getLastError()).append("\n").append("isAlive = ")
                 .append(talon.isAlive()).append("\n").append("getPinStateQuadIdx = ").append(talon.getPinStateQuadIdx())
                 .append("\n").append("getAnalogInRaw = ").append(talon.getAnalogInRaw()).append("\n")
@@ -193,7 +194,7 @@ public class CANTalonFactory {
                 .append("\n").append("getBrakeEnableDuringNeutral = ").append(talon.getBrakeEnableDuringNeutral())
                 .append("\n").append("getStickyFaultUnderVoltage = ").append(talon.getStickyFaultUnderVoltage())
                 .append("\n").append("getPulseWidthVelocity = ").append(talon.getPulseWidthVelocity()).append("\n")
-                .append("GetNominalClosedLoopVoltage = ").append(talon.GetNominalClosedLoopVoltage()).append("\n")
+                .append("GetNominalClosedLoopVoltage = ").append(talon.getNominalClosedLoopVoltage()).append("\n")
                 .append("getPosition = ").append(talon.getPosition()).append("\n").append("getExpiration = ")
                 .append(talon.getExpiration()).append("\n").append("getPulseWidthRiseToFallUs = ")
                 .append(talon.getPulseWidthRiseToFallUs()).append("\n")
