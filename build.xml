@@ -44,6 +44,13 @@
   <import file="wpibuild.xml"/>
 
   <!-- 4915 add for travis -->
-  <target name="test" depends="clean,compile"/>
+  <target name="test" depends="clean,compile">
+	  <exec executable="/bin/bash"
+		  resultproperty="formatter-return"
+		  failonerror="true">
+		  <arg value="test/format/test-format.sh" />
+	  </exec>
+	  <echo message="Formatter return code was ${formatter-return} (1 for success, 0 for failure)." />
+  </target>
 
 </project>
