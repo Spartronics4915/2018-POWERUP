@@ -48,7 +48,7 @@
 	  <exec executable="/bin/bash"
 		  resultproperty="formatter-return"
 		  failonerror="true">
-		  <arg value="test/format/test-format.sh" />
+		  <arg value="exit 1;test/format/test-format.sh" />
 	  </exec>
 	  <echo message="Formatter return code was ${formatter-return} (1 for success, 0 for failure)." />
   </target>
