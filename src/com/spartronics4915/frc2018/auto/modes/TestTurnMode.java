@@ -8,9 +8,9 @@ import com.spartronics4915.lib.util.math.Rotation2d;
 
 public class TestTurnMode extends AutoModeBase {
 
-    @Override
-    protected void routine() throws AutoModeEndedException {
-        runAction(new WaitAction(2));
-        runAction(new TurnToHeadingAction(Rotation2d.fromDegrees(90)));
-    }
+  @Override
+  protected void routine() throws AutoModeEndedException {
+    runAction(new WaitAction(2));
+    runAction(new TurnToHeadingAction(Rotation2d.fromDegrees(90)));
+  }
 }

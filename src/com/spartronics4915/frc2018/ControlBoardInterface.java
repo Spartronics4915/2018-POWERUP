@@ -1,18 +1,16 @@
 package com.spartronics4915.frc2018;
 
-/**
- * A basic framework for robot controls that other controller classes implement
- */
+/** A basic framework for robot controls that other controller classes implement */
 public interface ControlBoardInterface {
-    // DRIVER CONTROLS
-    double getThrottle();
+  // DRIVER CONTROLS
+  double getThrottle();
 
-    double getTurn();
+  double getTurn();
 
-    boolean getQuickTurn();
+  boolean getQuickTurn();
 
-    boolean getLowGear();
+  boolean getLowGear();
 
-    // OPERATOR CONTROLS
-    boolean getBlinkLEDButton();
+  // OPERATOR CONTROLS
+  boolean getBlinkLEDButton();
 }

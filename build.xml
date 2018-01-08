@@ -47,10 +47,11 @@
   <target name="test" depends="clean,compile">
 	  <exec executable="/bin/bash"
 		  resultproperty="formatter-return"
-		  failonerror="true">
-		  <arg value="exit 1;test/format/test-format.sh" />
+		  failonerror="true"
+		  dir="test/format"
+		  osfamily="unix">
+		  <arg value="test-format.sh"/>
 	  </exec>
-	  <echo message="Formatter return code was ${formatter-return} (1 for success, 0 for failure)." />
   </target>
 
 </project>
