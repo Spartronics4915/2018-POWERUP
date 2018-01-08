@@ -711,13 +711,13 @@ public class Drive extends Subsystem {
                 Constants.kDriveLowGearPositionKd, Constants.kDriveLowGearPositionKf,
                 Constants.kDriveLowGearPositionIZone, Constants.kDriveLowGearPositionRampRate,
                 kLowGearPositionControlSlot);
-        mLeftMaster.setMotionMagicCruiseVelocity(Constants.kDriveLowGearMaxVelocity);
+        mLeftMaster.setMotionMagicCruiseVelocity(Constants.kDriveLowGearMaxVelocity); // TODO
         mLeftMaster.setMotionMagicAcceleration(Constants.kDriveLowGearMaxAccel);
         mRightMaster.setPID(Constants.kDriveLowGearPositionKp, Constants.kDriveLowGearPositionKi,
                 Constants.kDriveLowGearPositionKd, Constants.kDriveLowGearPositionKf,
                 Constants.kDriveLowGearPositionIZone, Constants.kDriveLowGearPositionRampRate,
                 kLowGearPositionControlSlot);
-        mRightMaster.setMotionMagicCruiseVelocity(Constants.kDriveLowGearMaxVelocity);
+        mRightMaster.setMotionMagicCruiseVelocity(Constants.kDriveLowGearMaxVelocity); // TODO
         mRightMaster.setMotionMagicAcceleration(Constants.kDriveLowGearMaxAccel);
         mLeftMaster.setVoltageCompensationRampRate(Constants.kDriveVoltageCompensationRampRate);
         mRightMaster.setVoltageCompensationRampRate(Constants.kDriveVoltageCompensationRampRate);

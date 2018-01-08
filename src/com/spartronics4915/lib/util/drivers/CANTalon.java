@@ -48,13 +48,14 @@ public class CANTalon extends WPI_TalonSRX
 {
     static final int s_defaultTimeoutMS = 0; // 0 for no blocking. This is like the old behavior.
     static final int s_pidIdx = 0; // We're unsure about what this does.
-    static final int s_defaultOrdinal = 0; // I have no idea what this does.
-    static final int s_maxVolts = 12;
+    static final int s_defaultOrdinal = 0; // This probably does something specific on certain ParamEnums
     
     ControlMode m_controlMode = ControlMode.Disabled;
     NeutralMode m_neutralMode;
     double m_lastSetpoint = 0;
     int m_pidSlot;
+    int m_maxVolts = 12;
+    int m_codesPerRevolution; // Encoder codes per revolution
     
     public CANTalon(int deviceNumber)
     {
@@ -71,10 +72,26 @@ public class CANTalon extends WPI_TalonSRX
         this.setControlFramePeriod(controlPeriodMs, enablePeriodMs);
     }
     /**
+     * Converts RPM to Native Unit velocity.
+     * RPM is rotations per minute.
+     * Native velocity is Native Units per 100 milliseconds.
+     * <b>configEncoderCodesPerRev must have been called for
+     * this to work!</b>
+     * 
+     * @param Rotations per minute
+     * @return Native Units per 100 milliseconds
+     */
+    private int rpmToNativeVelocity(double rpm) {
+        double rotationsPer100MS = (rpm / 60) / 10;
+        return (int) Math.round(rotationsPer100MS * m_codesPerRevolution);
+    }
+    /**
      * Sets the output on the Talon, depending on the mode you're in.
      * This is basically the only thing the new API does better,
      * IMO. You need to maintain state with the old API, and this
      * preserves that behavior.
+     * 
+     * @param The output depending on the ControlMode you've set the motor to.
      */
     @Override
     public void set(double value) {
@@ -96,48 +113,97 @@ public class CANTalon extends WPI_TalonSRX
     }
     public void configEncoderCodesPerRev(int cpr)
     {
+        m_codesPerRevolution = cpr;
     }
     public void setEncPosition(int p)
     {
+        super.getSensorCollection().setQuadraturePosition(p, s_defaultTimeoutMS);
     }
     public void setPID(double p, double i, double d, double f, int izone, double closeLoopRampRate, int profile)
     {
+        super.config_kP(profile, p, s_defaultTimeoutMS);
+        super.config_kI(profile, i, s_defaultTimeoutMS);
+        super.config_kD(profile, d, s_defaultTimeoutMS);
+        super.config_kF(profile, f, s_defaultTimeoutMS);
+        super.config_IntegralZone(profile, izone, s_defaultTimeoutMS);
+        double newRampRate = m_maxVolts / closeLoopRampRate;
+        super.configClosedloopRamp(newRampRate, s_defaultTimeoutMS);
+        super.configOpenloopRamp(newRampRate, s_defaultTimeoutMS);
     }
     public void setMotionMagicAcceleration(double motMagicAccel)
     {
+        super.configMotionAcceleration(rpmToNativeVelocity(motMagicAccel), s_defaultTimeoutMS);
     }
-    public void setMotionMagicCruiseVelocity(double motMagicCruiseVeloc)
+    public void setMotionMagicCruiseVelocity(double kDriveLowGearMaxVelocity)
     {
+        super.configMotionCruiseVelocity(rpmToNativeVelocity(kDriveLowGearMaxVelocity), s_defaultTimeoutMS);
     }
     public void clearIAccum()
     {
-        this.setIntegralAccumulator(0, s_pidIdx, s_defaultTimeoutMS);
+        super.setIntegralAccumulator(0, s_pidIdx, s_defaultTimeoutMS);
     }
     public void clearMotionProfileHasUnderrun()
     {
-        this.clearMotionProfileHasUnderrun(s_defaultTimeoutMS);
+        super.clearMotionProfileHasUnderrun(s_defaultTimeoutMS);
     }
     public void clearStickyFaults()
     {
-        this.clearStickyFaults(s_defaultTimeoutMS);
+        super.clearStickyFaults(s_defaultTimeoutMS);
     }
+    /**
+     * There is no equivalent in the new api for this.
+     * @deprecated
+     * @return void
+     */
     public void configMaxOutputVoltage(double maxV)
     {
+        // XXX: Really? Is configPeakOutputVoltage equivalent?
     }
+    /**
+     * Configure the nominal output voltage allowed.
+     * <b>Because of how the new api works, min is ignored!</b>
+     * @param max
+     * @param <b>min (completely ignored)</b>
+     */
     public void configNominalOutputVoltage(double max, double min)
     {
+        // XXX: This was changed to use percentages, and just negate the percentage for the min.
+        // That means that min doesn't do anything.
+        super.configNominalOutputForward(max / m_maxVolts, s_defaultTimeoutMS);
+        super.configNominalOutputReverse(max / m_maxVolts, s_defaultTimeoutMS);
     }
+    /**
+     * Configure the peak output voltage allowed.
+     * <b>Because of how the new api works, min is ignored!</b>
+     * @param max
+     * @param <b>min (completely ignored)</b>
+     */
     public void configPeakOutputVoltage(double max, double min)
     {
+        // XXX: This was changed to use percentages, and just negate the percentage for the min.
+        // That means that min doesn't do anything.
+        super.configPeakOutputForward(max / m_maxVolts, s_defaultTimeoutMS);
+        super.configPeakOutputReverse(max / m_maxVolts, s_defaultTimeoutMS);
     }
     public void enableBrakeMode(boolean s)
     {
+        if (s) super.neutralOutput();
     }
-    public void enableCurrentLimit(double max)
-    {
+    public void enableCurrentLimit(boolean enable) {
+        super.enableCurrentLimit(enable);
     }
+    public void setCurrentLimit(int amps) {
+        super.configPeakCurrentLimit(amps, s_defaultTimeoutMS);
+    }
+    /**
+     * Reverses motor output.
+     * Does the same thing as {@link setInverted}.
+     * 
+     * @param Is inverted or not.
+     */
     public void reverseOutput(boolean s)
     {
+        super.setInverted(s);
     }
     /**
      * Configures the soft limit threshold on the forward sensor.
@@ -147,7 +213,7 @@ public class CANTalon extends WPI_TalonSRX
      */
     public void setForwardSoftLimit(int l)
     {
-        this.configForwardSoftLimitThreshold(l, 0);
+        this.configForwardSoftLimitThreshold(l, s_defaultTimeoutMS);
     }
     /**
      * Configures the soft limit threshold on the reverse sensor.
@@ -157,32 +223,50 @@ public class CANTalon extends WPI_TalonSRX
      */
     public void setReverseSoftLimit(int l)
     {
-        this.configReverseSoftLimitThreshold(l, 0);
+        this.configReverseSoftLimitThreshold(l, s_defaultTimeoutMS);
     }
+    /**
+     * Reverses motor output.
+     * Does the same thing as {@link reverseOutput}
+     * 
+     * @deprecated Because this name is confusing and bad.
+     * @param Is inverted or not.
+     */
     public void setInverted(boolean s)
     {
+        super.setInverted(s);
     }
     public void setNominalClosedLoopVoltage(double v)
     {
+        // XXX: These are now in percentages, not volts... And there's no closed-loop only method.
+        super.configNominalOutputForward(v / m_maxVolts, s_defaultTimeoutMS);
+        super.configNominalOutputReverse(v / m_maxVolts, s_defaultTimeoutMS);
     }
-    public void setPosition(double d)
+    public void setPosition(int d)
     {
+        super.getSensorCollection().setAnalogPosition(d, s_defaultTimeoutMS);
     }
     public void setProfile(int p)
     {
         // Select which closed loop profile to use, and uses whatever PIDF gains and the such that are already there.
+        m_pidSlot = p;
+        super.selectProfileSlot(p, s_pidIdx);
     }
     public void setPulseWidthPosition(int p)
     {
+        super.getSensorCollection().setPulseWidthPosition(p, s_defaultTimeoutMS);
     }
     public void setSafetyEnabled(boolean b)
     {
+        super.setSafetyEnabled(b);
     }
     public void setVelocityMeasurementPeriod(VelocityMeasPeriod p)
     {
+        super.configVelocityMeasurementPeriod(p, s_defaultTimeoutMS);
     }
     public void setVelocityMeasurementWindow(int w)
     {
+        super.configVelocityMeasurementWindow(w, s_defaultTimeoutMS);
     }
     public void setVoltageCompensationRampRate(double rampRate)
     {
@@ -196,7 +280,7 @@ public class CANTalon extends WPI_TalonSRX
      */
     public void setVoltageRampRate(double rampRate)
     {
-        double newRampRate = s_maxVolts / rampRate;
+        double newRampRate = m_maxVolts / rampRate;
         super.configClosedloopRamp(newRampRate, s_defaultTimeoutMS);
         super.configOpenloopRamp(newRampRate, s_defaultTimeoutMS);
     }
@@ -213,12 +297,17 @@ public class CANTalon extends WPI_TalonSRX
         super.getSensorCollection().setAnalogPosition(pos, s_defaultTimeoutMS);
     }
     /**
-     * There is no equivalent in the new api for this.
-     * @deprecated
-     * @return void
+     * Don't trust this method. It doesn't seem
+     * to have a clear-cut equivalent in the new
+     * API, so I'm using something similar.
+     * There's also an int cast, so the mantissa
+     * in the double is lost.
+     * 
+     * @param Current limit in amps.
      */
     public void setCurrentLimit(double l)
     {
+        super.configPeakCurrentLimit((int)l, s_defaultTimeoutMS); // XXX: Is this actually equivalent?
     }
     public void enableForwardSoftLimit(boolean s)
     {
@@ -226,7 +315,8 @@ public class CANTalon extends WPI_TalonSRX
     }
     /**
      * There is no equivalent in the new api for this.
-     * You have to enable all or none.
+     * You have to enable all or none, so you
+     * should use those methods.
      * @deprecated
      * @return void
      */
