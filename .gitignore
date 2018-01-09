@@ -53,3 +53,5 @@ tmp/
 
 dist/
 sysProps.xml
+WPI_Native_Libraries.properties
+User_Libraries.properties
