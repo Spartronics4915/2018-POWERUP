@@ -112,9 +112,9 @@
         <attribute name="Class-Path"
                    value="." />
         <!-- 4915 add stuff here -->
-        <attribute name="Code-Version" valu="${code-version}"/>
-        <attribute name="Built-At" valu="${build-date}"/>
-        <attribute name="Built-By" valu="${user.name}"/>
+        <attribute name="Code-Version" value="${code-version}"/>
+        <attribute name="Built-At" value="${build-date}"/>
+        <attribute name="Built-By" value="${user.name}"/>
       </manifest>
       <fileset dir="${build.dir}"
                includes="**/*.class" />
