@@ -19,7 +19,7 @@ Modifications include:
     * hardcode refs to support library to wpilib/... in this repo
     * added test target and minimal travis/slack support
 
-Many thanks to CheesyFolks (team 254) for sharing your code!
+Many thanks to CheesyFolks (Team254) for sharing your code!
 
 For more details on code highlights, please refer to CheesyNotes.md.
 

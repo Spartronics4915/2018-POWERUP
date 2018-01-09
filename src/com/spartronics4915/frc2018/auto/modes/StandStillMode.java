@@ -3,10 +3,12 @@ package com.spartronics4915.frc2018.auto.modes;
 import com.spartronics4915.frc2018.auto.AutoModeBase;
 import com.spartronics4915.frc2018.auto.AutoModeEndedException;
 
-/** Fallback for when all autonomous modes do not work, resulting in a robot standstill */
+/**
+ * Fallback for when all autonomous modes do not work, resulting in a robot standstill
+ */
 public class StandStillMode extends AutoModeBase {
-  @Override
-  protected void routine() throws AutoModeEndedException {
-    System.out.println("Starting Stand Still Mode... Done!");
-  }
+    @Override
+    protected void routine() throws AutoModeEndedException {
+        System.out.println("Starting Stand Still Mode... Done!");
+    }
 }

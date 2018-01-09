@@ -1,30 +1,33 @@
 package com.spartronics4915.lib.util;
 
-/** An iterative boolean latch that delays the transition from false to true. */
+/**
+ * An iterative boolean latch that delays the transition from false to true.
+ *
+ */
 public class DelayedBoolean {
-  private boolean mLastValue;
-  private double mTransitionTimestamp;
-  private double mDelay;
+    private boolean mLastValue;
+    private double mTransitionTimestamp;
+    private double mDelay;
 
-  public DelayedBoolean(double timestamp, double delay) {
-    mTransitionTimestamp = timestamp;
-    mLastValue = false;
-    mDelay = delay;
-  }
-
-  public boolean update(double timestamp, boolean value) {
-    boolean result = false;
-
-    if (value && !mLastValue) {
-      mTransitionTimestamp = timestamp;
+    public DelayedBoolean(double timestamp, double delay) {
+        mTransitionTimestamp = timestamp;
+        mLastValue = false;
+        mDelay = delay;
     }
 
-    // If we are still true and we have transitioned.
-    if (value && (timestamp - mTransitionTimestamp > mDelay)) {
-      result = true;
-    }
+    public boolean update(double timestamp, boolean value) {
+        boolean result = false;
 
-    mLastValue = value;
-    return result;
-  }
+        if (value && !mLastValue) {
+            mTransitionTimestamp = timestamp;
+        }
+
+        // If we are still true and we have transitioned.
+        if (value && (timestamp - mTransitionTimestamp > mDelay)) {
+            result = true;
+        }
+
+        mLastValue = value;
+        return result;
+    }
 }
