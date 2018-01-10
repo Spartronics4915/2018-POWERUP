@@ -3,11 +3,14 @@ package com.spartronics4915.lib.util.motion;
 /**
  * Constraints for constructing a MotionProfile.
  */
-public class MotionProfileConstraints {
+public class MotionProfileConstraints
+{
+
     protected double max_abs_vel = Double.POSITIVE_INFINITY;
     protected double max_abs_acc = Double.POSITIVE_INFINITY;
 
-    public MotionProfileConstraints(double max_vel, double max_acc) {
+    public MotionProfileConstraints(double max_vel, double max_acc)
+    {
         this.max_abs_vel = Math.abs(max_vel);
         this.max_abs_acc = Math.abs(max_acc);
     }
@@ -15,20 +18,24 @@ public class MotionProfileConstraints {
     /**
      * @return The (positive) maximum allowed velocity.
      */
-    public double max_abs_vel() {
+    public double max_abs_vel()
+    {
         return max_abs_vel;
     }
 
     /**
      * @return The (positive) maximum allowed acceleration.
      */
-    public double max_abs_acc() {
+    public double max_abs_acc()
+    {
         return max_abs_acc;
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (!(obj instanceof MotionProfileConstraints)) {
+    public boolean equals(Object obj)
+    {
+        if (!(obj instanceof MotionProfileConstraints))
+        {
             return false;
         }
         final MotionProfileConstraints other = (MotionProfileConstraints) obj;

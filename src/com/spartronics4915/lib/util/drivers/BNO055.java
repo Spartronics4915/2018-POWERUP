@@ -597,7 +597,7 @@ public class BNO055
     {
         return m_heading[0];
     }
-    
+
     public double getIntialHeading()
     {
         return m_initialHeading[0];
@@ -638,10 +638,11 @@ public class BNO055
         write8(reg_t.BNO055_OPR_MODE_ADDR, (byte) _mode);
     }
 
-    public void resetState() {
+    public void resetState()
+    {
         state = 0;
     }
-    
+
     /**
      * Gets the latest system status info
      *

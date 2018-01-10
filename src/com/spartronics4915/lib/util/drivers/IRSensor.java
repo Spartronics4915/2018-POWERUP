@@ -6,14 +6,18 @@ import edu.wpi.first.wpilibj.AnalogTriggerOutput.AnalogTriggerType;
 import edu.wpi.first.wpilibj.Counter;
 
 /**
- * Driver for an analog Sharp IR sensor (or any distance sensor where output voltage is a function of range, really).
+ * Driver for an analog Sharp IR sensor (or any distance sensor where output
+ * voltage is a function of range, really).
  */
-public class IRSensor {
+public class IRSensor
+{
+
     protected final AnalogInput mAnalogInput;
     protected final AnalogTrigger mAnalogTrigger;
     protected final Counter mCounter;
 
-    public IRSensor(int port, double min_trigger_voltage, double max_trigger_voltage) {
+    public IRSensor(int port, double min_trigger_voltage, double max_trigger_voltage)
+    {
         mAnalogInput = new AnalogInput(port);
         mAnalogInput.setAverageBits(6);
         mAnalogTrigger = new AnalogTrigger(mAnalogInput);
@@ -23,19 +27,23 @@ public class IRSensor {
         mCounter = new Counter(mAnalogTrigger.createOutput(AnalogTriggerType.kState));
     }
 
-    public int getCount() {
+    public int getCount()
+    {
         return mCounter.get();
     }
 
-    public double getVoltage() {
+    public double getVoltage()
+    {
         return mAnalogInput.getAverageVoltage();
     }
 
-    public boolean seesBall() {
+    public boolean seesBall()
+    {
         return mAnalogTrigger.getTriggerState();
     }
 
-    public void resetCount() {
+    public void resetCount()
+    {
         mCounter.reset();
     }
 }

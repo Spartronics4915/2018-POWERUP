@@ -21,15 +21,23 @@ import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.Sendable;
 
 /**
- * Use a rate gyro to return the robots heading relative to a starting position. The Gyro class tracks the robots
- * heading based on the starting position. As the robot rotates the new heading is computed by integrating the rate of
- * rotation returned by the sensor. When the class is instantiated, it does a short calibration routine where it samples
- * the gyro while at rest to determine the default offset. This is subtracted from each sample to determine the heading.
+ * Use a rate gyro to return the robots heading relative to a starting position.
+ * The Gyro class tracks the robots
+ * heading based on the starting position. As the robot rotates the new heading
+ * is computed by integrating the rate of
+ * rotation returned by the sensor. When the class is instantiated, it does a
+ * short calibration routine where it samples
+ * the gyro while at rest to determine the default offset. This is subtracted
+ * from each sample to determine the heading.
  *
- * This class is for the digital ADXRS453 gyro sensor that connects via SPI. A datasheet can be found here:
- * http://www.analog.com/media/en/technical-documentation/data-sheets/ADXRS453. pdf
+ * This class is for the digital ADXRS453 gyro sensor that connects via SPI. A
+ * datasheet can be found here:
+ * http://www.analog.com/media/en/technical-documentation/data-sheets/ADXRS453.
+ * pdf
  */
-public class ADXRS453_Gyro extends GyroBase implements Gyro, PIDSource, Sendable {
+public class ADXRS453_Gyro extends GyroBase implements Gyro, PIDSource, Sendable
+{
+
     public static final double kCalibrationSampleTime = 5.0;
 
     private static final double kSamplePeriod = 0.001;
@@ -45,7 +53,8 @@ public class ADXRS453_Gyro extends GyroBase implements Gyro, PIDSource, Sendable
     /**
      * Constructor. Uses the onboard CS0.
      */
-    public ADXRS453_Gyro() {
+    public ADXRS453_Gyro()
+    {
         this(SPI.Port.kOnboardCS0);
     }
 
@@ -53,9 +62,10 @@ public class ADXRS453_Gyro extends GyroBase implements Gyro, PIDSource, Sendable
      * Constructor.
      *
      * @param port
-     *            (the SPI port that the gyro is connected to)
+     *        (the SPI port that the gyro is connected to)
      */
-    public ADXRS453_Gyro(SPI.Port port) {
+    public ADXRS453_Gyro(SPI.Port port)
+    {
         m_spi = new SPI(port);
         m_spi.setClockRate(3000000);
         m_spi.setMSBFirst();
@@ -64,7 +74,8 @@ public class ADXRS453_Gyro extends GyroBase implements Gyro, PIDSource, Sendable
         m_spi.setChipSelectActiveLow();
 
         /** Validate the part ID */
-        if ((readRegister(kPIDRegister) & 0xff00) != 0x5200) {
+        if ((readRegister(kPIDRegister) & 0xff00) != 0x5200)
+        {
             m_spi.free();
             m_spi = null;
             DriverStation.reportError("Could not find ADXRS453 gyro on SPI port " + port.value, false);
@@ -80,31 +91,37 @@ public class ADXRS453_Gyro extends GyroBase implements Gyro, PIDSource, Sendable
     }
 
     /**
-     * This is a blocking calibration call. There are also non-blocking options available in this class!
+     * This is a blocking calibration call. There are also non-blocking options
+     * available in this class!
      * 
      * {@inheritDoc}
      */
     @Override
-    public synchronized void calibrate() {
+    public synchronized void calibrate()
+    {
         Timer.delay(0.1);
         startCalibrate();
         Timer.delay(kCalibrationSampleTime);
         endCalibrate();
     }
 
-    public synchronized void startCalibrate() {
+    public synchronized void startCalibrate()
+    {
         if (m_spi == null)
             return;
 
-        if (!m_is_calibrating) {
+        if (!m_is_calibrating)
+        {
             m_is_calibrating = true;
             m_spi.setAccumulatorCenter(0);
             m_spi.resetAccumulator();
         }
     }
 
-    public synchronized void endCalibrate() {
-        if (m_is_calibrating) {
+    public synchronized void endCalibrate()
+    {
+        if (m_is_calibrating)
+        {
             m_is_calibrating = false;
             m_last_center = m_spi.getAccumulatorAverage();
             m_spi.setAccumulatorCenter((int) Math.round(m_last_center));
@@ -112,28 +129,34 @@ public class ADXRS453_Gyro extends GyroBase implements Gyro, PIDSource, Sendable
         }
     }
 
-    public synchronized void cancelCalibrate() {
-        if (m_is_calibrating) {
+    public synchronized void cancelCalibrate()
+    {
+        if (m_is_calibrating)
+        {
             m_is_calibrating = false;
             m_spi.setAccumulatorCenter((int) Math.round(m_last_center));
             m_spi.resetAccumulator();
         }
     }
 
-    public synchronized double getCenter() {
+    public synchronized double getCenter()
+    {
         return m_last_center;
     }
 
-    private boolean calcParity(int v) {
+    private boolean calcParity(int v)
+    {
         boolean parity = false;
-        while (v != 0) {
+        while (v != 0)
+        {
             parity = !parity;
             v = v & (v - 1);
         }
         return parity;
     }
 
-    private int readRegister(int reg) {
+    private int readRegister(int reg)
+    {
         int cmdhi = 0x8000 | (reg << 1);
         boolean parity = calcParity(cmdhi);
 
@@ -147,7 +170,8 @@ public class ADXRS453_Gyro extends GyroBase implements Gyro, PIDSource, Sendable
         m_spi.write(buf, 4);
         m_spi.read(false, buf, 4);
 
-        if ((buf.get(0) & 0xe0) == 0) {
+        if ((buf.get(0) & 0xe0) == 0)
+        {
             return 0;
         }
         return (buf.getInt(0) >> 5) & 0xffff;
@@ -157,8 +181,10 @@ public class ADXRS453_Gyro extends GyroBase implements Gyro, PIDSource, Sendable
      * {@inheritDoc}
      */
     @Override
-    public synchronized void reset() {
-        if (m_is_calibrating) {
+    public synchronized void reset()
+    {
+        if (m_is_calibrating)
+        {
             cancelCalibrate();
         }
         m_spi.resetAccumulator();
@@ -168,8 +194,10 @@ public class ADXRS453_Gyro extends GyroBase implements Gyro, PIDSource, Sendable
      * Delete (free) the spi port used for the gyro and stop accumulating.
      */
     @Override
-    public void free() {
-        if (m_spi != null) {
+    public void free()
+    {
+        if (m_spi != null)
+        {
             m_spi.free();
             m_spi = null;
         }
@@ -179,10 +207,12 @@ public class ADXRS453_Gyro extends GyroBase implements Gyro, PIDSource, Sendable
      * {@inheritDoc}
      */
     @Override
-    public synchronized double getAngle() {
+    public synchronized double getAngle()
+    {
         if (m_spi == null)
             return 0.0;
-        if (m_is_calibrating) {
+        if (m_is_calibrating)
+        {
             return 0.0;
         }
         return m_spi.getAccumulatorValue() * kDegreePerSecondPerLSB * kSamplePeriod;
@@ -192,10 +222,12 @@ public class ADXRS453_Gyro extends GyroBase implements Gyro, PIDSource, Sendable
      * {@inheritDoc}
      */
     @Override
-    public synchronized double getRate() {
+    public synchronized double getRate()
+    {
         if (m_spi == null)
             return 0.0;
-        if (m_is_calibrating) {
+        if (m_is_calibrating)
+        {
             return 0.0;
         }
         return m_spi.getAccumulatorLastValue() * kDegreePerSecondPerLSB;

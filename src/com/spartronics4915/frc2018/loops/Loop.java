@@ -1,10 +1,12 @@
 package com.spartronics4915.frc2018.loops;
 
 /**
- * Interface for loops, which are routine that run periodically in the robot code (such as periodic gyroscope
+ * Interface for loops, which are routine that run periodically in the robot
+ * code (such as periodic gyroscope
  * calibration, etc.)
  */
-public interface Loop {
+public interface Loop
+{
 
     public void onStart(double timestamp);
 

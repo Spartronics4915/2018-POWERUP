@@ -5,41 +5,50 @@ import java.util.ArrayList;
 /**
  * Helper class for storing and calculating a moving average
  */
-public class MovingAverage {
+public class MovingAverage
+{
 
     ArrayList<Double> numbers = new ArrayList<Double>();
     int maxSize;
 
-    public MovingAverage(int maxSize) {
+    public MovingAverage(int maxSize)
+    {
         this.maxSize = maxSize;
     }
 
-    public void addNumber(double newNumber) {
+    public void addNumber(double newNumber)
+    {
         numbers.add(newNumber);
-        if (numbers.size() > maxSize) {
+        if (numbers.size() > maxSize)
+        {
             numbers.remove(0);
         }
     }
 
-    public double getAverage() {
+    public double getAverage()
+    {
         double total = 0;
 
-        for (double number : numbers) {
+        for (double number : numbers)
+        {
             total += number;
         }
 
         return total / numbers.size();
     }
 
-    public int getSize() {
+    public int getSize()
+    {
         return numbers.size();
     }
 
-    public boolean isUnderMaxSize() {
+    public boolean isUnderMaxSize()
+    {
         return getSize() < maxSize;
     }
 
-    public void clear() {
+    public void clear()
+    {
         numbers.clear();
     }
 

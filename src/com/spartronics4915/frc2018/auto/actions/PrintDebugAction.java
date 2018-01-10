@@ -6,15 +6,19 @@ package com.spartronics4915.frc2018.auto.actions;
  * @see Action
  * @see RunOnceAction
  */
-public class PrintDebugAction extends RunOnceAction implements Action {
+public class PrintDebugAction extends RunOnceAction implements Action
+{
+
     String debugMessage;
 
-    public PrintDebugAction(String s) {
+    public PrintDebugAction(String s)
+    {
         debugMessage = s;
     }
 
     @Override
-    public void runOnce() {
+    public void runOnce()
+    {
         System.out.println(debugMessage);
     }
 

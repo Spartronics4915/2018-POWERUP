@@ -8,17 +8,25 @@ import java.util.List;
 import com.spartronics4915.lib.util.math.Translation2d;
 
 /**
- * This is used in the event that multiple goals are detected to judge all goals based on timestamp, stability, and
- * continuation of previous goals (i.e. if a goal was detected earlier and has changed locations). This allows the robot
- * to make consistent decisions about which goal to aim at and to smooth out jitter from vibration of the camera.
+ * This is used in the event that multiple goals are detected to judge all goals
+ * based on timestamp, stability, and
+ * continuation of previous goals (i.e. if a goal was detected earlier and has
+ * changed locations). This allows the robot
+ * to make consistent decisions about which goal to aim at and to smooth out
+ * jitter from vibration of the camera.
  * 
  * @see GoalTrack.java
  */
-public class GoalTracker {
+public class GoalTracker
+{
+
     /**
-     * Track reports contain all of the relevant information about a given goal track.
+     * Track reports contain all of the relevant information about a given goal
+     * track.
      */
-    public static class TrackReport {
+    public static class TrackReport
+    {
+
         // Translation from the field frame to the goal
         public Translation2d field_to_goal;
 
@@ -32,7 +40,8 @@ public class GoalTracker {
         // The track id
         public int id;
 
-        public TrackReport(GoalTrack track) {
+        public TrackReport(GoalTrack track)
+        {
             this.field_to_goal = track.getSmoothedPosition();
             this.latest_timestamp = track.getLatestTimestamp();
             this.stability = track.getStability();
@@ -41,11 +50,15 @@ public class GoalTracker {
     }
 
     /**
-     * TrackReportComparators are used in the case that multiple tracks are active (e.g. we see or have recently seen
-     * multiple goals). They contain heuristics used to pick which track we should aim at by calculating a score for
+     * TrackReportComparators are used in the case that multiple tracks are
+     * active (e.g. we see or have recently seen
+     * multiple goals). They contain heuristics used to pick which track we
+     * should aim at by calculating a score for
      * each track (highest score wins).
      */
-    public static class TrackReportComparator implements Comparator<TrackReport> {
+    public static class TrackReportComparator implements Comparator<TrackReport>
+    {
+
         // Reward tracks for being more stable (seen in more frames)
         double mStabilityWeight;
         // Reward tracks for being recently observed
@@ -57,7 +70,8 @@ public class GoalTracker {
         int mLastTrackId;
 
         public TrackReportComparator(double stability_weight, double age_weight, double switching_weight,
-                int last_track_id, double current_timestamp) {
+                int last_track_id, double current_timestamp)
+        {
             this.mStabilityWeight = stability_weight;
             this.mAgeWeight = age_weight;
             this.mSwitchingWeight = switching_weight;
@@ -65,7 +79,8 @@ public class GoalTracker {
             this.mCurrentTimestamp = current_timestamp;
         }
 
-        double score(TrackReport report) {
+        double score(TrackReport report)
+        {
             double stability_score = mStabilityWeight * report.stability;
             double age_score = mAgeWeight
                     * Math.max(0, (Constants.kMaxGoalTrackAge - (mCurrentTimestamp - report.latest_timestamp))
@@ -75,14 +90,20 @@ public class GoalTracker {
         }
 
         @Override
-        public int compare(TrackReport o1, TrackReport o2) {
+        public int compare(TrackReport o1, TrackReport o2)
+        {
             double diff = score(o1) - score(o2);
             // Greater than 0 if o1 is better than o2
-            if (diff < 0) {
+            if (diff < 0)
+            {
                 return 1;
-            } else if (diff > 0) {
+            }
+            else if (diff > 0)
+            {
                 return -1;
-            } else {
+            }
+            else
+            {
                 return 0;
             }
         }
@@ -91,50 +112,66 @@ public class GoalTracker {
     List<GoalTrack> mCurrentTracks = new ArrayList<>();
     int mNextId = 0;
 
-    public GoalTracker() {
+    public GoalTracker()
+    {
     }
 
-    public void reset() {
+    public void reset()
+    {
         mCurrentTracks.clear();
     }
 
-    public void update(double timestamp, List<Translation2d> field_to_goals) {
+    public void update(double timestamp, List<Translation2d> field_to_goals)
+    {
         // Try to update existing tracks
-        for (Translation2d target : field_to_goals) {
+        for (Translation2d target : field_to_goals)
+        {
             boolean hasUpdatedTrack = false;
-            for (GoalTrack track : mCurrentTracks) {
-                if (!hasUpdatedTrack) {
-                    if (track.tryUpdate(timestamp, target)) {
+            for (GoalTrack track : mCurrentTracks)
+            {
+                if (!hasUpdatedTrack)
+                {
+                    if (track.tryUpdate(timestamp, target))
+                    {
                         hasUpdatedTrack = true;
                     }
-                } else {
+                }
+                else
+                {
                     track.emptyUpdate();
                 }
             }
         }
         // Prune any tracks that have died
-        for (Iterator<GoalTrack> it = mCurrentTracks.iterator(); it.hasNext();) {
+        for (Iterator<GoalTrack> it = mCurrentTracks.iterator(); it.hasNext();)
+        {
             GoalTrack track = it.next();
-            if (!track.isAlive()) {
+            if (!track.isAlive())
+            {
                 it.remove();
             }
         }
         // If all tracks are dead, start new tracks for any detections
-        if (mCurrentTracks.isEmpty()) {
-            for (Translation2d target : field_to_goals) {
+        if (mCurrentTracks.isEmpty())
+        {
+            for (Translation2d target : field_to_goals)
+            {
                 mCurrentTracks.add(GoalTrack.makeNewTrack(timestamp, target, mNextId));
                 ++mNextId;
             }
         }
     }
 
-    public boolean hasTracks() {
+    public boolean hasTracks()
+    {
         return !mCurrentTracks.isEmpty();
     }
 
-    public List<TrackReport> getTracks() {
+    public List<TrackReport> getTracks()
+    {
         List<TrackReport> rv = new ArrayList<>();
-        for (GoalTrack track : mCurrentTracks) {
+        for (GoalTrack track : mCurrentTracks)
+        {
             rv.add(new TrackReport(track));
         }
         return rv;

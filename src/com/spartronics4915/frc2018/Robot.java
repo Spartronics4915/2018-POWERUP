@@ -31,20 +31,29 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
- * The main robot class, which instantiates all robot parts and helper classes and initializes all loops. Some classes
- * are already instantiated upon robot startup; for those classes, the robot gets the instance as opposed to creating a
+ * The main robot class, which instantiates all robot parts and helper classes
+ * and initializes all loops. Some classes
+ * are already instantiated upon robot startup; for those classes, the robot
+ * gets the instance as opposed to creating a
  * new object
  * 
- * After initializing all robot parts, the code sets up the autonomous and teleoperated cycles and also code that runs
+ * After initializing all robot parts, the code sets up the autonomous and
+ * teleoperated cycles and also code that runs
  * periodically inside both routines.
  * 
- * This is the nexus/converging point of the robot code and the best place to start exploring.
+ * This is the nexus/converging point of the robot code and the best place to
+ * start exploring.
  * 
- * The VM is configured to automatically run this class, and to call the functions corresponding to each mode, as
- * described in the IterativeRobot documentation. If you change the name of this class or the package after creating
- * this project, you must also update the manifest file in the resource directory.
+ * The VM is configured to automatically run this class, and to call the
+ * functions corresponding to each mode, as
+ * described in the IterativeRobot documentation. If you change the name of this
+ * class or the package after creating
+ * this project, you must also update the manifest file in the resource
+ * directory.
  */
-public class Robot extends IterativeRobot {
+public class Robot extends IterativeRobot
+{
+
     // Get subsystem instances
     private Drive mDrive = Drive.getInstance();
     private Superstructure mSuperstructure = Superstructure.getInstance();
@@ -63,26 +72,30 @@ public class Robot extends IterativeRobot {
 
     private Looper mEnabledLooper = new Looper();
 
-//    private VisionServer mVisionServer = VisionServer.getInstance();
+    //    private VisionServer mVisionServer = VisionServer.getInstance();
 
     private AnalogInput mCheckLightButton = new AnalogInput(Constants.kLEDOnId);
 
     private DelayedBoolean mDelayedAimButton;
 
-    public Robot() {
+    public Robot()
+    {
         CrashTracker.logRobotConstruction();
     }
 
-    public void zeroAllSensors() {
+    public void zeroAllSensors()
+    {
         mSubsystemManager.zeroSensors();
         mRobotState.reset(Timer.getFPGATimestamp(), new RigidTransform2d());
     }
 
     /**
-     * This function is run when the robot is first started up and should be used for any initialization code.
+     * This function is run when the robot is first started up and should be
+     * used for any initialization code.
      */
     @Override
-    public void robotInit() {
+    public void robotInit()
+    {
         // Version string and related information
         try (InputStream manifest = getClass().getClassLoader().getResourceAsStream("META-INF/MANIFEST.MF"))
         {
@@ -103,24 +116,27 @@ public class Robot extends IterativeRobot {
         {
             SmartDashboard.putString("Build", "version not found!");
             System.out.println("Build version not found!");
-            DriverStation.reportError(e.getMessage(), false /* no stack trace needed */);
+            DriverStation.reportError(e.getMessage(), false /*
+                                                             * no stack trace
+                                                             * needed
+                                                             */);
         }
-        
-        try {
+
+        try
+        {
             CrashTracker.logRobotInit();
-            
+
             CANProbe cp = new CANProbe();
             ArrayList<String> canDevices = cp.Find();
             System.out.println("CANDevicesFound:\n" + canDevices);
-            SmartDashboard.putString("CANBusStatus", 
-                                canDevices.size() == Constants.kNumCANDevices ? "OK" : 
-                                (""+canDevices.size()+"/"+Constants.kNumCANDevices));
-            
+            SmartDashboard.putString("CANBusStatus",
+                    canDevices.size() == Constants.kNumCANDevices ? "OK" : ("" + canDevices.size() + "/" + Constants.kNumCANDevices));
+
             mSubsystemManager.registerEnabledLoops(mEnabledLooper);
             mEnabledLooper.register(VisionProcessor.getInstance());
             mEnabledLooper.register(RobotStateEstimator.getInstance());
 
-//            mVisionServer.addVisionUpdateReceiver(VisionProcessor.getInstance());
+            //            mVisionServer.addVisionUpdateReceiver(VisionProcessor.getInstance());
 
             AutoModeSelector.initAutoModeSelector();
 
@@ -131,7 +147,9 @@ public class Robot extends IterativeRobot {
             // Pre calculate the paths we use for auto.
             PathAdapter.calculatePaths();
 
-        } catch (Throwable t) {
+        }
+        catch (Throwable t)
+        {
             CrashTracker.logThrowableCrash(t);
             throw t;
         }
@@ -139,19 +157,23 @@ public class Robot extends IterativeRobot {
     }
 
     /**
-     * Initializes the robot for the beginning of autonomous mode (set drivebase, intake and superstructure to correct
+     * Initializes the robot for the beginning of autonomous mode (set
+     * drivebase, intake and superstructure to correct
      * states). Then gets the correct auto mode from the AutoModeSelector
      * 
      * @see AutoModeSelector.java
      */
     @Override
-    public void autonomousInit() {
-        try {
+    public void autonomousInit()
+    {
+        try
+        {
             CrashTracker.logAutoInit();
 
             System.out.println("Auto start timestamp: " + Timer.getFPGATimestamp());
 
-            if (mAutoModeExecuter != null) {
+            if (mAutoModeExecuter != null)
+            {
                 mAutoModeExecuter.stop();
             }
 
@@ -169,7 +191,9 @@ public class Robot extends IterativeRobot {
             mAutoModeExecuter.setAutoMode(AutoModeSelector.getSelectedAutoMode());
             mAutoModeExecuter.start();
 
-        } catch (Throwable t) {
+        }
+        catch (Throwable t)
+        {
             CrashTracker.logThrowableCrash(t);
             throw t;
         }
@@ -179,7 +203,8 @@ public class Robot extends IterativeRobot {
      * This function is called periodically during autonomous
      */
     @Override
-    public void autonomousPeriodic() {
+    public void autonomousPeriodic()
+    {
         allPeriodic();
     }
 
@@ -187,8 +212,10 @@ public class Robot extends IterativeRobot {
      * Initializes the robot for the beginning of teleop
      */
     @Override
-    public void teleopInit() {
-        try {
+    public void teleopInit()
+    {
+        try
+        {
             CrashTracker.logTeleopInit();
 
             // Start loopers
@@ -198,7 +225,9 @@ public class Robot extends IterativeRobot {
             // Shift to high
             mDrive.setHighGear(true);
             zeroAllSensors();
-        } catch (Throwable t) {
+        }
+        catch (Throwable t)
+        {
             CrashTracker.logThrowableCrash(t);
             throw t;
         }
@@ -207,15 +236,19 @@ public class Robot extends IterativeRobot {
     /**
      * This function is called periodically during operator control.
      * 
-     * The code uses state machines to ensure that no matter what buttons the driver presses, the robot behaves in a
+     * The code uses state machines to ensure that no matter what buttons the
+     * driver presses, the robot behaves in a
      * safe and consistent manner.
      * 
-     * Based on driver input, the code sets a desired state for each subsystem. Each subsystem will constantly compare
+     * Based on driver input, the code sets a desired state for each subsystem.
+     * Each subsystem will constantly compare
      * its desired and actual states and act to bring the two closer.
      */
     @Override
-    public void teleopPeriodic() {
-        try {
+    public void teleopPeriodic()
+    {
+        try
+        {
             double throttle = mControlBoard.getThrottle();
             double turn = mControlBoard.getTurn();
             mDrive.setOpenLoop(mCheesyDriveHelper.cheesyDrive(throttle, turn, mControlBoard.getQuickTurn(),
@@ -223,23 +256,29 @@ public class Robot extends IterativeRobot {
             boolean wantLowGear = mControlBoard.getLowGear();
             mDrive.setHighGear(!wantLowGear);
 
-            if (mControlBoard.getBlinkLEDButton()) {
+            if (mControlBoard.getBlinkLEDButton())
+            {
                 mLED.setWantedState(LED.WantedState.BLINK);
             }
 
             allPeriodic();
-        } catch (Throwable t) {
+        }
+        catch (Throwable t)
+        {
             CrashTracker.logThrowableCrash(t);
             throw t;
         }
     }
 
     @Override
-    public void disabledInit() {
-        try {
+    public void disabledInit()
+    {
+        try
+        {
             CrashTracker.logDisabledInit();
 
-            if (mAutoModeExecuter != null) {
+            if (mAutoModeExecuter != null)
+            {
                 mAutoModeExecuter.stop();
             }
             mAutoModeExecuter = null;
@@ -252,18 +291,24 @@ public class Robot extends IterativeRobot {
             mDrive.setOpenLoop(DriveSignal.NEUTRAL);
 
             PathAdapter.calculatePaths();
-        } catch (Throwable t) {
+        }
+        catch (Throwable t)
+        {
             CrashTracker.logThrowableCrash(t);
             throw t;
         }
     }
 
     @Override
-    public void disabledPeriodic() {
+    public void disabledPeriodic()
+    {
         final double kVoltageThreshold = 0.15;
-        if (mCheckLightButton.getAverageVoltage() < kVoltageThreshold) {
+        if (mCheckLightButton.getAverageVoltage() < kVoltageThreshold)
+        {
             mLED.setLEDOn();
-        } else {
+        }
+        else
+        {
             mLED.setLEDOff();
         }
 
@@ -272,27 +317,33 @@ public class Robot extends IterativeRobot {
     }
 
     @Override
-    public void testInit() {
+    public void testInit()
+    {
         Timer.delay(0.5);
 
         boolean results = Drive.getInstance().checkSystem();
         // e.g. results &= Intake.getInstance().checkSystem();
 
-        if (!results) {
+        if (!results)
+        {
             System.out.println("CHECK ABOVE OUTPUT SOME SYSTEMS FAILED!!!");
-        } else {
+        }
+        else
+        {
             System.out.println("ALL SYSTEMS PASSED");
         }
     }
 
     @Override
-    public void testPeriodic() {
+    public void testPeriodic()
+    {
     }
 
     /**
      * Helper function that is called in all periodic functions
      */
-    public void allPeriodic() {
+    public void allPeriodic()
+    {
         mRobotState.outputToSmartDashboard();
         mSubsystemManager.outputToSmartDashboard();
         mSubsystemManager.writeToLog();

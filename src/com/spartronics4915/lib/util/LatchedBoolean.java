@@ -3,14 +3,19 @@ package com.spartronics4915.lib.util;
 /**
  * An iterative boolean latch.
  * 
- * Returns true once if and only if the value of newValue changes from false to true.
+ * Returns true once if and only if the value of newValue changes from false to
+ * true.
  */
-public class LatchedBoolean {
+public class LatchedBoolean
+{
+
     private boolean mLast = false;
 
-    public boolean update(boolean newValue) {
+    public boolean update(boolean newValue)
+    {
         boolean ret = false;
-        if (newValue && !mLast) {
+        if (newValue && !mLast)
+        {
             ret = true;
         }
         mLast = newValue;

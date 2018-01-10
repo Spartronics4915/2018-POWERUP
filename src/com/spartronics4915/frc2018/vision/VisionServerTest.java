@@ -3,25 +3,36 @@ package com.spartronics4915.frc2018.vision;
 /**
  * Tests the vision system by getting targets
  */
-public class VisionServerTest {
-    public static class TestReceiver implements VisionUpdateReceiver {
+public class VisionServerTest
+{
+
+    public static class TestReceiver implements VisionUpdateReceiver
+    {
+
         @Override
-        public void gotUpdate(VisionUpdate update) {
+        public void gotUpdate(VisionUpdate update)
+        {
             System.out.println("num targets: " + update.getTargets().size());
-            for (int i = 0; i < update.getTargets().size(); i++) {
+            for (int i = 0; i < update.getTargets().size(); i++)
+            {
                 TargetInfo target = update.getTargets().get(i);
                 System.out.println("Target: " + target.getY() + ", " + target.getZ());
             }
         }
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args)
+    {
         VisionServer visionServer = VisionServer.getInstance();
         visionServer.addVisionUpdateReceiver(new TestReceiver());
-        while (true) {
-            try {
+        while (true)
+        {
+            try
+            {
                 Thread.sleep(100);
-            } catch (InterruptedException e) {
+            }
+            catch (InterruptedException e)
+            {
                 e.printStackTrace();
             }
         }

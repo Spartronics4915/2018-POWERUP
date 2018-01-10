@@ -3,22 +3,32 @@ package com.spartronics4915.frc2018.auto;
 import com.spartronics4915.lib.util.CrashTrackingRunnable;
 
 /**
- * This class selects, runs, and stops (if necessary) a specified autonomous mode.
+ * This class selects, runs, and stops (if necessary) a specified autonomous
+ * mode.
  */
-public class AutoModeExecuter {
+public class AutoModeExecuter
+{
+
     private AutoModeBase m_auto_mode;
     private Thread m_thread = null;
 
-    public void setAutoMode(AutoModeBase new_auto_mode) {
+    public void setAutoMode(AutoModeBase new_auto_mode)
+    {
         m_auto_mode = new_auto_mode;
     }
 
-    public void start() {
-        if (m_thread == null) {
-            m_thread = new Thread(new CrashTrackingRunnable() {
+    public void start()
+    {
+        if (m_thread == null)
+        {
+            m_thread = new Thread(new CrashTrackingRunnable()
+            {
+
                 @Override
-                public void runCrashTracked() {
-                    if (m_auto_mode != null) {
+                public void runCrashTracked()
+                {
+                    if (m_auto_mode != null)
+                    {
                         m_auto_mode.run();
                     }
                 }
@@ -29,8 +39,10 @@ public class AutoModeExecuter {
 
     }
 
-    public void stop() {
-        if (m_auto_mode != null) {
+    public void stop()
+    {
+        if (m_auto_mode != null)
+        {
             m_auto_mode.stop();
         }
 

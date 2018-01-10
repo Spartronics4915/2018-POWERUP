@@ -1,34 +1,41 @@
 package com.spartronics4915.frc2018.vision.messages;
 
 /**
- * A Message that contains and can set the state of the camera and intake systems.
+ * A Message that contains and can set the state of the camera and intake
+ * systems.
  */
-public class SetCameraModeMessage extends VisionMessage {
+public class SetCameraModeMessage extends VisionMessage
+{
 
     private static final String K_VISION_MODE = "vision";
     private static final String K_INTAKE_MODE = "intake";
 
     private String mMessage = K_VISION_MODE;
 
-    private SetCameraModeMessage(String message) {
+    private SetCameraModeMessage(String message)
+    {
         mMessage = message;
     }
 
-    public static SetCameraModeMessage getVisionModeMessage() {
+    public static SetCameraModeMessage getVisionModeMessage()
+    {
         return new SetCameraModeMessage(K_VISION_MODE);
     }
 
-    public static SetCameraModeMessage getIntakeModeMessage() {
+    public static SetCameraModeMessage getIntakeModeMessage()
+    {
         return new SetCameraModeMessage(K_INTAKE_MODE);
     }
 
     @Override
-    public String getType() {
+    public String getType()
+    {
         return "camera_mode";
     }
 
     @Override
-    public String getMessage() {
+    public String getMessage()
+    {
         return mMessage;
     }
 }

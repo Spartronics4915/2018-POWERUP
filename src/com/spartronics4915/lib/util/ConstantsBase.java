@@ -21,27 +21,34 @@ import org.json.simple.parser.ParseException;
 /**
  * ConstantsBase
  * 
- * Base class for storing robot constants. Anything stored as a public static field will be reflected and be able to set
+ * Base class for storing robot constants. Anything stored as a public static
+ * field will be reflected and be able to set
  * externally
  */
-public abstract class ConstantsBase {
+public abstract class ConstantsBase
+{
+
     HashMap<String, Boolean> modifiedKeys = new HashMap<String, Boolean>();
 
     public abstract String getFileLocation();
 
-    public static class Constant {
+    public static class Constant
+    {
+
         public String name;
         public Class<?> type;
         public Object value;
 
-        public Constant(String name, Class<?> type, Object value) {
+        public Constant(String name, Class<?> type, Object value)
+        {
             this.name = name;
             this.type = type;
             this.value = value;
         }
 
         @Override
-        public boolean equals(Object o) {
+        public boolean equals(Object o)
+        {
             String itsName = ((Constant) o).name;
             Class<?> itsType = ((Constant) o).type;
             Object itsValue = ((Constant) o).value;
@@ -50,52 +57,69 @@ public abstract class ConstantsBase {
         }
     }
 
-    public File getFile() {
+    public File getFile()
+    {
         String filePath = getFileLocation();
         filePath = filePath.replaceFirst("^~", System.getProperty("user.home"));
         return new File(filePath);
     }
 
-    public boolean truncateUserConstants() {
-        try {
+    public boolean truncateUserConstants()
+    {
+        try
+        {
             Files.write(getFile().toPath(), new byte[0], StandardOpenOption.TRUNCATE_EXISTING);
             loadFromFile();
             return true;
-        } catch (IOException e) {
+        }
+        catch (IOException e)
+        {
             // TODO Auto-generated catch block
             e.printStackTrace();
             return false;
         }
     }
 
-    public boolean setConstant(String name, Double value) {
+    public boolean setConstant(String name, Double value)
+    {
         return setConstantRaw(name, value);
     }
 
-    public boolean setConstant(String name, Integer value) {
+    public boolean setConstant(String name, Integer value)
+    {
         return setConstantRaw(name, value);
     }
 
-    public boolean setConstant(String name, String value) {
+    public boolean setConstant(String name, String value)
+    {
         return setConstantRaw(name, value);
     }
 
-    private boolean setConstantRaw(String name, Object value) {
+    private boolean setConstantRaw(String name, Object value)
+    {
         boolean success = false;
         Field[] declaredFields = this.getClass().getDeclaredFields();
-        for (Field field : declaredFields) {
-            if (java.lang.reflect.Modifier.isStatic(field.getModifiers()) && field.getName().equals(name)) {
-                try {
+        for (Field field : declaredFields)
+        {
+            if (java.lang.reflect.Modifier.isStatic(field.getModifiers()) && field.getName().equals(name))
+            {
+                try
+                {
                     Object current = field.get(this);
                     field.set(this, value);
                     success = true;
-                    if (!value.equals(current)) {
+                    if (!value.equals(current))
+                    {
                         modifiedKeys.put(name, true);
                         System.out.println("Constant Modified:" + field.getName());
-                    } else {
+                    }
+                    else
+                    {
                         System.out.println("Constant Not Modified:" + field.getName());
                     }
-                } catch (IllegalArgumentException | IllegalAccessException e) {
+                }
+                catch (IllegalArgumentException | IllegalAccessException e)
+                {
                     System.out.println("Could not set field: " + name);
                 }
             }
@@ -103,13 +127,19 @@ public abstract class ConstantsBase {
         return success;
     }
 
-    public Object getValueForConstant(String name) throws Exception {
+    public Object getValueForConstant(String name) throws Exception
+    {
         Field[] declaredFields = this.getClass().getDeclaredFields();
-        for (Field field : declaredFields) {
-            if (java.lang.reflect.Modifier.isStatic(field.getModifiers()) && field.getName().equals(name)) {
-                try {
+        for (Field field : declaredFields)
+        {
+            if (java.lang.reflect.Modifier.isStatic(field.getModifiers()) && field.getName().equals(name))
+            {
+                try
+                {
                     return field.get(this);
-                } catch (IllegalArgumentException | IllegalAccessException e) {
+                }
+                catch (IllegalArgumentException | IllegalAccessException e)
+                {
                     throw new Exception("Constant not found");
                 }
             }
@@ -117,13 +147,19 @@ public abstract class ConstantsBase {
         throw new Exception("Constant not found");
     }
 
-    public Constant getConstant(String name) {
+    public Constant getConstant(String name)
+    {
         Field[] declaredFields = this.getClass().getDeclaredFields();
-        for (Field field : declaredFields) {
-            if (java.lang.reflect.Modifier.isStatic(field.getModifiers()) && field.getName().equals(name)) {
-                try {
+        for (Field field : declaredFields)
+        {
+            if (java.lang.reflect.Modifier.isStatic(field.getModifiers()) && field.getName().equals(name))
+            {
+                try
+                {
                     return new Constant(field.getName(), field.getType(), field.get(this));
-                } catch (IllegalArgumentException | IllegalAccessException e) {
+                }
+                catch (IllegalArgumentException | IllegalAccessException e)
+                {
                     e.printStackTrace();
                 }
             }
@@ -131,28 +167,37 @@ public abstract class ConstantsBase {
         return new Constant("", Object.class, 0);
     }
 
-    public Collection<Constant> getConstants() {
+    public Collection<Constant> getConstants()
+    {
         List<Constant> constants = (List<Constant>) getAllConstants();
         int stop = constants.size();
-        for (int i = 0; i < constants.size(); ++i) {
+        for (int i = 0; i < constants.size(); ++i)
+        {
             Constant c = constants.get(i);
-            if ("kEndEditableArea".equals(c.name)) {
+            if ("kEndEditableArea".equals(c.name))
+            {
                 stop = i;
             }
         }
         return constants.subList(0, stop);
     }
 
-    private Collection<Constant> getAllConstants() {
+    private Collection<Constant> getAllConstants()
+    {
         Field[] declaredFields = this.getClass().getDeclaredFields();
         List<Constant> constants = new ArrayList<Constant>(declaredFields.length);
-        for (Field field : declaredFields) {
-            if (java.lang.reflect.Modifier.isStatic(field.getModifiers())) {
+        for (Field field : declaredFields)
+        {
+            if (java.lang.reflect.Modifier.isStatic(field.getModifiers()))
+            {
                 Constant c;
-                try {
+                try
+                {
                     c = new Constant(field.getName(), field.getType(), field.get(this));
                     constants.add(c);
-                } catch (IllegalArgumentException | IllegalAccessException e) {
+                }
+                catch (IllegalArgumentException | IllegalAccessException e)
+                {
                     e.printStackTrace();
                 }
             }
@@ -160,9 +205,11 @@ public abstract class ConstantsBase {
         return constants;
     }
 
-    public JSONObject getJSONObjectFromFile() throws IOException, ParseException {
+    public JSONObject getJSONObjectFromFile() throws IOException, ParseException
+    {
         File file = getFile();
-        if (file == null || !file.exists()) {
+        if (file == null || !file.exists())
+        {
             return new JSONObject();
         }
         FileReader reader;
@@ -171,44 +218,61 @@ public abstract class ConstantsBase {
         return (JSONObject) jsonParser.parse(reader);
     }
 
-    public void loadFromFile() {
-        try {
+    public void loadFromFile()
+    {
+        try
+        {
             JSONObject jsonObject = getJSONObjectFromFile();
             Set<?> keys = jsonObject.keySet();
-            for (Object o : keys) {
+            for (Object o : keys)
+            {
                 String key = (String) o;
                 Object value = jsonObject.get(o);
-                if (value instanceof Long && getConstant(key).type.equals(int.class)) {
+                if (value instanceof Long && getConstant(key).type.equals(int.class))
+                {
                     value = new BigDecimal((Long) value).intValueExact();
                 }
                 setConstantRaw(key, value);
             }
-        } catch (IOException e) {
+        }
+        catch (IOException e)
+        {
             e.printStackTrace();
-        } catch (ParseException e) {
+        }
+        catch (ParseException e)
+        {
             e.printStackTrace();
         }
     }
 
-    public void saveToFile() {
+    public void saveToFile()
+    {
         File file = getFile();
-        if (file == null) {
+        if (file == null)
+        {
             return;
         }
-        try {
+        try
+        {
             JSONObject json = getJSONObjectFromFile();
             FileWriter writer = new FileWriter(file);
-            for (String key : modifiedKeys.keySet()) {
-                try {
+            for (String key : modifiedKeys.keySet())
+            {
+                try
+                {
                     Object value = getValueForConstant(key);
                     json.put(key, value);
-                } catch (Exception e) {
+                }
+                catch (Exception e)
+                {
                     e.printStackTrace();
                 }
             }
             writer.write(json.toJSONString());
             writer.close();
-        } catch (IOException | ParseException e) {
+        }
+        catch (IOException | ParseException e)
+        {
             e.printStackTrace();
         }
     }

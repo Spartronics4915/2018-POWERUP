@@ -7,12 +7,16 @@ import com.ctre.phoenix.motorcontrol.StatusFrameEnhanced;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 
 /**
- * Creates CANTalon objects and configures all the parameters we care about to factory defaults. Closed-loop and sensor
+ * Creates CANTalon objects and configures all the parameters we care about to
+ * factory defaults. Closed-loop and sensor
  * parameters are not set, as these are expected to be set by the application.
  */
-public class CANTalonFactory {
+public class CANTalonFactory
+{
 
-    public static class Configuration {
+    public static class Configuration
+    {
+
         public boolean LIMIT_SWITCH_NORMALLY_OPEN = true;
         public double MAX_OUTPUT_VOLTAGE = 12;
         public double NOMINAL_VOLTAGE = 0;
@@ -47,7 +51,8 @@ public class CANTalonFactory {
     private static final Configuration kDefaultConfiguration = new Configuration();
     private static final Configuration kSlaveConfiguration = new Configuration();
 
-    static {
+    static
+    {
         kSlaveConfiguration.CONTROL_FRAME_PERIOD_MS = 1000;
         kSlaveConfiguration.MOTION_CONTROL_FRAME_PERIOD_MS = 1000;
         kSlaveConfiguration.GENERAL_STATUS_FRAME_RATE_MS = 1000;
@@ -58,18 +63,21 @@ public class CANTalonFactory {
     }
 
     // Create a CANTalon with the default (out of the box) configuration.
-    public static CANTalon createDefaultTalon(int id) {
+    public static CANTalon createDefaultTalon(int id)
+    {
         return createTalon(id, kDefaultConfiguration);
     }
 
-    public static CANTalon createPermanentSlaveTalon(int id, int master_id) {
+    public static CANTalon createPermanentSlaveTalon(int id, int master_id)
+    {
         final CANTalon talon = createTalon(id, kSlaveConfiguration);
         talon.changeControlMode(ControlMode.Follower);
         talon.set(master_id);
         return talon;
     }
 
-    public static CANTalon createTalon(int id, Configuration config) {
+    public static CANTalon createTalon(int id, Configuration config)
+    {
         CANTalon talon = new LazyCANTalon(id, config.CONTROL_FRAME_PERIOD_MS);
         talon.changeControlMode(ControlMode.PercentOutput); // XXX: was Voltage
         talon.changeMotionControlFramePeriod(config.MOTION_CONTROL_FRAME_PERIOD_MS);
@@ -109,8 +117,8 @@ public class CANTalonFactory {
         talon.setVoltageRampRate(config.VOLTAGE_RAMP_RATE);
 
         talon.setStatusFrameRateMs(StatusFrameEnhanced.Status_1_General, config.GENERAL_STATUS_FRAME_RATE_MS);
-        talon.setStatusFrameRateMs(StatusFrameEnhanced.Status_2_Feedback0 , config.FEEDBACK_STATUS_FRAME_RATE_MS); // XXX: was Feedback
-        talon.setStatusFrameRateMs(StatusFrameEnhanced.Status_3_Quadrature , config.QUAD_ENCODER_STATUS_FRAME_RATE_MS);
+        talon.setStatusFrameRateMs(StatusFrameEnhanced.Status_2_Feedback0, config.FEEDBACK_STATUS_FRAME_RATE_MS); // XXX: was Feedback
+        talon.setStatusFrameRateMs(StatusFrameEnhanced.Status_3_Quadrature, config.QUAD_ENCODER_STATUS_FRAME_RATE_MS);
         talon.setStatusFrameRateMs(StatusFrameEnhanced.Status_4_AinTempVbat,
                 config.ANALOG_TEMP_VBAT_STATUS_FRAME_RATE_MS);
 
@@ -120,7 +128,8 @@ public class CANTalonFactory {
     /**
      * Run this on a fresh talon to produce good values for the defaults.
      */
-    public static String getFullTalonInfo(CANTalon talon) {
+    public static String getFullTalonInfo(CANTalon talon)
+    {
         @SuppressWarnings("deprecation") // Things that don't work are deprecated
         StringBuilder sb = new StringBuilder().append("isRevLimitSwitchClosed = ")
                 .append(talon.isRevLimitSwitchClosed()).append("\n").append("getBusVoltage = ")

@@ -9,14 +9,20 @@ import com.spartronics4915.lib.util.motion.ProfileFollower;
 import com.spartronics4915.lib.util.motion.MotionProfileGoal.CompletionBehavior;
 
 /**
- * A PathFollower follows a predefined path using a combination of feedforward and feedback control. It uses an
- * AdaptivePurePursuitController to choose a reference pose and generate a steering command (curvature), and then a
+ * A PathFollower follows a predefined path using a combination of feedforward
+ * and feedback control. It uses an
+ * AdaptivePurePursuitController to choose a reference pose and generate a
+ * steering command (curvature), and then a
  * ProfileFollower to generate a profile (displacement and velocity) command.
  */
-public class PathFollower {
+public class PathFollower
+{
+
     private static final double kReallyBigNumber = 1E6;
 
-    public static class DebugOutput {
+    public static class DebugOutput
+    {
+
         public double t;
         public double pose_x;
         public double pose_y;
@@ -38,7 +44,9 @@ public class PathFollower {
         public double lookahead_point_velocity;
     }
 
-    public static class Parameters {
+    public static class Parameters
+    {
+
         public final Lookahead lookahead;
         public final double inertia_gain;
         public final double profile_kp;
@@ -55,7 +63,8 @@ public class PathFollower {
         public Parameters(Lookahead lookahead, double inertia_gain, double profile_kp, double profile_ki,
                 double profile_kv, double profile_kffv, double profile_kffa, double profile_max_abs_vel,
                 double profile_max_abs_acc, double goal_pos_tolerance, double goal_vel_tolerance,
-                double stop_steering_distance) {
+                double stop_steering_distance)
+        {
             this.lookahead = lookahead;
             this.inertia_gain = inertia_gain;
             this.profile_kp = profile_kp;
@@ -90,7 +99,8 @@ public class PathFollower {
     /**
      * Create a new PathFollower for a given path.
      */
-    public PathFollower(Path path, boolean reversed, Parameters parameters) {
+    public PathFollower(Path path, boolean reversed, Parameters parameters)
+    {
         mSteeringController = new AdaptivePurePursuitController(path, reversed, parameters.lookahead);
         mLastSteeringDelta = Twist2d.identity();
         mVelocityController = new ProfileFollower(parameters.profile_kp, parameters.profile_ki, parameters.profile_kv,
@@ -109,17 +119,19 @@ public class PathFollower {
      * Get new velocity commands to follow the path.
      * 
      * @param t
-     *            The current timestamp
+     *        The current timestamp
      * @param pose
-     *            The current robot pose
+     *        The current robot pose
      * @param displacement
-     *            The current robot displacement (total distance driven).
+     *        The current robot displacement (total distance driven).
      * @param velocity
-     *            The current robot velocity.
+     *        The current robot velocity.
      * @return The velocity command to apply
      */
-    public synchronized Twist2d update(double t, RigidTransform2d pose, double displacement, double velocity) {
-        if (!mSteeringController.isFinished()) {
+    public synchronized Twist2d update(double t, RigidTransform2d pose, double displacement, double velocity)
+    {
+        if (!mSteeringController.isFinished())
+        {
             final AdaptivePurePursuitController.Command steering_command = mSteeringController.update(pose);
             mDebugOutput.lookahead_point_x = steering_command.lookahead_point.x();
             mDebugOutput.lookahead_point_y = steering_command.lookahead_point.y();
@@ -136,7 +148,8 @@ public class PathFollower {
                     new MotionProfileConstraints(Math.min(mMaxProfileVel, steering_command.max_velocity),
                             mMaxProfileAcc));
 
-            if (steering_command.remaining_path_length < mStopSteeringDistance) {
+            if (steering_command.remaining_path_length < mStopSteeringDistance)
+            {
                 doneSteering = true;
             }
         }
@@ -145,7 +158,8 @@ public class PathFollower {
         mAlongTrackError = mVelocityController.getPosError();
         final double curvature = mLastSteeringDelta.dtheta / mLastSteeringDelta.dx;
         double dtheta = mLastSteeringDelta.dtheta;
-        if (!Double.isNaN(curvature) && Math.abs(curvature) < kReallyBigNumber) {
+        if (!Double.isNaN(curvature) && Math.abs(curvature) < kReallyBigNumber)
+        {
             // Regenerate angular velocity command from adjusted curvature.
             final double abs_velocity_setpoint = Math.abs(mVelocityController.getSetpoint().vel());
             dtheta = mLastSteeringDelta.dx * curvature * (1.0 + mInertiaGain * abs_velocity_setpoint);
@@ -171,28 +185,34 @@ public class PathFollower {
         return rv;
     }
 
-    public double getCrossTrackError() {
+    public double getCrossTrackError()
+    {
         return mCrossTrackError;
     }
 
-    public double getAlongTrackError() {
+    public double getAlongTrackError()
+    {
         return mAlongTrackError;
     }
 
-    public DebugOutput getDebug() {
+    public DebugOutput getDebug()
+    {
         return mDebugOutput;
     }
 
-    public boolean isFinished() {
+    public boolean isFinished()
+    {
         return (mSteeringController.isFinished() && mVelocityController.isFinishedProfile()
                 && mVelocityController.onTarget()) || overrideFinished;
     }
 
-    public void forceFinish() {
+    public void forceFinish()
+    {
         overrideFinished = true;
     }
 
-    public boolean hasPassedMarker(String marker) {
+    public boolean hasPassedMarker(String marker)
+    {
         return mSteeringController.hasPassedMarker(marker);
     }
 }

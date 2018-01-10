@@ -12,10 +12,13 @@ import com.spartronics4915.lib.util.math.PolynomialRegression;
 import edu.wpi.first.wpilibj.Solenoid;
 
 /**
- * A list of constants used by the rest of the robot code. This include physics constants as well as constants
+ * A list of constants used by the rest of the robot code. This include physics
+ * constants as well as constants
  * determined through calibrations.
  */
-public class Constants extends ConstantsBase {
+public class Constants extends ConstantsBase
+{
+
     public static double kLooperDt = 0.005;
 
     // Target parameters
@@ -80,7 +83,7 @@ public class Constants extends ConstantsBase {
     public static final int kIMUTalonId = 6;
     public static final int kEncoderCodesPerRev = 250; // Not ticks, codes; ticks would be kEncoderCodesPerRev * 4 (for quadrature encoders at least)
     public static final int kNumCANDevices = 8;
-    
+
     // Solenoids
     public static final int kShifterSolenoidId = 0; // PCM 0, Solenoid 0
     public static final int kIntakeDeploySolenoidId = 1; // PCM 0, Solenoid 1
@@ -153,19 +156,21 @@ public class Constants extends ConstantsBase {
 
     public static double[][] kFlywheelDistanceRpmValues = {
             // At champs 4/27
-            { 90.0, 2890.0 },
-            { 95.0, 2940.0 },
-            { 100.0, 2990.0 },
-            { 105.0, 3025.0 },
-            { 110.0, 3075.0 },
-            { 115.0, 3125.0 },
-            { 120.0, 3175.0 },
-            { 125.0, 3225.0 },
-            { 130.0, 3275.0 },
+            {90.0, 2890.0},
+            {95.0, 2940.0},
+            {100.0, 2990.0},
+            {105.0, 3025.0},
+            {110.0, 3075.0},
+            {115.0, 3125.0},
+            {120.0, 3175.0},
+            {125.0, 3225.0},
+            {130.0, 3275.0},
     };
 
-    static {
-        for (double[] pair : kFlywheelDistanceRpmValues) {
+    static
+    {
+        for (double[] pair : kFlywheelDistanceRpmValues)
+        {
             kFlywheelAutoAimMap.put(new InterpolatingDouble(pair[0]), new InterpolatingDouble(pair[1]));
         }
         kDefaultShootingRPM = kFlywheelAutoAimMap
@@ -175,17 +180,20 @@ public class Constants extends ConstantsBase {
     }
 
     /**
-     * Make an {@link Solenoid} instance for the single-number ID of the solenoid
+     * Make an {@link Solenoid} instance for the single-number ID of the
+     * solenoid
      * 
      * @param solenoidId
-     *            One of the kXyzSolenoidId constants
+     *        One of the kXyzSolenoidId constants
      */
-    public static Solenoid makeSolenoidForId(int solenoidId) {
+    public static Solenoid makeSolenoidForId(int solenoidId)
+    {
         return new Solenoid(solenoidId / 8, solenoidId % 8);
     }
 
     @Override
-    public String getFileLocation() {
+    public String getFileLocation()
+    {
         return "~/constants.txt";
     }
 }

@@ -9,10 +9,12 @@ import com.spartronics4915.frc2018.subsystems.Drive;
  * @see Action
  * @see RunOnceAction
  */
-public class ForceEndPathAction extends RunOnceAction {
+public class ForceEndPathAction extends RunOnceAction
+{
 
     @Override
-    public synchronized void runOnce() {
+    public synchronized void runOnce()
+    {
         Drive.getInstance().forceDoneWithPath();
     }
 }

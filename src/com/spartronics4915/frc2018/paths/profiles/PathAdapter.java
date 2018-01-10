@@ -1,12 +1,14 @@
 package com.spartronics4915.frc2018.paths.profiles;
 
 /**
- * Uses a field and robot profile to calculate Waypoints for the paths used by the GearThenHopperShoot auto modes.
+ * Uses a field and robot profile to calculate Waypoints for the paths used by
+ * the GearThenHopperShoot auto modes.
  * 
  * @see RobotProfile
  * @see FieldProfile
  */
-public class PathAdapter {
+public class PathAdapter
+{
 
     static final RobotProfile kRobotProfile = new CompBot();
     static final FieldProfile kFieldProfile = new PracticeField();
@@ -18,11 +20,13 @@ public class PathAdapter {
     static final double kSmallRadius = 10;
     static final double kSpeed = 80;
 
-    public static void calculatePaths() {
+    public static void calculatePaths()
+    {
         // TODO: Put paths here
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args)
+    {
         // You can put print the path out here
     }
 

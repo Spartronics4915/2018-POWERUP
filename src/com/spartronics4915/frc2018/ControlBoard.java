@@ -3,22 +3,31 @@ package com.spartronics4915.frc2018;
 import edu.wpi.first.wpilibj.Joystick;
 
 /**
- * Contains the button mappings for the competition control board. Like the drive code, one instance of the ControlBoard
- * object is created upon startup, then other methods request the singleton ControlBoard instance. Implements the
+ * Contains the button mappings for the competition control board. Like the
+ * drive code, one instance of the ControlBoard
+ * object is created upon startup, then other methods request the singleton
+ * ControlBoard instance. Implements the
  * ControlBoardInterface.
  * 
  * @see ControlBoardInterface.java
  */
-public class ControlBoard implements ControlBoardInterface {
+public class ControlBoard implements ControlBoardInterface
+{
+
     private static ControlBoardInterface mInstance = null;
 
     private static final boolean kUseGamepad = false;
 
-    public static ControlBoardInterface getInstance() {
-        if (mInstance == null) {
-            if (kUseGamepad) {
+    public static ControlBoardInterface getInstance()
+    {
+        if (mInstance == null)
+        {
+            if (kUseGamepad)
+            {
                 mInstance = new GamepadControlBoard();
-            } else {
+            }
+            else
+            {
                 mInstance = new ControlBoard();
             }
         }
@@ -29,7 +38,8 @@ public class ControlBoard implements ControlBoardInterface {
     private final Joystick mTurnStick;
     private final Joystick mButtonBoard;
 
-    protected ControlBoard() {
+    protected ControlBoard()
+    {
         mThrottleStick = new Joystick(0);
         mTurnStick = new Joystick(1);
         mButtonBoard = new Joystick(2);
@@ -37,27 +47,32 @@ public class ControlBoard implements ControlBoardInterface {
 
     // DRIVER CONTROLS
     @Override
-    public double getThrottle() {
+    public double getThrottle()
+    {
         return -mThrottleStick.getRawAxis(0);
     }
 
     @Override
-    public double getTurn() {
+    public double getTurn()
+    {
         return -mTurnStick.getY();
     }
 
     @Override
-    public boolean getQuickTurn() {
+    public boolean getQuickTurn()
+    {
         return mTurnStick.getRawButton(1);
     }
 
     @Override
-    public boolean getLowGear() {
+    public boolean getLowGear()
+    {
         return mThrottleStick.getRawButton(2);
     }
 
     @Override
-    public boolean getBlinkLEDButton() {
+    public boolean getBlinkLEDButton()
+    {
         return mButtonBoard.getRawButton(9);
     }
 }

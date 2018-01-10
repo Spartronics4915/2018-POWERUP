@@ -6,15 +6,18 @@ import java.util.List;
 /**
  * Executes one action at a time. Useful as a member of {@link ParallelAction}
  */
-public class SeriesAction implements Action {
+public class SeriesAction implements Action
+{
 
     private Action mCurAction;
     private final ArrayList<Action> mRemainingActions;
 
-    public SeriesAction(List<Action> actions) {
+    public SeriesAction(List<Action> actions)
+    {
         mRemainingActions = new ArrayList<>(actions.size());
 
-        for (Action action : actions) {
+        for (Action action : actions)
+        {
             mRemainingActions.add(action);
         }
 
@@ -22,18 +25,23 @@ public class SeriesAction implements Action {
     }
 
     @Override
-    public boolean isFinished() {
+    public boolean isFinished()
+    {
         return mRemainingActions.isEmpty() && mCurAction == null;
     }
 
     @Override
-    public void start() {
+    public void start()
+    {
     }
 
     @Override
-    public void update() {
-        if (mCurAction == null) {
-            if (mRemainingActions.isEmpty()) {
+    public void update()
+    {
+        if (mCurAction == null)
+        {
+            if (mRemainingActions.isEmpty())
+            {
                 return;
             }
 
@@ -43,13 +51,15 @@ public class SeriesAction implements Action {
 
         mCurAction.update();
 
-        if (mCurAction.isFinished()) {
+        if (mCurAction.isFinished())
+        {
             mCurAction.done();
             mCurAction = null;
         }
     }
 
     @Override
-    public void done() {
+    public void done()
+    {
     }
 }

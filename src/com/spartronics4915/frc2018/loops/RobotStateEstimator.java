@@ -7,17 +7,23 @@ import com.spartronics4915.lib.util.math.Rotation2d;
 import com.spartronics4915.lib.util.math.Twist2d;
 
 /**
- * Periodically estimates the state of the robot using the robot's distance traveled (compares two waypoints), gyroscope
- * orientation, and velocity, among various other factors. Similar to a car's odometer.
+ * Periodically estimates the state of the robot using the robot's distance
+ * traveled (compares two waypoints), gyroscope
+ * orientation, and velocity, among various other factors. Similar to a car's
+ * odometer.
  */
-public class RobotStateEstimator implements Loop {
+public class RobotStateEstimator implements Loop
+{
+
     static RobotStateEstimator instance_ = new RobotStateEstimator();
 
-    public static RobotStateEstimator getInstance() {
+    public static RobotStateEstimator getInstance()
+    {
         return instance_;
     }
 
-    RobotStateEstimator() {
+    RobotStateEstimator()
+    {
     }
 
     RobotState robot_state_ = RobotState.getInstance();
@@ -26,13 +32,15 @@ public class RobotStateEstimator implements Loop {
     double right_encoder_prev_distance_ = 0;
 
     @Override
-    public synchronized void onStart(double timestamp) {
+    public synchronized void onStart(double timestamp)
+    {
         left_encoder_prev_distance_ = drive_.getLeftDistanceInches();
         right_encoder_prev_distance_ = drive_.getRightDistanceInches();
     }
 
     @Override
-    public synchronized void onLoop(double timestamp) {
+    public synchronized void onLoop(double timestamp)
+    {
         final double left_distance = drive_.getLeftDistanceInches();
         final double right_distance = drive_.getRightDistanceInches();
         final Rotation2d gyro_angle = drive_.getGyroAngle();
@@ -46,7 +54,8 @@ public class RobotStateEstimator implements Loop {
     }
 
     @Override
-    public void onStop(double timestamp) {
+    public void onStop(double timestamp)
+    {
         // no-op
     }
 

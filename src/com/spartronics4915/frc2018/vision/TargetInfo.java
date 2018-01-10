@@ -1,27 +1,34 @@
 package com.spartronics4915.frc2018.vision;
 
 /**
- * A container class for Targets detected by the vision system, containing the location in three-dimensional space.
+ * A container class for Targets detected by the vision system, containing the
+ * location in three-dimensional space.
  */
-public class TargetInfo {
+public class TargetInfo
+{
+
     protected double x = 1.0;
     protected double y;
     protected double z;
 
-    public TargetInfo(double y, double z) {
+    public TargetInfo(double y, double z)
+    {
         this.y = y;
         this.z = z;
     }
 
-    public double getX() {
+    public double getX()
+    {
         return x;
     }
 
-    public double getY() {
+    public double getY()
+    {
         return y;
     }
 
-    public double getZ() {
+    public double getZ()
+    {
         return z;
     }
 }

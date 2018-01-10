@@ -7,14 +7,18 @@ import java.text.DecimalFormat;
 import com.spartronics4915.lib.util.Interpolable;
 
 /**
- * A rotation in a 2d coordinate frame represented a point on the unit circle (cosine and sine).
+ * A rotation in a 2d coordinate frame represented a point on the unit circle
+ * (cosine and sine).
  * 
  * Inspired by Sophus (https://github.com/strasdat/Sophus/tree/master/sophus)
  */
-public class Rotation2d implements Interpolable<Rotation2d> {
+public class Rotation2d implements Interpolable<Rotation2d>
+{
+
     protected static final Rotation2d kIdentity = new Rotation2d();
 
-    public static final Rotation2d identity() {
+    public static final Rotation2d identity()
+    {
         return kIdentity;
     }
 
@@ -23,90 +27,116 @@ public class Rotation2d implements Interpolable<Rotation2d> {
     protected double cos_angle_;
     protected double sin_angle_;
 
-    public Rotation2d() {
+    public Rotation2d()
+    {
         this(1, 0, false);
     }
 
-    public Rotation2d(double x, double y, boolean normalize) {
+    public Rotation2d(double x, double y, boolean normalize)
+    {
         cos_angle_ = x;
         sin_angle_ = y;
-        if (normalize) {
+        if (normalize)
+        {
             normalize();
         }
     }
 
-    public Rotation2d(Rotation2d other) {
+    public Rotation2d(Rotation2d other)
+    {
         cos_angle_ = other.cos_angle_;
         sin_angle_ = other.sin_angle_;
     }
 
-    public Rotation2d(Translation2d direction, boolean normalize) {
+    public Rotation2d(Translation2d direction, boolean normalize)
+    {
         this(direction.x(), direction.y(), normalize);
     }
 
-    public static Rotation2d fromRadians(double angle_radians) {
+    public static Rotation2d fromRadians(double angle_radians)
+    {
         return new Rotation2d(Math.cos(angle_radians), Math.sin(angle_radians), false);
     }
 
-    public static Rotation2d fromDegrees(double angle_degrees) {
+    public static Rotation2d fromDegrees(double angle_degrees)
+    {
         return fromRadians(Math.toRadians(angle_degrees));
     }
-    
+
     /**
-     * From trig, we know that sin^2 + cos^2 == 1, but as we do math on this object we might accumulate rounding errors.
-     * Normalizing forces us to re-scale the sin and cos to reset rounding errors.
+     * From trig, we know that sin^2 + cos^2 == 1, but as we do math on this
+     * object we might accumulate rounding errors.
+     * Normalizing forces us to re-scale the sin and cos to reset rounding
+     * errors.
      */
-    public void normalize() {
+    public void normalize()
+    {
         double magnitude = Math.hypot(cos_angle_, sin_angle_);
-        if (magnitude > kEpsilon) {
+        if (magnitude > kEpsilon)
+        {
             sin_angle_ /= magnitude;
             cos_angle_ /= magnitude;
-        } else {
+        }
+        else
+        {
             sin_angle_ = 0;
             cos_angle_ = 1;
         }
     }
 
-    public double cos() {
+    public double cos()
+    {
         return cos_angle_;
     }
 
-    public double sin() {
+    public double sin()
+    {
         return sin_angle_;
     }
 
-    public double tan() {
-        if (Math.abs(cos_angle_) < kEpsilon) {
-            if (sin_angle_ >= 0.0) {
+    public double tan()
+    {
+        if (Math.abs(cos_angle_) < kEpsilon)
+        {
+            if (sin_angle_ >= 0.0)
+            {
                 return Double.POSITIVE_INFINITY;
-            } else {
+            }
+            else
+            {
                 return Double.NEGATIVE_INFINITY;
             }
         }
         return sin_angle_ / cos_angle_;
     }
 
-    public double getRadians() {
+    public double getRadians()
+    {
         return Math.atan2(sin_angle_, cos_angle_);
     }
 
-    public double getDegrees() {
+    public double getDegrees()
+    {
         return Math.toDegrees(getRadians());
     }
 
     /**
-     * We can rotate this Rotation2d by adding together the effects of it and another rotation.
+     * We can rotate this Rotation2d by adding together the effects of it and
+     * another rotation.
      * 
      * @param other
-     *            The other rotation. See: https://en.wikipedia.org/wiki/Rotation_matrix
+     *        The other rotation. See:
+     *        https://en.wikipedia.org/wiki/Rotation_matrix
      * @return This rotation rotated by other.
      */
-    public Rotation2d rotateBy(Rotation2d other) {
+    public Rotation2d rotateBy(Rotation2d other)
+    {
         return new Rotation2d(cos_angle_ * other.cos_angle_ - sin_angle_ * other.sin_angle_,
                 cos_angle_ * other.sin_angle_ + sin_angle_ * other.cos_angle_, true);
     }
 
-    public Rotation2d normal() {
+    public Rotation2d normal()
+    {
         return new Rotation2d(-sin_angle_, cos_angle_, false);
     }
 
@@ -115,23 +145,30 @@ public class Rotation2d implements Interpolable<Rotation2d> {
      * 
      * @return The opposite of this rotation.
      */
-    public Rotation2d inverse() {
+    public Rotation2d inverse()
+    {
         return new Rotation2d(cos_angle_, -sin_angle_, false);
     }
 
-    public boolean isParallel(Rotation2d other) {
+    public boolean isParallel(Rotation2d other)
+    {
         return epsilonEquals(Translation2d.cross(toTranslation(), other.toTranslation()), 0.0, kEpsilon);
     }
 
-    public Translation2d toTranslation() {
+    public Translation2d toTranslation()
+    {
         return new Translation2d(cos_angle_, sin_angle_);
     }
 
     @Override
-    public Rotation2d interpolate(Rotation2d other, double x) {
-        if (x <= 0) {
+    public Rotation2d interpolate(Rotation2d other, double x)
+    {
+        if (x <= 0)
+        {
             return new Rotation2d(this);
-        } else if (x >= 1) {
+        }
+        else if (x >= 1)
+        {
             return new Rotation2d(other);
         }
         double angle_diff = inverse().rotateBy(other).getRadians();
@@ -139,7 +176,8 @@ public class Rotation2d implements Interpolable<Rotation2d> {
     }
 
     @Override
-    public String toString() {
+    public String toString()
+    {
         final DecimalFormat fmt = new DecimalFormat("#0.000");
         return "(" + fmt.format(getDegrees()) + " deg)";
     }

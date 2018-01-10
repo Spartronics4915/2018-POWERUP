@@ -5,7 +5,8 @@ package com.spartronics4915.frc2018.paths.profiles;
  * 
  * @see PathAdapter
  */
-public interface FieldProfile {
+public interface FieldProfile
+{
 
     // TODO: Add important field measurements as methods here
 

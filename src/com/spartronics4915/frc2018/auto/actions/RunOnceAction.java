@@ -1,28 +1,35 @@
 package com.spartronics4915.frc2018.auto.actions;
 
 /**
- * Template action for something that only needs to be done once and has no need for updates.
+ * Template action for something that only needs to be done once and has no need
+ * for updates.
  * 
  * @see Action
  */
-public abstract class RunOnceAction implements Action {
+public abstract class RunOnceAction implements Action
+{
+
     @Override
-    public boolean isFinished() {
+    public boolean isFinished()
+    {
         return true;
     }
 
     @Override
-    public void update() {
+    public void update()
+    {
 
     }
 
     @Override
-    public void done() {
+    public void done()
+    {
 
     }
 
     @Override
-    public void start() {
+    public void start()
+    {
         runOnce();
     }
 
