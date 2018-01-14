@@ -76,6 +76,10 @@ public class Constants extends ConstantsBase
     public static final int kEncoderCodesPerRev = 1000;
     public static final int kNumCANDevices = 8;
 
+    // Example
+    public static final int kPrimaryExampleId = 5;
+    public static final int kSecondaryExampleId = 6;
+    
     // Solenoids
     public static final int kShifterSolenoidId = 0; // PCM 0, Solenoid 0
     public static final int kIntakeDeploySolenoidId = 1; // PCM 0, Solenoid 1
@@ -131,6 +135,14 @@ public class Constants extends ConstantsBase
     public static final double kCameraYawAngleDegrees = 0.0;
     public static final double kCameraDeadband = 0.0;
 
+
+    public static final double kShooterOptimalRange = 100.0;
+    public static final double kShooterOptimalRangeFloor = 95.0;
+    public static final double kShooterOptimalRangeCeiling = 105.0;
+
+    public static final double kShooterAbsoluteRangeFloor = 90.0;
+    public static final double kShooterAbsoluteRangeCeiling = 130.0;
+    
     /**
      * Make an {@link Solenoid} instance for the single-number ID of the
      * solenoid
