@@ -284,18 +284,19 @@ public class TestMath {
         assertEquals(new_pose.getRotation().getDegrees(), pose.getRotation().getDegrees(), kTestEpsilon);
     }
 
-    @Test
-    public void testPolynomialRegression() {
-        double[] x = { 0, 1, 2, 3, 4, 5 };
-        double[] y = { 0, 2, 4, 6, 8, 10 };
-        PolynomialRegression regression = new PolynomialRegression(x, y, 1);
-
-        assertEquals(regression.degree(), 1);
-        assertEquals(regression.beta(1), 2.0, kTestEpsilon);
-        assertEquals(regression.beta(0), 0.0, kTestEpsilon);
-        assertEquals(regression.predict(2.5), 5.0, kTestEpsilon);
-
-        regression = Constants.kFlywheelAutoAimPolynomial;
-        System.out.println(regression);
-    }
+// FIXME: If we use this, you should uncomment this test
+//    @Test
+//    public void testPolynomialRegression() {
+//        double[] x = { 0, 1, 2, 3, 4, 5 };
+//        double[] y = { 0, 2, 4, 6, 8, 10 };
+//        PolynomialRegression regression = new PolynomialRegression(x, y, 1);
+//
+//        assertEquals(regression.degree(), 1);
+//        assertEquals(regression.beta(1), 2.0, kTestEpsilon);
+//        assertEquals(regression.beta(0), 0.0, kTestEpsilon);
+//        assertEquals(regression.predict(2.5), 5.0, kTestEpsilon);
+//
+//        regression = Constants.kFlywheelAutoAimPolynomial;
+//        System.out.println(regression);
+//    }
 }
