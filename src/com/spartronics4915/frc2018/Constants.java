@@ -76,9 +76,9 @@ public class Constants extends ConstantsBase
     public static final int kEncoderCodesPerRev = 1000;
     public static final int kNumCANDevices = 8;
 
-    // Example
-    public static final int kPrimaryExampleId = 5;
-    public static final int kSecondaryExampleId = 6;
+    // Intake
+    public static final int kIntakeId = 5;
+    public static final int kInnerIntakeId = 6;
     
     // Solenoids
     public static final int kShifterSolenoidId = 0; // PCM 0, Solenoid 0

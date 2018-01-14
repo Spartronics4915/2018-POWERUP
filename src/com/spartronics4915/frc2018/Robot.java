@@ -15,6 +15,7 @@ import com.spartronics4915.frc2018.loops.VisionProcessor;
 import com.spartronics4915.frc2018.paths.profiles.PathAdapter;
 import com.spartronics4915.frc2018.subsystems.ConnectionMonitor;
 import com.spartronics4915.frc2018.subsystems.Drive;
+import com.spartronics4915.frc2018.subsystems.Intake;
 import com.spartronics4915.frc2018.subsystems.LED;
 import com.spartronics4915.frc2018.subsystems.Superstructure;
 import com.spartronics4915.lib.util.CANProbe;
@@ -22,7 +23,6 @@ import com.spartronics4915.lib.util.CheesyDriveHelper;
 import com.spartronics4915.lib.util.CrashTracker;
 import com.spartronics4915.lib.util.DelayedBoolean;
 import com.spartronics4915.lib.util.DriveSignal;
-import com.spartronics4915.lib.util.SmartDashboardUtil;
 import com.spartronics4915.lib.util.math.RigidTransform2d;
 
 import edu.wpi.first.wpilibj.AnalogInput;
@@ -55,17 +55,20 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 public class Robot extends IterativeRobot
 {
 
+    // TODO: These constructions have nebulous timing... Maybe we should put these in the constructor of Robot?
+    
     // Get subsystem instances
     private Drive mDrive = Drive.getInstance();
     private Superstructure mSuperstructure = Superstructure.getInstance();
     private LED mLED = LED.getInstance();
+    private Intake mExample = Intake.getInstance();
     private RobotState mRobotState = RobotState.getInstance();
     private AutoModeExecuter mAutoModeExecuter = null;
 
     // Create subsystem manager
     private final SubsystemManager mSubsystemManager = new SubsystemManager(
             Arrays.asList(Drive.getInstance(), Superstructure.getInstance(),
-                    ConnectionMonitor.getInstance(), LED.getInstance()));
+                    ConnectionMonitor.getInstance(), LED.getInstance(), Intake.getInstance()));
 
     // Initialize other helper objects
     private CheesyDriveHelper mCheesyDriveHelper = new CheesyDriveHelper();

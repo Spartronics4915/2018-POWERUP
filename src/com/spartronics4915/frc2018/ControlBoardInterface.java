@@ -14,6 +14,8 @@ public interface ControlBoardInterface
     boolean getQuickTurn();
 
     boolean getLowGear();
+    
+    boolean getIntakeButton();
 
     // OPERATOR CONTROLS
     boolean getBlinkLEDButton();

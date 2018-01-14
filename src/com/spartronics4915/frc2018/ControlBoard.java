@@ -75,4 +75,11 @@ public class ControlBoard implements ControlBoardInterface
     {
         return mButtonBoard.getRawButton(9);
     }
+
+    @Override
+    public boolean getIntakeButton()
+    {
+        // See XboxControlBoard
+        return false;
+    }
 }

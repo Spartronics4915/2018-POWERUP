@@ -53,4 +53,11 @@ public class GamepadControlBoard implements ControlBoardInterface
     {
         return false;
     }
+
+    @Override
+    public boolean getIntakeButton()
+    {
+        // See XboxControlBoard
+        return false;
+    }
 }
