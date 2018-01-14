@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="FRC Deployment" default="deploy">
+
+  <!--
+  The following properties can be defined to override system level
+  settings. These should not be touched unless you know what you're
+  doing. The primary use is to override the wpilib version when
+  working with older robots that can't compile with the latest
+  libraries.
+  -->
+
+  <!-- By default the system version of WPI is used -->
+  <!-- <property name="version" value=""/> -->
+
+  <!-- By default the system team number is used -->
+  <!-- <property name="team-number" value=""/> -->
+
+  <!-- By default the target is set to 10.TE.AM.2 -->
+  <!-- <property name="target" value=""/> -->
+
+  <!-- Any other property in build.properties can also be overridden. -->
+
+
+  <!-- 4915 adds begin -->
+  <echo message="Looking for git version tag..." />
+  <exec executable="git" outputproperty="code-version"
+           errorproperty="code-version" failifexecutionfails="false">
+     <arg line="describe --tags --dirty" />
+  </exec>
+  <echo message="git version string: ${code-version}" />
+
+  <tstamp>
+    <!-- current time in this format: Jul 08, 04:34 PM -->
+    <format property="build-date" pattern="MMM dd, hh:mm a" />
+  </tstamp>
+  <!-- 4915 add end -->
+
+  <!-- 4915 remove: <property file="${user.home}/wpilib/wpilib.properties"/> -->
+  <property file="build.properties"/>
+  <property file="wpilib/java/${version}/ant/build.properties"/>
+
+  <!-- 4915 modified: <import file="${wpilib.ant.dir}/build.xml"/> -->
+  <import file="wpibuild.xml"/>
+
+  <!-- 4915 add for travis -->
+  <target name="test" depends="clean,compile"/>
+
+</project>

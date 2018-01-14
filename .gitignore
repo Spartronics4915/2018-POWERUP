@@ -12,6 +12,8 @@
 *.war
 *.pyc
 *.DS_Store
+*.out
+*.dSYM/
 *~
 *~.nib
 .buildpath
@@ -31,6 +33,7 @@
 .target
 .texlipse
 /out/
+out/
 Session.vim
 UNKNOWN-VERSION
 [._]*.s[a-w][a-z]
@@ -50,3 +53,6 @@ tmp/
 
 dist/
 sysProps.xml
+WPI_Native_Libraries.properties
+User_Libraries.properties
+
