@@ -257,11 +257,6 @@ public class CANTalon extends WPI_TalonSRX
             this.neutralOutput();
     }
 
-    public void enableCurrentLimit(boolean enable)
-    {
-        super.enableCurrentLimit(enable);
-    }
-
     public void setCurrentLimit(int amps)
     {
         this.configPeakCurrentLimit(amps, s_defaultTimeoutMS);
@@ -324,11 +319,6 @@ public class CANTalon extends WPI_TalonSRX
     public void setPulseWidthPosition(int p)
     {
         this.getSensorCollection().setPulseWidthPosition(p, s_defaultTimeoutMS);
-    }
-
-    public void setSafetyEnabled(boolean b)
-    {
-        super.setSafetyEnabled(b);
     }
 
     public void setVelocityMeasurementPeriod(VelocityMeasPeriod p)
@@ -464,12 +454,6 @@ public class CANTalon extends WPI_TalonSRX
     public boolean isRevLimitSwitchClosed()
     {
         return this.getSensorCollection().isRevLimitSwitchClosed();
-    }
-
-    public double getBusVoltage()
-    {
-        // We keep stubs like this around just in case we want to change the API.
-        return super.getBusVoltage();
     }
 
     public boolean isForwardSoftLimitEnabled()
