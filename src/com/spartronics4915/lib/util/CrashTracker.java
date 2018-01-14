@@ -22,7 +22,7 @@ public class CrashTracker
 
     public static void logRobotConstruction()
     {
-        logMarker("robot startup");
+        logMarker("robot construction");
     }
 
     public static void logRobotInit()

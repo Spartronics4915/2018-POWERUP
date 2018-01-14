@@ -17,12 +17,16 @@ import com.spartronics4915.frc2018.vision.VisionUpdateReceiver;
 public class VisionProcessor implements Loop, VisionUpdateReceiver
 {
 
-    static VisionProcessor instance_ = new VisionProcessor();
+    static VisionProcessor instance_ = null;
     VisionUpdate update_ = null;
     RobotState robot_state_ = RobotState.getInstance();
 
     public static VisionProcessor getInstance()
     {
+        if(instance_ == null)
+        {
+            instance_ = new VisionProcessor();
+        }
         return instance_;
     }
 

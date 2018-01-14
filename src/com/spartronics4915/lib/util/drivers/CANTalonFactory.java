@@ -78,49 +78,49 @@ public class CANTalonFactory
 
     public static CANTalon createTalon(int id, Configuration config)
     {
-        CANTalon talon = new LazyCANTalon(id, config.CONTROL_FRAME_PERIOD_MS);
-        talon.changeControlMode(ControlMode.PercentOutput); // XXX: was Voltage
-        talon.changeMotionControlFramePeriod(config.MOTION_CONTROL_FRAME_PERIOD_MS);
-        talon.clearIAccum();
-        talon.clearMotionProfileHasUnderrun();
-        talon.clearMotionProfileTrajectories();
-        talon.clearStickyFaults();
-        talon.configFwdLimitSwitchNormallyOpen(config.LIMIT_SWITCH_NORMALLY_OPEN);
-        talon.configMaxOutputVoltage(config.MAX_OUTPUT_VOLTAGE);
-        talon.configNominalOutputVoltage(config.NOMINAL_VOLTAGE, -config.NOMINAL_VOLTAGE);
-        talon.configPeakOutputVoltage(config.PEAK_VOLTAGE, -config.PEAK_VOLTAGE);
-        talon.configRevLimitSwitchNormallyOpen(config.LIMIT_SWITCH_NORMALLY_OPEN);
-        talon.enableBrakeMode(config.ENABLE_BRAKE);
-        talon.enableCurrentLimit(config.ENABLE_CURRENT_LIMIT);
-        talon.enableForwardSoftLimit(config.ENABLE_SOFT_LIMIT);
-        talon.enableLimitSwitch(config.ENABLE_LIMIT_SWITCH, config.ENABLE_LIMIT_SWITCH);
-        talon.enableReverseSoftLimit(config.ENABLE_SOFT_LIMIT);
-        talon.enableZeroSensorPositionOnForwardLimit(false);
-        talon.enableZeroSensorPositionOnIndex(false, false);
-        talon.enableZeroSensorPositionOnReverseLimit(false);
-        talon.reverseOutput(false);
-        talon.reverseSensor(false);
-        talon.setAnalogPosition(0);
-        talon.setCurrentLimit(config.CURRENT_LIMIT);
-        talon.setExpiration(config.EXPIRATION_TIMEOUT_SECONDS);
-        talon.setForwardSoftLimit(config.FORWARD_SOFT_LIMIT);
-        talon.setInverted(config.INVERTED);
-        talon.setNominalClosedLoopVoltage(config.NOMINAL_CLOSED_LOOP_VOLTAGE);
-        talon.setPosition(0);
-        talon.setProfile(0);
-        talon.setPulseWidthPosition(0);
-        talon.setReverseSoftLimit(config.REVERSE_SOFT_LIMIT);
-        talon.setSafetyEnabled(config.SAFETY_ENABLED);
-        talon.setVelocityMeasurementPeriod(config.VELOCITY_MEASUREMENT_PERIOD);
-        talon.setVelocityMeasurementWindow(config.VELOCITY_MEASUREMENT_ROLLING_AVERAGE_WINDOW);
-        talon.setVoltageCompensationRampRate(config.VOLTAGE_COMPENSATION_RAMP_RATE);
-        talon.setVoltageRampRate(config.VOLTAGE_RAMP_RATE);
-
-        talon.setStatusFrameRateMs(StatusFrameEnhanced.Status_1_General, config.GENERAL_STATUS_FRAME_RATE_MS);
-        talon.setStatusFrameRateMs(StatusFrameEnhanced.Status_2_Feedback0, config.FEEDBACK_STATUS_FRAME_RATE_MS); // XXX: was Feedback
-        talon.setStatusFrameRateMs(StatusFrameEnhanced.Status_3_Quadrature, config.QUAD_ENCODER_STATUS_FRAME_RATE_MS);
-        talon.setStatusFrameRateMs(StatusFrameEnhanced.Status_4_AinTempVbat,
-                config.ANALOG_TEMP_VBAT_STATUS_FRAME_RATE_MS);
+        CANTalon talon = new CANTalon(id, config.CONTROL_FRAME_PERIOD_MS);
+//        talon.changeControlMode(ControlMode.PercentOutput); // XXX: was Voltage
+//        talon.changeMotionControlFramePeriod(config.MOTION_CONTROL_FRAME_PERIOD_MS);
+//        talon.clearIAccum();
+//        talon.clearMotionProfileHasUnderrun();
+//        talon.clearMotionProfileTrajectories();
+//        talon.clearStickyFaults();
+//        talon.configFwdLimitSwitchNormallyOpen(config.LIMIT_SWITCH_NORMALLY_OPEN);
+//        talon.configMaxOutputVoltage(config.MAX_OUTPUT_VOLTAGE);
+//        talon.configNominalOutputVoltage(config.NOMINAL_VOLTAGE, -config.NOMINAL_VOLTAGE);
+//        talon.configPeakOutputVoltage(config.PEAK_VOLTAGE, -config.PEAK_VOLTAGE);
+//        talon.configRevLimitSwitchNormallyOpen(config.LIMIT_SWITCH_NORMALLY_OPEN);
+//        talon.enableBrakeMode(config.ENABLE_BRAKE);
+//        talon.enableCurrentLimit(config.ENABLE_CURRENT_LIMIT);
+//        talon.enableForwardSoftLimit(config.ENABLE_SOFT_LIMIT);
+//        talon.enableLimitSwitch(config.ENABLE_LIMIT_SWITCH, config.ENABLE_LIMIT_SWITCH);
+//        talon.enableReverseSoftLimit(config.ENABLE_SOFT_LIMIT);
+//        talon.enableZeroSensorPositionOnForwardLimit(false);
+//        talon.enableZeroSensorPositionOnIndex(false, false);
+//        talon.enableZeroSensorPositionOnReverseLimit(false);
+//        talon.reverseOutput(false);
+//        talon.reverseSensor(false);
+//        talon.setAnalogPosition(0);
+//        talon.setCurrentLimit(config.CURRENT_LIMIT);
+//        talon.setExpiration(config.EXPIRATION_TIMEOUT_SECONDS);
+//        talon.setForwardSoftLimit(config.FORWARD_SOFT_LIMIT);
+//        talon.setInverted(config.INVERTED);
+//        talon.setNominalClosedLoopVoltage(config.NOMINAL_CLOSED_LOOP_VOLTAGE);
+//        talon.setPosition(0);
+//        talon.setProfile(0);
+//        talon.setPulseWidthPosition(0);
+//        talon.setReverseSoftLimit(config.REVERSE_SOFT_LIMIT);
+//        talon.setSafetyEnabled(config.SAFETY_ENABLED);
+//        talon.setVelocityMeasurementPeriod(config.VELOCITY_MEASUREMENT_PERIOD);
+//        talon.setVelocityMeasurementWindow(config.VELOCITY_MEASUREMENT_ROLLING_AVERAGE_WINDOW);
+//        talon.setVoltageCompensationRampRate(config.VOLTAGE_COMPENSATION_RAMP_RATE);
+//        talon.setVoltageRampRate(config.VOLTAGE_RAMP_RATE);
+//
+//        talon.setStatusFrameRateMs(StatusFrameEnhanced.Status_1_General, config.GENERAL_STATUS_FRAME_RATE_MS);
+//        talon.setStatusFrameRateMs(StatusFrameEnhanced.Status_2_Feedback0, config.FEEDBACK_STATUS_FRAME_RATE_MS); // XXX: was Feedback
+//        talon.setStatusFrameRateMs(StatusFrameEnhanced.Status_3_Quadrature, config.QUAD_ENCODER_STATUS_FRAME_RATE_MS);
+//        talon.setStatusFrameRateMs(StatusFrameEnhanced.Status_4_AinTempVbat,
+//                config.ANALOG_TEMP_VBAT_STATUS_FRAME_RATE_MS);
 
         return talon;
     }
@@ -198,7 +198,7 @@ public class CANTalonFactory
                 .append("isFwdLimitSwitchClosed = ").append(talon.isFwdLimitSwitchClosed()).append("\n")
                 .append("getPinStateQuadA = ").append(talon.getPinStateQuadA()).append("\n")
                 .append("getPinStateQuadB = ").append(talon.getPinStateQuadB()).append("\n").append("GetIaccum = ")
-                .append(talon.GetIaccum()).append("\n").append("getFaultHardwareFailure = ")
+                .append(talon.getIaccum()).append("\n").append("getFaultHardwareFailure = ")
                 .append(talon.getFaultHardwareFailure()).append("\n").append("pidGet = ").append(talon.pidGet())
                 .append("\n").append("getBrakeEnableDuringNeutral = ").append(talon.getBrakeEnableDuringNeutral())
                 .append("\n").append("getStickyFaultUnderVoltage = ").append(talon.getStickyFaultUnderVoltage())

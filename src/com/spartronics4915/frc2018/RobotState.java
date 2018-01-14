@@ -52,10 +52,14 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 public class RobotState
 {
 
-    private static RobotState instance_ = new RobotState();
+    private static RobotState instance_ = null;
 
     public static RobotState getInstance()
     {
+        if(instance_ == null)
+        {
+            instance_ = new RobotState();
+        }
         return instance_;
     }
 

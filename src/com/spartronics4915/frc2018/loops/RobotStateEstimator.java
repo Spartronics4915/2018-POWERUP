@@ -15,10 +15,14 @@ import com.spartronics4915.lib.util.math.Twist2d;
 public class RobotStateEstimator implements Loop
 {
 
-    static RobotStateEstimator instance_ = new RobotStateEstimator();
+    static RobotStateEstimator instance_ = null;
 
     public static RobotStateEstimator getInstance()
     {
+        if(instance_ == null)
+        {
+            instance_ = new RobotStateEstimator();
+        }
         return instance_;
     }
 

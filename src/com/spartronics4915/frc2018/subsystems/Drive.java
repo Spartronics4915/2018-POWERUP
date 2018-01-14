@@ -29,14 +29,13 @@ import com.ctre.phoenix.sensors.PigeonIMU;
 import com.ctre.phoenix.sensors.PigeonIMU.PigeonState;
 
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
  * This subsystem consists of the robot's drivetrain: 4 CIM motors, 4 talons,
  * one solenoid and 2 pistons to shift gears,
- * and a navX board. The Drive subsystem has several control methods including
+ * and a Pigeon IMU board. The Drive subsystem has several control methods including
  * open loop, velocity control, and position
  * control. The Drive subsystem also has several methods that handle automatic
  * aiming, autonomous path driving, and
@@ -47,13 +46,17 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 public class Drive extends Subsystem
 {
 
-    private static Drive mInstance = new Drive();
+    private static Drive mInstance = null;
 
     private static final int kLowGearPositionControlSlot = 0;
     private static final int kHighGearVelocityControlSlot = 1;
 
     public static Drive getInstance()
     {
+        if(mInstance == null)
+        {
+            mInstance = new Drive();
+        }
         return mInstance;
     }
 
@@ -101,7 +104,6 @@ public class Drive extends Subsystem
 
     // Hardware
     private final CANTalon mLeftMaster, mRightMaster, mLeftSlave, mRightSlave, mIMUTalon;
-    private final Solenoid mShifter;
     private final PigeonIMU mIMU;
 
     // Controllers
@@ -223,8 +225,6 @@ public class Drive extends Subsystem
         mRightMaster.setVelocityMeasurementPeriod(VelocityMeasPeriod.Period_10Ms);
         mRightMaster.setVelocityMeasurementWindow(32);
 
-        mShifter = Constants.makeSolenoidForId(Constants.kShifterSolenoidId);
-
         reloadGains();
 
         mIsHighGear = false;
@@ -266,9 +266,8 @@ public class Drive extends Subsystem
             mDriveControlState = DriveControlState.OPEN_LOOP;
             setBrakeMode(false);
         }
-        // Right side is reversed, but reverseOutput doesn't invert PercentVBus.
-        // So set negative on the right master.
-        mRightMaster.set(-signal.getRight());
+        System.out.println(signal.getLeft());
+        mRightMaster.set(signal.getRight());
         mLeftMaster.set(signal.getLeft());
     }
 
@@ -279,10 +278,10 @@ public class Drive extends Subsystem
 
     public synchronized void setHighGear(boolean wantsHighGear)
     {
+        // XXX: Dead code
         if (wantsHighGear != mIsHighGear)
         {
             mIsHighGear = wantsHighGear;
-            mShifter.set(!wantsHighGear);
         }
     }
 

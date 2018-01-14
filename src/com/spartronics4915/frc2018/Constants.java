@@ -1,9 +1,5 @@
 package com.spartronics4915.frc2018;
 
-import java.net.NetworkInterface;
-import java.net.SocketException;
-import java.util.Enumeration;
-
 import com.spartronics4915.lib.util.ConstantsBase;
 import com.spartronics4915.lib.util.InterpolatingDouble;
 import com.spartronics4915.lib.util.InterpolatingTreeMap;
@@ -81,7 +77,7 @@ public class Constants extends ConstantsBase
     public static final int kRightDriveMasterId = 4;
     public static final int kRightDriverSlaveId = 2;
     public static final int kIMUTalonId = 6;
-    public static final int kEncoderCodesPerRev = 250; // Not ticks, codes; ticks would be kEncoderCodesPerRev * 4 (for quadrature encoders at least)
+    public static final int kEncoderCodesPerRev = 1000;
     public static final int kNumCANDevices = 8;
 
     // Solenoids

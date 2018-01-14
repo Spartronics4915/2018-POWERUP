@@ -1,4 +1,4 @@
-# Spartronics 4915 modified clone of Team 254's 2017 Codebase
+# Spartronics 4915 modified clone of Team 254's 2017 Codebase [![Build Status](https://travis-ci.org/Spartronics4915/Spartronics-254Base.svg?branch=master)](https://travis-ci.org/Spartronics4915/Spartronics-254Base)
 
 We've cloned the 254 codebase and modified it to better match our team's
 hardware, vision, programming and electronics conventions. We've also ported 

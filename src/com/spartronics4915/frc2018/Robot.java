@@ -22,6 +22,7 @@ import com.spartronics4915.lib.util.CheesyDriveHelper;
 import com.spartronics4915.lib.util.CrashTracker;
 import com.spartronics4915.lib.util.DelayedBoolean;
 import com.spartronics4915.lib.util.DriveSignal;
+import com.spartronics4915.lib.util.SmartDashboardUtil;
 import com.spartronics4915.lib.util.math.RigidTransform2d;
 
 import edu.wpi.first.wpilibj.AnalogInput;
@@ -80,6 +81,7 @@ public class Robot extends IterativeRobot
 
     public Robot()
     {
+        System.out.println("Robot is constructing.");
         CrashTracker.logRobotConstruction();
     }
 
