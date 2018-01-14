@@ -76,6 +76,7 @@ public class CANTalon extends WPI_TalonSRX
         this.setControlFramePeriod(controlPeriodMs, enablePeriodMs);
     }
 
+
     /**
      * Converts RPM to Native Unit velocity.
      * RPM is rotations per minute.
@@ -119,7 +120,8 @@ public class CANTalon extends WPI_TalonSRX
      * @param Absolute encoder codes (use {@link nativeVelocityToRpm} for non-absolute units)
      * @return Absolute wheel rotations
      */
-    private double encoderCodesToRotations(double codes) {
+    private double encoderCodesToRotations(double codes)
+    {
         if (m_codesPerRevolution == 0) return codes;
         return codes / m_codesPerRevolution;
     }
@@ -135,9 +137,10 @@ public class CANTalon extends WPI_TalonSRX
     @Override
     public void set(double value)
     {
+        if (m_outputReversed) value *= -1;
         // We've integrated LazyCANTalon into here
-        if (value != m_lastSetpoint || m_controlMode != m_lastControlMode) {
-            if (m_outputReversed) value *= -1;
+        if (value != m_lastSetpoint || m_controlMode != m_lastControlMode)
+        {
             this.set(m_controlMode, value);
             m_lastSetpoint = value;
             m_lastControlMode = m_controlMode;
@@ -256,7 +259,7 @@ public class CANTalon extends WPI_TalonSRX
 
     public void enableCurrentLimit(boolean enable)
     {
-        this.enableCurrentLimit(enable);
+        super.enableCurrentLimit(enable);
     }
 
     public void setCurrentLimit(int amps)
@@ -325,7 +328,7 @@ public class CANTalon extends WPI_TalonSRX
 
     public void setSafetyEnabled(boolean b)
     {
-        this.setSafetyEnabled(b);
+        super.setSafetyEnabled(b);
     }
 
     public void setVelocityMeasurementPeriod(VelocityMeasPeriod p)
@@ -440,7 +443,7 @@ public class CANTalon extends WPI_TalonSRX
 
     public void configFwdLimitSwitchNormallyOpen(boolean s)
     {
-        this.configForwardLimitSwitchSource(LimitSwitchSource.RemoteTalonSRX, /*
+        this.configForwardLimitSwitchSource(LimitSwitchSource.FeedbackConnector, /*
                                                                                * XXX:
                                                                                * LimitSwitchSource
                                                                                */
@@ -450,7 +453,7 @@ public class CANTalon extends WPI_TalonSRX
 
     public void configRevLimitSwitchNormallyOpen(boolean s)
     {
-        this.configReverseLimitSwitchSource(LimitSwitchSource.RemoteTalonSRX, /*
+        this.configReverseLimitSwitchSource(LimitSwitchSource.FeedbackConnector, /*
                                                                                * XXX:
                                                                                * LimitSwitchSource
                                                                                */
