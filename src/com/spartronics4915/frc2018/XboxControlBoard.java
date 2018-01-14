@@ -43,10 +43,4 @@ public class XboxControlBoard implements ControlBoardInterface
         return mController.getXButton();
     }
 
-    @Override
-    public boolean getExample()
-    {
-        return mController.getYButton();
-    }
-
 }

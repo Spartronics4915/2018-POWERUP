@@ -53,11 +53,4 @@ public class GamepadControlBoard implements ControlBoardInterface
     {
         return false;
     }
-
-    @Override
-    public boolean getExample()
-    {
-        // See XboxControlBoard
-        return false;
-    }
 }

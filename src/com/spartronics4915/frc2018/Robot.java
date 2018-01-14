@@ -15,7 +15,6 @@ import com.spartronics4915.frc2018.loops.VisionProcessor;
 import com.spartronics4915.frc2018.paths.profiles.PathAdapter;
 import com.spartronics4915.frc2018.subsystems.ConnectionMonitor;
 import com.spartronics4915.frc2018.subsystems.Drive;
-import com.spartronics4915.frc2018.subsystems.Example;
 import com.spartronics4915.frc2018.subsystems.LED;
 import com.spartronics4915.frc2018.subsystems.Superstructure;
 import com.spartronics4915.lib.util.CANProbe;
@@ -60,14 +59,13 @@ public class Robot extends IterativeRobot
     private Drive mDrive = Drive.getInstance();
     private Superstructure mSuperstructure = Superstructure.getInstance();
     private LED mLED = LED.getInstance();
-    private Example mExample = Example.getInstance();
     private RobotState mRobotState = RobotState.getInstance();
     private AutoModeExecuter mAutoModeExecuter = null;
 
     // Create subsystem manager
     private final SubsystemManager mSubsystemManager = new SubsystemManager(
             Arrays.asList(Drive.getInstance(), Superstructure.getInstance(),
-                    ConnectionMonitor.getInstance(), LED.getInstance(), Example.getInstance()));
+                    ConnectionMonitor.getInstance(), LED.getInstance()));
 
     // Initialize other helper objects
     private CheesyDriveHelper mCheesyDriveHelper = new CheesyDriveHelper();
@@ -263,9 +261,6 @@ public class Robot extends IterativeRobot
             if (mControlBoard.getBlinkLEDButton())
             {
                 mLED.setWantedState(LED.WantedState.BLINK);
-            }
-            if (mControlBoard.getExample()) {
-                mExample.setOn();
             }
 
             allPeriodic();

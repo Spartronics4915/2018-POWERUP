@@ -75,11 +75,4 @@ public class ControlBoard implements ControlBoardInterface
     {
         return mButtonBoard.getRawButton(9);
     }
-
-    @Override
-    public boolean getExample()
-    {
-        // See XboxControlBoard
-        return false;
-    }
 }

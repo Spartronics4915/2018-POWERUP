@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj.DigitalOutput;
  */
 public class LED extends Subsystem
 {
+
     public static final int kDefaultBlinkCount = 4;
     public static final double kDefaultBlinkDuration = 0.2; // seconds for full cycle
     private static final double kDefaultTotalBlinkDuration = kDefaultBlinkCount * kDefaultBlinkDuration;
