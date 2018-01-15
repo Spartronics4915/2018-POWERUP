@@ -54,39 +54,51 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  */
 public class Robot extends IterativeRobot
 {
-
-    // TODO: These constructions have nebulous timing... Maybe we should put these in the constructor of Robot?
-    
+    // NB: make sure to construct objects in constructor, not member declaration.
     // Get subsystem instances
-    private Drive mDrive = Drive.getInstance();
-    private Superstructure mSuperstructure = Superstructure.getInstance();
-    private LED mLED = LED.getInstance();
-    private Intake mIntake = Intake.getInstance();
-    private RobotState mRobotState = RobotState.getInstance();
+    private Drive mDrive = null;
+    private Superstructure mSuperstructure = null;
+    private LED mLED = null;
+    private Intake mIntake = null;
+    private RobotState mRobotState = null;
     private AutoModeExecuter mAutoModeExecuter = null;
-
+    private ConnectionMonitor mConnectionMonitor = null;
+    
     // Create subsystem manager
-    private final SubsystemManager mSubsystemManager = new SubsystemManager(
-            Arrays.asList(Drive.getInstance(), Superstructure.getInstance(),
-                    ConnectionMonitor.getInstance(), LED.getInstance(), Intake.getInstance()));
-
+    private SubsystemManager mSubsystemManager = null;
+    
     // Initialize other helper objects
-    private CheesyDriveHelper mCheesyDriveHelper = new CheesyDriveHelper();
-    private ControlBoardInterface mControlBoard = new XboxControlBoard();
+    private CheesyDriveHelper mCheesyDriveHelper = null;
+    private ControlBoardInterface mControlBoard = null;
 
-    private Looper mEnabledLooper = new Looper();
-
-    //    private VisionServer mVisionServer = VisionServer.getInstance();
-
+    private Looper mEnabledLooper = null;
+    //    private VisionServer mVisionServer = null;
     private AnalogInput mCheckLightButton = new AnalogInput(Constants.kLEDOnId);
-
     private DelayedBoolean mDelayedAimButton;
 
     public Robot()
     {
-        System.out.println("Robot is constructing.");
+        System.out.println("Robot begin construction ------------------");
+        mDrive = Drive.getInstance();
+        mSuperstructure = Superstructure.getInstance();
+        mLED = LED.getInstance();
+        mIntake = Intake.getInstance();
+        mRobotState = RobotState.getInstance();
+        mAutoModeExecuter = null;
+        mConnectionMonitor = ConnectionMonitor.getInstance();
+        mSubsystemManager = new SubsystemManager(
+                Arrays.asList(mDrive, mSuperstructure,
+                        mConnectionMonitor, mLED, mIntake));
+
+        // Initialize other helper objects
+        mCheesyDriveHelper = new CheesyDriveHelper();
+        mControlBoard = new XboxControlBoard();
+
+        mEnabledLooper = new Looper();
+        mCheckLightButton = new AnalogInput(Constants.kLEDOnId);
+        System.out.println("Robot end construction -------------------");
         CrashTracker.logRobotConstruction();
-    }
+   }
 
     public void zeroAllSensors()
     {
@@ -126,7 +138,6 @@ public class Robot extends IterativeRobot
                                                              * needed
                                                              */);
         }
-
         try
         {
             CrashTracker.logRobotInit();
@@ -362,7 +373,6 @@ public class Robot extends IterativeRobot
         mSubsystemManager.outputToSmartDashboard();
         mSubsystemManager.writeToLog();
         mEnabledLooper.outputToSmartDashboard();
-
-        ConnectionMonitor.getInstance().setLastPacketTime(Timer.getFPGATimestamp());
+        mConnectionMonitor.setLastPacketTime(Timer.getFPGATimestamp());
     }
 }
