@@ -73,7 +73,7 @@ public class Robot extends IterativeRobot
 
     private Looper mEnabledLooper = null;
     //    private VisionServer mVisionServer = null;
-    private AnalogInput mCheckLightButton = new AnalogInput(Constants.kLEDOnId);
+    private AnalogInput mCheckLightButton = null;
     private DelayedBoolean mDelayedAimButton;
 
     public Robot()
