@@ -2,11 +2,10 @@ package com.spartronics4915.frc2018.auto.actions;
 
 import com.spartronics4915.frc2018.subsystems.Intake;
 
-public class IntakeForwardAction implements Action
+public class IntakeAction implements Action
 {
-
-    Intake mIntake = Intake.getInstance();
-
+    Intake mExample = Intake.getInstance();
+    
     @Override
     public boolean isFinished()
     {
@@ -31,7 +30,6 @@ public class IntakeForwardAction implements Action
     public void start()
     {
         // Set motors here
-        mIntake.runForward();
     }
 
 }

@@ -1,1 +1,3 @@
+# YOU CANNOT HAVE A CRLF LINE ENDING HERE!
+# (Looking at you Windows.)
 /usr/local/frc/JRE/bin/java -Djava.library.path=/usr/local/frc/lib/ -jar /home/lvuser/FRCUserProgram.jar

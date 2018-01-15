@@ -276,15 +276,6 @@ public class Robot extends IterativeRobot
             {
                 mLED.setWantedState(LED.WantedState.BLINK);
             }
-            
-            if(mControlBoard.getIntakeButton())
-            {
-                mIntake.runForward();
-            }
-            else
-            {
-                mIntake.stop();
-            }
 
             allPeriodic();
         }
