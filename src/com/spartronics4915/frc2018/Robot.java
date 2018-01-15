@@ -61,7 +61,7 @@ public class Robot extends IterativeRobot
     private Drive mDrive = Drive.getInstance();
     private Superstructure mSuperstructure = Superstructure.getInstance();
     private LED mLED = LED.getInstance();
-    private Intake mIntake = Intake.getInstance();
+    private Intake mExample = Intake.getInstance();
     private RobotState mRobotState = RobotState.getInstance();
     private AutoModeExecuter mAutoModeExecuter = null;
 
@@ -264,15 +264,6 @@ public class Robot extends IterativeRobot
             if (mControlBoard.getBlinkLEDButton())
             {
                 mLED.setWantedState(LED.WantedState.BLINK);
-            }
-            
-            if(mControlBoard.getIntakeButton())
-            {
-                mIntake.runForward();
-            }
-            else
-            {
-                mIntake.stop();
             }
 
             allPeriodic();
