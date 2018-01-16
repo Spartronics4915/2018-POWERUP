@@ -36,6 +36,7 @@ public class ConnectionMonitor extends Subsystem
         mJustReconnected = new LatchedBoolean();
         mJustDisconnected = new LatchedBoolean();
         mLED = LED.getInstance();
+        mInitialized = true;
     }
 
     @Override

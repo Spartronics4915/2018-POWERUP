@@ -14,6 +14,7 @@ public class CrashTracker
 {
 
     private static final UUID RUN_INSTANCE_UUID = UUID.randomUUID();
+    public static int sVerbosity = 0; // 0: notices and above,  1: info and above, 2: all
 
     public static void logRobotStartup()
     {
@@ -49,15 +50,51 @@ public class CrashTracker
     {
         logMarker("Exception", throwable);
     }
+    
+    public static void error(String m)
+    {
+        logMarker("ERROR   " + m);
+    }
+    
+    public static void warning(String m)
+    {
+        logMarker("WARNING " + m);        
+    }
+    
+    public static void notice(String m)
+    {
+        logMarker("NOTICE  " + m);                
+    }
+    
+    public static void info(String m)
+    {
+        if(sVerbosity > 0)
+        {
+            printMarker("INFO    " + m);
+        }
+    }
 
+    public static void debug(String m)
+    {
+        if(sVerbosity > 1)
+        {
+            printMarker("DEBUG    " + m);
+        }
+    }
+    
     private static void logMarker(String mark)
     {
         logMarker(mark, null);
     }
+    
+    private static void printMarker(String mark)
+    {
+        System.out.print(mark);        
+    }
 
     private static void logMarker(String mark, Throwable nullableException)
     {
-
+        System.out.print(mark);
         try (PrintWriter writer = new PrintWriter(new FileWriter("/home/lvuser/crash_tracking.txt", true)))
         {
             writer.print(RUN_INSTANCE_UUID.toString());

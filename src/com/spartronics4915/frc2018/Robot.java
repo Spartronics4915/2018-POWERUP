@@ -78,7 +78,7 @@ public class Robot extends IterativeRobot
 
     public Robot()
     {
-        System.out.println("Robot begin construction ------------------");
+        CrashTracker.notice("Robot begin construction ------------------");
         mDrive = Drive.getInstance();
         mSuperstructure = Superstructure.getInstance();
         mLED = LED.getInstance();
@@ -96,7 +96,6 @@ public class Robot extends IterativeRobot
 
         mEnabledLooper = new Looper();
         mCheckLightButton = new AnalogInput(Constants.kLEDOnId);
-        System.out.println("Robot end construction -------------------");
         CrashTracker.logRobotConstruction();
    }
 
@@ -123,10 +122,10 @@ public class Robot extends IterativeRobot
                     "  (" + attributes.getValue("Code-Version") + ")";
             SmartDashboard.putString("Build", buildStr);
 
-            System.out.println("=================================================");
-            System.out.println(Instant.now().toString());
-            System.out.println("Built " + buildStr);
-            System.out.println("=================================================");
+            CrashTracker.notice("=================================================");
+            CrashTracker.notice(Instant.now().toString());
+            CrashTracker.notice("Built " + buildStr);
+            CrashTracker.notice("=================================================");
 
         }
         catch (IOException e)

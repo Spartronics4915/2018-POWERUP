@@ -31,4 +31,8 @@ public abstract class Subsystem
     public abstract void zeroSensors();
 
     public abstract void registerEnabledLoops(Looper enabledLooper);
+    
+    // all subsystems should set mInitialized upon successful init.
+    protected boolean mInitialized = false;
+    public boolean isInitialized() { return mInitialized; }
 }
