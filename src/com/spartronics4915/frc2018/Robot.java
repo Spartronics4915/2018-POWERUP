@@ -20,7 +20,7 @@ import com.spartronics4915.frc2018.subsystems.LED;
 import com.spartronics4915.frc2018.subsystems.Superstructure;
 import com.spartronics4915.lib.util.CANProbe;
 import com.spartronics4915.lib.util.CheesyDriveHelper;
-import com.spartronics4915.lib.util.CrashTracker;
+import com.spartronics4915.lib.util.Logger;
 import com.spartronics4915.lib.util.DelayedBoolean;
 import com.spartronics4915.lib.util.DriveSignal;
 import com.spartronics4915.lib.util.math.RigidTransform2d;
@@ -78,7 +78,7 @@ public class Robot extends IterativeRobot
 
     public Robot()
     {
-        CrashTracker.notice("Robot begin construction ------------------");
+        Logger.notice("Robot begin construction ------------------");
         mDrive = Drive.getInstance();
         mSuperstructure = Superstructure.getInstance();
         mLED = LED.getInstance();
@@ -96,7 +96,7 @@ public class Robot extends IterativeRobot
 
         mEnabledLooper = new Looper();
         mCheckLightButton = new AnalogInput(Constants.kLEDOnId);
-        CrashTracker.logRobotConstruction();
+        Logger.logRobotConstruction();
    }
 
     public void zeroAllSensors()
@@ -122,16 +122,16 @@ public class Robot extends IterativeRobot
                     "  (" + attributes.getValue("Code-Version") + ")";
             SmartDashboard.putString("Build", buildStr);
 
-            CrashTracker.notice("=================================================");
-            CrashTracker.notice(Instant.now().toString());
-            CrashTracker.notice("Built " + buildStr);
-            CrashTracker.notice("=================================================");
+            Logger.notice("=================================================");
+            Logger.notice(Instant.now().toString());
+            Logger.notice("Built " + buildStr);
+            Logger.notice("=================================================");
 
         }
         catch (IOException e)
         {
             SmartDashboard.putString("Build", "version not found!");
-            System.out.println("Build version not found!");
+            Logger.warning("Build version not found!");
             DriverStation.reportError(e.getMessage(), false /*
                                                              * no stack trace
                                                              * needed
@@ -139,11 +139,11 @@ public class Robot extends IterativeRobot
         }
         try
         {
-            CrashTracker.logRobotInit();
+            Logger.logRobotInit();
 
             CANProbe cp = new CANProbe();
             ArrayList<String> canDevices = cp.Find();
-            System.out.println("CANDevicesFound:\n" + canDevices);
+            Logger.notice("CANDevicesFound:\n" + canDevices);
             SmartDashboard.putString("CANBusStatus",
                     canDevices.size() == Constants.kNumCANDevices ? "OK" : ("" + canDevices.size() + "/" + Constants.kNumCANDevices));
 
@@ -165,7 +165,7 @@ public class Robot extends IterativeRobot
         }
         catch (Throwable t)
         {
-            CrashTracker.logThrowableCrash(t);
+            Logger.logThrowableCrash(t);
             throw t;
         }
         zeroAllSensors();
@@ -183,9 +183,8 @@ public class Robot extends IterativeRobot
     {
         try
         {
-            CrashTracker.logAutoInit();
-
-            System.out.println("Auto start timestamp: " + Timer.getFPGATimestamp());
+            Logger.logAutoInit();
+            Logger.notice("Auto start timestamp: " + Timer.getFPGATimestamp());
 
             if (mAutoModeExecuter != null)
             {
@@ -209,7 +208,7 @@ public class Robot extends IterativeRobot
         }
         catch (Throwable t)
         {
-            CrashTracker.logThrowableCrash(t);
+            Logger.logThrowableCrash(t);
             throw t;
         }
     }
@@ -231,7 +230,7 @@ public class Robot extends IterativeRobot
     {
         try
         {
-            CrashTracker.logTeleopInit();
+            Logger.logTeleopInit();
 
             // Start loopers
             mEnabledLooper.start();
@@ -243,7 +242,7 @@ public class Robot extends IterativeRobot
         }
         catch (Throwable t)
         {
-            CrashTracker.logThrowableCrash(t);
+            Logger.logThrowableCrash(t);
             throw t;
         }
     }
@@ -280,7 +279,7 @@ public class Robot extends IterativeRobot
         }
         catch (Throwable t)
         {
-            CrashTracker.logThrowableCrash(t);
+            Logger.logThrowableCrash(t);
             throw t;
         }
     }
@@ -290,7 +289,7 @@ public class Robot extends IterativeRobot
     {
         try
         {
-            CrashTracker.logDisabledInit();
+            Logger.logDisabledInit();
 
             if (mAutoModeExecuter != null)
             {
@@ -309,7 +308,7 @@ public class Robot extends IterativeRobot
         }
         catch (Throwable t)
         {
-            CrashTracker.logThrowableCrash(t);
+            Logger.logThrowableCrash(t);
             throw t;
         }
     }
@@ -341,11 +340,11 @@ public class Robot extends IterativeRobot
 
         if (!results)
         {
-            System.out.println("CHECK ABOVE OUTPUT SOME SYSTEMS FAILED!!!");
+            Logger.error("CHECK ABOVE OUTPUT SOME SYSTEMS FAILED!!!");
         }
         else
         {
-            System.out.println("ALL SYSTEMS PASSED");
+            Logger.notice("ALL SYSTEMS PASSED");
         }
     }
 

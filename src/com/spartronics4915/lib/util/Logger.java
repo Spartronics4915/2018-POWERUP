@@ -10,7 +10,7 @@ import java.util.UUID;
  * Tracks start-up and caught crash events, logging them to a file which dosn't
  * roll over
  */
-public class CrashTracker
+public class Logger
 {
 
     private static final UUID RUN_INSTANCE_UUID = UUID.randomUUID();
