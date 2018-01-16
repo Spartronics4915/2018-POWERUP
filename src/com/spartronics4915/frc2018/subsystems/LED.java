@@ -66,7 +66,7 @@ public class LED extends Subsystem
         mRangeLED = new DigitalOutput(Constants.kRangeLEDId);
         setRangeLEDOff();
 
-        // Force a relay change.
+        // Force a state change.
         mIsLEDOn = true;
         setLEDOff();
 
