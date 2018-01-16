@@ -215,7 +215,7 @@ public class Drive extends Subsystem
             DriverStation.reportError("Could not detect right encoder", false);
         }
 
-        mRightSlave = CANTalonFactory.createPermanentSlaveTalon(Constants.kRightDriverSlaveId,
+        mRightSlave = CANTalonFactory.createPermanentSlaveTalon(Constants.kRightDriveSlaveId,
                 Constants.kRightDriveMasterId);
         mRightSlave.reverseOutput(false);
         mRightMaster.setStatusFrameRateMs(StatusFrameEnhanced.Status_2_Feedback0, 5); // XXX: was Feedback
