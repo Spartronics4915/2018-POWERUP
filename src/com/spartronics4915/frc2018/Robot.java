@@ -54,6 +54,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  */
 public class Robot extends IterativeRobot
 {
+
     // NB: make sure to construct objects in constructor, not member declaration.
     // Get subsystem instances
     private Drive mDrive = null;
@@ -63,10 +64,10 @@ public class Robot extends IterativeRobot
     private RobotState mRobotState = null;
     private AutoModeExecuter mAutoModeExecuter = null;
     private ConnectionMonitor mConnectionMonitor = null;
-    
+
     // Create subsystem manager
     private SubsystemManager mSubsystemManager = null;
-    
+
     // Initialize other helper objects
     private CheesyDriveHelper mCheesyDriveHelper = null;
     private ControlBoardInterface mControlBoard = null;
@@ -97,7 +98,7 @@ public class Robot extends IterativeRobot
         mEnabledLooper = new Looper();
         mCheckLightButton = new AnalogInput(Constants.kLEDOnId);
         Logger.logRobotConstruction();
-   }
+    }
 
     public void zeroAllSensors()
     {

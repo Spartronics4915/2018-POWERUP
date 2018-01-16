@@ -50,25 +50,25 @@ public class Logger
     {
         logMarker("Exception", throwable);
     }
-    
+
     public static void error(String m)
     {
         logMarker("ERROR   " + m);
     }
-    
+
     public static void warning(String m)
     {
-        logMarker("WARNING " + m);        
+        logMarker("WARNING " + m);
     }
-    
+
     public static void notice(String m)
     {
-        logMarker("NOTICE  " + m);                
+        logMarker("NOTICE  " + m);
     }
-    
+
     public static void info(String m)
     {
-        if(sVerbosity > 0)
+        if (sVerbosity > 0)
         {
             printMarker("INFO    " + m);
         }
@@ -76,20 +76,20 @@ public class Logger
 
     public static void debug(String m)
     {
-        if(sVerbosity > 1)
+        if (sVerbosity > 1)
         {
             printMarker("DEBUG    " + m);
         }
     }
-    
+
     private static void logMarker(String mark)
     {
         logMarker(mark, null);
     }
-    
+
     private static void printMarker(String mark)
     {
-        System.out.print(mark);        
+        System.out.print(mark);
     }
 
     private static void logMarker(String mark, Throwable nullableException)
