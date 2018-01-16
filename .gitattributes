@@ -1,0 +1,5 @@
+# Set the default behavior to convert all text files to line feed
+* text=auto
+*.txt text eol=lf
+*.java text eol=lf
+robotCommand text eol=lf
