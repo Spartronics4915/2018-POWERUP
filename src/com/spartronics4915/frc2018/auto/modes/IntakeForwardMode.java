@@ -2,9 +2,9 @@ package com.spartronics4915.frc2018.auto.modes;
 
 import com.spartronics4915.frc2018.auto.AutoModeBase;
 import com.spartronics4915.frc2018.auto.AutoModeEndedException;
-import com.spartronics4915.frc2018.auto.actions.IntakeAction;
+import com.spartronics4915.frc2018.auto.actions.IntakeForwardAction;
 
-public class IntakeMode extends AutoModeBase
+public class IntakeForwardMode extends AutoModeBase
 {
 
     // To make your auto mode be seen on the Dashboard, you need to add it
@@ -12,7 +12,7 @@ public class IntakeMode extends AutoModeBase
     @Override
     protected void routine() throws AutoModeEndedException
     {
-        runAction(new IntakeAction());
+        runAction(new IntakeForwardAction());
     }
 
 }

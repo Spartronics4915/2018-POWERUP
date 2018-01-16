@@ -1,10 +1,11 @@
 package com.spartronics4915.frc2018.auto.actions;
 
 import com.spartronics4915.frc2018.subsystems.Intake;
+import com.spartronics4915.frc2018.subsystems.Intake.WantedState;
 
-public class IntakeAction implements Action
+public class IntakeForwardAction implements Action
 {
-    Intake mExample = Intake.getInstance();
+    Intake mIntake = Intake.getInstance();
     
     @Override
     public boolean isFinished()
@@ -29,7 +30,7 @@ public class IntakeAction implements Action
     @Override
     public void start()
     {
-        // Set motors here
+        mIntake.setWantedState(WantedState.FORWARD_INTAKE);
     }
 
 }

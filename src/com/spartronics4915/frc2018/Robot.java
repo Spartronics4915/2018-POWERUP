@@ -18,6 +18,7 @@ import com.spartronics4915.frc2018.subsystems.Drive;
 import com.spartronics4915.frc2018.subsystems.Intake;
 import com.spartronics4915.frc2018.subsystems.LED;
 import com.spartronics4915.frc2018.subsystems.Superstructure;
+import com.spartronics4915.frc2018.subsystems.Intake.WantedState;
 import com.spartronics4915.lib.util.CANProbe;
 import com.spartronics4915.lib.util.CheesyDriveHelper;
 import com.spartronics4915.lib.util.CrashTracker;
@@ -61,7 +62,7 @@ public class Robot extends IterativeRobot
     private Drive mDrive = Drive.getInstance();
     private Superstructure mSuperstructure = Superstructure.getInstance();
     private LED mLED = LED.getInstance();
-    private Intake mExample = Intake.getInstance();
+    private Intake mIntake = Intake.getInstance();
     private RobotState mRobotState = RobotState.getInstance();
     private AutoModeExecuter mAutoModeExecuter = null;
 
@@ -264,6 +265,15 @@ public class Robot extends IterativeRobot
             if (mControlBoard.getBlinkLEDButton())
             {
                 mLED.setWantedState(LED.WantedState.BLINK);
+            }
+            
+            if (mControlBoard.getIntakeButton())
+            {
+                mIntake.setWantedState(WantedState.FORWARD_INTAKE);
+            }
+            else
+            {
+                mIntake.setWantedState(WantedState.IDLE);
             }
 
             allPeriodic();
