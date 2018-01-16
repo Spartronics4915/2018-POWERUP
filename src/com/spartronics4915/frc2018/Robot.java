@@ -15,7 +15,7 @@ import com.spartronics4915.frc2018.loops.VisionProcessor;
 import com.spartronics4915.frc2018.paths.profiles.PathAdapter;
 import com.spartronics4915.frc2018.subsystems.ConnectionMonitor;
 import com.spartronics4915.frc2018.subsystems.Drive;
-import com.spartronics4915.frc2018.subsystems.Intake;
+import com.spartronics4915.frc2018.subsystems.Testbed;
 import com.spartronics4915.frc2018.subsystems.LED;
 import com.spartronics4915.frc2018.subsystems.Superstructure;
 import com.spartronics4915.lib.util.CANProbe;
@@ -59,7 +59,7 @@ public class Robot extends IterativeRobot
     private Drive mDrive = null;
     private Superstructure mSuperstructure = null;
     private LED mLED = null;
-    private Intake mIntake = null;
+    private Testbed mIntake = null;
     private RobotState mRobotState = null;
     private AutoModeExecuter mAutoModeExecuter = null;
     private ConnectionMonitor mConnectionMonitor = null;
@@ -82,7 +82,7 @@ public class Robot extends IterativeRobot
         mDrive = Drive.getInstance();
         mSuperstructure = Superstructure.getInstance();
         mLED = LED.getInstance();
-        mIntake = Intake.getInstance();
+        mIntake = Testbed.getInstance();
         mRobotState = RobotState.getInstance();
         mAutoModeExecuter = null;
         mConnectionMonitor = ConnectionMonitor.getInstance();

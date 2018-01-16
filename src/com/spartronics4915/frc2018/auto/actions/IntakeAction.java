@@ -1,10 +1,10 @@
 package com.spartronics4915.frc2018.auto.actions;
 
-import com.spartronics4915.frc2018.subsystems.Intake;
+import com.spartronics4915.frc2018.subsystems.Testbed;
 
 public class IntakeAction implements Action
 {
-    Intake mExample = Intake.getInstance();
+    Testbed mExample = Testbed.getInstance();
     
     @Override
     public boolean isFinished()
