@@ -46,18 +46,18 @@ import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 public class CANTalon extends WPI_TalonSRX
 {
 
-    static final int s_defaultTimeoutMS = 0; // 0 for no blocking. This is like the old behavior (I think).
-    static final int s_pidIdx = 0; // We're unsure about what this does.
-    static final int s_defaultOrdinal = 0; // This probably does something specific on certain ParamEnums
+    static final int sDefaultTimeoutMS = 0; // 0 for no blocking. This is like the old behavior (I think).
+    static final int sPidIdx = 0; // We're unsure about what this does.
+    static final int sDefaultOrdinal = 0; // This probably does something specific on certain ParamEnums
 
-    ControlMode m_controlMode = ControlMode.Disabled;
-    ControlMode m_lastControlMode = null;
-    NeutralMode m_neutralMode;
-    double m_lastSetpoint = 0;
-    int m_pidSlot;
-    int m_maxVolts = 12;
-    int m_codesPerRevolution; // Encoder codes per revolution
-    boolean m_outputReversed = false;
+    ControlMode mControlMode = ControlMode.Disabled;
+    ControlMode mLastControlMode = null;
+    NeutralMode mNeutralMode;
+    double mLastSetpoint = 0;
+    int mPidSlot;
+    int mMaxVolts = 12;
+    int mCodesPerRevolution; // Encoder codes per revolution
+    boolean mOutputReversed = false;
 
     public CANTalon(int deviceNumber)
     {
@@ -67,7 +67,7 @@ public class CANTalon extends WPI_TalonSRX
     public CANTalon(int deviceNumber, int controlPeriodMs)
     {
         super(deviceNumber);
-        this.setControlFramePeriod(controlPeriodMs, s_defaultTimeoutMS);
+        this.setControlFramePeriod(controlPeriodMs, sDefaultTimeoutMS);
     }
 
     public CANTalon(int deviceNumber, int controlPeriodMs, int enablePeriodMs)
@@ -89,9 +89,9 @@ public class CANTalon extends WPI_TalonSRX
      */
     private int rpmToNativeVelocity(double rpm)
     {
-        if (m_codesPerRevolution == 0) return (int) Math.round(rpm);
+        if (mCodesPerRevolution == 0) return (int) Math.round(rpm);
         double rotationsPer100MS = (rpm / 60) / 10;
-        return (int) Math.round(rotationsPer100MS * m_codesPerRevolution);
+        return (int) Math.round(rotationsPer100MS * mCodesPerRevolution);
     }
     
     /**
@@ -106,9 +106,9 @@ public class CANTalon extends WPI_TalonSRX
      */
     private int nativeVelocityToRpm(double nativeVelocity)
     {
-        if (m_codesPerRevolution == 0) return (int) Math.round(nativeVelocity);
+        if (mCodesPerRevolution == 0) return (int) Math.round(nativeVelocity);
         double nativeUnitsPerMinute = nativeVelocity * 10 * 60;
-        return (int) Math.round(nativeUnitsPerMinute / m_codesPerRevolution);
+        return (int) Math.round(nativeUnitsPerMinute / mCodesPerRevolution);
     }
     
     /**
@@ -122,8 +122,8 @@ public class CANTalon extends WPI_TalonSRX
      */
     private double encoderCodesToRotations(double codes)
     {
-        if (m_codesPerRevolution == 0) return codes;
-        return codes / m_codesPerRevolution;
+        if (mCodesPerRevolution == 0) return codes;
+        return codes / mCodesPerRevolution;
     }
 
     /**
@@ -137,77 +137,92 @@ public class CANTalon extends WPI_TalonSRX
     @Override
     public void set(double value)
     {
-        if (m_outputReversed) value *= -1;
+        if (mOutputReversed) value *= -1;
         // We've integrated LazyCANTalon into here
-        if (value != m_lastSetpoint || m_controlMode != m_lastControlMode)
+        if (value != mLastSetpoint || mControlMode != mLastControlMode)
         {
-            this.set(m_controlMode, value);
-            m_lastSetpoint = value;
-            m_lastControlMode = m_controlMode;
+            this.set(mControlMode, value);
+            mLastSetpoint = value;
+            mLastControlMode = mControlMode;
         }
+    }
+
+    /**
+     * Sets the output on the Talon, with the mode specified explicitly.
+     * This overrides the new-style method, so that we can maintain
+     * state in the wrapper subsystem.
+     *
+     * @param A ControlMode dependent setpoint.
+     * @see set(double)
+     */
+    @Override
+    public void set(ControlMode m, double value)
+    {
+        mControlMode = m;
+        set(value);
     }
 
     public void changeControlMode(ControlMode m)
     {
-        this.m_controlMode = m; // in SRX mode, set() requires controlmode
+        this.mControlMode = m; // in SRX mode, set() requires controlmode
     }
 
     public void setControlMode(ControlMode m)
     {
-        this.m_controlMode = m;
+        this.mControlMode = m;
     }
 
     public void setFeedbackDevice(FeedbackDevice d)
     {
-        this.configSelectedFeedbackSensor(d, s_pidIdx, s_defaultTimeoutMS);
+        this.configSelectedFeedbackSensor(d, sPidIdx, sDefaultTimeoutMS);
         this.setSensorPhase(false);
     }
 
     public void configEncoderCodesPerRev(int cpr)
     {
-        m_codesPerRevolution = cpr;
+        mCodesPerRevolution = cpr;
     }
 
     public void setEncPosition(int p)
     {
-        this.getSensorCollection().setQuadraturePosition(p, s_defaultTimeoutMS);
+        this.getSensorCollection().setQuadraturePosition(p, sDefaultTimeoutMS);
     }
 
     public void setPID(double p, double i, double d, double f, int izone, double closeLoopRampRate, int profile)
     {
-        this.config_kP(profile, p, s_defaultTimeoutMS);
-        this.config_kI(profile, i, s_defaultTimeoutMS);
-        this.config_kD(profile, d, s_defaultTimeoutMS);
-        this.config_kF(profile, f, s_defaultTimeoutMS);
-        this.config_IntegralZone(profile, izone, s_defaultTimeoutMS);
-        double newRampRate = m_maxVolts / closeLoopRampRate;
-        this.configClosedloopRamp(newRampRate, s_defaultTimeoutMS);
-        this.configOpenloopRamp(newRampRate, s_defaultTimeoutMS);
+        this.config_kP(profile, p, sDefaultTimeoutMS);
+        this.config_kI(profile, i, sDefaultTimeoutMS);
+        this.config_kD(profile, d, sDefaultTimeoutMS);
+        this.config_kF(profile, f, sDefaultTimeoutMS);
+        this.config_IntegralZone(profile, izone, sDefaultTimeoutMS);
+        double newRampRate = mMaxVolts / closeLoopRampRate;
+        this.configClosedloopRamp(newRampRate, sDefaultTimeoutMS);
+        this.configOpenloopRamp(newRampRate, sDefaultTimeoutMS);
     }
 
     public void setMotionMagicAcceleration(double motMagicAccel)
     {
-        this.configMotionAcceleration(rpmToNativeVelocity(motMagicAccel), s_defaultTimeoutMS);
+        this.configMotionAcceleration(rpmToNativeVelocity(motMagicAccel), sDefaultTimeoutMS);
     }
 
     public void setMotionMagicCruiseVelocity(double kDriveLowGearMaxVelocity)
     {
-        this.configMotionCruiseVelocity(rpmToNativeVelocity(kDriveLowGearMaxVelocity), s_defaultTimeoutMS);
+        this.configMotionCruiseVelocity(rpmToNativeVelocity(kDriveLowGearMaxVelocity), sDefaultTimeoutMS);
     }
 
     public void clearIAccum()
     {
-        this.setIntegralAccumulator(0, s_pidIdx, s_defaultTimeoutMS);
+        this.setIntegralAccumulator(0, sPidIdx, sDefaultTimeoutMS);
     }
 
     public void clearMotionProfileHasUnderrun()
     {
-        this.clearMotionProfileHasUnderrun(s_defaultTimeoutMS);
+        this.clearMotionProfileHasUnderrun(sDefaultTimeoutMS);
     }
 
     public void clearStickyFaults()
     {
-        this.clearStickyFaults(s_defaultTimeoutMS);
+        this.clearStickyFaults(sDefaultTimeoutMS);
     }
 
     /**
@@ -232,8 +247,8 @@ public class CANTalon extends WPI_TalonSRX
     {
         // XXX: This was changed to use percentages, and just negate the percentage for the min.
         // That means that min doesn't do anything.
-        this.configNominalOutputForward(max / m_maxVolts, s_defaultTimeoutMS);
-        this.configNominalOutputReverse(max / m_maxVolts, s_defaultTimeoutMS);
+        this.configNominalOutputForward(max / mMaxVolts, sDefaultTimeoutMS);
+        this.configNominalOutputReverse(max / mMaxVolts, sDefaultTimeoutMS);
     }
 
     /**
@@ -247,8 +262,8 @@ public class CANTalon extends WPI_TalonSRX
     {
         // XXX: This was changed to use percentages, and just negate the percentage for the min.
         // That means that min doesn't do anything.
-        this.configPeakOutputForward(max / m_maxVolts, s_defaultTimeoutMS);
-        this.configPeakOutputReverse(max / m_maxVolts, s_defaultTimeoutMS);
+        this.configPeakOutputForward(max / mMaxVolts, sDefaultTimeoutMS);
+        this.configPeakOutputReverse(max / mMaxVolts, sDefaultTimeoutMS);
     }
 
     public void enableBrakeMode(boolean s)
@@ -259,7 +274,7 @@ public class CANTalon extends WPI_TalonSRX
 
     public void setCurrentLimit(int amps)
     {
-        this.configPeakCurrentLimit(amps, s_defaultTimeoutMS);
+        this.configPeakCurrentLimit(amps, sDefaultTimeoutMS);
     }
 
     /**
@@ -269,7 +284,7 @@ public class CANTalon extends WPI_TalonSRX
      */
     public void reverseOutput(boolean s)
     {
-        m_outputReversed = s;
+        mOutputReversed = s;
         // XXX: this.setInverted seems to cause a stack overflow... This works around that.
     }
     
@@ -282,7 +297,7 @@ public class CANTalon extends WPI_TalonSRX
      */
     public void setForwardSoftLimit(int l)
     {
-        this.configForwardSoftLimitThreshold(l, s_defaultTimeoutMS);
+        this.configForwardSoftLimitThreshold(l, sDefaultTimeoutMS);
     }
 
     /**
@@ -294,46 +309,46 @@ public class CANTalon extends WPI_TalonSRX
      */
     public void setReverseSoftLimit(int l)
     {
-        this.configReverseSoftLimitThreshold(l, s_defaultTimeoutMS);
+        this.configReverseSoftLimitThreshold(l, sDefaultTimeoutMS);
     }
 
     public void setNominalClosedLoopVoltage(double v)
     {
         // XXX: These are now in percentages, not volts... And there's no closed-loop only method.
-        this.configNominalOutputForward(v / m_maxVolts, s_defaultTimeoutMS);
-        this.configNominalOutputReverse(v / m_maxVolts, s_defaultTimeoutMS);
+        this.configNominalOutputForward(v / mMaxVolts, sDefaultTimeoutMS);
+        this.configNominalOutputReverse(v / mMaxVolts, sDefaultTimeoutMS);
     }
 
     public void setPosition(int d)
     {
-        this.getSensorCollection().setAnalogPosition(d, s_defaultTimeoutMS);
+        this.getSensorCollection().setAnalogPosition(d, sDefaultTimeoutMS);
     }
 
     public void setProfile(int p)
     {
         // Select which closed loop profile to use, and uses whatever PIDF gains and the such that are already there.
-        m_pidSlot = p;
-        this.selectProfileSlot(p, s_pidIdx);
+        mPidSlot = p;
+        this.selectProfileSlot(p, sPidIdx);
     }
 
     public void setPulseWidthPosition(int p)
     {
-        this.getSensorCollection().setPulseWidthPosition(p, s_defaultTimeoutMS);
+        this.getSensorCollection().setPulseWidthPosition(p, sDefaultTimeoutMS);
     }
 
     public void setVelocityMeasurementPeriod(VelocityMeasPeriod p)
     {
-        this.configVelocityMeasurementPeriod(p, s_defaultTimeoutMS);
+        this.configVelocityMeasurementPeriod(p, sDefaultTimeoutMS);
     }
 
     public void setVelocityMeasurementWindow(int w)
     {
-        this.configVelocityMeasurementWindow(w, s_defaultTimeoutMS);
+        this.configVelocityMeasurementWindow(w, sDefaultTimeoutMS);
     }
 
     public void setVoltageCompensationRampRate(double rampRate)
     {
-        this.configVoltageCompSaturation(rampRate, s_defaultTimeoutMS); // XXX: I have no idea if this is these are the right units.
+        this.configVoltageCompSaturation(rampRate, sDefaultTimeoutMS); // XXX: I have no idea if this is these are the right units.
     }
 
     /**
@@ -345,14 +360,14 @@ public class CANTalon extends WPI_TalonSRX
      */
     public void setVoltageRampRate(double rampRate)
     {
-        double newRampRate = m_maxVolts / rampRate;
-        this.configClosedloopRamp(newRampRate, s_defaultTimeoutMS);
-        this.configOpenloopRamp(newRampRate, s_defaultTimeoutMS);
+        double newRampRate = mMaxVolts / rampRate;
+        this.configClosedloopRamp(newRampRate, sDefaultTimeoutMS);
+        this.configOpenloopRamp(newRampRate, sDefaultTimeoutMS);
     }
 
     public void setStatusFrameRateMs(StatusFrameEnhanced statFrame, int rate)
     {
-        this.setStatusFramePeriod(statFrame, rate, s_defaultTimeoutMS);
+        this.setStatusFramePeriod(statFrame, rate, sDefaultTimeoutMS);
     }
 
     public void reverseSensor(boolean s)
@@ -362,7 +377,7 @@ public class CANTalon extends WPI_TalonSRX
 
     public void setAnalogPosition(int pos)
     {
-        this.getSensorCollection().setAnalogPosition(pos, s_defaultTimeoutMS);
+        this.getSensorCollection().setAnalogPosition(pos, sDefaultTimeoutMS);
     }
 
     /**
@@ -376,12 +391,12 @@ public class CANTalon extends WPI_TalonSRX
      */
     public void setCurrentLimit(double l)
     {
-        this.configPeakCurrentLimit((int) l, s_defaultTimeoutMS); // XXX: Is this actually equivalent?
+        this.configPeakCurrentLimit((int) l, sDefaultTimeoutMS); // XXX: Is this actually equivalent?
     }
 
     public void enableForwardSoftLimit(boolean s)
     {
-        this.configForwardSoftLimitEnable(s, s_defaultTimeoutMS);
+        this.configForwardSoftLimitEnable(s, sDefaultTimeoutMS);
     }
 
     /**
@@ -398,7 +413,7 @@ public class CANTalon extends WPI_TalonSRX
 
     public void enableReverseSoftLimit(boolean s)
     {
-        this.configReverseSoftLimitEnable(s, s_defaultTimeoutMS);
+        this.configReverseSoftLimitEnable(s, sDefaultTimeoutMS);
     }
 
     /**
@@ -438,7 +453,7 @@ public class CANTalon extends WPI_TalonSRX
                                                                                * LimitSwitchSource
                                                                                */
                 s ? LimitSwitchNormal.NormallyOpen : LimitSwitchNormal.NormallyClosed,
-                s_defaultTimeoutMS);
+                sDefaultTimeoutMS);
     }
 
     public void configRevLimitSwitchNormallyOpen(boolean s)
@@ -448,7 +463,7 @@ public class CANTalon extends WPI_TalonSRX
                                                                                * LimitSwitchSource
                                                                                */
                 s ? LimitSwitchNormal.NormallyOpen : LimitSwitchNormal.NormallyClosed,
-                s_defaultTimeoutMS);
+                sDefaultTimeoutMS);
     }
 
     public boolean isRevLimitSwitchClosed()
@@ -458,7 +473,7 @@ public class CANTalon extends WPI_TalonSRX
 
     public boolean isForwardSoftLimitEnabled()
     {
-        return this.configGetParameter(ParamEnum.eForwardSoftLimitEnable, s_defaultOrdinal, s_defaultTimeoutMS) == 1 ? true : false;
+        return this.configGetParameter(ParamEnum.eForwardSoftLimitEnable, sDefaultOrdinal, sDefaultTimeoutMS) == 1 ? true : false;
     }
 
     /**
@@ -474,7 +489,7 @@ public class CANTalon extends WPI_TalonSRX
 
     public boolean isZeroSensorPosOnFwdLimitEnabled()
     {
-        return this.configGetParameter(ParamEnum.eClearPositionOnLimitF, s_defaultOrdinal, s_defaultTimeoutMS) == 1 ? true : false;
+        return this.configGetParameter(ParamEnum.eClearPositionOnLimitF, sDefaultOrdinal, sDefaultTimeoutMS) == 1 ? true : false;
     }
 
     /**
@@ -495,7 +510,7 @@ public class CANTalon extends WPI_TalonSRX
 
     public double getError()
     {
-        return this.getClosedLoopError(s_pidIdx);
+        return this.getClosedLoopError(sPidIdx);
     }
 
     // FIXME: I can't find how to do this in the new API.
@@ -517,7 +532,7 @@ public class CANTalon extends WPI_TalonSRX
 
     public boolean isZeroSensorPosOnRevLimitEnabled()
     {
-        return this.configGetParameter(ParamEnum.eClearPositionOnLimitR, s_defaultOrdinal, s_defaultTimeoutMS) == 1 ? true : false;
+        return this.configGetParameter(ParamEnum.eClearPositionOnLimitR, sDefaultOrdinal, sDefaultTimeoutMS) == 1 ? true : false;
     }
 
     public double getOutputVoltage()
@@ -542,7 +557,7 @@ public class CANTalon extends WPI_TalonSRX
 
     public boolean isZeroSensorPosOnIndexEnabled()
     {
-        return this.configGetParameter(ParamEnum.eClearPositionOnIdx, s_defaultOrdinal, s_defaultTimeoutMS) == 1 ? true : false;
+        return this.configGetParameter(ParamEnum.eClearPositionOnIdx, sDefaultOrdinal, sDefaultTimeoutMS) == 1 ? true : false;
     }
 
     /**
@@ -552,7 +567,7 @@ public class CANTalon extends WPI_TalonSRX
      */
     public double getMotionMagicCruiseVelocity()
     {
-        return this.configGetParameter(ParamEnum.eMotMag_VelCruise, s_defaultOrdinal, s_defaultTimeoutMS);
+        return this.configGetParameter(ParamEnum.eMotMag_VelCruise, sDefaultOrdinal, sDefaultTimeoutMS);
     }
 
     /**
@@ -636,7 +651,7 @@ public class CANTalon extends WPI_TalonSRX
      */
     public int getEncPosition()
     {
-        return this.getSelectedSensorPosition(s_pidIdx);
+        return this.getSelectedSensorPosition(sPidIdx);
     }
 
     /**
@@ -648,7 +663,7 @@ public class CANTalon extends WPI_TalonSRX
      */
     public double getAnalogInPosition()
     {
-        return this.configGetParameter(ParamEnum.eAnalogPosition, s_defaultOrdinal, s_defaultTimeoutMS);
+        return this.configGetParameter(ParamEnum.eAnalogPosition, sDefaultOrdinal, sDefaultTimeoutMS);
     }
 
     /**
@@ -676,7 +691,7 @@ public class CANTalon extends WPI_TalonSRX
      */
     public double getCloseLoopRampRate()
     {
-        return this.configGetParameter(ParamEnum.eClosedloopRamp, s_defaultOrdinal, s_defaultTimeoutMS);
+        return this.configGetParameter(ParamEnum.eClosedloopRamp, sDefaultOrdinal, sDefaultTimeoutMS);
     }
 
     /**
@@ -696,7 +711,7 @@ public class CANTalon extends WPI_TalonSRX
      */
     public double getP()
     {
-        return this.configGetParameter(ParamEnum.eProfileParamSlot_P, s_defaultOrdinal, s_defaultTimeoutMS);
+        return this.configGetParameter(ParamEnum.eProfileParamSlot_P, sDefaultOrdinal, sDefaultTimeoutMS);
     }
 
     /**
@@ -706,7 +721,7 @@ public class CANTalon extends WPI_TalonSRX
      */
     public double getF()
     {
-        return this.configGetParameter(ParamEnum.eProfileParamSlot_F, s_defaultOrdinal, s_defaultTimeoutMS);
+        return this.configGetParameter(ParamEnum.eProfileParamSlot_F, sDefaultOrdinal, sDefaultTimeoutMS);
     }
 
     public int getAnalogInVelocity()
@@ -721,7 +736,7 @@ public class CANTalon extends WPI_TalonSRX
      */
     public double getI()
     {
-        return this.configGetParameter(ParamEnum.eProfileParamSlot_I, s_defaultOrdinal, s_defaultTimeoutMS);
+        return this.configGetParameter(ParamEnum.eProfileParamSlot_I, sDefaultOrdinal, sDefaultTimeoutMS);
     }
 
     /**
@@ -731,7 +746,7 @@ public class CANTalon extends WPI_TalonSRX
      */
     public double getIZone()
     {
-        return this.configGetParameter(ParamEnum.eProfileParamSlot_IZone, s_defaultOrdinal, s_defaultTimeoutMS);
+        return this.configGetParameter(ParamEnum.eProfileParamSlot_IZone, sDefaultOrdinal, sDefaultTimeoutMS);
     }
 
     /**
@@ -742,7 +757,7 @@ public class CANTalon extends WPI_TalonSRX
      */
     public boolean isReverseSoftLimitEnabled()
     {
-        return this.configGetParameter(ParamEnum.eReverseSoftLimitEnable, s_defaultOrdinal, s_defaultTimeoutMS) == 1 ? true : false;
+        return this.configGetParameter(ParamEnum.eReverseSoftLimitEnable, sDefaultOrdinal, sDefaultTimeoutMS) == 1 ? true : false;
     }
 
     /**
@@ -758,7 +773,7 @@ public class CANTalon extends WPI_TalonSRX
 
     public int getEncVelocity()
     {
-        return this.getSelectedSensorVelocity(s_pidIdx);
+        return this.getSelectedSensorVelocity(sPidIdx);
     }
 
     /**
@@ -770,7 +785,7 @@ public class CANTalon extends WPI_TalonSRX
      */
     public double getVelocityMeasurementPeriod()
     {
-        return this.configGetParameter(ParamEnum.eSampleVelocityPeriod, s_defaultOrdinal, s_defaultTimeoutMS);
+        return this.configGetParameter(ParamEnum.eSampleVelocityPeriod, sDefaultOrdinal, sDefaultTimeoutMS);
     }
 
     /**
@@ -781,7 +796,7 @@ public class CANTalon extends WPI_TalonSRX
      */
     public double getVelocityMeasurementWindow()
     {
-        return this.configGetParameter(ParamEnum.eSampleVelocityWindow, s_defaultOrdinal, s_defaultTimeoutMS);
+        return this.configGetParameter(ParamEnum.eSampleVelocityWindow, sDefaultOrdinal, sDefaultTimeoutMS);
     }
 
     /**
@@ -794,7 +809,7 @@ public class CANTalon extends WPI_TalonSRX
      */
     public double getReverseSoftLimit()
     {
-        return this.configGetParameter(ParamEnum.eReverseSoftLimitEnable, s_defaultOrdinal, s_defaultTimeoutMS);
+        return this.configGetParameter(ParamEnum.eReverseSoftLimitEnable, sDefaultOrdinal, sDefaultTimeoutMS);
     }
 
     /**
@@ -804,7 +819,7 @@ public class CANTalon extends WPI_TalonSRX
      */
     public double getD()
     {
-        return this.configGetParameter(ParamEnum.eProfileParamSlot_D, s_defaultOrdinal, s_defaultTimeoutMS);
+        return this.configGetParameter(ParamEnum.eProfileParamSlot_D, sDefaultOrdinal, sDefaultTimeoutMS);
     }
 
     /**
@@ -828,7 +843,7 @@ public class CANTalon extends WPI_TalonSRX
      */
     public double getForwardSoftLimit()
     {
-        return this.configGetParameter(ParamEnum.eForwardSoftLimitEnable, s_defaultOrdinal, s_defaultTimeoutMS);
+        return this.configGetParameter(ParamEnum.eForwardSoftLimitEnable, sDefaultOrdinal, sDefaultTimeoutMS);
     }
 
     /**
@@ -860,7 +875,7 @@ public class CANTalon extends WPI_TalonSRX
      */
     public double getSpeed()
     {
-        return nativeVelocityToRpm(this.getSelectedSensorVelocity(s_pidIdx));
+        return nativeVelocityToRpm(this.getSelectedSensorVelocity(sPidIdx));
     }
 
     /**
@@ -952,7 +967,7 @@ public class CANTalon extends WPI_TalonSRX
         // @param part of the javadoc says slotIdx (PID
         // gain slot), which makes the most sense, so
         // I'm going with that.
-        return this.getClosedLoopError(m_pidSlot);
+        return this.getClosedLoopError(mPidSlot);
     }
 
     /**
@@ -962,7 +977,7 @@ public class CANTalon extends WPI_TalonSRX
      */
     public double getSetpoint()
     {
-        return m_lastSetpoint;
+        return mLastSetpoint;
     }
 
     /**
@@ -999,7 +1014,7 @@ public class CANTalon extends WPI_TalonSRX
      */
     public double getIaccum()
     {
-        return this.getIntegralAccumulator(s_pidIdx);
+        return this.getIntegralAccumulator(sPidIdx);
     }
 
     /**
@@ -1039,7 +1054,7 @@ public class CANTalon extends WPI_TalonSRX
      */
     public boolean getBrakeEnableDuringNeutral()
     {
-        return m_neutralMode == NeutralMode.Brake ? true : false;
+        return mNeutralMode == NeutralMode.Brake ? true : false;
     }
 
     /**
@@ -1096,7 +1111,7 @@ public class CANTalon extends WPI_TalonSRX
         // When using analog sensors, 0 units corresponds to 0V, 1023 units corresponds to 3.3V 
         // When using an analog encoder (wrapping around 1023 to 0 is possible) the units are still 
         // 3.3V per 1023 units.
-        return encoderCodesToRotations(this.getSelectedSensorPosition(s_pidIdx));
+        return encoderCodesToRotations(this.getSelectedSensorPosition(sPidIdx));
     }
 
     public int getPulseWidthRiseToFallUs()
@@ -1113,6 +1128,6 @@ public class CANTalon extends WPI_TalonSRX
      */
     public double getMotionMagicAcceleration()
     {
-        return this.configGetParameter(ParamEnum.eMotMag_Accel, s_defaultOrdinal, s_defaultTimeoutMS);
+        return this.configGetParameter(ParamEnum.eMotMag_Accel, sDefaultOrdinal, sDefaultTimeoutMS);
     }
 }
