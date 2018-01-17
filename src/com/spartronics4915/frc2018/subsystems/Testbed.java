@@ -4,6 +4,7 @@ import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.spartronics4915.frc2018.Constants;
 import com.spartronics4915.frc2018.loops.Loop;
 import com.spartronics4915.frc2018.loops.Looper;
+import com.spartronics4915.lib.util.CANProbe;
 import com.spartronics4915.lib.util.drivers.CANTalon;
 import com.spartronics4915.lib.util.drivers.CANTalonFactory;
 
@@ -19,7 +20,7 @@ public class Testbed extends Subsystem
     public static Testbed getInstance()
     {
         // Testbed is a singleton, meaning that only one object of the class
-        // is ever instantiated.
+        // is ever instantiated.  Note that our constructor is private.
         if (sInstance == null)
         {
             sInstance = new Testbed();
@@ -41,16 +42,26 @@ public class Testbed extends Subsystem
         IDLE,
     }
 
-    private CANTalon mMotor;
+    private CANTalon mMotor = null;
     private SystemState mSystemState = SystemState.IDLING;
     private WantedState mWantedState = WantedState.IDLE;
 
     private Testbed()
     {
         // Instantiate member variables (motors, etc...) here.
-        mMotor = CANTalonFactory.createDefaultTalon(Constants.kTestbedMotorId);
-
-        mMotor.changeControlMode(ControlMode.PercentOutput);
+        CANProbe canProbe = CANProbe.getInstance();
+        boolean success = false;
+        if(canProbe.validateSRXId(Constants.kTestbedMotorId))
+        {
+            mMotor = CANTalonFactory.createDefaultTalon(Constants.kTestbedMotorId);
+            mMotor.changeControlMode(ControlMode.PercentOutput);
+            success = true;
+        }
+        else
+        {
+            this.logWarning("can't find testbed motor");
+        }
+        logInitialized(success);
     }
 
     // Any public method that isn't @Overriding an abstract method on the Subsystem superclass
@@ -91,7 +102,7 @@ public class Testbed extends Subsystem
                 }
                 if (newState != mSystemState)
                 {
-                    System.out.println("Testbed state from " + mSystemState + " to " + newState);
+                    logInfo("Testbed state from " + mSystemState + " to " + newState);
                     mSystemState = newState;
                 }
             }
@@ -103,7 +114,7 @@ public class Testbed extends Subsystem
             stop();
         }
 
-    };
+    }; // end of assignment to mLoop
 
     public void setWantedState(WantedState wantedState)
     {
@@ -118,7 +129,7 @@ public class Testbed extends Subsystem
          * dashboard, you would output information for that visualization here.
          * This methods overrides the abstract method of the same name in the
          * superclass (Subsystem). That just means that every Subsystem needs
-         * to have an outputToSmartDashboard method.
+         * to implement outputToSmartDashboard method.
          */
     }
 
@@ -146,9 +157,15 @@ public class Testbed extends Subsystem
 
     private void runOpenLoop(double percentOutput)
     {
-        mMotor.set(percentOutput);
+        if(mMotor != null)
+            mMotor.set(percentOutput);
     }
 
+    /** describes the steps needed to progress from the current
+     *  state to the wanted state.  Here, in open loop mode, we
+     *  presume that the transition is instantaneous.
+     * @return the current state
+     */
     private SystemState defaultStateTransfer()
     {
         switch (mWantedState)
@@ -166,7 +183,7 @@ public class Testbed extends Subsystem
 
     private SystemState handleForwardIntake()
     {
-        mMotor.set(1.0);
+        runOpenLoop(1.0);
         if (mWantedState == WantedState.REVERSE_INTAKE)
         {
             return SystemState.IDLING;
@@ -176,7 +193,7 @@ public class Testbed extends Subsystem
 
     private SystemState handleReverseIntake()
     {
-        mMotor.set(-1.0);
+        runOpenLoop(-1.0);
         if (mWantedState == WantedState.REVERSE_INTAKE)
         {
             return SystemState.IDLING;

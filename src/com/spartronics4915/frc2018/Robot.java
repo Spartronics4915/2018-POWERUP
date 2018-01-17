@@ -61,7 +61,7 @@ public class Robot extends IterativeRobot
     private Drive mDrive = null;
     private Superstructure mSuperstructure = null;
     private LED mLED = null;
-    private Testbed mIntake = null;
+    private Testbed mTestbed = null;
     private RobotState mRobotState = null;
     private AutoModeExecuter mAutoModeExecuter = null;
     private ConnectionMonitor mConnectionMonitor = null;
@@ -138,13 +138,13 @@ public class Robot extends IterativeRobot
             mDrive = Drive.getInstance();
             mSuperstructure = Superstructure.getInstance();
             mLED = LED.getInstance();
-            mIntake = Testbed.getInstance();
+            mTestbed = Testbed.getInstance();
             mRobotState = RobotState.getInstance();
             mAutoModeExecuter = null;
             mConnectionMonitor = ConnectionMonitor.getInstance();
             mSubsystemManager = new SubsystemManager(
                     Arrays.asList(mDrive, mSuperstructure,
-                            mConnectionMonitor, mLED, mIntake));
+                            mConnectionMonitor, mLED, mTestbed));
 
             // Initialize other helper objects
             mCheesyDriveHelper = new CheesyDriveHelper();
@@ -285,11 +285,11 @@ public class Robot extends IterativeRobot
 
             if (mControlBoard.getIntakeButton())
             {
-                mIntake.setWantedState(WantedState.FORWARD_INTAKE);
+                mTestbed.setWantedState(WantedState.FORWARD_INTAKE);
             }
             else
             {
-                mIntake.setWantedState(WantedState.IDLE);
+                mTestbed.setWantedState(WantedState.IDLE);
             }
 
             allPeriodic();

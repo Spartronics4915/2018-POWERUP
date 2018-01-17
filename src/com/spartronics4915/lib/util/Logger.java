@@ -30,7 +30,7 @@ public class Logger
     {
         logMarker("robot init");
     }
-
+    
     public static void logTeleopInit()
     {
         logMarker("teleop init");

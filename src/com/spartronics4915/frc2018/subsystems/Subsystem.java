@@ -1,29 +1,83 @@
 package com.spartronics4915.frc2018.subsystems;
 
 import com.spartronics4915.frc2018.loops.Looper;
+import com.spartronics4915.lib.util.Logger;
+
+import edu.wpi.first.wpilibj.DriverStation;
 
 /**
- * The Subsystem abstract class, which serves as a basic framework for all robot
- * subsystems. Each subsystem outputs
- * commands to SmartDashboard, has a stop routine (for after each match), and a
- * routine to zero all sensors, which helps
- * with calibration.
+ * The Subsystem abstract class serves as a basic framework for all robot
+ * subsystems.  Subsystems only have one instance (after all, one robot does not have two
+ * drivetrains). Subsystems typically embody a state machine with a desired-state and 
+ * actual-state. To change the subsystem state clients must get the instance of the 
+ * subsystem and request a state change by establishing a new desired-state..
+ * Robot code will try to match the two states by actuating devices, etc.
  * 
- * All Subsystems only have one instance (after all, one robot does not have two
- * drivetrains), and functions get the
- * instance of the drivetrain and act accordingly. Subsystems are also a state
- * machine with a desired state and actual
- * state; the robot code will try to match the two states with actions. Each
- * Subsystem also is responsible for
- * instantializing all member components at the start of the match.
+ * This base class offers standard logging methods for subclasses.  It also
+ * stores the initialization success.
+ * 
+ * Subsystem subclasses are responsible for:
+ *      - implementing Singleton behavior (via getInstance() pattern).
+ *      - initializing all member components during construction
+ *      - invoking logInitialized with success/failure at the end of construction
+ *      - behaving in a reasonable manner if initialization isn't successful.
+ *
+ * Each subsystem must implement these methods:
+ *      - outputToSmartDashboard
+ *      - stop() has a stop routine (for after each match), 
+ *      - zeroSensors() - which helps with calibration.
+ *      - registerEnabledLoops() -    
+ *
  */
 public abstract class Subsystem
 {
+    // all subsystems should set mInitialized upon successful init.
+    private boolean mInitialized = false;
+    public boolean isInitialized() { return mInitialized; }
 
+    public String getName()
+    {
+        return this.getClass().getName();
+    }
+    
+    public void logInitialized(boolean success)
+    {
+        mInitialized = success;
+        this.logNotice("initialized (success:" + success + ")");
+    }
+
+    public void logError(String msg)
+    {
+        String smsg = this.getName() + " " + msg;
+        Logger.error(smsg); 
+        DriverStation.reportError(smsg, false); // remove if too noisy.
+    }
+    
+    public void logWarning(String msg)
+    {
+        Logger.warning(this.getName() + " " + msg); 
+    }
+    
+    public void logNotice(String msg)
+    {
+        Logger.notice(this.getName() + " " + msg); 
+    }
+    
+    public void logInfo(String msg)
+    {
+        Logger.info(this.getName() + " " + msg); 
+    }
+    
+    public void logDebug(String msg)
+    {
+        Logger.debug(this.getName() + " " + msg); 
+    }
+    
     public void writeToLog()
     {
-    };
-
+        /* an optional override... SubsystemManager invokes this */
+    }
+    
     public abstract void outputToSmartDashboard();
 
     public abstract void stop();
@@ -32,7 +86,4 @@ public abstract class Subsystem
 
     public abstract void registerEnabledLoops(Looper enabledLooper);
     
-    // all subsystems should set mInitialized upon successful init.
-    protected boolean mInitialized = false;
-    public boolean isInitialized() { return mInitialized; }
 }
