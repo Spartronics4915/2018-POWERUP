@@ -12,8 +12,26 @@ import edu.wpi.first.wpilibj.can.CANJNI;
 public class CANProbe
 {
 
+    private static CANProbe sInstance = null;
+    public static CANProbe getInstance()
+    {
+        if (sInstance == null)
+        {
+            sInstance = new CANProbe();
+        }
+        return sInstance;
+    }
+
     private ByteBuffer targetID = ByteBuffer.allocateDirect(4);
     private ByteBuffer timeStamp = ByteBuffer.allocateDirect(4);
+    private ArrayList<String> mReport = new ArrayList<String>();
+    private ArrayList<Integer> mValidSRXIds = new ArrayList<Integer>();
+    private ArrayList<Integer> mValidPCMIds = new ArrayList<Integer>();
+    
+    private CANProbe()
+    {
+        runProbe();
+    }
 
     /** helper routine to get last received message for a given ID */
     private long checkMessage(int fullId, int deviceID)
@@ -28,7 +46,8 @@ public class CANProbe
             timeStamp.order(ByteOrder.LITTLE_ENDIAN);
             timeStamp.asIntBuffer().put(0, 0x00000000);
 
-            CANJNI.FRCNetCommCANSessionMuxReceiveMessage(targetID.asIntBuffer(), 0x1fffffff, timeStamp);
+            CANJNI.FRCNetCommCANSessionMuxReceiveMessage(targetID.asIntBuffer(), 0x1fffffff,
+                    timeStamp);
 
             long retval = timeStamp.getInt();
             retval &= 0xFFFFFFFF; /* undo sign-extension */
@@ -40,17 +59,41 @@ public class CANProbe
         }
     }
 
+    public boolean validateSRXId(int id)
+    {
+        for (Integer a : mValidSRXIds)
+        {
+            if (a == id)
+                return true;
+        }
+        return false;
+    }
+
+    public boolean validatePCMId(int id)
+    {
+        for (Integer a : mValidPCMIds)
+        {
+            if (a == id)
+                return true;
+        }
+        return false;
+    }
+
+    /**
+     * @return ArrayList of strings holding the names of devices we've found.
+     */
+    public ArrayList<String> GetReport()
+    {
+        return mReport;
+    }
+
     /**
      * polls for received framing to determine if a device is present.
      * This is meant to be used once initially (and not periodically) since
      * this steals cached messages from the robot API.
-     *
-     * @return ArrayList of strings holding the names of devices we've found.
      */
-    public ArrayList<String> Find()
+    private void runProbe()
     {
-        ArrayList<String> retval = new ArrayList<String>();
-
         /* get timestamp0 for each device */
         long pdp0_timeStamp0; // only look for PDP at '0'
         long[] pcm_timeStamp0 = new long[63];
@@ -91,17 +134,22 @@ public class CANProbe
          */
         if (pdp0_timeStamp0 >= 0 && pdp0_timeStamp1 >= 0 &&
                 pdp0_timeStamp0 != pdp0_timeStamp1)
-            retval.add("PDP 0");
+            mReport.add("PDP 0");
 
         for (int i = 0; i < 63; ++i)
         {
             if (pcm_timeStamp0[i] >= 0 && pcm_timeStamp1[i] >= 0 &&
                     pcm_timeStamp0[i] != pcm_timeStamp1[i])
-                retval.add("PCM " + i);
+            {
+                mReport.add("PCM " + i);
+                mValidPCMIds.add(i);
+            }
             if (srx_timeStamp0[i] >= 0 && srx_timeStamp1[i] >= 0 &&
                     srx_timeStamp0[i] != srx_timeStamp1[i])
-                retval.add("SRX " + i);
+            {
+                mReport.add("SRX " + i);
+                mValidSRXIds.add(i);
+            }
         }
-        return retval;
     }
 }

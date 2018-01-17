@@ -15,7 +15,7 @@ public abstract class CrashTrackingRunnable implements Runnable
         }
         catch (Throwable t)
         {
-            CrashTracker.logThrowableCrash(t);
+            Logger.logThrowableCrash(t);
             throw t;
         }
     }

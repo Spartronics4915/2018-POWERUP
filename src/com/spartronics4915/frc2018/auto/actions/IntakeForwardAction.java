@@ -1,11 +1,11 @@
 package com.spartronics4915.frc2018.auto.actions;
 
-import com.spartronics4915.frc2018.subsystems.Intake;
-import com.spartronics4915.frc2018.subsystems.Intake.WantedState;
+import com.spartronics4915.frc2018.subsystems.Testbed;
+import com.spartronics4915.frc2018.subsystems.Testbed.WantedState;
 
 public class IntakeForwardAction implements Action
 {
-    Intake mIntake = Intake.getInstance();
+    Testbed mTestBed = Testbed.getInstance();
     
     @Override
     public boolean isFinished()
@@ -30,7 +30,7 @@ public class IntakeForwardAction implements Action
     @Override
     public void start()
     {
-        mIntake.setWantedState(WantedState.FORWARD_INTAKE);
+        mTestBed.setWantedState(WantedState.FORWARD_INTAKE);
     }
 
 }

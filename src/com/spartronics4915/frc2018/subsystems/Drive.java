@@ -9,6 +9,7 @@ import com.spartronics4915.frc2018.RobotState;
 import com.spartronics4915.frc2018.ShooterAimingParameters;
 import com.spartronics4915.frc2018.loops.Loop;
 import com.spartronics4915.frc2018.loops.Looper;
+import com.spartronics4915.lib.util.CANProbe;
 import com.spartronics4915.lib.util.DriveSignal;
 import com.spartronics4915.lib.util.ReflectingCSVWriter;
 import com.spartronics4915.lib.util.Util;
@@ -35,7 +36,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 /**
  * This subsystem consists of the robot's drivetrain: 4 CIM motors, 4 talons,
  * one solenoid and 2 pistons to shift gears,
- * and a Pigeon IMU board. The Drive subsystem has several control methods including
+ * and a Pigeon IMU board. The Drive subsystem has several control methods
+ * including
  * open loop, velocity control, and position
  * control. The Drive subsystem also has several methods that handle automatic
  * aiming, autonomous path driving, and
@@ -53,7 +55,7 @@ public class Drive extends Subsystem
 
     public static Drive getInstance()
     {
-        if(mInstance == null)
+        if (mInstance == null)
         {
             mInstance = new Drive();
         }
@@ -77,7 +79,8 @@ public class Drive extends Subsystem
      */
     protected static boolean usesTalonVelocityControl(DriveControlState state)
     {
-        if (state == DriveControlState.VELOCITY_SETPOINT || state == DriveControlState.PATH_FOLLOWING)
+        if (state == DriveControlState.VELOCITY_SETPOINT
+                || state == DriveControlState.PATH_FOLLOWING)
         {
             return true;
         }
@@ -103,8 +106,10 @@ public class Drive extends Subsystem
     private DriveControlState mDriveControlState;
 
     // Hardware
-    private final CANTalon mLeftMaster, mRightMaster, mLeftSlave, mRightSlave, mIMUTalon;
-    private final PigeonIMU mIMU;
+    private CANTalon mLeftMaster = null, mRightMaster = null;
+    private CANTalon mLeftSlave = null, mRightSlave = null;
+    private CANTalon mIMUTalon = null;
+    private PigeonIMU mIMU = null;
 
     // Controllers
     private RobotState mRobotState = RobotState.getInstance();
@@ -171,7 +176,7 @@ public class Drive extends Subsystem
                         updateDriveTowardsGoalApproach(timestamp);
                         return;
                     default:
-                        System.out.println("Unexpected drive control state: " + mDriveControlState);
+                        logError("Unexpected drive control state: " + mDriveControlState);
                         break;
                 }
             }
@@ -188,61 +193,106 @@ public class Drive extends Subsystem
     private Drive()
     {
         // Start all Talons in open loop mode.
-        mLeftMaster = CANTalonFactory.createDefaultTalon(Constants.kLeftDriveMasterId);
-        mLeftMaster.changeControlMode(ControlMode.PercentOutput); // XXX: was PercentVBus
-        mLeftMaster.setFeedbackDevice(FeedbackDevice.QuadEncoder);
-        mLeftMaster.configEncoderCodesPerRev(Constants.kEncoderCodesPerRev);
-        mLeftMaster.reverseSensor(false); // If these aren't correctly reversed your PID will just spiral out of control
-        mLeftMaster.reverseOutput(false);
-        if (!mLeftMaster.isSensorPresent(FeedbackDevice.QuadEncoder))
+        CANProbe canProbe = CANProbe.getInstance();
+
+        if (!canProbe.validateSRXId(Constants.kLeftDriveMasterId))
         {
-            DriverStation.reportError("Could not detect left encoder", false);
+            logError("Can't find left master motor");
+        }
+        else
+        {
+            mLeftMaster = CANTalonFactory.createDefaultTalon(Constants.kLeftDriveMasterId);
+            mLeftMaster.changeControlMode(ControlMode.PercentOutput); // XXX: was PercentVBus
+            mLeftMaster.setFeedbackDevice(FeedbackDevice.QuadEncoder);
+            mLeftMaster.configEncoderCodesPerRev(Constants.kEncoderCodesPerRev);
+            mLeftMaster.reverseSensor(false); // If these aren't correctly reversed your PID will just spiral out of control
+            mLeftMaster.reverseOutput(false);
+            if (!mLeftMaster.isSensorPresent(FeedbackDevice.QuadEncoder))
+            {
+                logError("Could not detect left encoder");
+            }
+            if (!canProbe.validateSRXId(Constants.kLeftDriveSlaveId))
+            {
+                logError("Can't find left slave motor");
+            }
+            else
+            {
+                mLeftSlave = CANTalonFactory.createPermanentSlaveTalon(Constants.kLeftDriveSlaveId,
+                        Constants.kLeftDriveMasterId);
+                mLeftSlave.reverseOutput(false);
+            }
+            mLeftMaster.setStatusFrameRateMs(StatusFrameEnhanced.Status_2_Feedback0, 5); // XXX: was Feedback
         }
 
-        mLeftSlave = CANTalonFactory.createPermanentSlaveTalon(Constants.kLeftDriveSlaveId,
-                Constants.kLeftDriveMasterId);
-        mLeftSlave.reverseOutput(false);
-        mLeftMaster.setStatusFrameRateMs(StatusFrameEnhanced.Status_2_Feedback0, 5); // XXX: was Feedback
-
-        mRightMaster = CANTalonFactory.createDefaultTalon(Constants.kRightDriveMasterId);
-        mRightMaster.changeControlMode(ControlMode.PercentOutput); // XXX: was PercentVBus
-        mRightMaster.reverseSensor(true);
-        mRightMaster.reverseOutput(true);
-        mRightMaster.setFeedbackDevice(FeedbackDevice.QuadEncoder);
-        mRightMaster.configEncoderCodesPerRev(Constants.kEncoderCodesPerRev);
-        if (!mRightMaster.isSensorPresent(FeedbackDevice.QuadEncoder))
+        if (!canProbe.validateSRXId(Constants.kRightDriveMasterId))
         {
-            DriverStation.reportError("Could not detect right encoder", false);
+            logError("Can't find right master motor");
+        }
+        else
+        {
+            mRightMaster = CANTalonFactory.createDefaultTalon(Constants.kRightDriveMasterId);
+            mRightMaster.changeControlMode(ControlMode.PercentOutput); // XXX: was PercentVBus
+            mRightMaster.reverseSensor(true);
+            mRightMaster.reverseOutput(true);
+            mRightMaster.setFeedbackDevice(FeedbackDevice.QuadEncoder);
+            mRightMaster.configEncoderCodesPerRev(Constants.kEncoderCodesPerRev);
+            if (!mRightMaster.isSensorPresent(FeedbackDevice.QuadEncoder))
+            {
+                logError("Could not detect right encoder");
+            }
+
+            if (!canProbe.validateSRXId(Constants.kRightDriveSlaveId))
+            {
+                logError("Can't find right master motor");
+            }
+            else
+            {
+                mRightSlave =
+                        CANTalonFactory.createPermanentSlaveTalon(Constants.kRightDriveSlaveId,
+                                Constants.kRightDriveMasterId);
+                mRightSlave.reverseOutput(false);
+                mRightMaster.setStatusFrameRateMs(StatusFrameEnhanced.Status_2_Feedback0, 5); // XXX: was Feedback
+            }
         }
 
-        mRightSlave = CANTalonFactory.createPermanentSlaveTalon(Constants.kRightDriverSlaveId,
-                Constants.kRightDriveMasterId);
-        mRightSlave.reverseOutput(false);
-        mRightMaster.setStatusFrameRateMs(StatusFrameEnhanced.Status_2_Feedback0, 5); // XXX: was Feedback
+        if (mLeftMaster != null)
+        {
+            mLeftMaster.setVelocityMeasurementPeriod(VelocityMeasPeriod.Period_10Ms);
+            mLeftMaster.setVelocityMeasurementWindow(32);
+        }
+        if (mRightMaster != null)
+        {
+            mRightMaster.setVelocityMeasurementPeriod(VelocityMeasPeriod.Period_10Ms);
+            mRightMaster.setVelocityMeasurementWindow(32);
+        }
 
-        mLeftMaster.setVelocityMeasurementPeriod(VelocityMeasPeriod.Period_10Ms);
-        mLeftMaster.setVelocityMeasurementWindow(32);
-        mRightMaster.setVelocityMeasurementPeriod(VelocityMeasPeriod.Period_10Ms);
-        mRightMaster.setVelocityMeasurementWindow(32);
+        if (mRightMaster != null && mRightSlave != null &&
+                mLeftMaster != null && mLeftSlave != null)
+        {
+            reloadGains();
+            mIsHighGear = false;
+            setHighGear(true);
+            setOpenLoop(DriveSignal.NEUTRAL);
+            // Path Following stuff
+            mIMUTalon = new CANTalon(Constants.kIMUTalonId);
+            // FIXME: Don't use the pigeon, or at least wire it directly into the CAN bus
+            mIMU = new PigeonIMU(mIMUTalon);
 
-        reloadGains();
+            if (mIMU.getState() == PigeonState.NoComm)
+                logError("Could not detect the IMU. Is it plugged in?");
 
-        mIsHighGear = false;
-        setHighGear(true);
-        setOpenLoop(DriveSignal.NEUTRAL);
+            // Force a CAN message across.
+            mIsBrakeMode = true;
+            setBrakeMode(false);
+            logInitialized(true);
+        }
+        else
+        {
+            logInitialized(false);
+        }
 
-        // Path Following stuff
-        mIMUTalon = new CANTalon(Constants.kIMUTalonId); // FIXME: Don't use the pigeon, or at least wire it directly into the CAN bus
-        mIMU = new PigeonIMU(mIMUTalon);
-
-        if (mIMU.getState() == PigeonState.NoComm)
-            DriverStation.reportError("Could not detect the IMU. Is it plugged in?", false);
-
-        // Force a CAN message across.
-        mIsBrakeMode = true;
-        setBrakeMode(false);
-
-        mCSVWriter = new ReflectingCSVWriter<PathFollower.DebugOutput>("/home/lvuser/PATH-FOLLOWER-LOGS.csv",
+        mCSVWriter = new ReflectingCSVWriter<PathFollower.DebugOutput>(
+                "/home/lvuser/PATH-FOLLOWER-LOGS.csv",
                 PathFollower.DebugOutput.class);
     }
 
@@ -266,7 +316,7 @@ public class Drive extends Subsystem
             mDriveControlState = DriveControlState.OPEN_LOOP;
             setBrakeMode(false);
         }
-        System.out.println(signal.getLeft());
+        logInfo("setOpenLoop:" + signal.getLeft());
         mRightMaster.set(signal.getRight());
         mLeftMaster.set(signal.getLeft());
     }
@@ -376,7 +426,8 @@ public class Drive extends Subsystem
      * @param left_inches_per_sec
      * @param right_inches_per_sec
      */
-    public synchronized void setVelocitySetpoint(double left_inches_per_sec, double right_inches_per_sec)
+    public synchronized void setVelocitySetpoint(double left_inches_per_sec,
+            double right_inches_per_sec)
     {
         configureTalonsForSpeedControl();
         mDriveControlState = DriveControlState.VELOCITY_SETPOINT;
@@ -433,11 +484,13 @@ public class Drive extends Subsystem
      * @param left_inches_per_sec
      * @param right_inches_per_sec
      */
-    private synchronized void updateVelocitySetpoint(double left_inches_per_sec, double right_inches_per_sec)
+    private synchronized void updateVelocitySetpoint(double left_inches_per_sec,
+            double right_inches_per_sec)
     {
         if (usesTalonVelocityControl(mDriveControlState))
         {
-            final double max_desired = Math.max(Math.abs(left_inches_per_sec), Math.abs(right_inches_per_sec));
+            final double max_desired =
+                    Math.max(Math.abs(left_inches_per_sec), Math.abs(right_inches_per_sec));
             final double scale = max_desired > Constants.kDriveHighGearMaxSetpoint
                     ? Constants.kDriveHighGearMaxSetpoint / max_desired : 1.0;
             mLeftMaster.set(inchesPerSecondToRpm(left_inches_per_sec * scale));
@@ -445,7 +498,7 @@ public class Drive extends Subsystem
         }
         else
         {
-            System.out.println("Hit a bad velocity control state");
+            logError("Hit a bad velocity control state");
             mLeftMaster.set(0);
             mRightMaster.set(0);
         }
@@ -457,7 +510,8 @@ public class Drive extends Subsystem
      * @param left_inches_per_sec
      * @param right_inches_per_sec
      */
-    private synchronized void updatePositionSetpoint(double left_position_inches, double right_position_inches)
+    private synchronized void updatePositionSetpoint(double left_position_inches,
+            double right_position_inches)
     {
         if (usesTalonPositionControl(mDriveControlState))
         {
@@ -466,7 +520,7 @@ public class Drive extends Subsystem
         }
         else
         {
-            System.out.println("Hit a bad position control state");
+            logError("Hit a bad position control state");
             mLeftMaster.set(0);
             mRightMaster.set(0);
         }
@@ -555,7 +609,8 @@ public class Drive extends Subsystem
      */
     private void updateTurnToHeading(double timestamp)
     {
-        final Rotation2d field_to_robot = mRobotState.getLatestFieldToVehicle().getValue().getRotation(); // We need the field frame because this is specified in field coordinates, not robot ones
+        final Rotation2d field_to_robot =
+                mRobotState.getLatestFieldToVehicle().getValue().getRotation(); // We need the field frame because this is specified in field coordinates, not robot ones
         // Figure out the rotation necessary to turn to face the goal.
         final Rotation2d robot_to_target = field_to_robot.inverse().rotateBy(mTargetHeading);
 
@@ -645,7 +700,8 @@ public class Drive extends Subsystem
                 updatePositionSetpoint(getLeftDistanceInches(), getRightDistanceInches());
                 return;
             }
-            updatePositionSetpoint(getLeftDistanceInches() + error, getRightDistanceInches() + error);
+            updatePositionSetpoint(getLeftDistanceInches() + error,
+                    getRightDistanceInches() + error);
         }
         else
         {
@@ -663,7 +719,8 @@ public class Drive extends Subsystem
     {
         RigidTransform2d robot_pose = mRobotState.getLatestFieldToVehicle().getValue();
         Twist2d command = mPathFollower.update(timestamp, robot_pose,
-                RobotState.getInstance().getDistanceDriven(), RobotState.getInstance().getPredictedVelocity().dx);
+                RobotState.getInstance().getDistanceDriven(),
+                RobotState.getInstance().getPredictedVelocity().dx);
 
         if (!mPathFollower.isFinished())
         {
@@ -757,9 +814,11 @@ public class Drive extends Subsystem
                                     Constants.kMinLookAheadSpeed, Constants.kMaxLookAheadSpeed),
                             Constants.kInertiaSteeringGain, Constants.kPathFollowingProfileKp,
                             Constants.kPathFollowingProfileKi, Constants.kPathFollowingProfileKv,
-                            Constants.kPathFollowingProfileKffv, Constants.kPathFollowingProfileKffa,
+                            Constants.kPathFollowingProfileKffv,
+                            Constants.kPathFollowingProfileKffa,
                             Constants.kPathFollowingMaxVel, Constants.kPathFollowingMaxAccel,
-                            Constants.kPathFollowingGoalPosTolerance, Constants.kPathFollowingGoalVelTolerance,
+                            Constants.kPathFollowingGoalPosTolerance,
+                            Constants.kPathFollowingGoalVelTolerance,
                             Constants.kPathStopSteeringDistance));
             mDriveControlState = DriveControlState.PATH_FOLLOWING;
             mCurrentPath = path;
@@ -778,7 +837,7 @@ public class Drive extends Subsystem
         }
         else
         {
-            System.out.println("Robot is not in path following mode");
+            logError("Robot is not in path following mode");
             return true;
         }
     }
@@ -791,7 +850,7 @@ public class Drive extends Subsystem
         }
         else
         {
-            System.out.println("Robot is not in path following mode");
+            logError("Robot is not in path following mode");
         }
     }
 
@@ -808,7 +867,7 @@ public class Drive extends Subsystem
         }
         else
         {
-            System.out.println("Robot is not in turn to heading mode");
+            logError("Robot is not in turn to heading mode");
             return false;
         }
     }
@@ -821,7 +880,7 @@ public class Drive extends Subsystem
         }
         else
         {
-            System.out.println("Robot is not in path following mode");
+            logError("Robot is not in path following mode");
             return false;
         }
     }
@@ -863,7 +922,7 @@ public class Drive extends Subsystem
 
     public boolean checkSystem()
     {
-        System.out.println("Testing DRIVE.---------------------------------");
+        logNotice("Testing DRIVE.---------------------------------");
         final double kCurrentThres = 0.5;
         final double kRpmThres = 300;
         final double kMaxVoltage = 12.0;
@@ -917,11 +976,11 @@ public class Drive extends Subsystem
         mLeftSlave.changeControlMode(ControlMode.Follower);
         mLeftSlave.set(Constants.kLeftDriveMasterId);
 
-        System.out.println("Drive Right Master Current: " + currentRightMaster + " Drive Right Slave Current: "
+        logNotice("Right Master Current: " + currentRightMaster + " Drive Right Slave Current: "
                 + currentRightSlave);
-        System.out.println(
-                "Drive Left Master Current: " + currentLeftMaster + " Drive Left Slave Current: " + currentLeftSlave);
-        System.out.println("Drive RPM RMaster: " + rpmRightMaster + " RSlave: " + rpmRightSlave + " LMaster: "
+        logNotice("Left Master Current: " + currentLeftMaster + " Drive Left Slave Current: "
+                + currentLeftSlave);
+        logNotice("RPM RMaster: " + rpmRightMaster + " RSlave: " + rpmRightSlave + " LMaster: "
                 + rpmLeftMaster + " LSlave: " + rpmLeftSlave);
 
         boolean failure = false;
@@ -929,70 +988,72 @@ public class Drive extends Subsystem
         if (currentRightMaster < kCurrentThres)
         {
             failure = true;
-            System.out.println("!!!!!!!!!!!!!!!!!! Drive Right Master Current Low !!!!!!!!!!");
+            logWarning("!!!!!!!!!!!!!!!!!! Right Master Current Low !!!!!!!!!!");
         }
 
         if (currentRightSlave < kCurrentThres)
         {
             failure = true;
-            System.out.println("!!!!!!!!!!!!!!!!!! Drive Right Slave Current Low !!!!!!!!!!");
+            logWarning("!!!!!!!!!!!!!!!!!! Right Slave Current Low !!!!!!!!!!");
         }
 
         if (currentLeftMaster < kCurrentThres)
         {
             failure = true;
-            System.out.println("!!!!!!!!!!!!!!!!!! Drive Left Master Current Low !!!!!!!!!!");
+            logWarning("!!!!!!!!!!!!!!!!!! Left Master Current Low !!!!!!!!!!");
         }
 
         if (currentLeftSlave < kCurrentThres)
         {
             failure = true;
-            System.out.println("!!!!!!!!!!!!!!!!!! Drive Left Slave Current Low !!!!!!!!!!");
+            logWarning("!!!!!!!!!!!!!!!!!! Left Slave Current Low !!!!!!!!!!");
         }
 
-        if (!Util.allCloseTo(Arrays.asList(currentRightMaster, currentRightSlave), currentRightMaster,
+        if (!Util.allCloseTo(Arrays.asList(currentRightMaster, currentRightSlave),
+                currentRightMaster,
                 5.0))
         {
             failure = true;
-            System.out.println("!!!!!!!!!!!!!!!!!! Drive Right Currents Different !!!!!!!!!!");
+            logWarning("!!!!!!!!!!!!!!!!!! Right Currents Different !!!!!!!!!!");
         }
 
         if (!Util.allCloseTo(Arrays.asList(currentLeftMaster, currentLeftSlave), currentLeftSlave,
                 5.0))
         {
             failure = true;
-            System.out.println("!!!!!!!!!!!!!!!!!! Drive Left Currents Different !!!!!!!!!!!!!");
+            logWarning("!!!!!!!!!!!!!!!!!! Drive Left Currents Different !!!!!!!!!!!!!");
         }
 
         if (rpmRightMaster < kRpmThres)
         {
             failure = true;
-            System.out.println("!!!!!!!!!!!!!!!!!! Drive Right Master RPM Low !!!!!!!!!!!!!!!!!!!");
+            logWarning("!!!!!!!!!!!!!!!!!! Drive Right Master RPM Low !!!!!!!!!!!!!!!!!!!");
         }
 
         if (rpmRightSlave < kRpmThres)
         {
             failure = true;
-            System.out.println("!!!!!!!!!!!!!!!!!! Drive Right Slave RPM Low !!!!!!!!!!!!!!!!!!!");
+            logWarning("!!!!!!!!!!!!!!!!!! Drive Right Slave RPM Low !!!!!!!!!!!!!!!!!!!");
         }
 
         if (rpmLeftMaster < kRpmThres)
         {
             failure = true;
-            System.out.println("!!!!!!!!!!!!!!!!!! Drive Left Master RPM Low !!!!!!!!!!!!!!!!!!!");
+            logWarning("!!!!!!!!!!!!!!!!!! Drive Left Master RPM Low !!!!!!!!!!!!!!!!!!!");
         }
 
         if (rpmLeftSlave < kRpmThres)
         {
             failure = true;
-            System.out.println("!!!!!!!!!!!!!!!!!! Drive Left Slave RPM Low !!!!!!!!!!!!!!!!!!!");
+            logWarning("!!!!!!!!!!!!!!!!!! Drive Left Slave RPM Low !!!!!!!!!!!!!!!!!!!");
         }
 
-        if (!Util.allCloseTo(Arrays.asList(rpmRightMaster, rpmRightSlave, rpmLeftMaster, rpmLeftSlave),
+        if (!Util.allCloseTo(
+                Arrays.asList(rpmRightMaster, rpmRightSlave, rpmLeftMaster, rpmLeftSlave),
                 rpmRightMaster, 250))
         {
             failure = true;
-            System.out.println("!!!!!!!!!!!!!!!!!!! Drive RPMs different !!!!!!!!!!!!!!!!!!!");
+            logWarning("!!!!!!!!!!!!!!!!!!! Drive RPMs different !!!!!!!!!!!!!!!!!!!");
         }
 
         return !failure;

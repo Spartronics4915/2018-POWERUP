@@ -3,6 +3,7 @@ package com.spartronics4915.frc2018.subsystems;
 import com.spartronics4915.frc2018.Constants;
 import com.spartronics4915.frc2018.loops.Loop;
 import com.spartronics4915.frc2018.loops.Looper;
+import com.spartronics4915.lib.util.Logger;
 
 import edu.wpi.first.wpilibj.DigitalOutput;
 
@@ -65,7 +66,7 @@ public class LED extends Subsystem
         mRangeLED = new DigitalOutput(Constants.kRangeLEDId);
         setRangeLEDOff();
 
-        // Force a relay change.
+        // Force a state change.
         mIsLEDOn = true;
         setLEDOff();
 
@@ -115,12 +116,12 @@ public class LED extends Subsystem
                         newState = handleRangeFinding(timeInState);
                         break;
                     default:
-                        System.out.println("Fell through on LED states!!");
+                        logError("Fell through on LED states!!");
                         newState = SystemState.OFF;
                 }
                 if (newState != mSystemState)
                 {
-                    System.out.println("LED state " + mSystemState + " to " + newState);
+                    logInfo("LED state " + mSystemState + " to " + newState);
                     mSystemState = newState;
                     mCurrentStateStartTime = timestamp;
                 }

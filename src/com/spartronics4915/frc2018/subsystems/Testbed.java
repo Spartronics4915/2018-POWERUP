@@ -4,34 +4,43 @@ import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.spartronics4915.frc2018.Constants;
 import com.spartronics4915.frc2018.loops.Loop;
 import com.spartronics4915.frc2018.loops.Looper;
+import com.spartronics4915.lib.util.CANProbe;
 import com.spartronics4915.lib.util.drivers.CANTalon;
 import com.spartronics4915.lib.util.drivers.CANTalonFactory;
+
+import edu.wpi.first.wpilibj.AnalogInput;
+import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.Relay;
+import edu.wpi.first.wpilibj.Servo;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
  * A stub of a subsystem for learning purposes.
  */
-public class Intake extends Subsystem
+public class Testbed extends Subsystem
 {
-    // The two fields below are the only time you should use the static
-    // keyword without knowing what it means.
-    private static Intake sInstance = null;
-    
-    public static Intake getInstance() {
-        // Intake is a singleton, meaning that only one object of the class
-        // is ever instantiated.
+
+    // the keyword, 'static', should only be used if you know what you're doing and, even then, sparingly.
+    private static Testbed sInstance = null;
+
+    public static Testbed getInstance()
+    {
+        // Testbed is a singleton, meaning that only one object of the class
+        // is ever instantiated.  Note that our constructor is private.
         if (sInstance == null)
         {
-            sInstance = new Intake();
+            sInstance = new Testbed();
         }
         return sInstance;
     }
-    
+
     public enum SystemState
     {
         FORWARD_INTAKING,
         REVERSE_INTAKING,
         IDLING,
     }
+
     public enum WantedState
     {
         FORWARD_INTAKE,
@@ -39,24 +48,50 @@ public class Intake extends Subsystem
         IDLE,
     }
 
-    private CANTalon mMotor;
     private SystemState mSystemState = SystemState.IDLING;
     private WantedState mWantedState = WantedState.IDLE;
-    
-    private Intake()
+
+    // actuators and sensors
+    private CANTalon mMotor = null;
+    private DigitalInput mLimitSwitch = null; // invoke .get() to read
+    private AnalogInput mPotentiometer = null;
+    private Relay mLightSwitch = null;
+    private Servo mServo = null; // Servo subclasses PWM
+
+    private Testbed()
     {
         // Instantiate member variables (motors, etc...) here.
-        mMotor = CANTalonFactory.createDefaultTalon(Constants.kIntakeId);
-        
-        mMotor.changeControlMode(ControlMode.PercentOutput);
+        CANProbe canProbe = CANProbe.getInstance();
+        boolean success = false;
+        if(canProbe.validateSRXId(Constants.kTestbedMotorId))
+        {
+            mMotor = CANTalonFactory.createDefaultTalon(Constants.kTestbedMotorId);
+            mMotor.changeControlMode(ControlMode.PercentOutput);
+            success = true;
+        }
+        else
+        {
+            logWarning("can't find testbed motor");
+        }
+
+        mLimitSwitch = new DigitalInput(Constants.kTestbedLimitSwitchId);
+        mPotentiometer = new AnalogInput(Constants.kTestbedPotentiometerId);
+        mLightSwitch = new Relay(Constants.kTestbedLightSwitchId);
+        mServo = new Servo(Constants.kTestbedServoId);
+
+        logInitialized(success);
     }
-    
-    private Loop mLoop = new Loop() {
+
+    // Any public method that isn't @Overriding an abstract method on the Subsystem superclass
+    // MUST BE SYNCHRONIZED (because it's called from an Action in another thread).
+
+    private Loop mLoop = new Loop()
+    {
 
         @Override
         public void onStart(double timestamp)
         {
-            synchronized(Intake.this)
+            synchronized (Testbed.this)
             {
                 mSystemState = SystemState.IDLING;
             }
@@ -65,10 +100,10 @@ public class Intake extends Subsystem
         @Override
         public void onLoop(double timestamp)
         {
-            synchronized(Intake.this)
+            synchronized (Testbed.this)
             {
                 SystemState newState;
-                switch(mSystemState)
+                switch (mSystemState)
                 {
                     case FORWARD_INTAKING:
                         newState = handleForwardIntake();
@@ -85,7 +120,7 @@ public class Intake extends Subsystem
                 }
                 if (newState != mSystemState)
                 {
-                    System.out.println("Intake state from " + mSystemState + " to " + newState);
+                    logInfo("Testbed state from " + mSystemState + " to " + newState);
                     mSystemState = newState;
                 }
             }
@@ -96,25 +131,24 @@ public class Intake extends Subsystem
         {
             stop();
         }
-        
-    };
-    
+
+    }; // end of assignment to mLoop
+
     public void setWantedState(WantedState wantedState)
     {
         mWantedState = wantedState;
     }
-    
+
     @Override
     public void outputToSmartDashboard()
     {
-        /*
-         * If we want to put a graph or visualization for debug purposes on the
-         * dashboard, you would output information for that visualization here.
+        /* put useful state to the smart dashboard
          * 
-         * This methods overrides the abstract method of the same name in the
-         * superclass (Subsystem). That just means that every Subsystem needs
-         * to have an outputToSmartDashboard method.
          */
+        SmartDashboard.putString("Testbed_Relay", mLightSwitch.get().getPrettyValue());
+        SmartDashboard.putBoolean("Testbed_LimitSwitch", mLimitSwitch.get());
+        SmartDashboard.putNumber("Testbed_Potentiometer", mPotentiometer.getValue());
+        SmartDashboard.putNumber("Testbed_Servo", mServo.get());
     }
 
     // stop should also be synchronized, because it's also called from another thread
@@ -132,21 +166,27 @@ public class Intake extends Subsystem
     public void zeroSensors()
     {
     }
-    
+
     @Override
     public void registerEnabledLoops(Looper enabledLooper)
     {
         enabledLooper.register(mLoop);
     }
-    
+
     private void runOpenLoop(double percentOutput)
     {
-        mMotor.set(percentOutput);
+        if(mMotor != null)
+            mMotor.set(percentOutput);
     }
-    
+
+    /** describes the steps needed to progress from the current
+     *  state to the wanted state.  Here, in open loop mode, we
+     *  presume that the transition is instantaneous.
+     * @return the current state
+     */
     private SystemState defaultStateTransfer()
     {
-        switch(mWantedState)
+        switch (mWantedState)
         {
             case FORWARD_INTAKE:
                 return SystemState.FORWARD_INTAKING;
@@ -158,27 +198,27 @@ public class Intake extends Subsystem
                 return SystemState.IDLING;
         }
     }
-    
+
     private SystemState handleForwardIntake()
     {
-        mMotor.set(1.0);
+        runOpenLoop(1.0);
         if (mWantedState == WantedState.REVERSE_INTAKE)
         {
             return SystemState.IDLING;
         }
         return defaultStateTransfer();
     }
-    
+
     private SystemState handleReverseIntake()
     {
-        mMotor.set(-1.0);
+        runOpenLoop(-1.0);
         if (mWantedState == WantedState.REVERSE_INTAKE)
         {
             return SystemState.IDLING;
         }
         return defaultStateTransfer();
     }
-    
+
     private SystemState handleIdle()
     {
         return defaultStateTransfer();

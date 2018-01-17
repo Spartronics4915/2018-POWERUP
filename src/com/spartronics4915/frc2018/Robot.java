@@ -15,13 +15,13 @@ import com.spartronics4915.frc2018.loops.VisionProcessor;
 import com.spartronics4915.frc2018.paths.profiles.PathAdapter;
 import com.spartronics4915.frc2018.subsystems.ConnectionMonitor;
 import com.spartronics4915.frc2018.subsystems.Drive;
-import com.spartronics4915.frc2018.subsystems.Intake;
+import com.spartronics4915.frc2018.subsystems.Testbed;
 import com.spartronics4915.frc2018.subsystems.LED;
 import com.spartronics4915.frc2018.subsystems.Superstructure;
-import com.spartronics4915.frc2018.subsystems.Intake.WantedState;
+import com.spartronics4915.frc2018.subsystems.Testbed.WantedState;
 import com.spartronics4915.lib.util.CANProbe;
 import com.spartronics4915.lib.util.CheesyDriveHelper;
-import com.spartronics4915.lib.util.CrashTracker;
+import com.spartronics4915.lib.util.Logger;
 import com.spartronics4915.lib.util.DelayedBoolean;
 import com.spartronics4915.lib.util.DriveSignal;
 import com.spartronics4915.lib.util.math.RigidTransform2d;
@@ -55,19 +55,20 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  */
 public class Robot extends IterativeRobot
 {
-    // NB: make sure to construct objects in constructor, not member declaration.
-    // Get subsystem instances
+
+    // NB: make sure to construct objects in robotInit, not member declaration, 
+    //  and usually not constructor.
     private Drive mDrive = null;
     private Superstructure mSuperstructure = null;
     private LED mLED = null;
-    private Intake mIntake = null;
+    private Testbed mTestbed = null;
     private RobotState mRobotState = null;
     private AutoModeExecuter mAutoModeExecuter = null;
     private ConnectionMonitor mConnectionMonitor = null;
-    
+
     // Create subsystem manager
     private SubsystemManager mSubsystemManager = null;
-    
+
     // Initialize other helper objects
     private CheesyDriveHelper mCheesyDriveHelper = null;
     private ControlBoardInterface mControlBoard = null;
@@ -76,36 +77,18 @@ public class Robot extends IterativeRobot
     //    private VisionServer mVisionServer = null;
     private AnalogInput mCheckLightButton = null;
     private DelayedBoolean mDelayedAimButton;
-
+        
     public Robot()
     {
-        System.out.println("Robot begin construction ------------------");
-        mDrive = Drive.getInstance();
-        mSuperstructure = Superstructure.getInstance();
-        mLED = LED.getInstance();
-        mIntake = Intake.getInstance();
-        mRobotState = RobotState.getInstance();
-        mAutoModeExecuter = null;
-        mConnectionMonitor = ConnectionMonitor.getInstance();
-        mSubsystemManager = new SubsystemManager(
-                Arrays.asList(mDrive, mSuperstructure,
-                        mConnectionMonitor, mLED, mIntake));
-
-        // Initialize other helper objects
-        mCheesyDriveHelper = new CheesyDriveHelper();
-        mControlBoard = new XboxControlBoard();
-
-        mEnabledLooper = new Looper();
-        mCheckLightButton = new AnalogInput(Constants.kLEDOnId);
-        System.out.println("Robot end construction -------------------");
-        CrashTracker.logRobotConstruction();
-   }
+        Logger.logRobotConstruction();
+        // please defer initialization of objects until robotInit
+    }
 
     public void zeroAllSensors()
     {
         mSubsystemManager.zeroSensors();
         mRobotState.reset(Timer.getFPGATimestamp(), new RigidTransform2d());
-    }
+    }    
 
     /**
      * This function is run when the robot is first started up and should be
@@ -115,7 +98,8 @@ public class Robot extends IterativeRobot
     public void robotInit()
     {
         // Version string and related information
-        try (InputStream manifest = getClass().getClassLoader().getResourceAsStream("META-INF/MANIFEST.MF"))
+        try (InputStream manifest =
+                getClass().getClassLoader().getResourceAsStream("META-INF/MANIFEST.MF"))
         {
             // build a version string
             Attributes attributes = new Manifest(manifest).getMainAttributes();
@@ -124,16 +108,16 @@ public class Robot extends IterativeRobot
                     "  (" + attributes.getValue("Code-Version") + ")";
             SmartDashboard.putString("Build", buildStr);
 
-            System.out.println("=================================================");
-            System.out.println(Instant.now().toString());
-            System.out.println("Built " + buildStr);
-            System.out.println("=================================================");
+            Logger.notice("=================================================");
+            Logger.notice(Instant.now().toString());
+            Logger.notice("Built " + buildStr);
+            Logger.notice("=================================================");
 
         }
         catch (IOException e)
         {
             SmartDashboard.putString("Build", "version not found!");
-            System.out.println("Build version not found!");
+            Logger.warning("Build version not found!");
             DriverStation.reportError(e.getMessage(), false /*
                                                              * no stack trace
                                                              * needed
@@ -141,19 +125,40 @@ public class Robot extends IterativeRobot
         }
         try
         {
-            CrashTracker.logRobotInit();
-
-            CANProbe cp = new CANProbe();
-            ArrayList<String> canDevices = cp.Find();
-            System.out.println("CANDevicesFound:\n" + canDevices);
+            Logger.notice("Robot begin init ------------------");
+            // NB: make sure to probe for can devices FIRST since subsystems
+            //  may invoke its validate methods.
+            CANProbe canProbe = CANProbe.getInstance();
+            ArrayList<String> canReport = canProbe.GetReport();
+            Logger.notice("CANDevicesFound:\n" + canReport);
             SmartDashboard.putString("CANBusStatus",
-                    canDevices.size() == Constants.kNumCANDevices ? "OK" : ("" + canDevices.size() + "/" + Constants.kNumCANDevices));
+                    canReport.size() == Constants.kNumCANDevices ? "OK"
+                            : ("" + canReport.size() + "/" + Constants.kNumCANDevices));
+
+            mDrive = Drive.getInstance();
+            mSuperstructure = Superstructure.getInstance();
+            mLED = LED.getInstance();
+            mTestbed = Testbed.getInstance();
+            mRobotState = RobotState.getInstance();
+            mAutoModeExecuter = null;
+            mConnectionMonitor = ConnectionMonitor.getInstance();
+            mSubsystemManager = new SubsystemManager(
+                    Arrays.asList(mDrive, mSuperstructure,
+                            mConnectionMonitor, mLED, mTestbed));
+
+            // Initialize other helper objects
+            mCheesyDriveHelper = new CheesyDriveHelper();
+            mControlBoard = new XboxControlBoard();
+
+            mEnabledLooper = new Looper();
+            mCheckLightButton = new AnalogInput(Constants.kLEDOnId);
+            Logger.logRobotInit();
 
             mSubsystemManager.registerEnabledLoops(mEnabledLooper);
             mEnabledLooper.register(VisionProcessor.getInstance());
             mEnabledLooper.register(RobotStateEstimator.getInstance());
 
-            //            mVisionServer.addVisionUpdateReceiver(VisionProcessor.getInstance());
+            // mVisionServer.addVisionUpdateReceiver(VisionProcessor.getInstance());
 
             AutoModeSelector.initAutoModeSelector();
 
@@ -167,7 +172,7 @@ public class Robot extends IterativeRobot
         }
         catch (Throwable t)
         {
-            CrashTracker.logThrowableCrash(t);
+            Logger.logThrowableCrash(t);
             throw t;
         }
         zeroAllSensors();
@@ -185,9 +190,8 @@ public class Robot extends IterativeRobot
     {
         try
         {
-            CrashTracker.logAutoInit();
-
-            System.out.println("Auto start timestamp: " + Timer.getFPGATimestamp());
+            Logger.logAutoInit();
+            Logger.notice("Auto start timestamp: " + Timer.getFPGATimestamp());
 
             if (mAutoModeExecuter != null)
             {
@@ -211,7 +215,7 @@ public class Robot extends IterativeRobot
         }
         catch (Throwable t)
         {
-            CrashTracker.logThrowableCrash(t);
+            Logger.logThrowableCrash(t);
             throw t;
         }
     }
@@ -233,7 +237,7 @@ public class Robot extends IterativeRobot
     {
         try
         {
-            CrashTracker.logTeleopInit();
+            Logger.logTeleopInit();
 
             // Start loopers
             mEnabledLooper.start();
@@ -245,7 +249,7 @@ public class Robot extends IterativeRobot
         }
         catch (Throwable t)
         {
-            CrashTracker.logThrowableCrash(t);
+            Logger.logThrowableCrash(t);
             throw t;
         }
     }
@@ -268,8 +272,9 @@ public class Robot extends IterativeRobot
         {
             double throttle = mControlBoard.getThrottle();
             double turn = mControlBoard.getTurn();
-            mDrive.setOpenLoop(mCheesyDriveHelper.cheesyDrive(throttle, turn, mControlBoard.getQuickTurn(),
-                    !mControlBoard.getLowGear()));
+            mDrive.setOpenLoop(
+                    mCheesyDriveHelper.cheesyDrive(throttle, turn, mControlBoard.getQuickTurn(),
+                            !mControlBoard.getLowGear()));
             boolean wantLowGear = mControlBoard.getLowGear();
             mDrive.setHighGear(!wantLowGear);
 
@@ -277,21 +282,21 @@ public class Robot extends IterativeRobot
             {
                 mLED.setWantedState(LED.WantedState.BLINK);
             }
-            
+
             if (mControlBoard.getIntakeButton())
             {
-                mIntake.setWantedState(WantedState.FORWARD_INTAKE);
+                mTestbed.setWantedState(WantedState.FORWARD_INTAKE);
             }
             else
             {
-                mIntake.setWantedState(WantedState.IDLE);
+                mTestbed.setWantedState(WantedState.IDLE);
             }
 
             allPeriodic();
         }
         catch (Throwable t)
         {
-            CrashTracker.logThrowableCrash(t);
+            Logger.logThrowableCrash(t);
             throw t;
         }
     }
@@ -301,7 +306,7 @@ public class Robot extends IterativeRobot
     {
         try
         {
-            CrashTracker.logDisabledInit();
+            Logger.logDisabledInit();
 
             if (mAutoModeExecuter != null)
             {
@@ -320,7 +325,7 @@ public class Robot extends IterativeRobot
         }
         catch (Throwable t)
         {
-            CrashTracker.logThrowableCrash(t);
+            Logger.logThrowableCrash(t);
             throw t;
         }
     }
@@ -352,11 +357,11 @@ public class Robot extends IterativeRobot
 
         if (!results)
         {
-            System.out.println("CHECK ABOVE OUTPUT SOME SYSTEMS FAILED!!!");
+            Logger.error("CHECK ABOVE OUTPUT SOME SYSTEMS FAILED!!!");
         }
         else
         {
-            System.out.println("ALL SYSTEMS PASSED");
+            Logger.notice("ALL SYSTEMS PASSED");
         }
     }
 
