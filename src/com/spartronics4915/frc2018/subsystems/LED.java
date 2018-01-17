@@ -116,12 +116,12 @@ public class LED extends Subsystem
                         newState = handleRangeFinding(timeInState);
                         break;
                     default:
-                        Logger.error("Fell through on LED states!!");
+                        logError("Fell through on LED states!!");
                         newState = SystemState.OFF;
                 }
                 if (newState != mSystemState)
                 {
-                    Logger.info("LED state " + mSystemState + " to " + newState);
+                    logInfo("LED state " + mSystemState + " to " + newState);
                     mSystemState = newState;
                     mCurrentStateStartTime = timestamp;
                 }

@@ -8,6 +8,12 @@ import com.spartronics4915.lib.util.CANProbe;
 import com.spartronics4915.lib.util.drivers.CANTalon;
 import com.spartronics4915.lib.util.drivers.CANTalonFactory;
 
+import edu.wpi.first.wpilibj.AnalogInput;
+import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.Relay;
+import edu.wpi.first.wpilibj.Servo;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
 /**
  * A stub of a subsystem for learning purposes.
  */
@@ -42,9 +48,15 @@ public class Testbed extends Subsystem
         IDLE,
     }
 
-    private CANTalon mMotor = null;
     private SystemState mSystemState = SystemState.IDLING;
     private WantedState mWantedState = WantedState.IDLE;
+
+    // actuators and sensors
+    private CANTalon mMotor = null;
+    private DigitalInput mLimitSwitch = null; // invoke .get() to read
+    private AnalogInput mPotentiometer = null;
+    private Relay mLightSwitch = null;
+    private Servo mServo = null; // Servo subclasses PWM
 
     private Testbed()
     {
@@ -59,8 +71,14 @@ public class Testbed extends Subsystem
         }
         else
         {
-            this.logWarning("can't find testbed motor");
+            logWarning("can't find testbed motor");
         }
+
+        mLimitSwitch = new DigitalInput(Constants.kTestbedLimitSwitchId);
+        mPotentiometer = new AnalogInput(Constants.kTestbedPotentiometerId);
+        mLightSwitch = new Relay(Constants.kTestbedLightSwitchId);
+        mServo = new Servo(Constants.kTestbedServoId);
+
         logInitialized(success);
     }
 
@@ -124,13 +142,13 @@ public class Testbed extends Subsystem
     @Override
     public void outputToSmartDashboard()
     {
-        /*
-         * If we want to put a graph or visualization for debug purposes on the
-         * dashboard, you would output information for that visualization here.
-         * This methods overrides the abstract method of the same name in the
-         * superclass (Subsystem). That just means that every Subsystem needs
-         * to implement outputToSmartDashboard method.
+        /* put useful state to the smart dashboard
+         * 
          */
+        SmartDashboard.putString("Testbed_Relay", mLightSwitch.get().getPrettyValue());
+        SmartDashboard.putBoolean("Testbed_LimitSwitch", mLimitSwitch.get());
+        SmartDashboard.putNumber("Testbed_Potentiometer", mPotentiometer.getValue());
+        SmartDashboard.putNumber("Testbed_Servo", mServo.get());
     }
 
     // stop should also be synchronized, because it's also called from another thread

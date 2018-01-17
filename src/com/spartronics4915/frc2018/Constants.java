@@ -48,10 +48,10 @@ public class Constants extends ConstantsBase
     public static final int kTestbedServoId = 0;
     
     // Relay Pins -----------------------------------
-    public static final int kTestbedLightswitchId = 0;
+    public static final int kTestbedLightSwitchId = 0;
     
     // DIO Pins --------------------------------------
-    public static final int kTestbedLimitSwitch = 0;
+    public static final int kTestbedLimitSwitchId = 0;
     public static final int kRangeLEDId = 8;
     public static final int kGreenLEDId = 9;
     
