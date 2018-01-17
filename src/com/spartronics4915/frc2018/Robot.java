@@ -38,14 +38,14 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  * are already instantiated upon robot startup; for those classes, the robot
  * gets the instance as opposed to creating a
  * new object
- * 
+ *
  * After initializing all robot parts, the code sets up the autonomous and
  * teleoperated cycles and also code that runs
  * periodically inside both routines.
- * 
+ *
  * This is the nexus/converging point of the robot code and the best place to
  * start exploring.
- * 
+ *
  * The VM is configured to automatically run this class, and to call the
  * functions corresponding to each mode, as
  * described in the IterativeRobot documentation. If you change the name of this
@@ -56,7 +56,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 public class Robot extends IterativeRobot
 {
 
-    // NB: make sure to construct objects in robotInit, not member declaration, 
+    // NB: make sure to construct objects in robotInit, not member declaration,
     //  and usually not constructor.
     private Drive mDrive = null;
     private Superstructure mSuperstructure = null;
@@ -77,7 +77,7 @@ public class Robot extends IterativeRobot
     //    private VisionServer mVisionServer = null;
     private AnalogInput mCheckLightButton = null;
     private DelayedBoolean mDelayedAimButton;
-        
+
     public Robot()
     {
         Logger.logRobotConstruction();
@@ -88,7 +88,7 @@ public class Robot extends IterativeRobot
     {
         mSubsystemManager.zeroSensors();
         mRobotState.reset(Timer.getFPGATimestamp(), new RigidTransform2d());
-    }    
+    }
 
     /**
      * This function is run when the robot is first started up and should be
@@ -182,7 +182,7 @@ public class Robot extends IterativeRobot
      * Initializes the robot for the beginning of autonomous mode (set
      * drivebase, intake and superstructure to correct
      * states). Then gets the correct auto mode from the AutoModeSelector
-     * 
+     *
      * @see AutoModeSelector.java
      */
     @Override
@@ -256,11 +256,11 @@ public class Robot extends IterativeRobot
 
     /**
      * This function is called periodically during operator control.
-     * 
+     *
      * The code uses state machines to ensure that no matter what buttons the
      * driver presses, the robot behaves in a
      * safe and consistent manner.
-     * 
+     *
      * Based on driver input, the code sets a desired state for each subsystem.
      * Each subsystem will constantly compare
      * its desired and actual states and act to bring the two closer.
@@ -380,5 +380,17 @@ public class Robot extends IterativeRobot
         mSubsystemManager.writeToLog();
         mEnabledLooper.outputToSmartDashboard();
         mConnectionMonitor.setLastPacketTime(Timer.getFPGATimestamp());
+    }
+
+    /**
+     * Unused but required periodic function.  Plays a similar role to our
+     * allPeriodic method. Presumably the timing in IterativeRobotBase wasn't
+     * to the liking of initial designers of this system. Perhaps because
+     * we don't want it to run during testPeriodic.
+     */
+    @Override
+    public void robotPeriodic()
+    {
+        // intentionally left blank
     }
 }
