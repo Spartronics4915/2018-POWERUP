@@ -3,6 +3,7 @@ package com.spartronics4915.lib.util.control;
 import java.util.Optional;
 
 import com.spartronics4915.frc2018.Constants;
+import com.spartronics4915.lib.util.Logger;
 import com.spartronics4915.lib.util.math.Rotation2d;
 import com.spartronics4915.lib.util.math.Translation2d;
 import com.spartronics4915.lib.util.motion.MotionProfile;
@@ -137,7 +138,7 @@ public class PathSegment
                 Constants.kPathFollowingMaxAccel);
         MotionProfileGoal goal_state = new MotionProfileGoal(getLength(), end_speed);
         speedController = MotionProfileGenerator.generateProfile(motionConstraints, goal_state, start_state);
-        // System.out.println(speedController);
+        // Logger.notice(speedController);
     }
 
     /**
@@ -295,7 +296,7 @@ public class PathSegment
         }
         else
         {
-            System.out.println("Velocity does not exist at that position!");
+            Logger.notice("PathSegment: velocity does not exist at that position!");
             return 0.0;
         }
     }

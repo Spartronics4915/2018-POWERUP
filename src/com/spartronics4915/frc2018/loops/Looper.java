@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.spartronics4915.frc2018.Constants;
 import com.spartronics4915.lib.util.CrashTrackingRunnable;
+import com.spartronics4915.lib.util.Logger;
 
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.Timer;
@@ -71,7 +72,7 @@ public class Looper
     {
         if (!running_)
         {
-            System.out.println("Starting loops");
+            Logger.notice("Looper starting subsystem loops");
             synchronized (taskRunningLock_)
             {
                 timestamp_ = Timer.getFPGATimestamp();
@@ -89,7 +90,7 @@ public class Looper
     {
         if (running_)
         {
-            System.out.println("Stopping loops");
+            Logger.notice("Looper stopping subsystem loops");
             notifier_.stop();
             synchronized (taskRunningLock_)
             {
@@ -97,7 +98,7 @@ public class Looper
                 timestamp_ = Timer.getFPGATimestamp();
                 for (Loop loop : loops_)
                 {
-                    System.out.println("Stopping " + loop);
+                    Logger.notice("Looper stopping " + loop);
                     loop.onStop(timestamp_);
                 }
             }

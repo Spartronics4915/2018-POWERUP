@@ -10,6 +10,8 @@ import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 
+import com.spartronics4915.lib.util.Logger;
+
 import edu.wpi.first.wpilibj.DriverStation;
 
 /**
@@ -24,7 +26,7 @@ public class VideoStreamServiceController
 
     public void registerWatcher()
     {
-        System.out.println("regstering watcher");
+        Logger.notice("VideoStreamServiceController registering watcher");
         FileSystem fileSystem = FileSystems.getDefault();
 
         Path devPath = fileSystem.getPath("/dev");
@@ -32,7 +34,7 @@ public class VideoStreamServiceController
         {
             final WatchService watchService = fileSystem.newWatchService();
             devPath.register(watchService, StandardWatchEventKinds.ENTRY_CREATE);
-            System.out.println("watcher registered");
+            Logger.notice("VideoStreamServiceController watcher registered");
 
             new Thread(() ->
             {
@@ -41,27 +43,27 @@ public class VideoStreamServiceController
                 {
                     try
                     {
-                        System.out.println("waiting for key");
+                        Logger.debug("VideoStreamServiceController waiting for key");
                         WatchKey key = watchService.take();
-                        System.out.println("got key");
+                        Logger.notice("got key");
                         for (WatchEvent<?> event : key.pollEvents())
                         {
                             WatchEvent.Kind<?> kind = event.kind();
                             if (kind != StandardWatchEventKinds.ENTRY_CREATE)
                             {
-                                System.out.println("File watcher Non create event");
+                                Logger.notice("File watcher Non create event");
                                 continue;
                             }
 
                             Path newFilename = devPath.resolve(((WatchEvent<Path>) event).context());
                             if (!newFilename.getFileName().toString().startsWith("video"))
                             {
-                                System.out.println(
-                                        "Don't care about new device: " + newFilename.toString());
+                                Logger.debug(
+                                        "VideoStreamServiceController Don't care about new device: " + newFilename.toString());
                                 continue;
                             }
 
-                            System.out.println("New video device: " + newFilename.toString());
+                            Logger.debug("VideoStreamServiceController New video device: " + newFilename.toString());
                             restartProcess(newFilename);
                         }
                         key.reset();
@@ -69,7 +71,7 @@ public class VideoStreamServiceController
                     catch (InterruptedException e)
                     {
                         e.printStackTrace();
-                        System.out.println("Exception: " + e);
+                        Logger.notice("Exception: " + e);
                         continue;
                     }
                 }
@@ -89,26 +91,26 @@ public class VideoStreamServiceController
         File[] videoDevices = devFolder.listFiles((dir, name) -> name.startsWith("video"));
         if (videoDevices.length == 0)
         {
-            System.out.println("no video devices found");
+            Logger.notice("VideoStreamServiceController no video devices found");
         }
         else
         {
-            System.out.println("Using video device " + videoDevices[0].toString());
+            Logger.notice("VideoStreamServiceController using video device " + videoDevices[0].toString());
             restartProcess(videoDevices[0].toPath());
         }
     }
 
     private void restartProcess(Path newVideoDevice)
     {
-        System.out.println("Is old process alive? " + (mExistingProcess != null && mExistingProcess.isAlive()));
+        Logger.notice("Is old process alive? " + (mExistingProcess != null && mExistingProcess.isAlive()));
         if (mExistingProcess != null)
         {
             mExistingProcess.destroy();
             try
             {
-                System.out.println("Wait for old process");
+                Logger.debug("Wait for old process");
                 mExistingProcess.waitFor();
-                System.out.println("Done waiting for old process");
+                Logger.debug("Done waiting for old process");
             }
             catch (InterruptedException e)
             {
@@ -128,7 +130,7 @@ public class VideoStreamServiceController
                             .redirectError(ProcessBuilder.Redirect.INHERIT)
                             .redirectOutput(ProcessBuilder.Redirect.INHERIT)
                             .start();
-            System.out.println("New process alive: " + mExistingProcess.isAlive());
+            Logger.notice("New process alive: " + mExistingProcess.isAlive());
         }
         catch (IOException e)
         {
