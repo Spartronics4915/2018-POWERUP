@@ -2,6 +2,7 @@ package com.spartronics4915.frc2018.subsystems;
 
 import com.spartronics4915.frc2018.loops.Loop;
 import com.spartronics4915.frc2018.loops.Looper;
+import com.spartronics4915.lib.util.Logger;
 
 import edu.wpi.first.wpilibj.Timer;
 
@@ -105,7 +106,7 @@ public class Superstructure extends Subsystem
 
                 if (newState != mSystemState)
                 {
-                    System.out.println("Superstructure state " + mSystemState + " to " + newState + " Timestamp: "
+                    Logger.notice("Superstructure state " + mSystemState + " to " + newState + " Timestamp: "
                             + Timer.getFPGATimestamp());
                     mSystemState = newState;
                     mCurrentStateStartTime = timestamp;

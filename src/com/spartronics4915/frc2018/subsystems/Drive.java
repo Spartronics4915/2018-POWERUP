@@ -585,7 +585,7 @@ public class Drive extends Subsystem
 
     public synchronized Rotation2d getGyroAngle()
     {
-        if(!this.isInitialized()) new Rotation2d();
+        if(!this.isInitialized()) return new Rotation2d();
         if (mIMU.getState() != PigeonState.Ready)
         {
             DriverStation.reportError("IMU in non-ready state. Is it plugged in?", false);
