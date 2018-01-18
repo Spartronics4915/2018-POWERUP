@@ -1,5 +1,7 @@
 package com.spartronics4915.frc2018.vision;
 
+import com.spartronics4915.lib.util.Logger;
+
 /**
  * Tests the vision system by getting targets
  */
