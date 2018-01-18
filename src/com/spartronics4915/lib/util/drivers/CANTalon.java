@@ -141,7 +141,7 @@ public class CANTalon extends WPI_TalonSRX
         // We've integrated LazyCANTalon into here
         if (value != mLastSetpoint || mControlMode != mLastControlMode)
         {
-            this.set(mControlMode, value);
+            super.set(mControlMode, value);
             mLastSetpoint = value;
             mLastControlMode = mControlMode;
         }
