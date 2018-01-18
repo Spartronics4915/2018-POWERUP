@@ -6,16 +6,22 @@
 > our build system relies on `ant` which describes the build process
 > with a series of .xml and .properties files.  Ultimately it
 > creates a file named `FRCUserProgram.jar`. This file and associated
-> runtime libraries are copied down to the robot, then executed by
-> the shell script, `/home/lvuser/robotCommand`.  This script is executed by
-> other scripts on the system whose job is to ensure the robot program
-> is started even after reboots. The output of the program is also
-> routed over the network via this startup machinery.
+> runtime libraries are copied down to the robot. Another file, `robotCommand`
+> (or `robotDebugCommand`) is also copied.  This file is *NOT* a shell script
+> but rather a command file that is parsed by
+> `/usr/local/frc/bin/frcRunRobot.sh` and ultimately passed to
+> `/sbin/start-stop-daemon` whose job is to 'watch over'
+> the robot process - to restart it if it crashes, to start it on robot
+> reboot, etc.  When we deploy a robot-program that crashes, the start-stop-daemon
+> can produce an annoying and confusing flurry of program restarts.  The only
+> way to stop the flurry is either to kill the process group or to deploy a
+> stable robot program.  The output of the robot program is also routed over the
+> network via this startup machinery.
 
 * where are crashlogs found?  How did they get there?
 > /home/lvuser/crash_tracking.txt by CrashTracker.  There's also
-> a log of program output produced by the robotCommand launcher
-> (TODO: where is that log?).
+> a log of program output produced by the bootstapping mechansim
+> localing in `/var/local/natinst/log/FRC_UserProgram.log`.
 
 * where is java main? When does our code get control?
 > `main()` is the primary/default entrypoint for any java program. In our
