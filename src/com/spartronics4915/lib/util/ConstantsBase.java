@@ -111,16 +111,16 @@ public abstract class ConstantsBase
                     if (!value.equals(current))
                     {
                         modifiedKeys.put(name, true);
-                        System.out.println("Constant Modified:" + field.getName());
+                        Logger.notice("Constant Modified:" + field.getName());
                     }
                     else
                     {
-                        System.out.println("Constant Not Modified:" + field.getName());
+                        Logger.notice("Constant Not Modified:" + field.getName());
                     }
                 }
                 catch (IllegalArgumentException | IllegalAccessException e)
                 {
-                    System.out.println("Could not set field: " + name);
+                    Logger.warning("ConstantsBase could not set field: " + name);
                 }
             }
         }

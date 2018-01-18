@@ -12,15 +12,15 @@ import com.ctre.phoenix.motorcontrol.StatusFrameEnhanced;
 import com.ctre.phoenix.motorcontrol.StickyFaults;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 
-/* CANTalon is a portability interface intended to facilitate
+/* CANTalonPhoenix is a portability interface intended to facilitate
  * porting from CTRE CANTalon 2017 libs to CTRE Phoenix 2018.
  * This abstraction is useful as a buffer between all the
  * bad/weird stuff that CTRE does. It allows us to document
  * better, and even implement new features (e.g Talon
  * compatibility with Synthesis).
  * 
- * NB: this should be seen as a stopgap measure pending full
- *  migration to the new API.
+ * NB: we should endeavor to constrain the interface to those
+ *   methods that we feel are useful.
  */
 
 // From Phoenix docs:
@@ -43,7 +43,7 @@ import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 //  where 1024 represents a full "rotation". This means that a velocity 
 //  measurement of 1 represents 1/1024 of a rotation every 100ms
 
-public class CANTalon extends WPI_TalonSRX
+public class CANTalon4915 extends WPI_TalonSRX
 {
 
     static final int sDefaultTimeoutMS = 0; // 0 for no blocking. This is like the old behavior (I think).
@@ -59,23 +59,179 @@ public class CANTalon extends WPI_TalonSRX
     int mCodesPerRevolution; // Encoder codes per revolution
     boolean mOutputReversed = false;
 
-    public CANTalon(int deviceNumber)
+    public CANTalon4915(int deviceNumber)
     {
-        super(deviceNumber);
+        super(deviceNumber);      
+//        this.changeMotionControlFramePeriod(config.MOTION_CONTROL_FRAME_PERIOD_MS);
+//        this.clearIAccum();
+//        this.clearMotionProfileHasUnderrun();
+//        this.clearMotionProfileTrajectories();
+//        this.clearStickyFaults();
+//        this.configFwdLimitSwitchNormallyOpen(config.LIMIT_SWITCH_NORMALLY_OPEN);
+//        this.configMaxOutputVoltage(config.MAX_OUTPUT_VOLTAGE);
+//        this.configNominalOutputVoltage(config.NOMINAL_VOLTAGE, -config.NOMINAL_VOLTAGE);
+//        this.configPeakOutputVoltage(config.PEAK_VOLTAGE, -config.PEAK_VOLTAGE);
+//        this.configRevLimitSwitchNormallyOpen(config.LIMIT_SWITCH_NORMALLY_OPEN);
+//        this.enableBrakeMode(config.ENABLE_BRAKE);
+//        this.enableCurrentLimit(config.ENABLE_CURRENT_LIMIT);
+//        this.enableForwardSoftLimit(config.ENABLE_SOFT_LIMIT);
+//        this.enableLimitSwitch(config.ENABLE_LIMIT_SWITCH, config.ENABLE_LIMIT_SWITCH);
+//        this.enableReverseSoftLimit(config.ENABLE_SOFT_LIMIT);
+//        this.enableZeroSensorPositionOnForwardLimit(false);
+//        this.enableZeroSensorPositionOnIndex(false, false);
+//        this.enableZeroSensorPositionOnReverseLimit(false);
+//        this.reverseOutput(false);
+//        this.reverseSensor(false);
+//        this.setAnalogPosition(0);
+//        this.setCurrentLimit(config.CURRENT_LIMIT);
+//        this.setExpiration(config.EXPIRATION_TIMEOUT_SECONDS);
+//        this.setForwardSoftLimit(config.FORWARD_SOFT_LIMIT);
+//        this.reverseOutput(config.INVERTED);
+//        this.setNominalClosedLoopVoltage(config.NOMINAL_CLOSED_LOOP_VOLTAGE);
+//        this.setPosition(0);
+//        this.setProfile(0);
+//        this.setPulseWidthPosition(0);
+//        this.setReverseSoftLimit(config.REVERSE_SOFT_LIMIT);
+//        this.setSafetyEnabled(config.SAFETY_ENABLED);
+//        this.setVelocityMeasurementPeriod(config.VELOCITY_MEASUREMENT_PERIOD);
+//        this.setVelocityMeasurementWindow(config.VELOCITY_MEASUREMENT_ROLLING_AVERAGE_WINDOW);
+//        this.setVoltageCompensationRampRate(config.VOLTAGE_COMPENSATION_RAMP_RATE);
+//        this.setVoltageRampRate(config.VOLTAGE_RAMP_RATE);
+//
+//        this.setStatusFrameRateMs(StatusFrameEnhanced.Status_1_General, config.GENERAL_STATUS_FRAME_RATE_MS);
+//        this.setStatusFrameRateMs(StatusFrameEnhanced.Status_2_Feedback0, config.FEEDBACK_STATUS_FRAME_RATE_MS); // XXX: was Feedback
+//        this.setStatusFrameRateMs(StatusFrameEnhanced.Status_3_Quadrature, config.QUAD_ENCODER_STATUS_FRAME_RATE_MS);
+//        this.setStatusFrameRateMs(StatusFrameEnhanced.Status_4_AinTempVbat,
+//                config.ANALOG_TEMP_VBAT_STATUS_FRAME_RATE_MS);
     }
-
-    public CANTalon(int deviceNumber, int controlPeriodMs)
+    
+    public String dumpState()
     {
-        super(deviceNumber);
-        this.setControlFramePeriod(controlPeriodMs, sDefaultTimeoutMS);
+        @SuppressWarnings("deprecation") // Things that don't work are deprecated
+        StringBuilder sb = new StringBuilder().append("isRevLimitSwitchClosed = ")
+                .append(this.isRevLimitSwitchClosed()).append("\n").append("getBusVoltage = ")
+                .append(this.getBusVoltage()).append("\n").append("isForwardSoftLimitEnabled = ")
+                .append(this.isForwardSoftLimitEnabled()).append("\n")
+                .append("getFaultRevSoftLim = ")
+                .append(this.getFaultRevSoftLim()).append("\n").append("getStickyFaultOverTemp = ")
+                .append(this.getStickyFaultOverTemp()).append("\n")
+                .append("isZeroSensorPosOnFwdLimitEnabled = ")
+                .append(this.isZeroSensorPosOnFwdLimitEnabled()).append("\n")
+                .append("getMotionProfileTopLevelBufferCount = ")
+                .append(this.getMotionProfileTopLevelBufferCount())
+                .append("\n").append("getNumberOfQuadIdxRises = ")
+                .append(this.getNumberOfQuadIdxRises()).append("\n")
+                .append("getInverted = ").append(this.getInverted()).append("\n")
+                .append("getPulseWidthRiseToRiseUs = ").append(this.getPulseWidthRiseToRiseUs())
+                .append("\n")
+                .append("getError = ").append(this.getError()).append("\n")
+                .append("isSensorPresent = ")
+                .append(this.isSensorPresent(FeedbackDevice.CTRE_MagEncoder_Relative)).append("\n")
+                .append("isControlEnabled = ").append(this.isControlEnabled()).append("\n")
+                .append("getTable = ")
+                //.append(this.getTable()).append("\n") // XXX: Sendable::getTable method has disappeared
+                .append("isEnabled = ").append(this.isEnabled()).append("\n")
+                .append("isZeroSensorPosOnRevLimitEnabled = ")
+                .append(this.isZeroSensorPosOnRevLimitEnabled())
+                .append("\n").append("isSafetyEnabled = ").append(this.isSafetyEnabled())
+                .append("\n")
+                .append("getOutputVoltage = ").append(this.getOutputVoltage()).append("\n")
+                .append("getTemperature = ")
+                .append(this.getTemperature()).append("\n").append("getSmartDashboardType = ")
+                // .append(this.getSmartDashboardType()).append("\n") // XXX: Sendable::getSmartDashboardType has disappeared
+                .append("getPulseWidthPosition = ")
+                .append(this.getPulseWidthPosition()).append("\n").append("getOutputCurrent = ")
+                .append(this.getOutputCurrent()).append("\n").append("get = ").append(this.get())
+                .append("\n")
+                .append("isZeroSensorPosOnIndexEnabled = ")
+                .append(this.isZeroSensorPosOnIndexEnabled()).append("\n")
+                .append("getMotionMagicCruiseVelocity = ")
+                .append(this.getMotionMagicCruiseVelocity()).append("\n")
+                .append("getStickyFaultRevSoftLim = ").append(this.getStickyFaultRevSoftLim())
+                .append("\n")
+                .append("getFaultRevLim = ").append(this.getFaultRevLim()).append("\n")
+                .append("getEncPosition = ")
+                .append(this.getEncPosition()).append("\n").append("getIZone = ")
+                .append(this.getIZone()).append("\n")
+                .append("getAnalogInPosition = ").append(this.getAnalogInPosition()).append("\n")
+                .append("getFaultUnderVoltage = ").append(this.getFaultUnderVoltage()).append("\n")
+                .append("getCloseLoopRampRate = ").append(this.getCloseLoopRampRate()).append("\n")
+                .append("toString = ").append(this.toString()).append("\n")
+                // .append("getMotionMagicActTrajPosition =
+                // ").append(this.getMotionMagicActTrajPosition()).append("\n")
+                .append("getF = ").append(this.getF()).append("\n").append("getClass = ")
+                .append(this.getClass())
+                .append("\n").append("getAnalogInVelocity = ").append(this.getAnalogInVelocity())
+                .append("\n")
+                .append("getI = ").append(this.getI()).append("\n")
+                .append("isReverseSoftLimitEnabled = ")
+                .append(this.isReverseSoftLimitEnabled()).append("\n")
+                // .append("getPIDSourceType = ").append(this.getPIDSourceType()).append("\n") // XXX Sendable change
+                .append("getEncVelocity = ")
+                .append(this.getEncVelocity()).append("\n")
+                .append("GetVelocityMeasurementPeriod = ")
+                .append(this.getVelocityMeasurementPeriod()).append("\n").append("getP = ")
+                .append(this.getP())
+                .append("\n").append("GetVelocityMeasurementWindow = ")
+                .append(this.getVelocityMeasurementWindow())
+                .append("\n").append("getDeviceID = ").append(this.getDeviceID()).append("\n")
+                .append("getStickyFaultRevLim = ").append(this.getStickyFaultRevLim()).append("\n")
+                // .append("getMotionMagicActTrajVelocity =
+                // ").append(this.getMotionMagicActTrajVelocity()).append("\n")
+                .append("getReverseSoftLimit = ").append(this.getReverseSoftLimit()).append("\n")
+                .append("getD = ")
+                .append(this.getD()).append("\n").append("getFaultOverTemp = ")
+                .append(this.getFaultOverTemp())
+                .append("\n").append("getForwardSoftLimit = ").append(this.getForwardSoftLimit())
+                .append("\n")
+                .append("GetFirmwareVersion = ").append(this.getFirmwareVersion()).append("\n")
+                .append("getLastError = ").append(this.getLastError()).append("\n")
+                .append("isAlive = ")
+                .append(this.isAlive()).append("\n").append("getPinStateQuadIdx = ")
+                .append(this.getPinStateQuadIdx())
+                .append("\n").append("getAnalogInRaw = ").append(this.getAnalogInRaw()).append("\n")
+                .append("getFaultForLim = ").append(this.getFaultForLim()).append("\n")
+                .append("getSpeed = ")
+                .append(this.getSpeed()).append("\n").append("getStickyFaultForLim = ")
+                .append(this.getStickyFaultForLim()).append("\n").append("getFaultForSoftLim = ")
+                .append(this.getFaultForSoftLim()).append("\n")
+                .append("getStickyFaultForSoftLim = ")
+                .append(this.getStickyFaultForSoftLim()).append("\n")
+                .append("getClosedLoopError = ")
+                .append(this.getClosedLoopError()).append("\n").append("getSetpoint = ")
+                .append(this.getSetpoint())
+                .append("\n").append("isMotionProfileTopLevelBufferFull = ")
+                .append(this.isMotionProfileTopLevelBufferFull()).append("\n")
+                .append("getDescription = ")
+                .append(this.getDescription()).append("\n").append("hashCode = ")
+                .append(this.hashCode()).append("\n")
+                .append("isFwdLimitSwitchClosed = ").append(this.isFwdLimitSwitchClosed())
+                .append("\n")
+                .append("getPinStateQuadA = ").append(this.getPinStateQuadA()).append("\n")
+                .append("getPinStateQuadB = ").append(this.getPinStateQuadB()).append("\n")
+                .append("GetIaccum = ")
+                .append(this.getIaccum()).append("\n").append("getFaultHardwareFailure = ")
+                .append(this.getFaultHardwareFailure()).append("\n").append("pidGet = ")
+                .append(this.pidGet())
+                .append("\n").append("getBrakeEnableDuringNeutral = ")
+                .append(this.getBrakeEnableDuringNeutral())
+                .append("\n").append("getStickyFaultUnderVoltage = ")
+                .append(this.getStickyFaultUnderVoltage())
+                .append("\n").append("getPulseWidthVelocity = ")
+                .append(this.getPulseWidthVelocity()).append("\n")
+                .append("GetNominalClosedLoopVoltage = ").append(this.getNominalClosedLoopVoltage())
+                .append("\n")
+                .append("getPosition = ").append(this.getPosition()).append("\n")
+                .append("getExpiration = ")
+                .append(this.getExpiration()).append("\n").append("getPulseWidthRiseToFallUs = ")
+                .append(this.getPulseWidthRiseToFallUs()).append("\n")
+                // .append("createTableListener = ").append(this.createTableListener()).append("\n")
+                .append("getControlMode = ").append(this.getControlMode()).append("\n")
+                .append("getMotionMagicAcceleration = ").append(this.getMotionMagicAcceleration())
+                .append("\n")
+                .append("getControlMode = ").append(this.getControlMode());
+        return sb.toString();
     }
-
-    public CANTalon(int deviceNumber, int controlPeriodMs, int enablePeriodMs)
-    {
-        super(deviceNumber);
-        this.setControlFramePeriod(controlPeriodMs, enablePeriodMs);
-    }
-
 
     /**
      * Converts RPM to Native Unit velocity.

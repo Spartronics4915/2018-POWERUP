@@ -20,7 +20,7 @@ import com.spartronics4915.lib.util.math.RigidTransform2d;
 import com.spartronics4915.lib.util.math.Rotation2d;
 import com.spartronics4915.lib.util.math.Twist2d;
 import com.spartronics4915.lib.util.drivers.CANTalonFactory;
-import com.spartronics4915.lib.util.drivers.CANTalon;
+import com.spartronics4915.lib.util.drivers.CANTalon4915;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
@@ -106,9 +106,9 @@ public class Drive extends Subsystem
     private DriveControlState mDriveControlState;
 
     // Hardware
-    private CANTalon mLeftMaster = null, mRightMaster = null;
-    private CANTalon mLeftSlave = null, mRightSlave = null;
-    private CANTalon mIMUTalon = null;
+    private CANTalon4915 mLeftMaster = null, mRightMaster = null;
+    private CANTalon4915 mLeftSlave = null, mRightSlave = null;
+    private CANTalon4915 mIMUTalon = null;
     private PigeonIMU mIMU = null;
 
     // Controllers
@@ -128,6 +128,7 @@ public class Drive extends Subsystem
     // Logging
     private final ReflectingCSVWriter<PathFollower.DebugOutput> mCSVWriter;
 
+    // mLoop not registered when we're not initialized
     private final Loop mLoop = new Loop()
     {
 
@@ -136,7 +137,7 @@ public class Drive extends Subsystem
         {
             synchronized (Drive.this)
             {
-                setOpenLoop(DriveSignal.NEUTRAL);
+                 setOpenLoop(DriveSignal.NEUTRAL);
                 setBrakeMode(false);
                 setVelocitySetpoint(0, 0);
                 if (mIMU.getState() != PigeonState.Ready)
@@ -274,7 +275,7 @@ public class Drive extends Subsystem
             setHighGear(true);
             setOpenLoop(DriveSignal.NEUTRAL);
             // Path Following stuff
-            mIMUTalon = new CANTalon(Constants.kIMUTalonId);
+            mIMUTalon = new CANTalon4915(Constants.kIMUTalonId);
             // FIXME: Don't use the pigeon, or at least wire it directly into the CAN bus
             mIMU = new PigeonIMU(mIMUTalon);
 
@@ -299,6 +300,8 @@ public class Drive extends Subsystem
     @Override
     public void registerEnabledLoops(Looper in)
     {
+        if(!Drive.this.isInitialized()) return;
+
         in.register(mLoop);
     }
 
@@ -307,6 +310,7 @@ public class Drive extends Subsystem
      */
     public synchronized void setOpenLoop(DriveSignal signal)
     {
+        if(!this.isInitialized()) return;
         if (mDriveControlState != DriveControlState.OPEN_LOOP)
         {
             mLeftMaster.changeControlMode(ControlMode.PercentOutput); // XXX: was PctVBus
@@ -342,6 +346,7 @@ public class Drive extends Subsystem
 
     public synchronized void setBrakeMode(boolean on)
     {
+        if(!this.isInitialized()) return;
         if (mIsBrakeMode != on)
         {
             mIsBrakeMode = on;
@@ -361,6 +366,7 @@ public class Drive extends Subsystem
     @Override
     public void outputToSmartDashboard()
     {
+        if(!this.isInitialized()) return;
         final double left_speed = getLeftVelocityInchesPerSec();
         final double right_speed = getRightVelocityInchesPerSec();
         SmartDashboard.putNumber("left voltage (V)", mLeftMaster.getOutputVoltage());
@@ -400,6 +406,7 @@ public class Drive extends Subsystem
 
     public synchronized void resetEncoders()
     {
+        if(!this.isInitialized()) return;
         mLeftMaster.setEncPosition(0);
         mLeftMaster.setPosition(0);
         mRightMaster.setPosition(0);
@@ -411,6 +418,7 @@ public class Drive extends Subsystem
     @Override
     public void zeroSensors()
     {
+        if(!this.isInitialized()) return;
         resetEncoders();
         if (mIMU.getState() != PigeonState.Ready)
         {
@@ -429,6 +437,7 @@ public class Drive extends Subsystem
     public synchronized void setVelocitySetpoint(double left_inches_per_sec,
             double right_inches_per_sec)
     {
+        if(!this.isInitialized()) return;
         configureTalonsForSpeedControl();
         mDriveControlState = DriveControlState.VELOCITY_SETPOINT;
         updateVelocitySetpoint(left_inches_per_sec, right_inches_per_sec);
@@ -439,6 +448,7 @@ public class Drive extends Subsystem
      */
     private void configureTalonsForSpeedControl()
     {
+        if(!this.isInitialized()) return;
         if (!usesTalonVelocityControl(mDriveControlState))
         {
             // We entered a velocity control state.
@@ -461,6 +471,7 @@ public class Drive extends Subsystem
      */
     private void configureTalonsForPositionControl()
     {
+        if(!this.isInitialized()) return;
         if (!usesTalonPositionControl(mDriveControlState))
         {
             // We entered a position control state.
@@ -487,6 +498,7 @@ public class Drive extends Subsystem
     private synchronized void updateVelocitySetpoint(double left_inches_per_sec,
             double right_inches_per_sec)
     {
+        if(!this.isInitialized()) return;
         if (usesTalonVelocityControl(mDriveControlState))
         {
             final double max_desired =
@@ -513,6 +525,7 @@ public class Drive extends Subsystem
     private synchronized void updatePositionSetpoint(double left_position_inches,
             double right_position_inches)
     {
+        if(!this.isInitialized()) return;
         if (usesTalonPositionControl(mDriveControlState))
         {
             mLeftMaster.set(inchesToRotations(left_position_inches));
@@ -548,26 +561,31 @@ public class Drive extends Subsystem
 
     public double getLeftDistanceInches()
     {
+        if(!isInitialized()) return 0.0;
         return rotationsToInches(mLeftMaster.getPosition());
     }
 
     public double getRightDistanceInches()
     {
+        if(!isInitialized()) return 0.0;
         return rotationsToInches(mRightMaster.getPosition());
     }
 
     public double getLeftVelocityInchesPerSec()
     {
+        if(!isInitialized()) return 0.0;
         return rpmToInchesPerSecond(mLeftMaster.getSpeed());
     }
 
     public double getRightVelocityInchesPerSec()
     {
+        if(!isInitialized()) return 0.0;
         return rpmToInchesPerSecond(mRightMaster.getSpeed());
     }
 
     public synchronized Rotation2d getGyroAngle()
     {
+        if(!this.isInitialized()) new Rotation2d();
         if (mIMU.getState() != PigeonState.Ready)
         {
             DriverStation.reportError("IMU in non-ready state. Is it plugged in?", false);
@@ -580,6 +598,7 @@ public class Drive extends Subsystem
 
     public synchronized void setGyroAngle(Rotation2d angle)
     {
+        if(!this.isInitialized()) return;
         if (mIMU.getState() == PigeonState.NoComm)
             DriverStation.reportError("Could not detect the IMU. Is it plugged in?", false);
         mIMU.setYaw(angle.getDegrees(), 5 /* delayMS */);
@@ -609,6 +628,7 @@ public class Drive extends Subsystem
      */
     private void updateTurnToHeading(double timestamp)
     {
+        if(!this.isInitialized()) return;
         final Rotation2d field_to_robot =
                 mRobotState.getLatestFieldToVehicle().getValue().getRotation(); // We need the field frame because this is specified in field coordinates, not robot ones
         // Figure out the rotation necessary to turn to face the goal.
@@ -640,6 +660,7 @@ public class Drive extends Subsystem
      */
     private void updateDriveTowardsGoalCoarseAlign(double timestamp)
     {
+        if(!this.isInitialized()) return;
         updateGoalHeading(timestamp);
         updateTurnToHeading(timestamp);
         mIsApproaching = true;
@@ -676,6 +697,7 @@ public class Drive extends Subsystem
      */
     private void updateDriveTowardsGoalApproach(double timestamp)
     {
+        if(!this.isInitialized()) return;
         Optional<ShooterAimingParameters> aim = mRobotState.getAimingParameters();
         mIsApproaching = true;
         if (aim.isPresent())
@@ -717,6 +739,7 @@ public class Drive extends Subsystem
      */
     private void updatePathFollower(double timestamp)
     {
+        if(!this.isInitialized()) return;
         RigidTransform2d robot_pose = mRobotState.getLatestFieldToVehicle().getValue();
         Twist2d command = mPathFollower.update(timestamp, robot_pose,
                 RobotState.getInstance().getDistanceDriven(),
@@ -887,6 +910,7 @@ public class Drive extends Subsystem
 
     public synchronized void reloadGains()
     {
+        if(!isInitialized()) return;
         mLeftMaster.setPID(Constants.kDriveLowGearPositionKp, Constants.kDriveLowGearPositionKi,
                 Constants.kDriveLowGearPositionKd, Constants.kDriveLowGearPositionKf,
                 Constants.kDriveLowGearPositionIZone, Constants.kDriveLowGearPositionRampRate,
@@ -922,7 +946,12 @@ public class Drive extends Subsystem
 
     public boolean checkSystem()
     {
-        logNotice("Testing DRIVE.---------------------------------");
+        if(!isInitialized())
+        {
+            logWarning("can't check un-initialized system");
+            return false;
+        }
+        logNotice("checkSystem() ---------------------------------");
         final double kCurrentThres = 0.5;
         final double kRpmThres = 300;
         final double kMaxVoltage = 12.0;

@@ -18,32 +18,32 @@ public class Logger
 
     public static void logRobotStartup()
     {
-        logMarker("robot startup");
+        notice("robot startup");
     }
 
     public static void logRobotConstruction()
     {
-        logMarker("robot construction");
+        notice("robot construction");
     }
 
     public static void logRobotInit()
     {
-        logMarker("robot init");
+        notice("robot init");
     }
     
     public static void logTeleopInit()
     {
-        logMarker("teleop init");
+        notice("teleop init");
     }
 
     public static void logAutoInit()
     {
-        logMarker("auto init");
+        notice("auto init");
     }
 
     public static void logDisabledInit()
     {
-        logMarker("disabled init");
+        notice("disabled init");
     }
 
     public static void logThrowableCrash(Throwable throwable)
@@ -89,12 +89,12 @@ public class Logger
 
     private static void printMarker(String mark)
     {
-        System.out.print(mark);
+        System.out.println(mark);
     }
 
     private static void logMarker(String mark, Throwable nullableException)
     {
-        System.out.print(mark);
+        System.out.println(mark);
         try (PrintWriter writer = new PrintWriter(new FileWriter("/home/lvuser/crash_tracking.txt", true)))
         {
             writer.print(RUN_INSTANCE_UUID.toString());

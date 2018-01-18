@@ -30,10 +30,12 @@ public class Constants extends ConstantsBase
     public static final int kRightDriveSlaveId = 2;
     public static final int kLeftDriveMasterId = 3;
     public static final int kRightDriveMasterId = 4;
-    public static final int kTestbedMotorId = 5;
     public static final int kIMUTalonId = 6;
     public static final int kNumTalons = 6;
     
+    public static final int kTestbedMotor1Id = 16;
+    public static final int kTestbedMotor2Id = 18;
+   
     public static final int kNumPDPs = 1;
     public static final int kNumPCMs = 0; // XXX: change me if/when pneumatics are added
     public static final int kNumCANDevices = kNumTalons + kNumPCMs + kNumPDPs;

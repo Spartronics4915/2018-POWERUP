@@ -98,6 +98,8 @@ public class Robot extends IterativeRobot
     public void robotInit()
     {
         // Version string and related information
+        boolean success = false;
+        Logger.logRobotInit();
         try (InputStream manifest =
                 getClass().getClassLoader().getResourceAsStream("META-INF/MANIFEST.MF"))
         {
@@ -130,7 +132,7 @@ public class Robot extends IterativeRobot
             //  may invoke its validate methods.
             CANProbe canProbe = CANProbe.getInstance();
             ArrayList<String> canReport = canProbe.GetReport();
-            Logger.notice("CANDevicesFound:\n" + canReport);
+            Logger.notice("CANDevicesFound: " + canReport);
             SmartDashboard.putString("CANBusStatus",
                     canReport.size() == Constants.kNumCANDevices ? "OK"
                             : ("" + canReport.size() + "/" + Constants.kNumCANDevices));
@@ -152,7 +154,6 @@ public class Robot extends IterativeRobot
 
             mEnabledLooper = new Looper();
             mCheckLightButton = new AnalogInput(Constants.kLEDOnId);
-            Logger.logRobotInit();
 
             mSubsystemManager.registerEnabledLoops(mEnabledLooper);
             mEnabledLooper.register(VisionProcessor.getInstance());
@@ -168,14 +169,15 @@ public class Robot extends IterativeRobot
 
             // Pre calculate the paths we use for auto.
             PathAdapter.calculatePaths();
-
+            zeroAllSensors();
+            success = true;
         }
         catch (Throwable t)
         {
             Logger.logThrowableCrash(t);
-            throw t;
+            // don't throw here, leads to "Robots should not quit..." // throw t;
         }
-        zeroAllSensors();
+        Logger.notice("robotInit complete, success:" + success);
     }
 
     /**
@@ -326,7 +328,7 @@ public class Robot extends IterativeRobot
         catch (Throwable t)
         {
             Logger.logThrowableCrash(t);
-            throw t;
+            // leads to Robots should not quit // throw t;
         }
     }
 

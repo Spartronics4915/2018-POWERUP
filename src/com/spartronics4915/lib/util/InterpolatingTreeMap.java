@@ -58,7 +58,7 @@ public class InterpolatingTreeMap<K extends InverseInterpolable<K> & Comparable<
     @Override
     public void putAll(Map<? extends K, ? extends V> map)
     {
-        System.out.println("Unimplemented Method");
+        Logger.warning("InterpolatingTreeMap putAll is unimplemented");
     }
 
     /**

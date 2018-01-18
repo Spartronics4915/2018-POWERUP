@@ -1,7 +1,7 @@
 package com.team254.lib.util.drivers;
 
 import com.spartronics4915.lib.util.drivers.CANTalonFactory;
-import com.spartronics4915.lib.util.drivers.CANTalon;
+import com.spartronics4915.lib.util.drivers.CANTalon4915;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -63,21 +63,21 @@ public class CANTalonFactoryTest {
                 "createTableListener");
 
         final Set<String> uncalledMethodNames = new HashSet<>(
-                Arrays.stream(CANTalon.class.getMethods())
+                Arrays.stream(CANTalon4915.class.getMethods())
                         .map(m -> m.getName())
                         .filter(name -> !acceptableUncalledMethodNames.contains(name))
                         .collect(Collectors.toSet()));
 
-        CANTalon talon = Mockito.mock(CANTalon.class, new Answer() {
+        CANTalon4915 talon = Mockito.mock(CANTalon4915.class, new Answer() {
             @Override
             public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
                 uncalledMethodNames.remove(invocationOnMock.getMethod().getName());
                 return null;
             }
         });
-        PowerMockito.whenNew(CANTalon.class).withAnyArguments().thenReturn(talon);
+        PowerMockito.whenNew(CANTalon4915.class).withAnyArguments().thenReturn(talon);
 
-        CANTalon returnedTalon = CANTalonFactory.createDefaultTalon(1);
+        CANTalon4915 returnedTalon = CANTalonFactory.createDefaultTalon(1);
         String talonInfo = CANTalonFactory.getFullTalonInfo(returnedTalon);
 
         Assert.assertEquals(
@@ -87,6 +87,6 @@ public class CANTalonFactoryTest {
 
     @Test
     public void testCanPrintInfo() {
-        System.out.println(CANTalonFactory.getFullTalonInfo(Mockito.mock(CANTalon.class)));
+        System.out.println(CANTalonFactory.getFullTalonInfo(Mockito.mock(CANTalon4915.class)));
     }
 }
