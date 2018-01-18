@@ -1,5 +1,7 @@
 package com.spartronics4915.frc2018.vision;
 
+import com.spartronics4915.lib.util.Logger;
+
 /**
  * Tests the vision system by getting targets
  */
@@ -12,11 +14,11 @@ public class VisionServerTest
         @Override
         public void gotUpdate(VisionUpdate update)
         {
-            System.out.println("num targets: " + update.getTargets().size());
+            Logger.info("VisionServertTest num targets: " + update.getTargets().size());
             for (int i = 0; i < update.getTargets().size(); i++)
             {
                 TargetInfo target = update.getTargets().get(i);
-                System.out.println("Target: " + target.getY() + ", " + target.getZ());
+                Logger.info("  Target: " + target.getY() + ", " + target.getZ());
             }
         }
     }
