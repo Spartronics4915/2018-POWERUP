@@ -43,7 +43,7 @@ import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 //  where 1024 represents a full "rotation". This means that a velocity 
 //  measurement of 1 represents 1/1024 of a rotation every 100ms
 
-public class CANTalonPhoenix extends WPI_TalonSRX
+public class CANTalon4915 extends WPI_TalonSRX
 {
 
     static final int sDefaultTimeoutMS = 0; // 0 for no blocking. This is like the old behavior (I think).
@@ -59,7 +59,7 @@ public class CANTalonPhoenix extends WPI_TalonSRX
     int mCodesPerRevolution; // Encoder codes per revolution
     boolean mOutputReversed = false;
 
-    public CANTalonPhoenix(int deviceNumber)
+    public CANTalon4915(int deviceNumber)
     {
         super(deviceNumber);      
 //        this.changeMotionControlFramePeriod(config.MOTION_CONTROL_FRAME_PERIOD_MS);

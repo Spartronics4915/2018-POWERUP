@@ -20,7 +20,7 @@ import com.spartronics4915.lib.util.math.RigidTransform2d;
 import com.spartronics4915.lib.util.math.Rotation2d;
 import com.spartronics4915.lib.util.math.Twist2d;
 import com.spartronics4915.lib.util.drivers.CANTalonFactory;
-import com.spartronics4915.lib.util.drivers.CANTalonPhoenix;
+import com.spartronics4915.lib.util.drivers.CANTalon4915;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
@@ -106,9 +106,9 @@ public class Drive extends Subsystem
     private DriveControlState mDriveControlState;
 
     // Hardware
-    private CANTalonPhoenix mLeftMaster = null, mRightMaster = null;
-    private CANTalonPhoenix mLeftSlave = null, mRightSlave = null;
-    private CANTalonPhoenix mIMUTalon = null;
+    private CANTalon4915 mLeftMaster = null, mRightMaster = null;
+    private CANTalon4915 mLeftSlave = null, mRightSlave = null;
+    private CANTalon4915 mIMUTalon = null;
     private PigeonIMU mIMU = null;
 
     // Controllers
@@ -275,7 +275,7 @@ public class Drive extends Subsystem
             setHighGear(true);
             setOpenLoop(DriveSignal.NEUTRAL);
             // Path Following stuff
-            mIMUTalon = new CANTalonPhoenix(Constants.kIMUTalonId);
+            mIMUTalon = new CANTalon4915(Constants.kIMUTalonId);
             // FIXME: Don't use the pigeon, or at least wire it directly into the CAN bus
             mIMU = new PigeonIMU(mIMUTalon);
 

@@ -63,22 +63,22 @@ public class CANTalonFactory
     }
 
     // Create a CANTalon with the default (out of the box) configuration.
-    public static CANTalonPhoenix createDefaultTalon(int id)
+    public static CANTalon4915 createDefaultTalon(int id)
     {
         return createTalon(id, kDefaultConfiguration);
     }
 
-    public static CANTalonPhoenix createPermanentSlaveTalon(int id, int master_id)
+    public static CANTalon4915 createPermanentSlaveTalon(int id, int master_id)
     {
-        final CANTalonPhoenix talon = createTalon(id, kSlaveConfiguration);
+        final CANTalon4915 talon = createTalon(id, kSlaveConfiguration);
         talon.changeControlMode(ControlMode.Follower);
         talon.set(master_id);
         return talon;
     }
 
-    public static CANTalonPhoenix createTalon(int id, Configuration config)
+    public static CANTalon4915 createTalon(int id, Configuration config)
     {
-        CANTalonPhoenix talon = new CANTalonPhoenix(id);
+        CANTalon4915 talon = new CANTalon4915(id);
         talon.changeControlMode(ControlMode.PercentOutput);
         // XXX: apply configuration
         return talon;
@@ -87,7 +87,7 @@ public class CANTalonFactory
     /**
      * Run this on a fresh talon to produce good values for the defaults.
      */
-    public static String getFullTalonInfo(CANTalonPhoenix talon)
+    public static String getFullTalonInfo(CANTalon4915 talon)
     {
           return talon.dumpState();
     }

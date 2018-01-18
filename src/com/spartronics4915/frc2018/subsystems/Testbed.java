@@ -5,7 +5,7 @@ import com.spartronics4915.frc2018.Constants;
 import com.spartronics4915.frc2018.loops.Loop;
 import com.spartronics4915.frc2018.loops.Looper;
 import com.spartronics4915.lib.util.CANProbe;
-import com.spartronics4915.lib.util.drivers.CANTalonPhoenix;
+import com.spartronics4915.lib.util.drivers.CANTalon4915;
 import com.spartronics4915.lib.util.drivers.CANTalonFactory;
 
 import edu.wpi.first.wpilibj.AnalogInput;
@@ -52,8 +52,8 @@ public class Testbed extends Subsystem
     private WantedState mWantedState = WantedState.IDLE;
 
     // actuators and sensors
-    private CANTalonPhoenix mMotor1 = null;
-    private CANTalonPhoenix mMotor2 = null;
+    private CANTalon4915 mMotor1 = null;
+    private CANTalon4915 mMotor2 = null;
     private DigitalInput mLimitSwitch = null; // invoke .get() to read
     private AnalogInput mPotentiometer = null;
     private Relay mLightSwitch = null;
