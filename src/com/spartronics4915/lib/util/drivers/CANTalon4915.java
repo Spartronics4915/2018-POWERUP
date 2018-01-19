@@ -1,6 +1,7 @@
 package com.spartronics4915.lib.util.drivers;
 
-import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
+import com.ctre.phoenix.motorcontrol.can.TalonSRX;
+import com.spartronics4915.lib.util.CANProbe;
 import com.ctre.phoenix.ParamEnum;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.Faults;
@@ -11,6 +12,13 @@ import com.ctre.phoenix.motorcontrol.VelocityMeasPeriod;
 import com.ctre.phoenix.motorcontrol.StatusFrameEnhanced;
 import com.ctre.phoenix.motorcontrol.StickyFaults;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
+
+import edu.wpi.first.wpilibj.MotorSafety;
+import edu.wpi.first.wpilibj.MotorSafetyHelper;
+import edu.wpi.first.wpilibj.Sendable;
+import edu.wpi.first.wpilibj.smartdashboard.SendableBuilder;
+import edu.wpi.first.wpilibj.hal.HAL;
+import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 
 /* CANTalonPhoenix is a portability interface intended to facilitate
  * porting from CTRE CANTalon 2017 libs to CTRE Phoenix 2018.
@@ -43,7 +51,7 @@ import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 //  where 1024 represents a full "rotation". This means that a velocity 
 //  measurement of 1 represents 1/1024 of a rotation every 100ms
 
-public class CANTalon4915 extends WPI_TalonSRX
+public class CANTalon4915 implements Sendable, MotorSafety
 {
 
     static final int sDefaultTimeoutMS = 0; // 0 for no blocking. This is like the old behavior (I think).
@@ -53,184 +61,340 @@ public class CANTalon4915 extends WPI_TalonSRX
     ControlMode mControlMode = ControlMode.Disabled;
     ControlMode mLastControlMode = null;
     NeutralMode mNeutralMode;
+    int mDeviceId;
     double mLastSetpoint = 0;
     int mPidSlot;
     int mMaxVolts = 12;
     int mCodesPerRevolution; // Encoder codes per revolution
-    boolean mOutputReversed = false;
+    TalonSRX mTalon = null;
+    String mDescription;
+    String mSubsystem = "Ungrouped"; // for Sendable
+    MotorSafetyHelper mSafetyHelper;
 
     public CANTalon4915(int deviceNumber)
     {
-        super(deviceNumber);      
-//        this.changeMotionControlFramePeriod(config.MOTION_CONTROL_FRAME_PERIOD_MS);
-//        this.clearIAccum();
-//        this.clearMotionProfileHasUnderrun();
-//        this.clearMotionProfileTrajectories();
-//        this.clearStickyFaults();
-//        this.configFwdLimitSwitchNormallyOpen(config.LIMIT_SWITCH_NORMALLY_OPEN);
-//        this.configMaxOutputVoltage(config.MAX_OUTPUT_VOLTAGE);
-//        this.configNominalOutputVoltage(config.NOMINAL_VOLTAGE, -config.NOMINAL_VOLTAGE);
-//        this.configPeakOutputVoltage(config.PEAK_VOLTAGE, -config.PEAK_VOLTAGE);
-//        this.configRevLimitSwitchNormallyOpen(config.LIMIT_SWITCH_NORMALLY_OPEN);
-//        this.enableBrakeMode(config.ENABLE_BRAKE);
-//        this.enableCurrentLimit(config.ENABLE_CURRENT_LIMIT);
-//        this.enableForwardSoftLimit(config.ENABLE_SOFT_LIMIT);
-//        this.enableLimitSwitch(config.ENABLE_LIMIT_SWITCH, config.ENABLE_LIMIT_SWITCH);
-//        this.enableReverseSoftLimit(config.ENABLE_SOFT_LIMIT);
-//        this.enableZeroSensorPositionOnForwardLimit(false);
-//        this.enableZeroSensorPositionOnIndex(false, false);
-//        this.enableZeroSensorPositionOnReverseLimit(false);
-//        this.reverseOutput(false);
-//        this.reverseSensor(false);
-//        this.setAnalogPosition(0);
-//        this.setCurrentLimit(config.CURRENT_LIMIT);
-//        this.setExpiration(config.EXPIRATION_TIMEOUT_SECONDS);
-//        this.setForwardSoftLimit(config.FORWARD_SOFT_LIMIT);
-//        this.reverseOutput(config.INVERTED);
-//        this.setNominalClosedLoopVoltage(config.NOMINAL_CLOSED_LOOP_VOLTAGE);
-//        this.setPosition(0);
-//        this.setProfile(0);
-//        this.setPulseWidthPosition(0);
-//        this.setReverseSoftLimit(config.REVERSE_SOFT_LIMIT);
-//        this.setSafetyEnabled(config.SAFETY_ENABLED);
-//        this.setVelocityMeasurementPeriod(config.VELOCITY_MEASUREMENT_PERIOD);
-//        this.setVelocityMeasurementWindow(config.VELOCITY_MEASUREMENT_ROLLING_AVERAGE_WINDOW);
-//        this.setVoltageCompensationRampRate(config.VOLTAGE_COMPENSATION_RAMP_RATE);
-//        this.setVoltageRampRate(config.VOLTAGE_RAMP_RATE);
-//
-//        this.setStatusFrameRateMs(StatusFrameEnhanced.Status_1_General, config.GENERAL_STATUS_FRAME_RATE_MS);
-//        this.setStatusFrameRateMs(StatusFrameEnhanced.Status_2_Feedback0, config.FEEDBACK_STATUS_FRAME_RATE_MS); // XXX: was Feedback
-//        this.setStatusFrameRateMs(StatusFrameEnhanced.Status_3_Quadrature, config.QUAD_ENCODER_STATUS_FRAME_RATE_MS);
-//        this.setStatusFrameRateMs(StatusFrameEnhanced.Status_4_AinTempVbat,
-//                config.ANALOG_TEMP_VBAT_STATUS_FRAME_RATE_MS);
+        mDeviceId = deviceNumber;
+        mDescription = "TalonSRX4915 " + deviceNumber;
+        LiveWindow.add(this);
+        setName(mDescription);
+        
+        CANProbe canProbe = CANProbe.getInstance();
+        if (canProbe.validateSRXId(deviceNumber))
+        {
+            mTalon = new TalonSRX(deviceNumber);
+            HAL.report(66,  deviceNumber+1); // from WPI_TalonSRX
+            mSafetyHelper = new MotorSafetyHelper(this);
+            mSafetyHelper.setExpiration(0.0);
+            mSafetyHelper.setSafetyEnabled(false);
+            
+            //        this.changeMotionControlFramePeriod(config.MOTION_CONTROL_FRAME_PERIOD_MS);
+            //        this.clearIAccum();
+            //        this.clearMotionProfileHasUnderrun();
+            //        this.clearMotionProfileTrajectories();
+            //        this.clearStickyFaults();
+            //        this.configFwdLimitSwitchNormallyOpen(config.LIMIT_SWITCH_NORMALLY_OPEN);
+            //        this.configMaxOutputVoltage(config.MAX_OUTPUT_VOLTAGE);
+            //        this.configNominalOutputVoltage(config.NOMINAL_VOLTAGE, -config.NOMINAL_VOLTAGE);
+            //        this.configPeakOutputVoltage(config.PEAK_VOLTAGE, -config.PEAK_VOLTAGE);
+            //        this.configRevLimitSwitchNormallyOpen(config.LIMIT_SWITCH_NORMALLY_OPEN);
+            //        this.enableBrakeMode(config.ENABLE_BRAKE);
+            //        this.enableCurrentLimit(config.ENABLE_CURRENT_LIMIT);
+            //        this.enableForwardSoftLimit(config.ENABLE_SOFT_LIMIT);
+            //        this.enableLimitSwitch(config.ENABLE_LIMIT_SWITCH, config.ENABLE_LIMIT_SWITCH);
+            //        this.enableReverseSoftLimit(config.ENABLE_SOFT_LIMIT);
+            //        this.enableZeroSensorPositionOnForwardLimit(false);
+            //        this.enableZeroSensorPositionOnIndex(false, false);
+            //        this.enableZeroSensorPositionOnReverseLimit(false);
+            //        this.reverseOutput(false);
+            //        this.reverseSensor(false);
+            //        this.setAnalogPosition(0);
+            //        this.setCurrentLimit(config.CURRENT_LIMIT);
+            //        this.setExpiration(config.EXPIRATION_TIMEOUT_SECONDS);
+            //        this.setForwardSoftLimit(config.FORWARD_SOFT_LIMIT);
+            //        this.reverseOutput(config.INVERTED);
+            //        this.setNominalClosedLoopVoltage(config.NOMINAL_CLOSED_LOOP_VOLTAGE);
+            //        this.setPosition(0);
+            //        this.setProfile(0);
+            //        this.setPulseWidthPosition(0);
+            //        this.setReverseSoftLimit(config.REVERSE_SOFT_LIMIT);
+            //        this.setSafetyEnabled(config.SAFETY_ENABLED);
+            //        this.setVelocityMeasurementPeriod(config.VELOCITY_MEASUREMENT_PERIOD);
+            //        this.setVelocityMeasurementWindow(config.VELOCITY_MEASUREMENT_ROLLING_AVERAGE_WINDOW);
+            //        this.setVoltageCompensationRampRate(config.VOLTAGE_COMPENSATION_RAMP_RATE);
+            //        this.setVoltageRampRate(config.VOLTAGE_RAMP_RATE);
+            //
+            //        this.setStatusFrameRateMs(StatusFrameEnhanced.Status_1_General, config.GENERAL_STATUS_FRAME_RATE_MS);
+            //        this.setStatusFrameRateMs(StatusFrameEnhanced.Status_2_Feedback0, config.FEEDBACK_STATUS_FRAME_RATE_MS); // XXX: was Feedback
+            //        this.setStatusFrameRateMs(StatusFrameEnhanced.Status_3_Quadrature, config.QUAD_ENCODER_STATUS_FRAME_RATE_MS);
+            //        this.setStatusFrameRateMs(StatusFrameEnhanced.Status_4_AinTempVbat,
+            //                config.ANALOG_TEMP_VBAT_STATUS_FRAME_RATE_MS);
+        }
     }
     
+    public boolean isValid()
+    {
+        return mTalon != null;
+    }
+    
+    public TalonSRX getTalon()
+    {
+        return mTalon;
+    }
+
     public String dumpState()
     {
-        @SuppressWarnings("deprecation") // Things that don't work are deprecated
-        StringBuilder sb = new StringBuilder().append("isRevLimitSwitchClosed = ")
-                .append(this.isRevLimitSwitchClosed()).append("\n").append("getBusVoltage = ")
-                .append(this.getBusVoltage()).append("\n").append("isForwardSoftLimitEnabled = ")
-                .append(this.isForwardSoftLimitEnabled()).append("\n")
-                .append("getFaultRevSoftLim = ")
-                .append(this.getFaultRevSoftLim()).append("\n").append("getStickyFaultOverTemp = ")
-                .append(this.getStickyFaultOverTemp()).append("\n")
-                .append("isZeroSensorPosOnFwdLimitEnabled = ")
-                .append(this.isZeroSensorPosOnFwdLimitEnabled()).append("\n")
-                .append("getMotionProfileTopLevelBufferCount = ")
-                .append(this.getMotionProfileTopLevelBufferCount())
-                .append("\n").append("getNumberOfQuadIdxRises = ")
-                .append(this.getNumberOfQuadIdxRises()).append("\n")
-                .append("getInverted = ").append(this.getInverted()).append("\n")
-                .append("getPulseWidthRiseToRiseUs = ").append(this.getPulseWidthRiseToRiseUs())
-                .append("\n")
-                .append("getError = ").append(this.getError()).append("\n")
-                .append("isSensorPresent = ")
-                .append(this.isSensorPresent(FeedbackDevice.CTRE_MagEncoder_Relative)).append("\n")
-                .append("isControlEnabled = ").append(this.isControlEnabled()).append("\n")
-                .append("getTable = ")
-                //.append(this.getTable()).append("\n") // XXX: Sendable::getTable method has disappeared
-                .append("isEnabled = ").append(this.isEnabled()).append("\n")
-                .append("isZeroSensorPosOnRevLimitEnabled = ")
-                .append(this.isZeroSensorPosOnRevLimitEnabled())
-                .append("\n").append("isSafetyEnabled = ").append(this.isSafetyEnabled())
-                .append("\n")
-                .append("getOutputVoltage = ").append(this.getOutputVoltage()).append("\n")
-                .append("getTemperature = ")
-                .append(this.getTemperature()).append("\n").append("getSmartDashboardType = ")
-                // .append(this.getSmartDashboardType()).append("\n") // XXX: Sendable::getSmartDashboardType has disappeared
-                .append("getPulseWidthPosition = ")
-                .append(this.getPulseWidthPosition()).append("\n").append("getOutputCurrent = ")
-                .append(this.getOutputCurrent()).append("\n").append("get = ").append(this.get())
-                .append("\n")
-                .append("isZeroSensorPosOnIndexEnabled = ")
-                .append(this.isZeroSensorPosOnIndexEnabled()).append("\n")
-                .append("getMotionMagicCruiseVelocity = ")
-                .append(this.getMotionMagicCruiseVelocity()).append("\n")
-                .append("getStickyFaultRevSoftLim = ").append(this.getStickyFaultRevSoftLim())
-                .append("\n")
-                .append("getFaultRevLim = ").append(this.getFaultRevLim()).append("\n")
-                .append("getEncPosition = ")
-                .append(this.getEncPosition()).append("\n").append("getIZone = ")
-                .append(this.getIZone()).append("\n")
-                .append("getAnalogInPosition = ").append(this.getAnalogInPosition()).append("\n")
-                .append("getFaultUnderVoltage = ").append(this.getFaultUnderVoltage()).append("\n")
-                .append("getCloseLoopRampRate = ").append(this.getCloseLoopRampRate()).append("\n")
-                .append("toString = ").append(this.toString()).append("\n")
-                // .append("getMotionMagicActTrajPosition =
-                // ").append(this.getMotionMagicActTrajPosition()).append("\n")
-                .append("getF = ").append(this.getF()).append("\n").append("getClass = ")
-                .append(this.getClass())
-                .append("\n").append("getAnalogInVelocity = ").append(this.getAnalogInVelocity())
-                .append("\n")
-                .append("getI = ").append(this.getI()).append("\n")
-                .append("isReverseSoftLimitEnabled = ")
-                .append(this.isReverseSoftLimitEnabled()).append("\n")
-                // .append("getPIDSourceType = ").append(this.getPIDSourceType()).append("\n") // XXX Sendable change
-                .append("getEncVelocity = ")
-                .append(this.getEncVelocity()).append("\n")
-                .append("GetVelocityMeasurementPeriod = ")
-                .append(this.getVelocityMeasurementPeriod()).append("\n").append("getP = ")
-                .append(this.getP())
-                .append("\n").append("GetVelocityMeasurementWindow = ")
-                .append(this.getVelocityMeasurementWindow())
-                .append("\n").append("getDeviceID = ").append(this.getDeviceID()).append("\n")
-                .append("getStickyFaultRevLim = ").append(this.getStickyFaultRevLim()).append("\n")
-                // .append("getMotionMagicActTrajVelocity =
-                // ").append(this.getMotionMagicActTrajVelocity()).append("\n")
-                .append("getReverseSoftLimit = ").append(this.getReverseSoftLimit()).append("\n")
-                .append("getD = ")
-                .append(this.getD()).append("\n").append("getFaultOverTemp = ")
-                .append(this.getFaultOverTemp())
-                .append("\n").append("getForwardSoftLimit = ").append(this.getForwardSoftLimit())
-                .append("\n")
-                .append("GetFirmwareVersion = ").append(this.getFirmwareVersion()).append("\n")
-                .append("getLastError = ").append(this.getLastError()).append("\n")
-                .append("isAlive = ")
-                .append(this.isAlive()).append("\n").append("getPinStateQuadIdx = ")
-                .append(this.getPinStateQuadIdx())
-                .append("\n").append("getAnalogInRaw = ").append(this.getAnalogInRaw()).append("\n")
-                .append("getFaultForLim = ").append(this.getFaultForLim()).append("\n")
-                .append("getSpeed = ")
-                .append(this.getSpeed()).append("\n").append("getStickyFaultForLim = ")
-                .append(this.getStickyFaultForLim()).append("\n").append("getFaultForSoftLim = ")
-                .append(this.getFaultForSoftLim()).append("\n")
-                .append("getStickyFaultForSoftLim = ")
-                .append(this.getStickyFaultForSoftLim()).append("\n")
-                .append("getClosedLoopError = ")
-                .append(this.getClosedLoopError()).append("\n").append("getSetpoint = ")
-                .append(this.getSetpoint())
-                .append("\n").append("isMotionProfileTopLevelBufferFull = ")
-                .append(this.isMotionProfileTopLevelBufferFull()).append("\n")
-                .append("getDescription = ")
-                .append(this.getDescription()).append("\n").append("hashCode = ")
-                .append(this.hashCode()).append("\n")
-                .append("isFwdLimitSwitchClosed = ").append(this.isFwdLimitSwitchClosed())
-                .append("\n")
-                .append("getPinStateQuadA = ").append(this.getPinStateQuadA()).append("\n")
-                .append("getPinStateQuadB = ").append(this.getPinStateQuadB()).append("\n")
-                .append("GetIaccum = ")
-                .append(this.getIaccum()).append("\n").append("getFaultHardwareFailure = ")
-                .append(this.getFaultHardwareFailure()).append("\n").append("pidGet = ")
-                .append(this.pidGet())
-                .append("\n").append("getBrakeEnableDuringNeutral = ")
-                .append(this.getBrakeEnableDuringNeutral())
-                .append("\n").append("getStickyFaultUnderVoltage = ")
-                .append(this.getStickyFaultUnderVoltage())
-                .append("\n").append("getPulseWidthVelocity = ")
-                .append(this.getPulseWidthVelocity()).append("\n")
-                .append("GetNominalClosedLoopVoltage = ").append(this.getNominalClosedLoopVoltage())
-                .append("\n")
-                .append("getPosition = ").append(this.getPosition()).append("\n")
-                .append("getExpiration = ")
-                .append(this.getExpiration()).append("\n").append("getPulseWidthRiseToFallUs = ")
-                .append(this.getPulseWidthRiseToFallUs()).append("\n")
-                // .append("createTableListener = ").append(this.createTableListener()).append("\n")
-                .append("getControlMode = ").append(this.getControlMode()).append("\n")
-                .append("getMotionMagicAcceleration = ").append(this.getMotionMagicAcceleration())
-                .append("\n")
-                .append("getControlMode = ").append(this.getControlMode());
-        return sb.toString();
+        if (mTalon != null)
+        {
+            @SuppressWarnings("deprecation") // Things that don't work are deprecated
+            StringBuilder sb = new StringBuilder().append("isRevLimitSwitchClosed = ")
+                    .append(this.isRevLimitSwitchClosed()).append("\n").append("getBusVoltage = ")
+                    .append(mTalon.getBusVoltage()).append("\n")
+                    .append("isForwardSoftLimitEnabled = ")
+                    .append(this.isForwardSoftLimitEnabled()).append("\n")
+                    .append("getFaultRevSoftLim = ")
+                    .append(this.getFaultRevSoftLim()).append("\n")
+                    .append("getStickyFaultOverTemp = ")
+                    .append(this.getStickyFaultOverTemp()).append("\n")
+                    .append("isZeroSensorPosOnFwdLimitEnabled = ")
+                    .append(this.isZeroSensorPosOnFwdLimitEnabled()).append("\n")
+                    .append("getMotionProfileTopLevelBufferCount = ")
+                    .append(mTalon.getMotionProfileTopLevelBufferCount())
+                    .append("\n").append("getNumberOfQuadIdxRises = ")
+                    .append(this.getNumberOfQuadIdxRises()).append("\n")
+                    .append("getInverted = ").append(mTalon.getInverted()).append("\n")
+                    .append("getPulseWidthRiseToRiseUs = ").append(this.getPulseWidthRiseToRiseUs())
+                    .append("\n")
+                    .append("getError = ").append(this.getError()).append("\n")
+                    .append("isSensorPresent = ")
+                    .append(this.isSensorPresent(FeedbackDevice.CTRE_MagEncoder_Relative))
+                    .append("\n")
+                    .append("isControlEnabled = ").append(this.isControlEnabled()).append("\n")
+                    .append("getTable = ")
+                    //.append(this.getTable()).append("\n") // XXX: Sendable::getTable method has disappeared
+                    .append("isEnabled = ").append(this.isEnabled()).append("\n")
+                    .append("isZeroSensorPosOnRevLimitEnabled = ")
+                    .append(this.isZeroSensorPosOnRevLimitEnabled())
+                    .append("\n").append("isSafetyEnabled = ").append(this.isSafetyEnabled())
+                    .append("\n")
+                    .append("getOutputVoltage = ").append(this.getOutputVoltage()).append("\n")
+                    .append("getTemperature = ")
+                    .append(mTalon.getTemperature()).append("\n")
+                    // .append("getSmartDashboardType = ")
+                    // .append(this.getSmartDashboardType()).append("\n") // XXX: Sendable::getSmartDashboardType has disappeared
+                    .append("getPulseWidthPosition = ")
+                    .append(this.getPulseWidthPosition()).append("\n").append("getOutputCurrent = ")
+                    .append(mTalon.getOutputCurrent()).append("\n")
+                    .append("\n")
+                    .append("isZeroSensorPosOnIndexEnabled = ")
+                    .append(this.isZeroSensorPosOnIndexEnabled()).append("\n")
+                    .append("getMotionMagicCruiseVelocity = ")
+                    .append(this.getMotionMagicCruiseVelocity()).append("\n")
+                    .append("getStickyFaultRevSoftLim = ").append(this.getStickyFaultRevSoftLim())
+                    .append("\n")
+                    .append("getFaultRevLim = ").append(this.getFaultRevLim()).append("\n")
+                    .append("getEncPosition = ")
+                    .append(this.getEncPosition()).append("\n").append("getIZone = ")
+                    .append(this.getIZone()).append("\n")
+                    .append("getAnalogInPosition = ").append(this.getAnalogInPosition())
+                    .append("\n")
+                    .append("getFaultUnderVoltage = ").append(this.getFaultUnderVoltage())
+                    .append("\n")
+                    .append("getCloseLoopRampRate = ").append(this.getCloseLoopRampRate())
+                    .append("\n")
+                    .append("toString = ").append(this.toString()).append("\n")
+                    // .append("getMotionMagicActTrajPosition =
+                    // ").append(this.getMotionMagicActTrajPosition()).append("\n")
+                    .append("getF = ").append(this.getF()).append("\n").append("getClass = ")
+                    .append(this.getClass())
+                    .append("\n").append("getAnalogInVelocity = ")
+                    .append(this.getAnalogInVelocity())
+                    .append("\n")
+                    .append("getI = ").append(this.getI()).append("\n")
+                    .append("isReverseSoftLimitEnabled = ")
+                    .append(this.isReverseSoftLimitEnabled()).append("\n")
+                    // .append("getPIDSourceType = ").append(this.getPIDSourceType()).append("\n") // XXX Sendable change
+                    .append("getEncVelocity = ")
+                    .append(this.getEncVelocity()).append("\n")
+                    .append("GetVelocityMeasurementPeriod = ")
+                    .append(this.getVelocityMeasurementPeriod()).append("\n").append("getP = ")
+                    .append(this.getP())
+                    .append("\n").append("GetVelocityMeasurementWindow = ")
+                    .append(this.getVelocityMeasurementWindow())
+                    .append("\n").append("getDeviceID = ").append(mTalon.getDeviceID()).append("\n")
+                    .append("getStickyFaultRevLim = ").append(this.getStickyFaultRevLim())
+                    .append("\n")
+                    // .append("getMotionMagicActTrajVelocity =
+                    // ").append(this.getMotionMagicActTrajVelocity()).append("\n")
+                    .append("getReverseSoftLimit = ").append(this.getReverseSoftLimit())
+                    .append("\n")
+                    .append("getD = ")
+                    .append(this.getD()).append("\n").append("getFaultOverTemp = ")
+                    .append(this.getFaultOverTemp())
+                    .append("\n").append("getForwardSoftLimit = ")
+                    .append(this.getForwardSoftLimit())
+                    .append("\n")
+                    .append("GetFirmwareVersion = ").append(mTalon.getFirmwareVersion())
+                    .append("\n")
+                    .append("getLastError = ").append(mTalon.getLastError()).append("\n")
+                    .append("isAlive = ")
+                    .append(this.isAlive()).append("\n").append("getPinStateQuadIdx = ")
+                    .append(this.getPinStateQuadIdx())
+                    .append("\n").append("getAnalogInRaw = ").append(this.getAnalogInRaw())
+                    .append("\n")
+                    .append("getFaultForLim = ").append(this.getFaultForLim()).append("\n")
+                    .append("getSpeed = ")
+                    .append(this.getSpeed()).append("\n").append("getStickyFaultForLim = ")
+                    .append(this.getStickyFaultForLim()).append("\n")
+                    .append("getFaultForSoftLim = ")
+                    .append(this.getFaultForSoftLim()).append("\n")
+                    .append("getStickyFaultForSoftLim = ")
+                    .append(this.getStickyFaultForSoftLim()).append("\n")
+                    .append("getClosedLoopError = ")
+                    .append(this.getClosedLoopError()).append("\n").append("getSetpoint = ")
+                    .append(this.getSetpoint())
+                    .append("\n").append("isMotionProfileTopLevelBufferFull = ")
+                    .append(mTalon.isMotionProfileTopLevelBufferFull()).append("\n")
+                    .append("getDescription = ")
+                    .append(this.getDescription()).append("\n").append("hashCode = ")
+                    .append(this.hashCode()).append("\n")
+                    .append("isFwdLimitSwitchClosed = ").append(this.isFwdLimitSwitchClosed())
+                    .append("\n")
+                    .append("getPinStateQuadA = ").append(this.getPinStateQuadA()).append("\n")
+                    .append("getPinStateQuadB = ").append(this.getPinStateQuadB()).append("\n")
+                    .append("GetIaccum = ")
+                    .append(this.getIaccum()).append("\n").append("getFaultHardwareFailure = ")
+                    .append(this.getFaultHardwareFailure()).append("\n").append("pidGet = ")
+                    .append(this.pidGet())
+                    .append("\n").append("getBrakeEnableDuringNeutral = ")
+                    .append(this.getBrakeEnableDuringNeutral())
+                    .append("\n").append("getStickyFaultUnderVoltage = ")
+                    .append(this.getStickyFaultUnderVoltage())
+                    .append("\n").append("getPulseWidthVelocity = ")
+                    .append(this.getPulseWidthVelocity()).append("\n")
+                    .append("GetNominalClosedLoopVoltage = ")
+                    .append(this.getNominalClosedLoopVoltage())
+                    .append("\n")
+                    .append("getPosition = ").append(this.getPosition()).append("\n")
+                    .append("getExpiration = ")
+                    .append(this.getExpiration()).append("\n")
+                    .append("getPulseWidthRiseToFallUs = ")
+                    .append(this.getPulseWidthRiseToFallUs()).append("\n")
+                    // .append("createTableListener = ").append(this.createTableListener()).append("\n")
+                    .append("getControlMode = ").append(mTalon.getControlMode()).append("\n")
+                    .append("getMotionMagicAcceleration = ")
+                    .append(this.getMotionMagicAcceleration())
+                    .append("\n")
+                    .append("getControlMode = ").append(mTalon.getControlMode());
+            return sb.toString();
+        }
+        else
+        {
+            return "Talon " + mDeviceId + " was not found on the CAN bus";
+        }
+    }
+
+    // MotorSafety Interface { -------------------------------------------------------------
+    @Override
+    public String getDescription()
+    {
+        return mDescription;
+    }
+
+    @Override
+    public double getExpiration()
+    {
+        if(mSafetyHelper != null)
+            return mSafetyHelper.getExpiration();
+        else
+            return 0.0;
+    }
+
+    @Override
+    public boolean isAlive()
+    {
+        if(mSafetyHelper != null)
+            return mSafetyHelper.isAlive();
+        else
+            return false;
+    }
+
+    @Override
+    public boolean isSafetyEnabled()
+    {
+        if(mSafetyHelper != null)
+            return mSafetyHelper.isSafetyEnabled();
+        else
+            return false;
+    }
+
+    @Override
+    public void setExpiration(double arg0)
+    {
+        if(mSafetyHelper != null)
+            mSafetyHelper.setExpiration(arg0);
+    }
+
+    @Override
+    public void setSafetyEnabled(boolean arg0)
+    {
+        if(mSafetyHelper != null)
+            mSafetyHelper.setSafetyEnabled(arg0);
+
+    }
+
+    @Override
+    public void stopMotor()
+    {
+        if(mTalon != null)
+        {
+            mTalon.neutralOutput();
+        }
+    }
+    // } MotorSafety
+
+    // Sendable interface {
+    @Override
+    public String getName()
+    {
+        return mDescription;
+    }
+
+    @Override
+    public String getSubsystem()
+    {
+        return mSubsystem;
+    }
+
+    @Override
+    public void initSendable(SendableBuilder builder)
+    {
+        builder.setSmartDashboardType("Speed Controller");
+        builder.setSafeState(this::stopMotor);
+        builder.addDoubleProperty("Value", this::get, this::set);
+    }
+
+    @Override
+    public void setName(String arg0)
+    {
+        mDescription = arg0;
+    }
+
+    @Override
+    public void setSubsystem(String arg0)
+    {
+        mSubsystem = arg0;
+    }
+
+    // } Sendable Interface
+    
+    
+    /* TalonSRX dispatch -------------------------------------------------------------------*/
+    public double getOutputCurrent()
+    {
+        if(mTalon != null)
+            return mTalon.getOutputCurrent();
+        else
+            return 0.0;
     }
 
     /**
@@ -245,11 +409,12 @@ public class CANTalon4915 extends WPI_TalonSRX
      */
     private int rpmToNativeVelocity(double rpm)
     {
-        if (mCodesPerRevolution == 0) return (int) Math.round(rpm);
+        if (mCodesPerRevolution == 0)
+            return (int) Math.round(rpm);
         double rotationsPer100MS = (rpm / 60) / 10;
         return (int) Math.round(rotationsPer100MS * mCodesPerRevolution);
     }
-    
+
     /**
      * Converts Native Unit velocity to RPM.
      * RPM is rotations per minute.
@@ -262,23 +427,26 @@ public class CANTalon4915 extends WPI_TalonSRX
      */
     private int nativeVelocityToRpm(double nativeVelocity)
     {
-        if (mCodesPerRevolution == 0) return (int) Math.round(nativeVelocity);
+        if (mCodesPerRevolution == 0)
+            return (int) Math.round(nativeVelocity);
         double nativeUnitsPerMinute = nativeVelocity * 10 * 60;
         return (int) Math.round(nativeUnitsPerMinute / mCodesPerRevolution);
     }
-    
+
     /**
      * Converts encoder codes (encoder specific)
      * to wheel rotations.
      * <b>configEncoderCodesPerRev must have been called for
      * this to work!</b>
      * 
-     * @param Absolute encoder codes (use {@link nativeVelocityToRpm} for non-absolute units)
+     * @param Absolute encoder codes (use {@link nativeVelocityToRpm} for
+     *        non-absolute units)
      * @return Absolute wheel rotations
      */
     private double encoderCodesToRotations(double codes)
     {
-        if (mCodesPerRevolution == 0) return codes;
+        if (mCodesPerRevolution == 0)
+            return codes;
         return codes / mCodesPerRevolution;
     }
 
@@ -290,20 +458,23 @@ public class CANTalon4915 extends WPI_TalonSRX
      * 
      * @param The output depending on the ControlMode you've set the motor to.
      */
-    @Override
     public void set(double value)
     {
-        if (mOutputReversed) value *= -1;
-        // We've integrated LazyCANTalon into here
-        if (value != mLastSetpoint || mControlMode != mLastControlMode)
+        if (mTalon != null)
         {
-            super.set(mControlMode, value);
-            mLastSetpoint = value;
-            mLastControlMode = mControlMode;
+            // We've integrated LazyCANTalon into here
+            if(mSafetyHelper != null)
+                mSafetyHelper.feed();
+            if (value != mLastSetpoint || mControlMode != mLastControlMode)
+            {
+                mTalon.set(mControlMode, value);
+                mLastSetpoint = value;
+                mLastControlMode = mControlMode;
+            }
         }
     }
-
-    /**
+    
+     /**
      * Sets the output on the Talon, with the mode specified explicitly.
      * This overrides the new-style method, so that we can maintain
      * state in the wrapper subsystem.
@@ -311,11 +482,18 @@ public class CANTalon4915 extends WPI_TalonSRX
      * @param A ControlMode dependent setpoint.
      * @see set(double)
      */
-    @Override
     public void set(ControlMode m, double value)
     {
-        mControlMode = m;
-        set(value);
+        if (mTalon != null)
+        {
+            mControlMode = m;
+            this.set(value); // route to this.set above
+        }
+    }
+
+    public double get()
+    {
+        return mLastSetpoint;
     }
 
     public void changeControlMode(ControlMode m)
@@ -330,8 +508,11 @@ public class CANTalon4915 extends WPI_TalonSRX
 
     public void setFeedbackDevice(FeedbackDevice d)
     {
-        this.configSelectedFeedbackSensor(d, sPidIdx, sDefaultTimeoutMS);
-        this.setSensorPhase(false);
+        if (mTalon != null)
+        {
+            mTalon.configSelectedFeedbackSensor(d, sPidIdx, sDefaultTimeoutMS);
+            mTalon.setSensorPhase(false);
+        }
     }
 
     public void configEncoderCodesPerRev(int cpr)
@@ -341,44 +522,61 @@ public class CANTalon4915 extends WPI_TalonSRX
 
     public void setEncPosition(int p)
     {
-        this.getSensorCollection().setQuadraturePosition(p, sDefaultTimeoutMS);
+        if (mTalon != null)
+        {
+            mTalon.getSensorCollection().setQuadraturePosition(p, sDefaultTimeoutMS);
+        }
     }
 
-    public void setPID(double p, double i, double d, double f, int izone, double closeLoopRampRate, int profile)
+    public void setPID(double p, double i, double d, double f, int izone, double closeLoopRampRate,
+            int profile)
     {
-        this.config_kP(profile, p, sDefaultTimeoutMS);
-        this.config_kI(profile, i, sDefaultTimeoutMS);
-        this.config_kD(profile, d, sDefaultTimeoutMS);
-        this.config_kF(profile, f, sDefaultTimeoutMS);
-        this.config_IntegralZone(profile, izone, sDefaultTimeoutMS);
-        double newRampRate = mMaxVolts / closeLoopRampRate;
-        this.configClosedloopRamp(newRampRate, sDefaultTimeoutMS);
-        this.configOpenloopRamp(newRampRate, sDefaultTimeoutMS);
+        if (mTalon != null)
+        {
+            mTalon.config_kP(profile, p, sDefaultTimeoutMS);
+            mTalon.config_kI(profile, i, sDefaultTimeoutMS);
+            mTalon.config_kD(profile, d, sDefaultTimeoutMS);
+            mTalon.config_kF(profile, f, sDefaultTimeoutMS);
+            mTalon.config_IntegralZone(profile, izone, sDefaultTimeoutMS);
+            double newRampRate = mMaxVolts / closeLoopRampRate;
+            mTalon.configClosedloopRamp(newRampRate, sDefaultTimeoutMS);
+            mTalon.configOpenloopRamp(newRampRate, sDefaultTimeoutMS);
+        }
     }
 
     public void setMotionMagicAcceleration(double motMagicAccel)
     {
-        this.configMotionAcceleration(rpmToNativeVelocity(motMagicAccel), sDefaultTimeoutMS);
+        if (mTalon != null)
+        {
+            mTalon.configMotionAcceleration(rpmToNativeVelocity(motMagicAccel), sDefaultTimeoutMS);
+        }
     }
 
     public void setMotionMagicCruiseVelocity(double kDriveLowGearMaxVelocity)
     {
-        this.configMotionCruiseVelocity(rpmToNativeVelocity(kDriveLowGearMaxVelocity), sDefaultTimeoutMS);
+        if (mTalon != null)
+        {
+            mTalon.configMotionCruiseVelocity(rpmToNativeVelocity(kDriveLowGearMaxVelocity),
+                    sDefaultTimeoutMS);
+        }
     }
 
     public void clearIAccum()
     {
-        this.setIntegralAccumulator(0, sPidIdx, sDefaultTimeoutMS);
+        if (mTalon != null)
+            mTalon.setIntegralAccumulator(0, sPidIdx, sDefaultTimeoutMS);
     }
 
     public void clearMotionProfileHasUnderrun()
     {
-        this.clearMotionProfileHasUnderrun(sDefaultTimeoutMS);
+        if (mTalon != null)
+            mTalon.clearMotionProfileHasUnderrun(sDefaultTimeoutMS);
     }
 
     public void clearStickyFaults()
     {
-        this.clearStickyFaults(sDefaultTimeoutMS);
+        if (mTalon != null)
+            mTalon.clearStickyFaults(sDefaultTimeoutMS);
     }
 
     /**
@@ -401,10 +599,13 @@ public class CANTalon4915 extends WPI_TalonSRX
      */
     public void configNominalOutputVoltage(double max, double min)
     {
-        // XXX: This was changed to use percentages, and just negate the percentage for the min.
-        // That means that min doesn't do anything.
-        this.configNominalOutputForward(max / mMaxVolts, sDefaultTimeoutMS);
-        this.configNominalOutputReverse(max / mMaxVolts, sDefaultTimeoutMS);
+        if (mTalon != null)
+        {
+            // XXX: This was changed to use percentages, and just negate the percentage for the min.
+            // That means that min doesn't do anything.
+            mTalon.configNominalOutputForward(max / mMaxVolts, sDefaultTimeoutMS);
+            mTalon.configNominalOutputReverse(max / mMaxVolts, sDefaultTimeoutMS);
+        }
     }
 
     /**
@@ -416,21 +617,25 @@ public class CANTalon4915 extends WPI_TalonSRX
      */
     public void configPeakOutputVoltage(double max, double min)
     {
-        // XXX: This was changed to use percentages, and just negate the percentage for the min.
-        // That means that min doesn't do anything.
-        this.configPeakOutputForward(max / mMaxVolts, sDefaultTimeoutMS);
-        this.configPeakOutputReverse(max / mMaxVolts, sDefaultTimeoutMS);
+        if (mTalon != null)
+        {
+            // XXX: This was changed to use percentages, and just negate the percentage for the min.
+            // That means that min doesn't do anything.
+            mTalon.configPeakOutputForward(max / mMaxVolts, sDefaultTimeoutMS);
+            mTalon.configPeakOutputReverse(max / mMaxVolts, sDefaultTimeoutMS);
+        }
     }
 
     public void enableBrakeMode(boolean s)
     {
-        if (s)
-            this.neutralOutput();
+        if (mTalon != null && s)
+            mTalon.neutralOutput();
     }
 
     public void setCurrentLimit(int amps)
     {
-        this.configPeakCurrentLimit(amps, sDefaultTimeoutMS);
+        if (mTalon != null)
+            mTalon.configPeakCurrentLimit(amps, sDefaultTimeoutMS);
     }
 
     /**
@@ -440,10 +645,20 @@ public class CANTalon4915 extends WPI_TalonSRX
      */
     public void reverseOutput(boolean s)
     {
-        mOutputReversed = s;
-        // XXX: this.setInverted seems to cause a stack overflow... This works around that.
+        if (mTalon != null)
+        {
+            mTalon.setInverted(s);
+        }
     }
     
+    public void setInverted(boolean isInverted)
+    {
+        if (mTalon != null)
+        {
+           mTalon.setInverted(isInverted);
+        }
+    }
+
     /**
      * Configures the soft limit threshold on the forward sensor.
      * 
@@ -453,7 +668,10 @@ public class CANTalon4915 extends WPI_TalonSRX
      */
     public void setForwardSoftLimit(int l)
     {
-        this.configForwardSoftLimitThreshold(l, sDefaultTimeoutMS);
+        if (mTalon != null)
+        {
+            mTalon.configForwardSoftLimitThreshold(l, sDefaultTimeoutMS);
+        }
     }
 
     /**
@@ -465,46 +683,70 @@ public class CANTalon4915 extends WPI_TalonSRX
      */
     public void setReverseSoftLimit(int l)
     {
-        this.configReverseSoftLimitThreshold(l, sDefaultTimeoutMS);
+        if (mTalon != null)
+        {
+            mTalon.configReverseSoftLimitThreshold(l, sDefaultTimeoutMS);
+        }
     }
 
     public void setNominalClosedLoopVoltage(double v)
     {
-        // XXX: These are now in percentages, not volts... And there's no closed-loop only method.
-        this.configNominalOutputForward(v / mMaxVolts, sDefaultTimeoutMS);
-        this.configNominalOutputReverse(v / mMaxVolts, sDefaultTimeoutMS);
+        if (mTalon != null)
+        {
+            // XXX: These are now in percentages, not volts... And there's no closed-loop only method.
+            mTalon.configNominalOutputForward(v / mMaxVolts, sDefaultTimeoutMS);
+            mTalon.configNominalOutputReverse(v / mMaxVolts, sDefaultTimeoutMS);
+        }
     }
 
     public void setPosition(int d)
     {
-        this.getSensorCollection().setAnalogPosition(d, sDefaultTimeoutMS);
+        if (mTalon != null)
+        {
+            mTalon.getSensorCollection().setAnalogPosition(d, sDefaultTimeoutMS);
+        }
     }
 
     public void setProfile(int p)
     {
         // Select which closed loop profile to use, and uses whatever PIDF gains and the such that are already there.
         mPidSlot = p;
-        this.selectProfileSlot(p, sPidIdx);
+        if (mTalon != null)
+        {
+            mTalon.selectProfileSlot(p, sPidIdx);
+        }
     }
 
     public void setPulseWidthPosition(int p)
     {
-        this.getSensorCollection().setPulseWidthPosition(p, sDefaultTimeoutMS);
+        if (mTalon != null)
+        {
+            mTalon.getSensorCollection().setPulseWidthPosition(p, sDefaultTimeoutMS);
+        }
     }
 
     public void setVelocityMeasurementPeriod(VelocityMeasPeriod p)
     {
-        this.configVelocityMeasurementPeriod(p, sDefaultTimeoutMS);
+        if (mTalon != null)
+        {
+            mTalon.configVelocityMeasurementPeriod(p, sDefaultTimeoutMS);
+        }
     }
 
     public void setVelocityMeasurementWindow(int w)
     {
-        this.configVelocityMeasurementWindow(w, sDefaultTimeoutMS);
+        if (mTalon != null)
+        {
+            mTalon.configVelocityMeasurementWindow(w, sDefaultTimeoutMS);
+        }
     }
 
     public void setVoltageCompensationRampRate(double rampRate)
     {
-        this.configVoltageCompSaturation(rampRate, sDefaultTimeoutMS); // XXX: I have no idea if this is these are the right units.
+        if (mTalon != null)
+        {
+            mTalon.configVoltageCompSaturation(rampRate, sDefaultTimeoutMS); // XXX: I have no idea if this is these are the right units.
+        }
     }
 
     /**
@@ -516,24 +758,36 @@ public class CANTalon4915 extends WPI_TalonSRX
      */
     public void setVoltageRampRate(double rampRate)
     {
-        double newRampRate = mMaxVolts / rampRate;
-        this.configClosedloopRamp(newRampRate, sDefaultTimeoutMS);
-        this.configOpenloopRamp(newRampRate, sDefaultTimeoutMS);
+        if (mTalon != null)
+        {
+            double newRampRate = mMaxVolts / rampRate;
+            mTalon.configClosedloopRamp(newRampRate, sDefaultTimeoutMS);
+            mTalon.configOpenloopRamp(newRampRate, sDefaultTimeoutMS);
+        }
     }
 
     public void setStatusFrameRateMs(StatusFrameEnhanced statFrame, int rate)
     {
-        this.setStatusFramePeriod(statFrame, rate, sDefaultTimeoutMS);
+        if (mTalon != null)
+        {
+            mTalon.setStatusFramePeriod(statFrame, rate, sDefaultTimeoutMS);
+        }
     }
 
     public void reverseSensor(boolean s)
     {
-        this.setSensorPhase(s);
+        if (mTalon != null)
+        {
+            mTalon.setSensorPhase(s);
+        }
     }
 
     public void setAnalogPosition(int pos)
     {
-        this.getSensorCollection().setAnalogPosition(pos, sDefaultTimeoutMS);
+        if (mTalon != null)
+        {
+            mTalon.getSensorCollection().setAnalogPosition(pos, sDefaultTimeoutMS);
+        }
     }
 
     /**
@@ -547,12 +801,18 @@ public class CANTalon4915 extends WPI_TalonSRX
      */
     public void setCurrentLimit(double l)
     {
-        this.configPeakCurrentLimit((int) l, sDefaultTimeoutMS); // XXX: Is this actually equivalent?
+        if (mTalon != null)
+        {
+            mTalon.configPeakCurrentLimit((int) l, sDefaultTimeoutMS); // XXX: Is this actually equivalent?
+        }
     }
 
     public void enableForwardSoftLimit(boolean s)
     {
-        this.configForwardSoftLimitEnable(s, sDefaultTimeoutMS);
+        if (mTalon != null)
+        {
+            mTalon.configForwardSoftLimitEnable(s, sDefaultTimeoutMS);
+        }
     }
 
     /**
@@ -569,7 +829,10 @@ public class CANTalon4915 extends WPI_TalonSRX
 
     public void enableReverseSoftLimit(boolean s)
     {
-        this.configReverseSoftLimitEnable(s, sDefaultTimeoutMS);
+        if (mTalon != null)
+        {
+            mTalon.configReverseSoftLimitEnable(s, sDefaultTimeoutMS);
+        }
     }
 
     /**
@@ -604,32 +867,47 @@ public class CANTalon4915 extends WPI_TalonSRX
 
     public void configFwdLimitSwitchNormallyOpen(boolean s)
     {
-        this.configForwardLimitSwitchSource(LimitSwitchSource.FeedbackConnector, /*
-                                                                               * XXX:
-                                                                               * LimitSwitchSource
-                                                                               */
-                s ? LimitSwitchNormal.NormallyOpen : LimitSwitchNormal.NormallyClosed,
-                sDefaultTimeoutMS);
+        if (mTalon != null)
+        {
+            mTalon.configForwardLimitSwitchSource(LimitSwitchSource.FeedbackConnector, /*
+                                                                                        * XXX:
+                                                                                        * LimitSwitchSource
+                                                                                        */
+                    s ? LimitSwitchNormal.NormallyOpen : LimitSwitchNormal.NormallyClosed,
+                    sDefaultTimeoutMS);
+        }
     }
 
     public void configRevLimitSwitchNormallyOpen(boolean s)
     {
-        this.configReverseLimitSwitchSource(LimitSwitchSource.FeedbackConnector, /*
-                                                                               * XXX:
-                                                                               * LimitSwitchSource
-                                                                               */
-                s ? LimitSwitchNormal.NormallyOpen : LimitSwitchNormal.NormallyClosed,
-                sDefaultTimeoutMS);
+        if (mTalon != null)
+        {
+            mTalon.configReverseLimitSwitchSource(LimitSwitchSource.FeedbackConnector, /*
+                                                                                        * XXX:
+                                                                                        * LimitSwitchSource
+                                                                                        */
+                    s ? LimitSwitchNormal.NormallyOpen : LimitSwitchNormal.NormallyClosed,
+                    sDefaultTimeoutMS);
+        }
     }
 
     public boolean isRevLimitSwitchClosed()
     {
-        return this.getSensorCollection().isRevLimitSwitchClosed();
+        if (mTalon != null)
+        {
+            return mTalon.getSensorCollection().isRevLimitSwitchClosed();
+        }
+        else
+            return true;
     }
 
     public boolean isForwardSoftLimitEnabled()
     {
-        return this.configGetParameter(ParamEnum.eForwardSoftLimitEnable, sDefaultOrdinal, sDefaultTimeoutMS) == 1 ? true : false;
+        if (mTalon != null)
+            return mTalon.configGetParameter(ParamEnum.eForwardSoftLimitEnable, sDefaultOrdinal,
+                    sDefaultTimeoutMS) == 1 ? true : false;
+        else
+            return true;
     }
 
     /**
@@ -645,7 +923,11 @@ public class CANTalon4915 extends WPI_TalonSRX
 
     public boolean isZeroSensorPosOnFwdLimitEnabled()
     {
-        return this.configGetParameter(ParamEnum.eClearPositionOnLimitF, sDefaultOrdinal, sDefaultTimeoutMS) == 1 ? true : false;
+        if (mTalon != null)
+            return mTalon.configGetParameter(ParamEnum.eClearPositionOnLimitF, sDefaultOrdinal,
+                    sDefaultTimeoutMS) == 1 ? true : false;
+        else
+            return false;
     }
 
     /**
@@ -661,15 +943,22 @@ public class CANTalon4915 extends WPI_TalonSRX
 
     public int getPulseWidthRiseToRiseUs()
     {
-        return this.getSensorCollection().getPulseWidthRiseToRiseUs();
+        if (mTalon != null)
+            return mTalon.getSensorCollection().getPulseWidthRiseToRiseUs();
+        else
+            return 0;
     }
 
     public double getError()
     {
-        return this.getClosedLoopError(sPidIdx);
+        if (mTalon != null)
+            return mTalon.getClosedLoopError(sPidIdx);
+        else
+            return 0.0;
     }
 
     // FIXME: I can't find how to do this in the new API.
+    //  transition notes suggest something to do with getPulseWidthRiseToRiseUs()
     public boolean isSensorPresent(FeedbackDevice d)
     {
         return true;
@@ -678,22 +967,35 @@ public class CANTalon4915 extends WPI_TalonSRX
     // FIXME: What's the difference between isControlEnabled and isEnabled?
     public boolean isControlEnabled()
     {
-        return this.getControlMode() != ControlMode.Disabled ? true : false;
+        if (mTalon != null)
+            return mTalon.getControlMode() != ControlMode.Disabled ? true : false;
+        else
+            return false;
     }
 
     public boolean isEnabled()
     {
-        return this.getControlMode() != ControlMode.Disabled ? true : false;
+        if (mTalon != null)
+            return mTalon.getControlMode() != ControlMode.Disabled ? true : false;
+        else
+            return false;
     }
 
     public boolean isZeroSensorPosOnRevLimitEnabled()
     {
-        return this.configGetParameter(ParamEnum.eClearPositionOnLimitR, sDefaultOrdinal, sDefaultTimeoutMS) == 1 ? true : false;
+        if (mTalon != null)
+            return mTalon.configGetParameter(ParamEnum.eClearPositionOnLimitR, sDefaultOrdinal,
+                    sDefaultTimeoutMS) == 1 ? true : false;
+        else
+            return false;
     }
 
     public double getOutputVoltage()
     {
-        return this.getMotorOutputVoltage();
+        if (mTalon != null)
+            return mTalon.getMotorOutputVoltage();
+        else
+            return 0.0;
     }
 
     /**
@@ -708,12 +1010,19 @@ public class CANTalon4915 extends WPI_TalonSRX
 
     public int getPulseWidthPosition()
     {
-        return this.getSensorCollection().getPulseWidthPosition();
+        if (mTalon != null)
+            return mTalon.getSensorCollection().getPulseWidthPosition();
+        else
+            return 0;
     }
 
     public boolean isZeroSensorPosOnIndexEnabled()
     {
-        return this.configGetParameter(ParamEnum.eClearPositionOnIdx, sDefaultOrdinal, sDefaultTimeoutMS) == 1 ? true : false;
+        if (mTalon != null)
+            return mTalon.configGetParameter(ParamEnum.eClearPositionOnIdx, sDefaultOrdinal,
+                    sDefaultTimeoutMS) == 1 ? true : false;
+        else
+            return false;
     }
 
     /**
@@ -723,7 +1032,11 @@ public class CANTalon4915 extends WPI_TalonSRX
      */
     public double getMotionMagicCruiseVelocity()
     {
-        return this.configGetParameter(ParamEnum.eMotMag_VelCruise, sDefaultOrdinal, sDefaultTimeoutMS);
+        if (mTalon != null)
+            return mTalon.configGetParameter(ParamEnum.eMotMag_VelCruise, sDefaultOrdinal,
+                    sDefaultTimeoutMS);
+        else
+            return 0.0;
     }
 
     /**
@@ -739,9 +1052,14 @@ public class CANTalon4915 extends WPI_TalonSRX
      */
     public boolean getFaultRevSoftLim()
     {
-        Faults faults = new Faults();
-        this.getFaults(faults);
-        return faults.ForwardLimitSwitch;
+        if (mTalon != null)
+        {
+            Faults faults = new Faults();
+            mTalon.getFaults(faults);
+            return faults.ReverseSoftLimit;
+        }
+        else
+            return false;
     }
 
     /**
@@ -757,9 +1075,14 @@ public class CANTalon4915 extends WPI_TalonSRX
      */
     public boolean getFaultRevLim()
     {
-        Faults faults = new Faults();
-        this.getFaults(faults);
-        return faults.ReverseLimitSwitch;
+        if (mTalon != null)
+        {
+            Faults faults = new Faults();
+            mTalon.getFaults(faults);
+            return faults.ReverseLimitSwitch;
+        }
+        else
+            return false;
     }
 
     /**
@@ -776,9 +1099,14 @@ public class CANTalon4915 extends WPI_TalonSRX
      */
     public boolean getStickyFaultRevLim()
     {
-        StickyFaults faults = new StickyFaults();
-        this.getStickyFaults(faults);
-        return faults.ReverseLimitSwitch;
+        if (mTalon != null)
+        {
+            StickyFaults faults = new StickyFaults();
+            mTalon.getStickyFaults(faults);
+            return faults.ReverseLimitSwitch;
+        }
+        else
+            return false;
     }
 
     /**
@@ -795,9 +1123,14 @@ public class CANTalon4915 extends WPI_TalonSRX
      */
     public boolean getStickyFaultRevSoftLim()
     {
-        StickyFaults faults = new StickyFaults();
-        this.getStickyFaults(faults);
-        return faults.ReverseSoftLimit;
+        if (mTalon != null)
+        {
+            StickyFaults faults = new StickyFaults();
+            mTalon.getStickyFaults(faults);
+            return faults.ReverseSoftLimit;
+        }
+        else
+            return false;
     }
 
     /**
@@ -807,7 +1140,12 @@ public class CANTalon4915 extends WPI_TalonSRX
      */
     public int getEncPosition()
     {
-        return this.getSelectedSensorPosition(sPidIdx);
+        if (mTalon != null)
+        {
+            return mTalon.getSelectedSensorPosition(sPidIdx);
+        }
+        else
+            return 0;
     }
 
     /**
@@ -819,7 +1157,11 @@ public class CANTalon4915 extends WPI_TalonSRX
      */
     public double getAnalogInPosition()
     {
-        return this.configGetParameter(ParamEnum.eAnalogPosition, sDefaultOrdinal, sDefaultTimeoutMS);
+        if (mTalon != null)
+            return mTalon.configGetParameter(ParamEnum.eAnalogPosition, sDefaultOrdinal,
+                    sDefaultTimeoutMS);
+        else
+            return 0.0;
     }
 
     /**
@@ -835,9 +1177,14 @@ public class CANTalon4915 extends WPI_TalonSRX
      */
     public boolean getFaultUnderVoltage()
     {
-        Faults faults = new Faults();
-        this.getFaults(faults);
-        return faults.UnderVoltage;
+        if (mTalon != null)
+        {
+            Faults faults = new Faults();
+            mTalon.getFaults(faults);
+            return faults.UnderVoltage;
+        }
+        else
+            return false;
     }
 
     /**
@@ -847,7 +1194,13 @@ public class CANTalon4915 extends WPI_TalonSRX
      */
     public double getCloseLoopRampRate()
     {
-        return this.configGetParameter(ParamEnum.eClosedloopRamp, sDefaultOrdinal, sDefaultTimeoutMS);
+        if (mTalon != null)
+        {
+            return mTalon.configGetParameter(ParamEnum.eClosedloopRamp, sDefaultOrdinal,
+                    sDefaultTimeoutMS);
+        }
+        else
+            return 0.0;
     }
 
     /**
@@ -857,7 +1210,10 @@ public class CANTalon4915 extends WPI_TalonSRX
      */
     public double getMotionMagicActTrajPosition()
     {
-        return this.getActiveTrajectoryPosition();
+        if (mTalon != null)
+            return mTalon.getActiveTrajectoryPosition();
+        else
+            return 0.0;
     }
 
     /**
@@ -867,7 +1223,11 @@ public class CANTalon4915 extends WPI_TalonSRX
      */
     public double getP()
     {
-        return this.configGetParameter(ParamEnum.eProfileParamSlot_P, sDefaultOrdinal, sDefaultTimeoutMS);
+        if (mTalon != null)
+            return mTalon.configGetParameter(ParamEnum.eProfileParamSlot_P, sDefaultOrdinal,
+                    sDefaultTimeoutMS);
+        else
+            return 0.0;
     }
 
     /**
@@ -877,12 +1237,19 @@ public class CANTalon4915 extends WPI_TalonSRX
      */
     public double getF()
     {
-        return this.configGetParameter(ParamEnum.eProfileParamSlot_F, sDefaultOrdinal, sDefaultTimeoutMS);
+        if (mTalon != null)
+            return mTalon.configGetParameter(ParamEnum.eProfileParamSlot_F, sDefaultOrdinal,
+                    sDefaultTimeoutMS);
+        else
+            return 0.0;
     }
 
     public int getAnalogInVelocity()
     {
-        return this.getSensorCollection().getAnalogInVel();
+        if (mTalon != null)
+            return mTalon.getSensorCollection().getAnalogInVel();
+        else
+            return 0;
     }
 
     /**
@@ -892,7 +1259,11 @@ public class CANTalon4915 extends WPI_TalonSRX
      */
     public double getI()
     {
-        return this.configGetParameter(ParamEnum.eProfileParamSlot_I, sDefaultOrdinal, sDefaultTimeoutMS);
+        if (mTalon != null)
+            return mTalon.configGetParameter(ParamEnum.eProfileParamSlot_I, sDefaultOrdinal,
+                    sDefaultTimeoutMS);
+        else
+            return 0.0;
     }
 
     /**
@@ -902,7 +1273,11 @@ public class CANTalon4915 extends WPI_TalonSRX
      */
     public double getIZone()
     {
-        return this.configGetParameter(ParamEnum.eProfileParamSlot_IZone, sDefaultOrdinal, sDefaultTimeoutMS);
+        if (mTalon != null)
+            return mTalon.configGetParameter(ParamEnum.eProfileParamSlot_IZone, sDefaultOrdinal,
+                    sDefaultTimeoutMS);
+        else
+            return 0.0;
     }
 
     /**
@@ -913,7 +1288,11 @@ public class CANTalon4915 extends WPI_TalonSRX
      */
     public boolean isReverseSoftLimitEnabled()
     {
-        return this.configGetParameter(ParamEnum.eReverseSoftLimitEnable, sDefaultOrdinal, sDefaultTimeoutMS) == 1 ? true : false;
+        if (mTalon != null)
+            return mTalon.configGetParameter(ParamEnum.eReverseSoftLimitEnable, sDefaultOrdinal,
+                    sDefaultTimeoutMS) == 1 ? true : false;
+        else
+            return false;
     }
 
     /**
@@ -929,7 +1308,10 @@ public class CANTalon4915 extends WPI_TalonSRX
 
     public int getEncVelocity()
     {
-        return this.getSelectedSensorVelocity(sPidIdx);
+        if (mTalon != null)
+            return mTalon.getSelectedSensorVelocity(sPidIdx);
+        else
+            return 0;
     }
 
     /**
@@ -941,7 +1323,11 @@ public class CANTalon4915 extends WPI_TalonSRX
      */
     public double getVelocityMeasurementPeriod()
     {
-        return this.configGetParameter(ParamEnum.eSampleVelocityPeriod, sDefaultOrdinal, sDefaultTimeoutMS);
+        if (mTalon != null)
+            return mTalon.configGetParameter(ParamEnum.eSampleVelocityPeriod, sDefaultOrdinal,
+                    sDefaultTimeoutMS);
+        else
+            return 0.0;
     }
 
     /**
@@ -952,7 +1338,11 @@ public class CANTalon4915 extends WPI_TalonSRX
      */
     public double getVelocityMeasurementWindow()
     {
-        return this.configGetParameter(ParamEnum.eSampleVelocityWindow, sDefaultOrdinal, sDefaultTimeoutMS);
+        if (mTalon != null)
+            return mTalon.configGetParameter(ParamEnum.eSampleVelocityWindow, sDefaultOrdinal,
+                    sDefaultTimeoutMS);
+        else
+            return 0.0;
     }
 
     /**
@@ -965,7 +1355,11 @@ public class CANTalon4915 extends WPI_TalonSRX
      */
     public double getReverseSoftLimit()
     {
-        return this.configGetParameter(ParamEnum.eReverseSoftLimitEnable, sDefaultOrdinal, sDefaultTimeoutMS);
+        if (mTalon != null)
+            return mTalon.configGetParameter(ParamEnum.eReverseSoftLimitEnable, sDefaultOrdinal,
+                    sDefaultTimeoutMS);
+        else
+            return 0.0;
     }
 
     /**
@@ -975,7 +1369,11 @@ public class CANTalon4915 extends WPI_TalonSRX
      */
     public double getD()
     {
-        return this.configGetParameter(ParamEnum.eProfileParamSlot_D, sDefaultOrdinal, sDefaultTimeoutMS);
+        if (mTalon != null)
+            return mTalon.configGetParameter(ParamEnum.eProfileParamSlot_D, sDefaultOrdinal,
+                    sDefaultTimeoutMS);
+        else
+            return 0.0;
     }
 
     /**
@@ -999,7 +1397,11 @@ public class CANTalon4915 extends WPI_TalonSRX
      */
     public double getForwardSoftLimit()
     {
-        return this.configGetParameter(ParamEnum.eForwardSoftLimitEnable, sDefaultOrdinal, sDefaultTimeoutMS);
+        if (mTalon != null)
+            return mTalon.configGetParameter(ParamEnum.eForwardSoftLimitEnable, sDefaultOrdinal,
+                    sDefaultTimeoutMS);
+        else
+            return 0.0;
     }
 
     /**
@@ -1007,12 +1409,18 @@ public class CANTalon4915 extends WPI_TalonSRX
      */
     public boolean getPinStateQuadIdx()
     {
-        return this.getSensorCollection().getPinStateQuadIdx();
+        if (mTalon != null)
+            return mTalon.getSensorCollection().getPinStateQuadIdx();
+        else
+            return false;
     }
 
     public int getAnalogInRaw()
     {
-        return this.getSensorCollection().getAnalogInRaw();
+        if (mTalon != null)
+            return mTalon.getSensorCollection().getAnalogInRaw();
+        else
+            return 0;
     }
 
     /**
@@ -1031,7 +1439,10 @@ public class CANTalon4915 extends WPI_TalonSRX
      */
     public double getSpeed()
     {
-        return nativeVelocityToRpm(this.getSelectedSensorVelocity(sPidIdx));
+        if (mTalon != null)
+            return nativeVelocityToRpm(mTalon.getSelectedSensorVelocity(sPidIdx));
+        else
+            return 0;
     }
 
     /**
@@ -1047,9 +1458,14 @@ public class CANTalon4915 extends WPI_TalonSRX
      */
     public boolean getFaultForLim()
     {
-        Faults faults = new Faults();
-        this.getFaults(faults);
-        return faults.ForwardLimitSwitch;
+        if (mTalon != null)
+        {
+            Faults faults = new Faults();
+            mTalon.getFaults(faults);
+            return faults.ForwardLimitSwitch;
+        }
+        else
+            return false;
     }
 
     /**
@@ -1066,9 +1482,14 @@ public class CANTalon4915 extends WPI_TalonSRX
      */
     public boolean getStickyFaultForLim()
     {
-        StickyFaults faults = new StickyFaults();
-        this.getStickyFaults(faults);
-        return faults.ForwardLimitSwitch;
+        if (mTalon != null)
+        {
+            StickyFaults faults = new StickyFaults();
+            mTalon.getStickyFaults(faults);
+            return faults.ForwardLimitSwitch;
+        }
+        else
+            return false;
     }
 
     /**
@@ -1086,9 +1507,14 @@ public class CANTalon4915 extends WPI_TalonSRX
      */
     public boolean getFaultForSoftLim()
     {
-        Faults faults = new Faults();
-        this.getFaults(faults);
-        return faults.ForwardSoftLimit;
+        if (mTalon != null)
+        {
+            Faults faults = new Faults();
+            mTalon.getFaults(faults);
+            return faults.ForwardSoftLimit;
+        }
+        else
+            return false;
     }
 
     /**
@@ -1107,9 +1533,14 @@ public class CANTalon4915 extends WPI_TalonSRX
      */
     public boolean getStickyFaultForSoftLim()
     {
-        StickyFaults faults = new StickyFaults();
-        this.getStickyFaults(faults);
-        return faults.ForwardSoftLimit;
+        if (mTalon != null)
+        {
+            StickyFaults faults = new StickyFaults();
+            mTalon.getStickyFaults(faults);
+            return faults.ForwardSoftLimit;
+        }
+        else
+            return false;
     }
 
     /**
@@ -1119,11 +1550,16 @@ public class CANTalon4915 extends WPI_TalonSRX
      */
     public int getClosedLoopError()
     {
-        // This method appears to be mis-documented. The 
-        // @param part of the javadoc says slotIdx (PID
-        // gain slot), which makes the most sense, so
-        // I'm going with that.
-        return this.getClosedLoopError(mPidSlot);
+        if (mTalon != null)
+        {
+            // This method appears to be mis-documented. The 
+            // @param part of the javadoc says slotIdx (PID
+            // gain slot), which makes the most sense, so
+            // I'm going with that.
+            return mTalon.getClosedLoopError(mPidSlot);
+        }
+        else
+            return 0;
     }
 
     /**
@@ -1144,7 +1580,12 @@ public class CANTalon4915 extends WPI_TalonSRX
      */
     public boolean isFwdLimitSwitchClosed()
     {
-        return this.getSensorCollection().isFwdLimitSwitchClosed();
+        if (mTalon != null)
+        {
+            return mTalon.getSensorCollection().isFwdLimitSwitchClosed();
+        }
+        else
+            return false;
     }
 
     /**
@@ -1152,7 +1593,12 @@ public class CANTalon4915 extends WPI_TalonSRX
      */
     public boolean getPinStateQuadA()
     {
-        return this.getSensorCollection().getPinStateQuadA();
+        if (mTalon != null)
+        {
+            return mTalon.getSensorCollection().getPinStateQuadA();
+        }
+        else
+            return false;
     }
 
     /**
@@ -1160,7 +1606,10 @@ public class CANTalon4915 extends WPI_TalonSRX
      */
     public boolean getPinStateQuadB()
     {
-        return this.getSensorCollection().getPinStateQuadB();
+        if (mTalon != null)
+            return mTalon.getSensorCollection().getPinStateQuadB();
+        else
+            return false;
     }
 
     /**
@@ -1170,7 +1619,10 @@ public class CANTalon4915 extends WPI_TalonSRX
      */
     public double getIaccum()
     {
-        return this.getIntegralAccumulator(sPidIdx);
+        if (mTalon != null)
+            return mTalon.getIntegralAccumulator(sPidIdx);
+        else
+            return 0.0;
     }
 
     /**
@@ -1186,9 +1638,14 @@ public class CANTalon4915 extends WPI_TalonSRX
      */
     public boolean getFaultHardwareFailure()
     {
-        Faults faults = new Faults();
-        this.getFaults(faults);
-        return faults.HardwareFailure;
+        if (mTalon != null)
+        {
+            Faults faults = new Faults();
+            mTalon.getFaults(faults);
+            return faults.HardwareFailure;
+        }
+        else
+            return false;
     }
 
     /**
@@ -1227,14 +1684,22 @@ public class CANTalon4915 extends WPI_TalonSRX
      */
     public boolean getStickyFaultUnderVoltage()
     {
-        StickyFaults faults = new StickyFaults();
-        this.getStickyFaults(faults);
-        return faults.UnderVoltage;
+        if (mTalon != null)
+        {
+            StickyFaults faults = new StickyFaults();
+            mTalon.getStickyFaults(faults);
+            return faults.UnderVoltage;
+        }
+        else
+            return false;
     }
 
     public int getPulseWidthVelocity()
     {
-        return this.getSensorCollection().getPulseWidthVelocity();
+        if (mTalon != null)
+            return mTalon.getSensorCollection().getPulseWidthVelocity();
+        else
+            return 0;
     }
 
     /**
@@ -1267,12 +1732,20 @@ public class CANTalon4915 extends WPI_TalonSRX
         // When using analog sensors, 0 units corresponds to 0V, 1023 units corresponds to 3.3V 
         // When using an analog encoder (wrapping around 1023 to 0 is possible) the units are still 
         // 3.3V per 1023 units.
-        return encoderCodesToRotations(this.getSelectedSensorPosition(sPidIdx));
+        if (mTalon != null)
+        {
+            return encoderCodesToRotations(mTalon.getSelectedSensorPosition(sPidIdx));
+        }
+        else
+            return 0.0;
     }
 
     public int getPulseWidthRiseToFallUs()
     {
-        return this.getSensorCollection().getPulseWidthRiseToFallUs();
+        if (mTalon != null)
+            return mTalon.getSensorCollection().getPulseWidthRiseToFallUs();
+        else
+            return 0;
     }
 
     /**
@@ -1284,6 +1757,11 @@ public class CANTalon4915 extends WPI_TalonSRX
      */
     public double getMotionMagicAcceleration()
     {
-        return this.configGetParameter(ParamEnum.eMotMag_Accel, sDefaultOrdinal, sDefaultTimeoutMS);
+        if (mTalon != null)
+            return mTalon.configGetParameter(ParamEnum.eMotMag_Accel, sDefaultOrdinal,
+                    sDefaultTimeoutMS);
+        else
+            return 0.0;
     }
+
 }

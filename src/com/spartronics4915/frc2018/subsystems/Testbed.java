@@ -64,23 +64,18 @@ public class Testbed extends Subsystem
         // Instantiate member variables (motors, etc...) here.
         CANProbe canProbe = CANProbe.getInstance();
         boolean success = true;
-        if(canProbe.validateSRXId(Constants.kTestbedMotor1Id))
-        {
-            mMotor1 = CANTalonFactory.createDefaultTalon(Constants.kTestbedMotor1Id);
-            mMotor1.changeControlMode(ControlMode.PercentOutput);
-        }
-        else
+        mMotor1 = CANTalonFactory.createDefaultTalon(Constants.kTestbedMotor1Id);
+        mMotor1.changeControlMode(ControlMode.PercentOutput);
+        if(!mMotor1.isValid())
         {
             logWarning("can't find motor 1, id:" + Constants.kTestbedMotor1Id);
             success = false;
         }
 
-        if(canProbe.validateSRXId(Constants.kTestbedMotor2Id))
-        {
-            mMotor2 = CANTalonFactory.createDefaultTalon(Constants.kTestbedMotor2Id);
-            mMotor2.changeControlMode(ControlMode.PercentOutput);
-        }
-        else
+        mMotor2 = CANTalonFactory.createDefaultTalon(Constants.kTestbedMotor2Id);
+        mMotor2.changeControlMode(ControlMode.PercentOutput);
+        mMotor2.setInverted(true);;
+        if(!mMotor2.isValid())
         {
             logWarning("can't find motor 2, id:" + Constants.kTestbedMotor2Id);
             success = false;
@@ -187,8 +182,8 @@ public class Testbed extends Subsystem
 
     private void runOpenLoop(double percentOutput)
     {
-        if(mMotor1 != null)
-            mMotor1.set(percentOutput);
+        mMotor1.set(percentOutput);
+        mMotor2.set(percentOutput);;
     }
 
     /** describes the steps needed to progress from the current
