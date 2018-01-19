@@ -137,7 +137,7 @@ public class Drive extends Subsystem
         {
             synchronized (Drive.this)
             {
-                 setOpenLoop(DriveSignal.NEUTRAL);
+                setOpenLoop(DriveSignal.NEUTRAL);
                 setBrakeMode(false);
                 setVelocitySetpoint(0, 0);
                 if (mIMU.getState() != PigeonState.Ready)
@@ -194,81 +194,45 @@ public class Drive extends Subsystem
     private Drive()
     {
         // Start all Talons in open loop mode.
-        CANProbe canProbe = CANProbe.getInstance();
-
-        if (!canProbe.validateSRXId(Constants.kLeftDriveMasterId))
+        mLeftMaster = CANTalonFactory.createDefaultTalon(Constants.kLeftDriveMasterId);
+        mLeftMaster.changeControlMode(ControlMode.PercentOutput); // XXX: was PercentVBus
+        mLeftMaster.setFeedbackDevice(FeedbackDevice.QuadEncoder);
+        mLeftMaster.configEncoderCodesPerRev(Constants.kEncoderCodesPerRev);
+        mLeftMaster.reverseSensor(false); // If these aren't correctly reversed your PID will just spiral out of control
+        mLeftMaster.reverseOutput(false);
+        if (!mLeftMaster.isSensorPresent(FeedbackDevice.QuadEncoder))
         {
-            logError("Can't find left master motor");
+            logError("Could not detect left encoder");
         }
-        else
+        mLeftSlave = CANTalonFactory.createPermanentSlaveTalon(Constants.kLeftDriveSlaveId,
+                    Constants.kLeftDriveMasterId);
+        mLeftSlave.reverseOutput(false);
+        
+        mLeftMaster.setStatusFrameRateMs(StatusFrameEnhanced.Status_2_Feedback0, 5); // XXX: was Feedback
+
+        mRightMaster = CANTalonFactory.createDefaultTalon(Constants.kRightDriveMasterId);
+        mRightMaster.changeControlMode(ControlMode.PercentOutput); // XXX: was PercentVBus
+        mRightMaster.reverseSensor(true);
+        mRightMaster.reverseOutput(true);
+        mRightMaster.setFeedbackDevice(FeedbackDevice.QuadEncoder);
+        mRightMaster.configEncoderCodesPerRev(Constants.kEncoderCodesPerRev);
+        if (!mRightMaster.isSensorPresent(FeedbackDevice.QuadEncoder))
         {
-            mLeftMaster = CANTalonFactory.createDefaultTalon(Constants.kLeftDriveMasterId);
-            mLeftMaster.changeControlMode(ControlMode.PercentOutput); // XXX: was PercentVBus
-            mLeftMaster.setFeedbackDevice(FeedbackDevice.QuadEncoder);
-            mLeftMaster.configEncoderCodesPerRev(Constants.kEncoderCodesPerRev);
-            mLeftMaster.reverseSensor(false); // If these aren't correctly reversed your PID will just spiral out of control
-            mLeftMaster.reverseOutput(false);
-            if (!mLeftMaster.isSensorPresent(FeedbackDevice.QuadEncoder))
-            {
-                logError("Could not detect left encoder");
-            }
-            if (!canProbe.validateSRXId(Constants.kLeftDriveSlaveId))
-            {
-                logError("Can't find left slave motor");
-            }
-            else
-            {
-                mLeftSlave = CANTalonFactory.createPermanentSlaveTalon(Constants.kLeftDriveSlaveId,
-                        Constants.kLeftDriveMasterId);
-                mLeftSlave.reverseOutput(false);
-            }
-            mLeftMaster.setStatusFrameRateMs(StatusFrameEnhanced.Status_2_Feedback0, 5); // XXX: was Feedback
+            logError("Could not detect right encoder");
         }
 
-        if (!canProbe.validateSRXId(Constants.kRightDriveMasterId))
-        {
-            logError("Can't find right master motor");
-        }
-        else
-        {
-            mRightMaster = CANTalonFactory.createDefaultTalon(Constants.kRightDriveMasterId);
-            mRightMaster.changeControlMode(ControlMode.PercentOutput); // XXX: was PercentVBus
-            mRightMaster.reverseSensor(true);
-            mRightMaster.reverseOutput(true);
-            mRightMaster.setFeedbackDevice(FeedbackDevice.QuadEncoder);
-            mRightMaster.configEncoderCodesPerRev(Constants.kEncoderCodesPerRev);
-            if (!mRightMaster.isSensorPresent(FeedbackDevice.QuadEncoder))
-            {
-                logError("Could not detect right encoder");
-            }
+        mRightSlave =
+                CANTalonFactory.createPermanentSlaveTalon(Constants.kRightDriveSlaveId,
+                        Constants.kRightDriveMasterId);
+        mRightSlave.reverseOutput(false);
+        mRightMaster.setStatusFrameRateMs(StatusFrameEnhanced.Status_2_Feedback0, 5); // XXX: was Feedback
 
-            if (!canProbe.validateSRXId(Constants.kRightDriveSlaveId))
-            {
-                logError("Can't find right master motor");
-            }
-            else
-            {
-                mRightSlave =
-                        CANTalonFactory.createPermanentSlaveTalon(Constants.kRightDriveSlaveId,
-                                Constants.kRightDriveMasterId);
-                mRightSlave.reverseOutput(false);
-                mRightMaster.setStatusFrameRateMs(StatusFrameEnhanced.Status_2_Feedback0, 5); // XXX: was Feedback
-            }
-        }
-
-        if (mLeftMaster != null)
-        {
-            mLeftMaster.setVelocityMeasurementPeriod(VelocityMeasPeriod.Period_10Ms);
-            mLeftMaster.setVelocityMeasurementWindow(32);
-        }
-        if (mRightMaster != null)
-        {
-            mRightMaster.setVelocityMeasurementPeriod(VelocityMeasPeriod.Period_10Ms);
-            mRightMaster.setVelocityMeasurementWindow(32);
-        }
-
-        if (mRightMaster != null && mRightSlave != null &&
-                mLeftMaster != null && mLeftSlave != null)
+        mLeftMaster.setVelocityMeasurementPeriod(VelocityMeasPeriod.Period_10Ms);
+        mLeftMaster.setVelocityMeasurementWindow(32);
+        mRightMaster.setVelocityMeasurementPeriod(VelocityMeasPeriod.Period_10Ms);
+        mRightMaster.setVelocityMeasurementWindow(32);
+        if (mRightMaster.isValid() && mRightSlave.isValid() &&
+                mLeftMaster.isValid() && mLeftSlave.isValid())
         {
             reloadGains();
             mIsHighGear = false;
@@ -276,12 +240,13 @@ public class Drive extends Subsystem
             setOpenLoop(DriveSignal.NEUTRAL);
             // Path Following stuff
             mIMUTalon = new CANTalon4915(Constants.kIMUTalonId);
-            // FIXME: Don't use the pigeon, or at least wire it directly into the CAN bus
-            mIMU = new PigeonIMU(mIMUTalon);
-
-            if (mIMU.getState() == PigeonState.NoComm)
-                logError("Could not detect the IMU. Is it plugged in?");
-
+            if(mIMUTalon.isValid())
+            {
+                // FIXME: Don't use the pigeon, or at least wire it directly into the CAN bus
+                mIMU = new PigeonIMU(mIMUTalon.getTalon());
+                if (mIMU.getState() == PigeonState.NoComm)
+                    logError("Could not detect the IMU. Is it plugged in?");
+            }
             // Force a CAN message across.
             mIsBrakeMode = true;
             setBrakeMode(false);
@@ -300,7 +265,7 @@ public class Drive extends Subsystem
     @Override
     public void registerEnabledLoops(Looper in)
     {
-        if(!Drive.this.isInitialized()) return;
+        if(!this.isInitialized()) return;
 
         in.register(mLoop);
     }
