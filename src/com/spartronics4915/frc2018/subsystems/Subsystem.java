@@ -59,7 +59,7 @@ public abstract class Subsystem
     public void logInitialized(boolean success)
     {
         mInitialized = success;
-        this.logNotice("initialized (success:" + success + ")");
+        this.logNotice("initialization " + (success ? "SUCCEEDED" : "FAILED"));
     }
 
     public void logError(String msg)
