@@ -114,8 +114,7 @@
       </manifest>
       <fileset dir="${build.dir}"
                includes="**/*.class" />
-      <fileset dir="${src.dir}"
-               includes="**/*.java" />
+      <fileset dir="${src.dir}" />
       <zipgroupfileset dir="${build.jars}" />
     </jar>
   </target>
@@ -148,7 +147,7 @@
                  libs.deployDir="${libDeploy.dir}">
       <libs.local>
         <fileset dir="${userLibs.dir}">
-          <include name="**/*.so" />
+          <include name="*.so" />
         </fileset>
       </libs.local>
     </deploy-libs>
@@ -197,7 +196,7 @@
                  libs.deployDir="${libDeploy.dir}">
       <libs.local>
         <fileset dir="${userLibs.dir}">
-          <include name="**/*.so" />
+          <include name="*.so" />
         </fileset>
       </libs.local>
     </deploy-libs>
