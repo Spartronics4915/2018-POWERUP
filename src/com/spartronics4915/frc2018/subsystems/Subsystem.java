@@ -59,14 +59,15 @@ public abstract class Subsystem
     public void logInitialized(boolean success)
     {
         mInitialized = success;
-        this.logNotice("initialization " + (success ? "SUCCEEDED" : "FAILED"));
+        if(success)
+            this.logNotice("init SUCCEEDED");
+        else
+            this.logWarning("init FAILED");
     }
 
     public void logError(String msg)
     {
-        String smsg = this.getName() + " " + msg;
-        Logger.error(smsg); 
-        // DriverStation.reportError(smsg, false); // remove if too noisy.
+        Logger.error(this.getName() + " " + msg); 
     }
     
     public void logWarning(String msg)
