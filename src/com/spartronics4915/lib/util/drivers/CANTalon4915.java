@@ -18,6 +18,7 @@ import edu.wpi.first.wpilibj.MotorSafetyHelper;
 import edu.wpi.first.wpilibj.Sendable;
 import edu.wpi.first.wpilibj.smartdashboard.SendableBuilder;
 import edu.wpi.first.wpilibj.hal.HAL;
+import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 
 /* CANTalonPhoenix is a portability interface intended to facilitate
  * porting from CTRE CANTalon 2017 libs to CTRE Phoenix 2018.
@@ -66,14 +67,26 @@ public class CANTalon4915 implements Sendable, MotorSafety
     int mMaxVolts = 12;
     int mCodesPerRevolution; // Encoder codes per revolution
     TalonSRX mTalon = null;
+    String mDescription;
+    String mSubsystem = "Ungrouped"; // for Sendable
+    MotorSafetyHelper mSafetyHelper;
 
     public CANTalon4915(int deviceNumber)
     {
         mDeviceId = deviceNumber;
+        mDescription = "TalonSRX4915 " + deviceNumber;
+        LiveWindow.add(this);
+        setName(mDescription);
+        
         CANProbe canProbe = CANProbe.getInstance();
         if (canProbe.validateSRXId(deviceNumber))
         {
             mTalon = new TalonSRX(deviceNumber);
+            HAL.report(66,  deviceNumber+1); // from WPI_TalonSRX
+            mSafetyHelper = new MotorSafetyHelper(this);
+            mSafetyHelper.setExpiration(0.0);
+            mSafetyHelper.setSafetyEnabled(false);
+            
             //        this.changeMotionControlFramePeriod(config.MOTION_CONTROL_FRAME_PERIOD_MS);
             //        this.clearIAccum();
             //        this.clearMotionProfileHasUnderrun();
@@ -284,50 +297,58 @@ public class CANTalon4915 implements Sendable, MotorSafety
     @Override
     public String getDescription()
     {
-        // TODO Auto-generated method stub
-        return null;
+        return mDescription;
     }
 
     @Override
     public double getExpiration()
     {
-        // TODO Auto-generated method stub
-        return 0;
+        if(mSafetyHelper != null)
+            return mSafetyHelper.getExpiration();
+        else
+            return 0.0;
     }
 
     @Override
     public boolean isAlive()
     {
-        // TODO Auto-generated method stub
-        return false;
+        if(mSafetyHelper != null)
+            return mSafetyHelper.isAlive();
+        else
+            return false;
     }
 
     @Override
     public boolean isSafetyEnabled()
     {
-        // TODO Auto-generated method stub
-        return false;
+        if(mSafetyHelper != null)
+            return mSafetyHelper.isSafetyEnabled();
+        else
+            return false;
     }
 
     @Override
     public void setExpiration(double arg0)
     {
-        // TODO Auto-generated method stub
-
+        if(mSafetyHelper != null)
+            mSafetyHelper.setExpiration(arg0);
     }
 
     @Override
     public void setSafetyEnabled(boolean arg0)
     {
-        // TODO Auto-generated method stub
+        if(mSafetyHelper != null)
+            mSafetyHelper.setSafetyEnabled(arg0);
 
     }
 
     @Override
     public void stopMotor()
     {
-        // TODO Auto-generated method stub
-
+        if(mTalon != null)
+        {
+            mTalon.neutralOutput();
+        }
     }
     // } MotorSafety
 
@@ -335,36 +356,33 @@ public class CANTalon4915 implements Sendable, MotorSafety
     @Override
     public String getName()
     {
-        // TODO Auto-generated method stub
-        return null;
+        return mDescription;
     }
 
     @Override
     public String getSubsystem()
     {
-        // TODO Auto-generated method stub
-        return null;
+        return mSubsystem;
     }
 
     @Override
-    public void initSendable(SendableBuilder arg0)
+    public void initSendable(SendableBuilder builder)
     {
-        // TODO Auto-generated method stub
-
+        builder.setSmartDashboardType("Speed Controller");
+        builder.setSafeState(this::stopMotor);
+        builder.addDoubleProperty("Value", this::get, this::set);
     }
 
     @Override
     public void setName(String arg0)
     {
-        // TODO Auto-generated method stub
-
+        mDescription = arg0;
     }
 
     @Override
     public void setSubsystem(String arg0)
     {
-        // TODO Auto-generated method stub
-
+        mSubsystem = arg0;
     }
 
     // } Sendable Interface
@@ -445,6 +463,8 @@ public class CANTalon4915 implements Sendable, MotorSafety
         if (mTalon != null)
         {
             // We've integrated LazyCANTalon into here
+            if(mSafetyHelper != null)
+                mSafetyHelper.feed();
             if (value != mLastSetpoint || mControlMode != mLastControlMode)
             {
                 mTalon.set(mControlMode, value);
@@ -453,8 +473,8 @@ public class CANTalon4915 implements Sendable, MotorSafety
             }
         }
     }
-
-    /**
+    
+     /**
      * Sets the output on the Talon, with the mode specified explicitly.
      * This overrides the new-style method, so that we can maintain
      * state in the wrapper subsystem.
@@ -467,8 +487,13 @@ public class CANTalon4915 implements Sendable, MotorSafety
         if (mTalon != null)
         {
             mControlMode = m;
-            this.set(value);
+            this.set(value); // route to this.set above
         }
+    }
+
+    public double get()
+    {
+        return mLastSetpoint;
     }
 
     public void changeControlMode(ControlMode m)
@@ -623,6 +648,14 @@ public class CANTalon4915 implements Sendable, MotorSafety
         if (mTalon != null)
         {
             mTalon.setInverted(s);
+        }
+    }
+    
+    public void setInverted(boolean isInverted)
+    {
+        if (mTalon != null)
+        {
+           mTalon.setInverted(isInverted);
         }
     }
 

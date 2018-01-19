@@ -137,7 +137,7 @@ public class Drive extends Subsystem
         {
             synchronized (Drive.this)
             {
-                 setOpenLoop(DriveSignal.NEUTRAL);
+                setOpenLoop(DriveSignal.NEUTRAL);
                 setBrakeMode(false);
                 setVelocitySetpoint(0, 0);
                 if (mIMU.getState() != PigeonState.Ready)
