@@ -27,12 +27,12 @@ public class Constants extends ConstantsBase
     //      (Note that if multiple talons are dedicated to a mechanism, any sensors
     //      are attached to the master)
     public static final int kLeftDriveSlaveId = 1;
-    public static final int kRightDriveSlaveId = 2;
-    public static final int kLeftDriveMasterId = 3;
+    public static final int kRightDriveSlaveId = 3;
+    public static final int kLeftDriveMasterId = 2;
     public static final int kRightDriveMasterId = 4;
     public static final int kTestbedMotorId = 5;
-    public static final int kIMUTalonId = 6;
-    public static final int kNumTalons = 6;
+    public static final int kIMUTalonId = 1;
+    public static final int kNumTalons = 4;
     
     public static final int kNumPDPs = 1;
     public static final int kNumPCMs = 0; // XXX: change me if/when pneumatics are added
