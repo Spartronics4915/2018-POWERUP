@@ -5,7 +5,7 @@ import com.spartronics4915.frc2018.Constants;
 import com.spartronics4915.frc2018.loops.Loop;
 import com.spartronics4915.frc2018.loops.Looper;
 import com.spartronics4915.lib.util.CANProbe;
-import com.spartronics4915.lib.util.drivers.CANTalon;
+import com.spartronics4915.lib.util.drivers.CANTalon4915;
 import com.spartronics4915.lib.util.drivers.CANTalonFactory;
 
 import edu.wpi.first.wpilibj.AnalogInput;
@@ -52,7 +52,8 @@ public class Testbed extends Subsystem
     private WantedState mWantedState = WantedState.IDLE;
 
     // actuators and sensors
-    private CANTalon mMotor = null;
+    private CANTalon4915 mMotor1 = null;
+    private CANTalon4915 mMotor2 = null;
     private DigitalInput mLimitSwitch = null; // invoke .get() to read
     private AnalogInput mPotentiometer = null;
     private Relay mLightSwitch = null;
@@ -62,16 +63,22 @@ public class Testbed extends Subsystem
     {
         // Instantiate member variables (motors, etc...) here.
         CANProbe canProbe = CANProbe.getInstance();
-        boolean success = false;
-        if(canProbe.validateSRXId(Constants.kTestbedMotorId))
+        boolean success = true;
+        mMotor1 = CANTalonFactory.createDefaultTalon(Constants.kTestbedMotor1Id);
+        mMotor1.changeControlMode(ControlMode.PercentOutput);
+        if(!mMotor1.isValid())
         {
-            mMotor = CANTalonFactory.createDefaultTalon(Constants.kTestbedMotorId);
-            mMotor.changeControlMode(ControlMode.PercentOutput);
-            success = true;
+            logWarning("can't find motor 1, id:" + Constants.kTestbedMotor1Id);
+            success = false;
         }
-        else
+
+        mMotor2 = CANTalonFactory.createDefaultTalon(Constants.kTestbedMotor2Id);
+        mMotor2.changeControlMode(ControlMode.PercentOutput);
+        mMotor2.setInverted(true);;
+        if(!mMotor2.isValid())
         {
-            logWarning("can't find testbed motor");
+            logWarning("can't find motor 2, id:" + Constants.kTestbedMotor2Id);
+            success = false;
         }
 
         mLimitSwitch = new DigitalInput(Constants.kTestbedLimitSwitchId);
@@ -175,8 +182,8 @@ public class Testbed extends Subsystem
 
     private void runOpenLoop(double percentOutput)
     {
-        if(mMotor != null)
-            mMotor.set(percentOutput);
+        mMotor1.set(percentOutput);
+        mMotor2.set(percentOutput);;
     }
 
     /** describes the steps needed to progress from the current

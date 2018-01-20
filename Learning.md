@@ -6,16 +6,24 @@
 > our build system relies on `ant` which describes the build process
 > with a series of .xml and .properties files.  Ultimately it
 > creates a file named `FRCUserProgram.jar`. This file and associated
-> runtime libraries are copied down to the robot, then executed by
-> the shell script, `/home/lvuser/robotCommand`.  This script is executed by
-> other scripts on the system whose job is to ensure the robot program
-> is started even after reboots. The output of the program is also
-> routed over the network via this startup machinery.
+> runtime libraries are copied down to the robot (to /home/lvuser and
+> to /usr/local/frc/lib).
+> Another file, `robotCommand` (or `robotDebugCommand`) is also copied.  
+> This file is *NOT* a shell script but rather a command file that is parsed by
+> `/usr/local/frc/bin/frcRunRobot.sh` and ultimately passed to
+> `/sbin/start-stop-daemon` whose job is to 'watch over'
+> the robot process - to restart it if it crashes, to start it on robot
+> reboot, etc.  When we deploy a robot-program that crashes, the start-stop-daemon
+> can produce an annoying and confusing flurry of program restarts.  The only
+> way to stop the flurry is either to kill the process group or to deploy a
+> stable robot program.  The output of the robot program is also routed over the
+> network via this startup machinery.
 
 * where are crashlogs found?  How did they get there?
-> /home/lvuser/crash_tracking.txt by CrashTracker.  There's also
-> a log of program output produced by the robotCommand launcher
-> (TODO: where is that log?).
+> /home/lvuser/crash_tracking.txt is created by Logger (formerly CrashTracker)
+> There's also a log of program output produced by the bootstrapping mechanism
+> located here: `/var/local/natinst/log/FRC_UserProgram.log`. It may be
+> helpful to create a symbolic link to this file in the lvuser home.
 
 * where is java main? When does our code get control?
 > `main()` is the primary/default entrypoint for any java program. In our
@@ -146,7 +154,19 @@
 > telePeriodic).  The second thread is the Looper. During auto AutoModeExecuter
 > is also likely to be running. Additional threads may be running by robot code
 > through RobotSafety, PIDControl, Notifier, and other interfaces.  We anticipate
-> running a separate thread to receive vision target updates.
+> running a separate thread to receive vision target updates. Here's is a
+> typical dump that shows extra looper threads being shutdown
+>
+```
+ NOTICE  disabled init
+ Stopping loops
+ Stopping com.spartronics4915.frc2018.subsystems.Superstructure$1@75cab9
+ Stopping com.spartronics4915.frc2018.subsystems.ConnectionMonitor$1@f7fe8e
+ Stopping com.spartronics4915.frc2018.subsystems.LED$1@179caec
+ Stopping com.spartronics4915.frc2018.subsystems.Testbed$1@1117f44
+ Stopping com.spartronics4915.frc2018.loops.VisionProcessor@1d3411d
+ Stopping com.spartronics4915.frc2018.loops.RobotStateEstimator@71cca7
+```
 
 * what is a “wantedState” as specified in Robot::teleopPeriodic? What is the
   difference between WantedState and SystemState? How are the

@@ -4,62 +4,59 @@ import com.spartronics4915.lib.util.ConstantsBase;
 import edu.wpi.first.wpilibj.Solenoid;
 
 /**
- * A list of constants used by the rest of the robot code. 
+ * A list of constants used by the rest of the robot code.
  * File separates hardware configuration constants from software
  * constants.  The software constants include various timeout periods
  * as well as physics constants and those determined through calibrations.
- * 
+ *
  * Constant names should include the subsystem or field element (etc)
  * to which they refer.
  */
 public class Constants extends ConstantsBase
 {
     // Hardware configuration constants --------------------------------------------------------
-    
-    // CAN Bus --------------------------- 
+
+    // CAN Bus ---------------------------
     // there are at least three families of ids on the CAN bus defined by
     // these device classes:
     //      PDP - power distribution panel (only one of these)
     //      SRX - CANTalon Ids
     //      PCM - Pressure Control Module Ids (often 0 or 1)
-    
+
     //  -- Talon SRX Channels --------------
     //      (Note that if multiple talons are dedicated to a mechanism, any sensors
     //      are attached to the master)
     public static final int kLeftDriveSlaveId = 1;
     public static final int kRightDriveSlaveId = 3;
     public static final int kLeftDriveMasterId = 2;
-    public static final int kRightDriveMasterId = 4;
-    public static final int kTestbedMotorId = 5;
-    public static final int kIMUTalonId = 1;
+    public static final int kRightDriveMasterId = 4; // The Pigeon IMU is connected to this Talon
+    public static final int kTestbedMotor1Id = 16;
+    public static final int kTestbedMotor2Id = 18;
     public static final int kNumTalons = 4;
-    
+
     public static final int kNumPDPs = 1;
-    public static final int kNumPCMs = 0; // XXX: change me if/when pneumatics are added
+    public static final int kNumPCMs = 1;
     public static final int kNumCANDevices = kNumTalons + kNumPCMs + kNumPDPs;
-    
+
     // -- Pressure Control Module (PCM) Channels ----
-    public static final int kShifterSolenoidId = 0; // PCM 0, Solenoid 0
-    public static final int kIntakeDeploySolenoidId = 1; // PCM 0, Solenoid 1
-    public static final int kHopperSolenoidId = 2; // PCM 0, Solenoid 2
-    public static final int kGearWristSolenoid = 7; // PCM 0, Solenoid 7    
+    // None right now
 
     // PWM (Servo) Pins ----------------------------
     public static final int kTestbedServoId = 0;
-    
+
     // Relay Pins -----------------------------------
     public static final int kTestbedLightSwitchId = 0;
-    
+
     // DIO Pins --------------------------------------
     public static final int kTestbedLimitSwitchId = 0;
     public static final int kRangeLEDId = 8;
     public static final int kGreenLEDId = 9;
-    
+
     // Analog In Pins ---------------------------------
     public static final int kTestbedPotentiometerId = 0;
     public static final int kLEDOnId = 2;
-    
-    
+
+
     // Software configuration constants ----------------------------------------------------------
 
     public static final double kLooperDt = 0.005;
@@ -113,13 +110,13 @@ public class Constants extends ConstantsBase
                                                                                                              // in RPM/s
 
     public static final double kDriveVoltageCompensationRampRate = 0.0;
-    
-    
+
+
     // Drive
     public static final int kEncoderCodesPerRev = 1000;
 
     // Intake
- 
+
 
 
     // Phone
@@ -171,11 +168,11 @@ public class Constants extends ConstantsBase
 
     public static final double kShooterAbsoluteRangeFloor = 90.0;
     public static final double kShooterAbsoluteRangeCeiling = 130.0;
-    
+
     /**
      * Make an {@link Solenoid} instance for the single-number ID of the
      * solenoid
-     * 
+     *
      * @param solenoidId
      *        One of the kXyzSolenoidId constants
      */

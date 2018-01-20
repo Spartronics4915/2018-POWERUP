@@ -9,6 +9,7 @@ import com.spartronics4915.frc2018.auto.modes.IntakeForwardMode;
 import com.spartronics4915.frc2018.auto.modes.StandStillMode;
 import com.spartronics4915.frc2018.auto.modes.TestPathMode;
 import com.spartronics4915.frc2018.auto.modes.TestTurnMode;
+import com.spartronics4915.lib.util.Logger;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -69,7 +70,7 @@ public class AutoModeSelector
                 return mode.mCreator.get();
             }
         }
-        DriverStation.reportError("Failed to select auto mode: " + selectedModeName, false);
+        Logger.error("AutoModeSelector failed to select auto mode: " + selectedModeName);
         return mDefaultMode.mCreator.get();
     }
 }

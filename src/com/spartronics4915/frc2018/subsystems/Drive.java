@@ -20,7 +20,7 @@ import com.spartronics4915.lib.util.math.RigidTransform2d;
 import com.spartronics4915.lib.util.math.Rotation2d;
 import com.spartronics4915.lib.util.math.Twist2d;
 import com.spartronics4915.lib.util.drivers.CANTalonFactory;
-import com.spartronics4915.lib.util.drivers.CANTalon;
+import com.spartronics4915.lib.util.drivers.CANTalon4915;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
@@ -106,9 +106,9 @@ public class Drive extends Subsystem
     private DriveControlState mDriveControlState;
 
     // Hardware
-    private CANTalon mLeftMaster = null, mRightMaster = null;
-    private CANTalon mLeftSlave = null, mRightSlave = null;
-    private CANTalon mIMUTalon = null;
+    private CANTalon4915 mLeftMaster = null, mRightMaster = null;
+    private CANTalon4915 mLeftSlave = null, mRightSlave = null;
+    private CANTalon4915 mIMUTalon = null;
     private PigeonIMU mIMU = null;
 
     // Controllers
@@ -128,6 +128,7 @@ public class Drive extends Subsystem
     // Logging
     private final ReflectingCSVWriter<PathFollower.DebugOutput> mCSVWriter;
 
+    // mLoop not registered when we're not initialized
     private final Loop mLoop = new Loop()
     {
 
@@ -193,94 +194,59 @@ public class Drive extends Subsystem
     private Drive()
     {
         // Start all Talons in open loop mode.
-        CANProbe canProbe = CANProbe.getInstance();
-
-        if (!canProbe.validateSRXId(Constants.kLeftDriveMasterId))
+        mLeftMaster = CANTalonFactory.createDefaultTalon(Constants.kLeftDriveMasterId);
+        mLeftMaster.changeControlMode(ControlMode.PercentOutput); // XXX: was PercentVBus
+        mLeftMaster.setFeedbackDevice(FeedbackDevice.QuadEncoder);
+        mLeftMaster.configEncoderCodesPerRev(Constants.kEncoderCodesPerRev);
+        mLeftMaster.reverseSensor(false); // If these aren't correctly reversed your PID will just spiral out of control
+        mLeftMaster.reverseOutput(false);
+        if (!mLeftMaster.isSensorPresent(FeedbackDevice.QuadEncoder))
         {
-            logError("Can't find left master motor");
+            logError("Could not detect left encoder");
         }
-        else
+        mLeftSlave = CANTalonFactory.createPermanentSlaveTalon(Constants.kLeftDriveSlaveId,
+                    Constants.kLeftDriveMasterId);
+        mLeftSlave.reverseOutput(false);
+        
+        mLeftMaster.setStatusFrameRateMs(StatusFrameEnhanced.Status_2_Feedback0, 5); // XXX: was Feedback
+
+        mRightMaster = CANTalonFactory.createDefaultTalon(Constants.kRightDriveMasterId);
+        mRightMaster.changeControlMode(ControlMode.PercentOutput); // XXX: was PercentVBus
+        mRightMaster.reverseSensor(true);
+        mRightMaster.reverseOutput(true);
+        mRightMaster.setFeedbackDevice(FeedbackDevice.QuadEncoder);
+        mRightMaster.configEncoderCodesPerRev(Constants.kEncoderCodesPerRev);
+        if (!mRightMaster.isSensorPresent(FeedbackDevice.QuadEncoder))
         {
-            mLeftMaster = CANTalonFactory.createDefaultTalon(Constants.kLeftDriveMasterId);
-            mLeftMaster.changeControlMode(ControlMode.PercentOutput); // XXX: was PercentVBus
-            mLeftMaster.setFeedbackDevice(FeedbackDevice.QuadEncoder);
-            mLeftMaster.configEncoderCodesPerRev(Constants.kEncoderCodesPerRev);
-            mLeftMaster.reverseSensor(false); // If these aren't correctly reversed your PID will just spiral out of control
-            mLeftMaster.reverseOutput(false);
-            if (!mLeftMaster.isSensorPresent(FeedbackDevice.QuadEncoder))
-            {
-                logError("Could not detect left encoder");
-            }
-            if (!canProbe.validateSRXId(Constants.kLeftDriveSlaveId))
-            {
-                logError("Can't find left slave motor");
-            }
-            else
-            {
-                mLeftSlave = CANTalonFactory.createPermanentSlaveTalon(Constants.kLeftDriveSlaveId,
-                        Constants.kLeftDriveMasterId);
-                mLeftSlave.reverseOutput(false);
-            }
-            mLeftMaster.setStatusFrameRateMs(StatusFrameEnhanced.Status_2_Feedback0, 5); // XXX: was Feedback
+            logError("Could not detect right encoder");
         }
 
-        if (!canProbe.validateSRXId(Constants.kRightDriveMasterId))
-        {
-            logError("Can't find right master motor");
-        }
-        else
-        {
-            mRightMaster = CANTalonFactory.createDefaultTalon(Constants.kRightDriveMasterId);
-            mRightMaster.changeControlMode(ControlMode.PercentOutput); // XXX: was PercentVBus
-            mRightMaster.reverseSensor(true);
-            mRightMaster.reverseOutput(true);
-            mRightMaster.setFeedbackDevice(FeedbackDevice.QuadEncoder);
-            mRightMaster.configEncoderCodesPerRev(Constants.kEncoderCodesPerRev);
-            if (!mRightMaster.isSensorPresent(FeedbackDevice.QuadEncoder))
-            {
-                logError("Could not detect right encoder");
-            }
+        mRightSlave =
+                CANTalonFactory.createPermanentSlaveTalon(Constants.kRightDriveSlaveId,
+                        Constants.kRightDriveMasterId);
+        mRightSlave.reverseOutput(false);
+        mRightMaster.setStatusFrameRateMs(StatusFrameEnhanced.Status_2_Feedback0, 5); // XXX: was Feedback
 
-            if (!canProbe.validateSRXId(Constants.kRightDriveSlaveId))
-            {
-                logError("Can't find right master motor");
-            }
-            else
-            {
-                mRightSlave =
-                        CANTalonFactory.createPermanentSlaveTalon(Constants.kRightDriveSlaveId,
-                                Constants.kRightDriveMasterId);
-                mRightSlave.reverseOutput(false);
-                mRightMaster.setStatusFrameRateMs(StatusFrameEnhanced.Status_2_Feedback0, 5); // XXX: was Feedback
-            }
-        }
-
-        if (mLeftMaster != null)
-        {
-            mLeftMaster.setVelocityMeasurementPeriod(VelocityMeasPeriod.Period_10Ms);
-            mLeftMaster.setVelocityMeasurementWindow(32);
-        }
-        if (mRightMaster != null)
-        {
-            mRightMaster.setVelocityMeasurementPeriod(VelocityMeasPeriod.Period_10Ms);
-            mRightMaster.setVelocityMeasurementWindow(32);
-        }
-
-        if (mRightMaster != null && mRightSlave != null &&
-                mLeftMaster != null && mLeftSlave != null)
+        mLeftMaster.setVelocityMeasurementPeriod(VelocityMeasPeriod.Period_10Ms);
+        mLeftMaster.setVelocityMeasurementWindow(32);
+        mRightMaster.setVelocityMeasurementPeriod(VelocityMeasPeriod.Period_10Ms);
+        mRightMaster.setVelocityMeasurementWindow(32);
+        if (mRightMaster.isValid() && mRightSlave.isValid() &&
+                mLeftMaster.isValid() && mLeftSlave.isValid())
         {
             reloadGains();
             mIsHighGear = false;
             setHighGear(true);
             setOpenLoop(DriveSignal.NEUTRAL);
             // Path Following stuff
-            mIMUTalon = new CANTalon(Constants.kIMUTalonId);
-            // FIXME: Don't use the pigeon, or at least wire it directly into the CAN bus
-            mIMU = new PigeonIMU(mIMUTalon);
-
-            if (mIMU.getState() == PigeonState.NoComm)
-                logError("Could not detect the IMU. Is it plugged in?");
-
+            mIMUTalon = new CANTalon4915(Constants.kIMUTalonId);
+            if(mIMUTalon.isValid())
+            {
+                // FIXME: Don't use the pigeon, or at least wire it directly into the CAN bus
+                mIMU = new PigeonIMU(mIMUTalon.getTalon());
+                if (mIMU.getState() == PigeonState.NoComm)
+                    logError("Could not detect the IMU. Is it plugged in?");
+            }
             // Force a CAN message across.
             mIsBrakeMode = true;
             setBrakeMode(false);
@@ -299,6 +265,8 @@ public class Drive extends Subsystem
     @Override
     public void registerEnabledLoops(Looper in)
     {
+        if(!this.isInitialized()) return;
+
         in.register(mLoop);
     }
 
@@ -307,6 +275,7 @@ public class Drive extends Subsystem
      */
     public synchronized void setOpenLoop(DriveSignal signal)
     {
+        if(!this.isInitialized()) return;
         if (mDriveControlState != DriveControlState.OPEN_LOOP)
         {
             mLeftMaster.changeControlMode(ControlMode.PercentOutput); // XXX: was PctVBus
@@ -342,6 +311,7 @@ public class Drive extends Subsystem
 
     public synchronized void setBrakeMode(boolean on)
     {
+        if(!this.isInitialized()) return;
         if (mIsBrakeMode != on)
         {
             mIsBrakeMode = on;
@@ -361,6 +331,7 @@ public class Drive extends Subsystem
     @Override
     public void outputToSmartDashboard()
     {
+        if(!this.isInitialized()) return;
         final double left_speed = getLeftVelocityInchesPerSec();
         final double right_speed = getRightVelocityInchesPerSec();
         SmartDashboard.putNumber("left voltage (V)", mLeftMaster.getOutputVoltage());
@@ -400,6 +371,7 @@ public class Drive extends Subsystem
 
     public synchronized void resetEncoders()
     {
+        if(!this.isInitialized()) return;
         mLeftMaster.setEncPosition(0);
         mLeftMaster.setPosition(0);
         mRightMaster.setPosition(0);
@@ -411,6 +383,7 @@ public class Drive extends Subsystem
     @Override
     public void zeroSensors()
     {
+        if(!this.isInitialized()) return;
         resetEncoders();
         if (mIMU.getState() != PigeonState.Ready)
         {
@@ -429,6 +402,7 @@ public class Drive extends Subsystem
     public synchronized void setVelocitySetpoint(double left_inches_per_sec,
             double right_inches_per_sec)
     {
+        if(!this.isInitialized()) return;
         configureTalonsForSpeedControl();
         mDriveControlState = DriveControlState.VELOCITY_SETPOINT;
         updateVelocitySetpoint(left_inches_per_sec, right_inches_per_sec);
@@ -439,6 +413,7 @@ public class Drive extends Subsystem
      */
     private void configureTalonsForSpeedControl()
     {
+        if(!this.isInitialized()) return;
         if (!usesTalonVelocityControl(mDriveControlState))
         {
             // We entered a velocity control state.
@@ -461,6 +436,7 @@ public class Drive extends Subsystem
      */
     private void configureTalonsForPositionControl()
     {
+        if(!this.isInitialized()) return;
         if (!usesTalonPositionControl(mDriveControlState))
         {
             // We entered a position control state.
@@ -487,6 +463,7 @@ public class Drive extends Subsystem
     private synchronized void updateVelocitySetpoint(double left_inches_per_sec,
             double right_inches_per_sec)
     {
+        if(!this.isInitialized()) return;
         if (usesTalonVelocityControl(mDriveControlState))
         {
             final double max_desired =
@@ -513,6 +490,7 @@ public class Drive extends Subsystem
     private synchronized void updatePositionSetpoint(double left_position_inches,
             double right_position_inches)
     {
+        if(!this.isInitialized()) return;
         if (usesTalonPositionControl(mDriveControlState))
         {
             mLeftMaster.set(inchesToRotations(left_position_inches));
@@ -548,26 +526,31 @@ public class Drive extends Subsystem
 
     public double getLeftDistanceInches()
     {
+        if(!isInitialized()) return 0.0;
         return rotationsToInches(mLeftMaster.getPosition());
     }
 
     public double getRightDistanceInches()
     {
+        if(!isInitialized()) return 0.0;
         return rotationsToInches(mRightMaster.getPosition());
     }
 
     public double getLeftVelocityInchesPerSec()
     {
+        if(!isInitialized()) return 0.0;
         return rpmToInchesPerSecond(mLeftMaster.getSpeed());
     }
 
     public double getRightVelocityInchesPerSec()
     {
+        if(!isInitialized()) return 0.0;
         return rpmToInchesPerSecond(mRightMaster.getSpeed());
     }
 
     public synchronized Rotation2d getGyroAngle()
     {
+        if(!this.isInitialized()) return new Rotation2d();
         if (mIMU.getState() != PigeonState.Ready)
         {
             DriverStation.reportError("IMU in non-ready state. Is it plugged in?", false);
@@ -580,6 +563,7 @@ public class Drive extends Subsystem
 
     public synchronized void setGyroAngle(Rotation2d angle)
     {
+        if(!this.isInitialized()) return;
         if (mIMU.getState() == PigeonState.NoComm)
             DriverStation.reportError("Could not detect the IMU. Is it plugged in?", false);
         mIMU.setYaw(angle.getDegrees(), 5 /* delayMS */);
@@ -609,6 +593,7 @@ public class Drive extends Subsystem
      */
     private void updateTurnToHeading(double timestamp)
     {
+        if(!this.isInitialized()) return;
         final Rotation2d field_to_robot =
                 mRobotState.getLatestFieldToVehicle().getValue().getRotation(); // We need the field frame because this is specified in field coordinates, not robot ones
         // Figure out the rotation necessary to turn to face the goal.
@@ -640,6 +625,7 @@ public class Drive extends Subsystem
      */
     private void updateDriveTowardsGoalCoarseAlign(double timestamp)
     {
+        if(!this.isInitialized()) return;
         updateGoalHeading(timestamp);
         updateTurnToHeading(timestamp);
         mIsApproaching = true;
@@ -676,6 +662,7 @@ public class Drive extends Subsystem
      */
     private void updateDriveTowardsGoalApproach(double timestamp)
     {
+        if(!this.isInitialized()) return;
         Optional<ShooterAimingParameters> aim = mRobotState.getAimingParameters();
         mIsApproaching = true;
         if (aim.isPresent())
@@ -717,6 +704,7 @@ public class Drive extends Subsystem
      */
     private void updatePathFollower(double timestamp)
     {
+        if(!this.isInitialized()) return;
         RigidTransform2d robot_pose = mRobotState.getLatestFieldToVehicle().getValue();
         Twist2d command = mPathFollower.update(timestamp, robot_pose,
                 RobotState.getInstance().getDistanceDriven(),
@@ -887,6 +875,7 @@ public class Drive extends Subsystem
 
     public synchronized void reloadGains()
     {
+        if(!isInitialized()) return;
         mLeftMaster.setPID(Constants.kDriveLowGearPositionKp, Constants.kDriveLowGearPositionKi,
                 Constants.kDriveLowGearPositionKd, Constants.kDriveLowGearPositionKf,
                 Constants.kDriveLowGearPositionIZone, Constants.kDriveLowGearPositionRampRate,
@@ -922,7 +911,12 @@ public class Drive extends Subsystem
 
     public boolean checkSystem()
     {
-        logNotice("Testing DRIVE.---------------------------------");
+        if(!isInitialized())
+        {
+            logWarning("can't check un-initialized system");
+            return false;
+        }
+        logNotice("checkSystem() ---------------------------------");
         final double kCurrentThres = 0.5;
         final double kRpmThres = 300;
         final double kMaxVoltage = 12.0;

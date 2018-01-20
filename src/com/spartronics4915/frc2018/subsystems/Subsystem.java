@@ -33,24 +33,41 @@ public abstract class Subsystem
 {
     // all subsystems should set mInitialized upon successful init.
     private boolean mInitialized = false;
+    private String mName = null;
     public boolean isInitialized() { return mInitialized; }
 
+    
+    protected Subsystem() // means only subclasses can exist, not Subsystems
+    {        
+        String classname = this.getClass().getName();
+        int tail = classname.lastIndexOf('.');
+        if(tail == -1)
+        {
+            mName = classname;
+        }
+        else
+        {
+            mName = classname.substring(tail+1);
+        }   
+    }
+    
     public String getName()
     {
-        return this.getClass().getName();
+        return mName;
     }
     
     public void logInitialized(boolean success)
     {
         mInitialized = success;
-        this.logNotice("initialized (success:" + success + ")");
+        if(success)
+            this.logNotice("init SUCCEEDED");
+        else
+            this.logWarning("init FAILED");
     }
 
     public void logError(String msg)
     {
-        String smsg = this.getName() + " " + msg;
-        Logger.error(smsg); 
-        DriverStation.reportError(smsg, false); // remove if too noisy.
+        Logger.error(this.getName() + " " + msg); 
     }
     
     public void logWarning(String msg)
