@@ -77,7 +77,7 @@ public class CANTalonFactoryTest {
         });
         PowerMockito.whenNew(CANTalon4915.class).withAnyArguments().thenReturn(talon);
 
-        CANTalon4915 returnedTalon = CANTalonFactory.createDefaultTalon(1);
+        CANTalon4915 returnedTalon = CANTalonFactory.createDefaultMotor(1);
         String talonInfo = CANTalonFactory.getFullTalonInfo(returnedTalon);
 
         Assert.assertEquals(
