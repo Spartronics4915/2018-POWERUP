@@ -1,12 +1,15 @@
 package com.spartronics4915.lib.util.drivers;
 
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
+import com.spartronics4915.frc2018.Constants;
 import com.spartronics4915.lib.util.CANProbe;
 import com.ctre.phoenix.ParamEnum;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.Faults;
 import com.ctre.phoenix.motorcontrol.LimitSwitchSource;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
+import com.ctre.phoenix.motorcontrol.RemoteFeedbackDevice;
+import com.ctre.phoenix.motorcontrol.RemoteSensorSource;
 import com.ctre.phoenix.motorcontrol.LimitSwitchNormal;
 import com.ctre.phoenix.motorcontrol.VelocityMeasPeriod;
 import com.ctre.phoenix.motorcontrol.StatusFrameEnhanced;
@@ -20,15 +23,15 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableBuilder;
 import edu.wpi.first.wpilibj.hal.HAL;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 
-/* CANTalonPhoenix is a portability interface intended to facilitate
+/* CANTalonw4915 is a portability interface intended to facilitate
  * porting from CTRE CANTalon 2017 libs to CTRE Phoenix 2018.
  * This abstraction is useful as a buffer between all the
  * bad/weird stuff that CTRE does. It allows us to document
  * better, and even implement new features (e.g Talon
  * compatibility with Synthesis).
- * 
+ *
  * NB: we should endeavor to constrain the interface to those
- *   methods that we feel are useful.
+ *   methods that we feel are useful to subsystems.
  */
 
 // From Phoenix docs:
@@ -41,21 +44,64 @@ import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 //  AndyMark CIMcode    ->  80  (20 pulse -> 80 edges)
 //
 // Velocity is measured in sensor units per 100ms. This ensures
-//  sufficient resolution regardless of the sensing strategy. For 
-//  example, when using the CTRE Magnetic Encoder, 1u velocity 
-//  represents 1/4096 of a rotation every 100ms. Generally you 
+//  sufficient resolution regardless of the sensing strategy. For
+//  example, when using the CTRE Magnetic Encoder, 1u velocity
+//  represents 1/4096 of a rotation every 100ms. Generally you
 //  can multiply the velocity units by 600/UnitsPerRotation to obtain RPM.
 //
-// Tachometer velocity measurement is unique in that it measures 
-//  time directly. As a result, the reported velocity is calculated 
-//  where 1024 represents a full "rotation". This means that a velocity 
+// Tachometer velocity measurement is unique in that it measures
+//  time directly. As a result, the reported velocity is calculated
+//  where 1024 represents a full "rotation". This means that a velocity
 //  measurement of 1 represents 1/1024 of a rotation every 100ms
-
+//
+// On timeouts:
+//  Some routines can optionally wait for a response from the device
+//  up to a timeout. If the response is never received, an error code
+//  is returned and the Drive Station will receive an error message.
+//  Pass 0 to avoid blocking at all. When initializing device on robot-boot,
+//  we recommend passing 10ms. When calling routines in the loop of the
+//  robot, pass zero to avoid blocking. All configuration routines are
+//  prefixed with "config" instead of "set" or "enable". Configuration
+//  routines are defined as persistent parameters. Config routines are
+//  also factory defaulted by press-and-holding B/C CAL button on boot.
+//
+// On persistent state:
+//  The TalonSRX has many parameters whose values persist across power
+//  downs.  One of the biggest time-syncs in Talon development occurs when
+//  we only partially specify values for persistent parameters.  When dabbling
+//  with new values we may try out some values, then comment them out Because
+//  they either had not effect or had a bad effect.   Now, the last value present
+//  wins and behavior becomes obscured by the fact that the code is commented
+//  out.
+//
+// On migration:
+// https://github.com/CrossTheRoadElec/Phoenix-Documentation/blob/master/Migration%20Guide.md
+//
+//  On factory vs CANTalon4915:
+//    We'd like to encapsulate all the CANTalon details here.  Creating named
+//    configs is a good thing, but configuring the motors is private business
+//    which, if dealt with here means our interface can be more minimal/private.
+//    
 public class CANTalon4915 implements Sendable, MotorSafety
 {
+    static final int sInitTimeoutMS = 10;
+    static final int sUpdateTimeoutMS = 0; // 0 for no blocking. This is like the old behavior (I think).
+    
+    public enum Config
+    {
+        kCustomMotor(0),
+        kDefaultMotor(1),
+        kDriveMotor(2),
+        kDriveFollowerMotor(3);
+        public final int mValue;
+        Config(int initValue)
+        {
+            mValue = initValue;
+        }
+    };
 
-    static final int sDefaultTimeoutMS = 0; // 0 for no blocking. This is like the old behavior (I think).
-    static final int sPidIdx = 0; // We're unsure about what this does.
+    /* CANTalon4915  members ------------------------------------------------*/
+    static final int sPidIdx = 0; // 0 is primary closed-loop, 1 is cascaded (unused atm)
     static final int sDefaultOrdinal = 0; // This probably does something specific on certain ParamEnums
 
     ControlMode mControlMode = ControlMode.Disabled;
@@ -63,7 +109,6 @@ public class CANTalon4915 implements Sendable, MotorSafety
     NeutralMode mNeutralMode;
     int mDeviceId;
     double mLastSetpoint = 0;
-    int mPidSlot;
     int mMaxVolts = 12;
     int mCodesPerRevolution; // Encoder codes per revolution
     TalonSRX mTalon = null;
@@ -71,13 +116,19 @@ public class CANTalon4915 implements Sendable, MotorSafety
     String mSubsystem = "Ungrouped"; // for Sendable
     MotorSafetyHelper mSafetyHelper;
 
+    /* CANTalon4915  methods ------------------------------------------------*/
     public CANTalon4915(int deviceNumber)
+    {
+        this(deviceNumber,  Config.kDefaultMotor);
+    }
+    
+    public CANTalon4915(int deviceNumber, Config c)
     {
         mDeviceId = deviceNumber;
         mDescription = "TalonSRX4915 " + deviceNumber;
         LiveWindow.add(this);
         setName(mDescription);
-        
+
         CANProbe canProbe = CANProbe.getInstance();
         if (canProbe.validateSRXId(deviceNumber))
         {
@@ -86,48 +137,7 @@ public class CANTalon4915 implements Sendable, MotorSafety
             mSafetyHelper = new MotorSafetyHelper(this);
             mSafetyHelper.setExpiration(0.0);
             mSafetyHelper.setSafetyEnabled(false);
-            
-            //        this.changeMotionControlFramePeriod(config.MOTION_CONTROL_FRAME_PERIOD_MS);
-            //        this.clearIAccum();
-            //        this.clearMotionProfileHasUnderrun();
-            //        this.clearMotionProfileTrajectories();
-            //        this.clearStickyFaults();
-            //        this.configFwdLimitSwitchNormallyOpen(config.LIMIT_SWITCH_NORMALLY_OPEN);
-            //        this.configMaxOutputVoltage(config.MAX_OUTPUT_VOLTAGE);
-            //        this.configNominalOutputVoltage(config.NOMINAL_VOLTAGE, -config.NOMINAL_VOLTAGE);
-            //        this.configPeakOutputVoltage(config.PEAK_VOLTAGE, -config.PEAK_VOLTAGE);
-            //        this.configRevLimitSwitchNormallyOpen(config.LIMIT_SWITCH_NORMALLY_OPEN);
-            //        this.enableBrakeMode(config.ENABLE_BRAKE);
-            //        this.enableCurrentLimit(config.ENABLE_CURRENT_LIMIT);
-            //        this.enableForwardSoftLimit(config.ENABLE_SOFT_LIMIT);
-            //        this.enableLimitSwitch(config.ENABLE_LIMIT_SWITCH, config.ENABLE_LIMIT_SWITCH);
-            //        this.enableReverseSoftLimit(config.ENABLE_SOFT_LIMIT);
-            //        this.enableZeroSensorPositionOnForwardLimit(false);
-            //        this.enableZeroSensorPositionOnIndex(false, false);
-            //        this.enableZeroSensorPositionOnReverseLimit(false);
-            //        this.reverseOutput(false);
-            //        this.reverseSensor(false);
-            //        this.setAnalogPosition(0);
-            //        this.setCurrentLimit(config.CURRENT_LIMIT);
-            //        this.setExpiration(config.EXPIRATION_TIMEOUT_SECONDS);
-            //        this.setForwardSoftLimit(config.FORWARD_SOFT_LIMIT);
-            //        this.reverseOutput(config.INVERTED);
-            //        this.setNominalClosedLoopVoltage(config.NOMINAL_CLOSED_LOOP_VOLTAGE);
-            //        this.setPosition(0);
-            //        this.setProfile(0);
-            //        this.setPulseWidthPosition(0);
-            //        this.setReverseSoftLimit(config.REVERSE_SOFT_LIMIT);
-            //        this.setSafetyEnabled(config.SAFETY_ENABLED);
-            //        this.setVelocityMeasurementPeriod(config.VELOCITY_MEASUREMENT_PERIOD);
-            //        this.setVelocityMeasurementWindow(config.VELOCITY_MEASUREMENT_ROLLING_AVERAGE_WINDOW);
-            //        this.setVoltageCompensationRampRate(config.VOLTAGE_COMPENSATION_RAMP_RATE);
-            //        this.setVoltageRampRate(config.VOLTAGE_RAMP_RATE);
-            //
-            //        this.setStatusFrameRateMs(StatusFrameEnhanced.Status_1_General, config.GENERAL_STATUS_FRAME_RATE_MS);
-            //        this.setStatusFrameRateMs(StatusFrameEnhanced.Status_2_Feedback0, config.FEEDBACK_STATUS_FRAME_RATE_MS); // XXX: was Feedback
-            //        this.setStatusFrameRateMs(StatusFrameEnhanced.Status_3_Quadrature, config.QUAD_ENCODER_STATUS_FRAME_RATE_MS);
-            //        this.setStatusFrameRateMs(StatusFrameEnhanced.Status_4_AinTempVbat,
-            //                config.ANALOG_TEMP_VBAT_STATUS_FRAME_RATE_MS);
+            configGeneral(c, sInitTimeoutMS);
         }
     }
     
@@ -135,163 +145,190 @@ public class CANTalon4915 implements Sendable, MotorSafety
     {
         return mTalon != null;
     }
-    
+
     public TalonSRX getTalon()
     {
         return mTalon;
+    }
+    
+    // configuration { -----------------------------------------------------------------------
+    private void configGeneral(Config c, int timeOutMS)
+    {
+        if(mTalon == null) return;
+        
+        // power and response ------------------------------------------------------------------
+        mTalon.configClosedloopRamp(.5, timeOutMS); // .5 sec to go from 0 to max
+        mTalon.configOpenloopRamp(.5,  timeOutMS);
+        mTalon.configNeutralDeadband(.04,  timeOutMS); // output deadband pct 4% (factory default)
+        mTalon.configNominalOutputForward(1.0, timeOutMS);  // [0, 1]
+        mTalon.configNominalOutputReverse(-1.0, timeOutMS); // [-1, 0]
+        mTalon.configPeakOutputForward(1.0, timeOutMS);
+        mTalon.configPeakOutputReverse(-1.0, timeOutMS);
+        
+        // current limits are TalonSRX-specific
+        // Configure the continuous allowable current-draw (when current limit is enabled).
+        // Current limit is activated when current exceeds the peak limit for longer than the 
+        // peak duration. Then software will limit to the continuous limit. This ensures current 
+        // limiting while allowing for momentary excess current events.
+        // For simpler current-limiting (single threshold) use configContinuousCurrentLimit() and
+        // set the peak to zero: configPeakCurrentLimit(0).
+        mTalon.configContinuousCurrentLimit(30, timeOutMS); // 30 amps
+        mTalon.configPeakCurrentLimit(0, timeOutMS);
+        mTalon.configPeakCurrentDuration(5000, timeOutMS); // milliseconds
+        mTalon.enableCurrentLimit(false);
+               
+        // voltageCompSaturation:
+        //  This is the max voltage to apply to the hbridge when voltage compensation is enabled. 
+        //  For example, if 10 (volts) is specified and a TalonSRX is commanded to 0.5 
+        //  (PercentOutput, closed-loop, etc) then the TalonSRX will attempt to apply a 
+        //  duty-cycle to produce 5V.
+        mTalon.configVoltageCompSaturation(12.0, timeOutMS);
+        mTalon.configVoltageMeasurementFilter(64, timeOutMS);
+
+        // MotionMAGIC sensorUnitsPer100ms used for position-control ----------------------------
+        mTalon.configMotionAcceleration(0, timeOutMS);
+        mTalon.configMotionCruiseVelocity(0, timeOutMS);
+        mTalon.configMotionProfileTrajectoryPeriod(0, timeOutMS);
+        mTalon.clearMotionProfileHasUnderrun(timeOutMS);
+        mTalon.clearMotionProfileTrajectories();
+      
+        // filters and sensors, remote and local --------------------------------------------------
+        // no remote feedback filters for now (for remote sensors, like remote, not direct, IMU
+        mTalon.configRemoteFeedbackFilter(0, RemoteSensorSource.Off, 0, 0);
+        mTalon.configRemoteFeedbackFilter(0, RemoteSensorSource.Off, 1, 0);
+        mTalon.configSelectedFeedbackSensor(RemoteFeedbackDevice.None, 0, 0);
+        
+        // default to no local feedback sensors
+        mTalon.configSelectedFeedbackSensor(FeedbackDevice.None, 0, 0);
+        
+        // no forward limit switch
+        mTalon.configForwardLimitSwitchSource(LimitSwitchSource.Deactivated, 
+                LimitSwitchNormal.NormallyOpen, timeOutMS);
+        mTalon.configForwardSoftLimitEnable(false, timeOutMS);
+        mTalon.configForwardSoftLimitThreshold(0, timeOutMS); // in raw sensor units
+       
+        // no reverse limit switch
+        mTalon.configReverseLimitSwitchSource(LimitSwitchSource.Deactivated, 
+                LimitSwitchNormal.NormallyOpen, timeOutMS);
+        mTalon.configReverseSoftLimitEnable(false, timeOutMS);
+        mTalon.configReverseSoftLimitThreshold(0, timeOutMS);
+       
+        // misc non-config, but valuable defaults -----------------------------------------------
+        this.setControlMode(ControlMode.PercentOutput);
+        mTalon.setInverted(false);
+        mTalon.setSensorPhase(false);
+        mTalon.setNeutralMode(NeutralMode.Brake);
+        mTalon.clearStickyFaults(timeOutMS);
+       
+        // feedback rate control ----------------------------------------------------------------
+        //  nb: frame periods aren't persistent
+        //  setStatusFramePeriod is used to tradeoff CAN bus utilization for feedback
+        //  period is measured in milliseconds
+        if(c == Config.kDriveMotor)
+        {
+            // drive wants very tight feedback
+            mTalon.configVelocityMeasurementPeriod(VelocityMeasPeriod.Period_10Ms, timeOutMS);
+            mTalon.configVelocityMeasurementWindow(32, timeOutMS);
+            mTalon.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0, 5, timeOutMS);
+            mTalon.setStatusFramePeriod(StatusFrameEnhanced.Status_1_General, 5, timeOutMS);
+        }
+        else
+        if(c == Config.kDriveFollowerMotor)
+        {
+            // followers don't need feedback 'tall
+            mTalon.configVelocityMeasurementPeriod(VelocityMeasPeriod.Period_100Ms, timeOutMS);
+            mTalon.configVelocityMeasurementWindow(64, timeOutMS);
+            mTalon.setStatusFramePeriod(StatusFrameEnhanced.Status_1_General, 1000, timeOutMS);
+            mTalon.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0, 1000, timeOutMS);
+            mTalon.setStatusFramePeriod(StatusFrameEnhanced.Status_4_AinTempVbat, 1000, timeOutMS);
+            mTalon.setStatusFramePeriod(StatusFrameEnhanced.Status_6_Misc, 1000, timeOutMS);
+            mTalon.setStatusFramePeriod(StatusFrameEnhanced.Status_7_CommStatus, 1000, timeOutMS);
+            mTalon.setStatusFramePeriod(StatusFrameEnhanced.Status_9_MotProfBuffer, 1000, timeOutMS);
+            mTalon.setStatusFramePeriod(StatusFrameEnhanced.Status_10_MotionMagic, 1000, timeOutMS);
+            mTalon.setStatusFramePeriod(StatusFrameEnhanced.Status_12_Feedback1, 1000, timeOutMS);
+            mTalon.setStatusFramePeriod(StatusFrameEnhanced.Status_13_Base_PIDF0, 1000, timeOutMS);
+            mTalon.setStatusFramePeriod(StatusFrameEnhanced.Status_14_Turn_PIDF1, 1000, timeOutMS);
+            mTalon.setStatusFramePeriod(StatusFrameEnhanced.Status_3_Quadrature, 1000, timeOutMS);
+        }
+        else
+        {
+            // should we be more concerned in the non-drive motor cases?
+            mTalon.configVelocityMeasurementPeriod(VelocityMeasPeriod.Period_100Ms, timeOutMS);
+            mTalon.configVelocityMeasurementWindow(64, timeOutMS);
+        }
+        // Calling application can opt to speed up the handshaking between the robot API and 
+        // the controller to increase the download rate of the controller's Motion Profile. 
+        // Ideally the period should be no more than half the period of a trajectory point
+        mTalon.changeMotionControlFramePeriod(100); // millis
+    }
+    
+    // configEncoder:
+    //
+    // pidIdx:
+    // 
+    // sensorPhase:
+    //  Sets the phase of the sensor. Use when controller forward/reverse output doesn't 
+    //  correlate to appropriate forward/reverse reading of sensor. Pick a value so that 
+    //  positive PercentOutput yields a positive change in sensor. After setting this, user 
+    //  can freely call SetInvert() with any value.
+    public void configEncoder(int pidIdx, FeedbackDevice dev, boolean sensorPhase, 
+            boolean isInverted, int encoderCodesPerRev)
+    {
+        if(mTalon == null) return;
+        mTalon.configSelectedFeedbackSensor(dev, pidIdx, sInitTimeoutMS);
+        mTalon.setSensorPhase(sensorPhase);
+        this.setEncoderCodesPerRev(encoderCodesPerRev);
+        mTalon.setInverted(isInverted);
+    }
+    
+    public void configNominalOutput(double fwd, double rev)
+    {
+        if(mTalon == null) return;
+        mTalon.configNominalOutputForward(fwd, sInitTimeoutMS);
+        mTalon.configNominalOutputForward(rev, sInitTimeoutMS);
+    }
+    
+    public void configPID(int slotIdx, double p, double i, double d, double f, int izone, 
+                        double closedLoopRampRate)
+    {
+        if (mTalon != null)
+        {
+            mTalon.config_kP(slotIdx, p, sUpdateTimeoutMS);
+            mTalon.config_kI(slotIdx, i, sUpdateTimeoutMS);
+            mTalon.config_kD(slotIdx, d, sUpdateTimeoutMS);
+            mTalon.config_kF(slotIdx, f, sUpdateTimeoutMS);
+            mTalon.config_IntegralZone(slotIdx, izone, sUpdateTimeoutMS);
+            mTalon.configClosedloopRamp(closedLoopRampRate, sUpdateTimeoutMS); // XXX: not a slot-based mod!
+            // mTalon.configOpenloopRamp(newRampRate, sUpdateTimeoutMS);
+        }
+    }
+    
+    public void configMotionMagic(int maxVelocity, int maxAcceleration)
+    {
+        if(mTalon == null) return;
+        mTalon.configMotionCruiseVelocity(maxVelocity, sUpdateTimeoutMS);
+        mTalon.configMotionAcceleration(maxAcceleration, sUpdateTimeoutMS);
+        // mTalon.configMotionProfileTrajectoryPeriod(trajPeriod, sUpdateTimeoutMS);
     }
 
     public String dumpState()
     {
         if (mTalon != null)
         {
-            @SuppressWarnings("deprecation") // Things that don't work are deprecated
-            StringBuilder sb = new StringBuilder().append("isRevLimitSwitchClosed = ")
-                    .append(this.isRevLimitSwitchClosed()).append("\n").append("getBusVoltage = ")
-                    .append(mTalon.getBusVoltage()).append("\n")
-                    .append("isForwardSoftLimitEnabled = ")
-                    .append(this.isForwardSoftLimitEnabled()).append("\n")
-                    .append("getFaultRevSoftLim = ")
-                    .append(this.getFaultRevSoftLim()).append("\n")
-                    .append("getStickyFaultOverTemp = ")
-                    .append(this.getStickyFaultOverTemp()).append("\n")
-                    .append("isZeroSensorPosOnFwdLimitEnabled = ")
-                    .append(this.isZeroSensorPosOnFwdLimitEnabled()).append("\n")
-                    .append("getMotionProfileTopLevelBufferCount = ")
-                    .append(mTalon.getMotionProfileTopLevelBufferCount())
-                    .append("\n").append("getNumberOfQuadIdxRises = ")
-                    .append(this.getNumberOfQuadIdxRises()).append("\n")
-                    .append("getInverted = ").append(mTalon.getInverted()).append("\n")
-                    .append("getPulseWidthRiseToRiseUs = ").append(this.getPulseWidthRiseToRiseUs())
-                    .append("\n")
-                    .append("getError = ").append(this.getError()).append("\n")
-                    .append("isSensorPresent = ")
-                    .append(this.isSensorPresent(FeedbackDevice.CTRE_MagEncoder_Relative))
-                    .append("\n")
-                    .append("isControlEnabled = ").append(this.isControlEnabled()).append("\n")
-                    .append("getTable = ")
-                    //.append(this.getTable()).append("\n") // XXX: Sendable::getTable method has disappeared
-                    .append("isEnabled = ").append(this.isEnabled()).append("\n")
-                    .append("isZeroSensorPosOnRevLimitEnabled = ")
-                    .append(this.isZeroSensorPosOnRevLimitEnabled())
-                    .append("\n").append("isSafetyEnabled = ").append(this.isSafetyEnabled())
-                    .append("\n")
-                    .append("getOutputVoltage = ").append(this.getOutputVoltage()).append("\n")
-                    .append("getTemperature = ")
-                    .append(mTalon.getTemperature()).append("\n")
-                    // .append("getSmartDashboardType = ")
-                    // .append(this.getSmartDashboardType()).append("\n") // XXX: Sendable::getSmartDashboardType has disappeared
-                    .append("getPulseWidthPosition = ")
-                    .append(this.getPulseWidthPosition()).append("\n").append("getOutputCurrent = ")
-                    .append(mTalon.getOutputCurrent()).append("\n")
-                    .append("\n")
-                    .append("isZeroSensorPosOnIndexEnabled = ")
-                    .append(this.isZeroSensorPosOnIndexEnabled()).append("\n")
-                    .append("getMotionMagicCruiseVelocity = ")
-                    .append(this.getMotionMagicCruiseVelocity()).append("\n")
-                    .append("getStickyFaultRevSoftLim = ").append(this.getStickyFaultRevSoftLim())
-                    .append("\n")
-                    .append("getFaultRevLim = ").append(this.getFaultRevLim()).append("\n")
-                    .append("getEncPosition = ")
-                    .append(this.getEncPosition()).append("\n").append("getIZone = ")
-                    .append(this.getIZone()).append("\n")
-                    .append("getAnalogInPosition = ").append(this.getAnalogInPosition())
-                    .append("\n")
-                    .append("getFaultUnderVoltage = ").append(this.getFaultUnderVoltage())
-                    .append("\n")
-                    .append("getCloseLoopRampRate = ").append(this.getCloseLoopRampRate())
-                    .append("\n")
-                    .append("toString = ").append(this.toString()).append("\n")
-                    // .append("getMotionMagicActTrajPosition =
-                    // ").append(this.getMotionMagicActTrajPosition()).append("\n")
-                    .append("getF = ").append(this.getF()).append("\n").append("getClass = ")
-                    .append(this.getClass())
-                    .append("\n").append("getAnalogInVelocity = ")
-                    .append(this.getAnalogInVelocity())
-                    .append("\n")
-                    .append("getI = ").append(this.getI()).append("\n")
-                    .append("isReverseSoftLimitEnabled = ")
-                    .append(this.isReverseSoftLimitEnabled()).append("\n")
-                    // .append("getPIDSourceType = ").append(this.getPIDSourceType()).append("\n") // XXX Sendable change
-                    .append("getEncVelocity = ")
-                    .append(this.getEncVelocity()).append("\n")
-                    .append("GetVelocityMeasurementPeriod = ")
-                    .append(this.getVelocityMeasurementPeriod()).append("\n").append("getP = ")
-                    .append(this.getP())
-                    .append("\n").append("GetVelocityMeasurementWindow = ")
-                    .append(this.getVelocityMeasurementWindow())
-                    .append("\n").append("getDeviceID = ").append(mTalon.getDeviceID()).append("\n")
-                    .append("getStickyFaultRevLim = ").append(this.getStickyFaultRevLim())
-                    .append("\n")
-                    // .append("getMotionMagicActTrajVelocity =
-                    // ").append(this.getMotionMagicActTrajVelocity()).append("\n")
-                    .append("getReverseSoftLimit = ").append(this.getReverseSoftLimit())
-                    .append("\n")
-                    .append("getD = ")
-                    .append(this.getD()).append("\n").append("getFaultOverTemp = ")
-                    .append(this.getFaultOverTemp())
-                    .append("\n").append("getForwardSoftLimit = ")
-                    .append(this.getForwardSoftLimit())
-                    .append("\n")
-                    .append("GetFirmwareVersion = ").append(mTalon.getFirmwareVersion())
-                    .append("\n")
-                    .append("getLastError = ").append(mTalon.getLastError()).append("\n")
-                    .append("isAlive = ")
-                    .append(this.isAlive()).append("\n").append("getPinStateQuadIdx = ")
-                    .append(this.getPinStateQuadIdx())
-                    .append("\n").append("getAnalogInRaw = ").append(this.getAnalogInRaw())
-                    .append("\n")
-                    .append("getFaultForLim = ").append(this.getFaultForLim()).append("\n")
-                    .append("getSpeed = ")
-                    .append(this.getSpeed()).append("\n").append("getStickyFaultForLim = ")
-                    .append(this.getStickyFaultForLim()).append("\n")
-                    .append("getFaultForSoftLim = ")
-                    .append(this.getFaultForSoftLim()).append("\n")
-                    .append("getStickyFaultForSoftLim = ")
-                    .append(this.getStickyFaultForSoftLim()).append("\n")
-                    .append("getClosedLoopError = ")
-                    .append(this.getClosedLoopError()).append("\n").append("getSetpoint = ")
-                    .append(this.getSetpoint())
-                    .append("\n").append("isMotionProfileTopLevelBufferFull = ")
-                    .append(mTalon.isMotionProfileTopLevelBufferFull()).append("\n")
-                    .append("getDescription = ")
-                    .append(this.getDescription()).append("\n").append("hashCode = ")
-                    .append(this.hashCode()).append("\n")
-                    .append("isFwdLimitSwitchClosed = ").append(this.isFwdLimitSwitchClosed())
-                    .append("\n")
-                    .append("getPinStateQuadA = ").append(this.getPinStateQuadA()).append("\n")
-                    .append("getPinStateQuadB = ").append(this.getPinStateQuadB()).append("\n")
-                    .append("GetIaccum = ")
-                    .append(this.getIaccum()).append("\n").append("getFaultHardwareFailure = ")
-                    .append(this.getFaultHardwareFailure()).append("\n").append("pidGet = ")
-                    .append(this.pidGet())
-                    .append("\n").append("getBrakeEnableDuringNeutral = ")
-                    .append(this.getBrakeEnableDuringNeutral())
-                    .append("\n").append("getStickyFaultUnderVoltage = ")
-                    .append(this.getStickyFaultUnderVoltage())
-                    .append("\n").append("getPulseWidthVelocity = ")
-                    .append(this.getPulseWidthVelocity()).append("\n")
-                    .append("GetNominalClosedLoopVoltage = ")
-                    .append(this.getNominalClosedLoopVoltage())
-                    .append("\n")
-                    .append("getPosition = ").append(this.getPosition()).append("\n")
-                    .append("getExpiration = ")
-                    .append(this.getExpiration()).append("\n")
-                    .append("getPulseWidthRiseToFallUs = ")
-                    .append(this.getPulseWidthRiseToFallUs()).append("\n")
-                    // .append("createTableListener = ").append(this.createTableListener()).append("\n")
-                    .append("getControlMode = ").append(mTalon.getControlMode()).append("\n")
-                    .append("getMotionMagicAcceleration = ")
-                    .append(this.getMotionMagicAcceleration())
-                    .append("\n")
-                    .append("getControlMode = ").append(mTalon.getControlMode());
+            StringBuilder sb = new StringBuilder()
+                         .append("firmware version:")
+                             .append(Integer.toHexString(mTalon.getFirmwareVersion()))
+                             .append("\n")
+                         ;
             return sb.toString();
-        }
+         }
         else
         {
             return "Talon " + mDeviceId + " was not found on the CAN bus";
         }
     }
+    
+    // } configuration
 
     // MotorSafety Interface { -------------------------------------------------------------
     @Override
@@ -386,8 +423,8 @@ public class CANTalon4915 implements Sendable, MotorSafety
     }
 
     // } Sendable Interface
-    
-    
+
+
     /* TalonSRX dispatch -------------------------------------------------------------------*/
     public double getOutputCurrent()
     {
@@ -403,7 +440,7 @@ public class CANTalon4915 implements Sendable, MotorSafety
      * Native velocity is Native Units per 100 milliseconds.
      * <b>configEncoderCodesPerRev must have been called for
      * this to work!</b>
-     * 
+     *
      * @param Rotations per minute
      * @return Native Units per 100 milliseconds
      */
@@ -421,7 +458,7 @@ public class CANTalon4915 implements Sendable, MotorSafety
      * Native velocity is Native Units per 100 milliseconds.
      * <b>configEncoderCodesPerRev must have been called for
      * this to work!</b>
-     * 
+     *
      * @param Native unit velocity
      * @return Rotations per minute
      */
@@ -438,7 +475,7 @@ public class CANTalon4915 implements Sendable, MotorSafety
      * to wheel rotations.
      * <b>configEncoderCodesPerRev must have been called for
      * this to work!</b>
-     * 
+     *
      * @param Absolute encoder codes (use {@link nativeVelocityToRpm} for
      *        non-absolute units)
      * @return Absolute wheel rotations
@@ -455,14 +492,13 @@ public class CANTalon4915 implements Sendable, MotorSafety
      * This is basically the only thing the new API does better,
      * IMO. You need to maintain state with the old API, and this
      * preserves that behavior.
-     * 
+     *
      * @param The output depending on the ControlMode you've set the motor to.
      */
     public void set(double value)
     {
         if (mTalon != null)
         {
-            // We've integrated LazyCANTalon into here
             if(mSafetyHelper != null)
                 mSafetyHelper.feed();
             if (value != mLastSetpoint || mControlMode != mLastControlMode)
@@ -473,7 +509,7 @@ public class CANTalon4915 implements Sendable, MotorSafety
             }
         }
     }
-    
+
      /**
      * Sets the output on the Talon, with the mode specified explicitly.
      * This overrides the new-style method, so that we can maintain
@@ -496,26 +532,12 @@ public class CANTalon4915 implements Sendable, MotorSafety
         return mLastSetpoint;
     }
 
-    public void changeControlMode(ControlMode m)
+    public void setControlMode(ControlMode m)
     {
         this.mControlMode = m; // in SRX mode, set() requires controlmode
     }
 
-    public void setControlMode(ControlMode m)
-    {
-        this.mControlMode = m;
-    }
-
-    public void setFeedbackDevice(FeedbackDevice d)
-    {
-        if (mTalon != null)
-        {
-            mTalon.configSelectedFeedbackSensor(d, sPidIdx, sDefaultTimeoutMS);
-            mTalon.setSensorPhase(false);
-        }
-    }
-
-    public void configEncoderCodesPerRev(int cpr)
+     private void setEncoderCodesPerRev(int cpr)
     {
         mCodesPerRevolution = cpr;
     }
@@ -524,123 +546,56 @@ public class CANTalon4915 implements Sendable, MotorSafety
     {
         if (mTalon != null)
         {
-            mTalon.getSensorCollection().setQuadraturePosition(p, sDefaultTimeoutMS);
+            mTalon.getSensorCollection().setQuadraturePosition(p, sUpdateTimeoutMS);
         }
     }
 
-    public void setPID(double p, double i, double d, double f, int izone, double closeLoopRampRate,
-            int profile)
+    private void setMotionMagicAcceleration(double motMagicAccel)
     {
         if (mTalon != null)
         {
-            mTalon.config_kP(profile, p, sDefaultTimeoutMS);
-            mTalon.config_kI(profile, i, sDefaultTimeoutMS);
-            mTalon.config_kD(profile, d, sDefaultTimeoutMS);
-            mTalon.config_kF(profile, f, sDefaultTimeoutMS);
-            mTalon.config_IntegralZone(profile, izone, sDefaultTimeoutMS);
-            double newRampRate = mMaxVolts / closeLoopRampRate;
-            mTalon.configClosedloopRamp(newRampRate, sDefaultTimeoutMS);
-            mTalon.configOpenloopRamp(newRampRate, sDefaultTimeoutMS);
+            mTalon.configMotionAcceleration(rpmToNativeVelocity(motMagicAccel), sUpdateTimeoutMS);
         }
     }
 
-    public void setMotionMagicAcceleration(double motMagicAccel)
-    {
-        if (mTalon != null)
-        {
-            mTalon.configMotionAcceleration(rpmToNativeVelocity(motMagicAccel), sDefaultTimeoutMS);
-        }
-    }
-
-    public void setMotionMagicCruiseVelocity(double kDriveLowGearMaxVelocity)
+    private void setMotionMagicCruiseVelocity(double kDriveLowGearMaxVelocity)
     {
         if (mTalon != null)
         {
             mTalon.configMotionCruiseVelocity(rpmToNativeVelocity(kDriveLowGearMaxVelocity),
-                    sDefaultTimeoutMS);
+                    sUpdateTimeoutMS);
         }
     }
 
-    public void clearIAccum()
+    private void clearIAccum()
     {
         if (mTalon != null)
-            mTalon.setIntegralAccumulator(0, sPidIdx, sDefaultTimeoutMS);
+            mTalon.setIntegralAccumulator(0, sPidIdx, sUpdateTimeoutMS);
     }
 
-    public void clearMotionProfileHasUnderrun()
+    private void clearMotionProfileHasUnderrun()
     {
         if (mTalon != null)
-            mTalon.clearMotionProfileHasUnderrun(sDefaultTimeoutMS);
+            mTalon.clearMotionProfileHasUnderrun(sUpdateTimeoutMS);
     }
 
-    public void clearStickyFaults()
+    private void clearStickyFaults()
     {
         if (mTalon != null)
-            mTalon.clearStickyFaults(sDefaultTimeoutMS);
-    }
-
-    /**
-     * There is no equivalent in the new api for this.
-     * 
-     * @deprecated
-     * @return void
-     */
-    public void configMaxOutputVoltage(double maxV)
-    {
-        // XXX: Really? Is configPeakOutputVoltage equivalent?
-    }
-
-    /**
-     * Configure the nominal output voltage allowed.
-     * <b>Because of how the new api works, min is ignored!</b>
-     * 
-     * @param max
-     * @param <b>min (completely ignored)</b>
-     */
-    public void configNominalOutputVoltage(double max, double min)
-    {
-        if (mTalon != null)
-        {
-            // XXX: This was changed to use percentages, and just negate the percentage for the min.
-            // That means that min doesn't do anything.
-            mTalon.configNominalOutputForward(max / mMaxVolts, sDefaultTimeoutMS);
-            mTalon.configNominalOutputReverse(max / mMaxVolts, sDefaultTimeoutMS);
-        }
-    }
-
-    /**
-     * Configure the peak output voltage allowed.
-     * <b>Because of how the new api works, min is ignored!</b>
-     * 
-     * @param max
-     * @param <b>min (completely ignored)</b>
-     */
-    public void configPeakOutputVoltage(double max, double min)
-    {
-        if (mTalon != null)
-        {
-            // XXX: This was changed to use percentages, and just negate the percentage for the min.
-            // That means that min doesn't do anything.
-            mTalon.configPeakOutputForward(max / mMaxVolts, sDefaultTimeoutMS);
-            mTalon.configPeakOutputReverse(max / mMaxVolts, sDefaultTimeoutMS);
-        }
+            mTalon.clearStickyFaults(sUpdateTimeoutMS);
     }
 
     public void enableBrakeMode(boolean s)
     {
-        if (mTalon != null && s)
-            mTalon.neutralOutput();
-    }
-
-    public void setCurrentLimit(int amps)
-    {
         if (mTalon != null)
-            mTalon.configPeakCurrentLimit(amps, sDefaultTimeoutMS);
+        {
+            mTalon.setNeutralMode(s ? NeutralMode.Brake : NeutralMode.Coast);
+        }
     }
 
     /**
      * Reverses motor output.
-     * 
+     *
      * @param Is inverted or not.
      */
     public void reverseOutput(boolean s)
@@ -650,7 +605,7 @@ public class CANTalon4915 implements Sendable, MotorSafety
             mTalon.setInverted(s);
         }
     }
-    
+
     public void setInverted(boolean isInverted)
     {
         if (mTalon != null)
@@ -659,61 +614,23 @@ public class CANTalon4915 implements Sendable, MotorSafety
         }
     }
 
-    /**
-     * Configures the soft limit threshold on the forward sensor.
-     * 
-     * <b>Not backwards compatible</b>
-     * 
-     * @param l Limit in raw sensor units.
-     */
-    public void setForwardSoftLimit(int l)
-    {
-        if (mTalon != null)
-        {
-            mTalon.configForwardSoftLimitThreshold(l, sDefaultTimeoutMS);
-        }
-    }
-
-    /**
-     * Configures the soft limit threshold on the reverse sensor.
-     * 
-     * <b>Not backwards compatible</b>
-     * 
-     * @param l Limit in raw sensor units.
-     */
-    public void setReverseSoftLimit(int l)
-    {
-        if (mTalon != null)
-        {
-            mTalon.configReverseSoftLimitThreshold(l, sDefaultTimeoutMS);
-        }
-    }
-
-    public void setNominalClosedLoopVoltage(double v)
-    {
-        if (mTalon != null)
-        {
-            // XXX: These are now in percentages, not volts... And there's no closed-loop only method.
-            mTalon.configNominalOutputForward(v / mMaxVolts, sDefaultTimeoutMS);
-            mTalon.configNominalOutputReverse(v / mMaxVolts, sDefaultTimeoutMS);
-        }
-    }
-
     public void setPosition(int d)
     {
         if (mTalon != null)
         {
-            mTalon.getSensorCollection().setAnalogPosition(d, sDefaultTimeoutMS);
+            mTalon.getSensorCollection().setAnalogPosition(d, sUpdateTimeoutMS);
         }
     }
-
-    public void setProfile(int p)
+    
+    // Selects which profile slot to use for closed-loop control.
+    //  slotIdx is an 'arbitrary' stash identifier
+    //  pidIdx is 0 for primary closed-loop and 1 for cascaded closed-loop
+    //      so far we're not doing any cascaded closed-loop
+    public void selectProfileSlot(int slotIdx)
     {
-        // Select which closed loop profile to use, and uses whatever PIDF gains and the such that are already there.
-        mPidSlot = p;
         if (mTalon != null)
         {
-            mTalon.selectProfileSlot(p, sPidIdx);
+            mTalon.selectProfileSlot(slotIdx, sPidIdx);
         }
     }
 
@@ -721,48 +638,7 @@ public class CANTalon4915 implements Sendable, MotorSafety
     {
         if (mTalon != null)
         {
-            mTalon.getSensorCollection().setPulseWidthPosition(p, sDefaultTimeoutMS);
-        }
-    }
-
-    public void setVelocityMeasurementPeriod(VelocityMeasPeriod p)
-    {
-        if (mTalon != null)
-        {
-            mTalon.configVelocityMeasurementPeriod(p, sDefaultTimeoutMS);
-        }
-    }
-
-    public void setVelocityMeasurementWindow(int w)
-    {
-        if (mTalon != null)
-        {
-            mTalon.configVelocityMeasurementWindow(w, sDefaultTimeoutMS);
-        }
-    }
-
-    public void setVoltageCompensationRampRate(double rampRate)
-    {
-        if (mTalon != null)
-        {
-            mTalon.configVoltageCompSaturation(rampRate, sDefaultTimeoutMS); // XXX: I have no idea if this is these are the right units.
-        }
-    }
-
-    /**
-     * Set the voltage ramp rate.
-     * <b>This is no longer in volts/second, now it's the minimum
-     * desired time to go from neutral to full throttle</b>
-     * 
-     * @param rampRate
-     */
-    public void setVoltageRampRate(double rampRate)
-    {
-        if (mTalon != null)
-        {
-            double newRampRate = mMaxVolts / rampRate;
-            mTalon.configClosedloopRamp(newRampRate, sDefaultTimeoutMS);
-            mTalon.configOpenloopRamp(newRampRate, sDefaultTimeoutMS);
+            mTalon.getSensorCollection().setPulseWidthPosition(p, sUpdateTimeoutMS);
         }
     }
 
@@ -770,7 +646,7 @@ public class CANTalon4915 implements Sendable, MotorSafety
     {
         if (mTalon != null)
         {
-            mTalon.setStatusFramePeriod(statFrame, rate, sDefaultTimeoutMS);
+            mTalon.setStatusFramePeriod(statFrame, rate, sUpdateTimeoutMS);
         }
     }
 
@@ -786,7 +662,7 @@ public class CANTalon4915 implements Sendable, MotorSafety
     {
         if (mTalon != null)
         {
-            mTalon.getSensorCollection().setAnalogPosition(pos, sDefaultTimeoutMS);
+            mTalon.getSensorCollection().setAnalogPosition(pos, sUpdateTimeoutMS);
         }
     }
 
@@ -796,98 +672,14 @@ public class CANTalon4915 implements Sendable, MotorSafety
      * API, so I'm using something similar.
      * There's also an int cast, so the mantissa
      * in the double is lost.
-     * 
+     *
      * @param Current limit in amps.
      */
     public void setCurrentLimit(double l)
     {
         if (mTalon != null)
         {
-            mTalon.configPeakCurrentLimit((int) l, sDefaultTimeoutMS); // XXX: Is this actually equivalent?
-        }
-    }
-
-    public void enableForwardSoftLimit(boolean s)
-    {
-        if (mTalon != null)
-        {
-            mTalon.configForwardSoftLimitEnable(s, sDefaultTimeoutMS);
-        }
-    }
-
-    /**
-     * There is no equivalent in the new api for this.
-     * You have to enable all or none, so you
-     * should use those methods.
-     * 
-     * @deprecated
-     * @return void
-     */
-    public void enableLimitSwitch(boolean fwd, boolean rev)
-    {
-    }
-
-    public void enableReverseSoftLimit(boolean s)
-    {
-        if (mTalon != null)
-        {
-            mTalon.configReverseSoftLimitEnable(s, sDefaultTimeoutMS);
-        }
-    }
-
-    /**
-     * There is no equivalent in the new api for this.
-     * 
-     * @deprecated
-     * @return void
-     */
-    public void enableZeroSensorPositionOnForwardLimit(boolean s)
-    {
-    }
-
-    /**
-     * There is no equivalent in the new api for this.
-     * 
-     * @deprecated
-     * @return void
-     */
-    public void enableZeroSensorPositionOnIndex(boolean fwd, boolean rev)
-    {
-    }
-
-    /**
-     * There is no equivalent in the new api for this.
-     * 
-     * @deprecated
-     * @return void
-     */
-    public void enableZeroSensorPositionOnReverseLimit(boolean s)
-    {
-    }
-
-    public void configFwdLimitSwitchNormallyOpen(boolean s)
-    {
-        if (mTalon != null)
-        {
-            mTalon.configForwardLimitSwitchSource(LimitSwitchSource.FeedbackConnector, /*
-                                                                                        * XXX:
-                                                                                        * LimitSwitchSource
-                                                                                        */
-                    s ? LimitSwitchNormal.NormallyOpen : LimitSwitchNormal.NormallyClosed,
-                    sDefaultTimeoutMS);
-        }
-    }
-
-    public void configRevLimitSwitchNormallyOpen(boolean s)
-    {
-        if (mTalon != null)
-        {
-            mTalon.configReverseLimitSwitchSource(LimitSwitchSource.FeedbackConnector, /*
-                                                                                        * XXX:
-                                                                                        * LimitSwitchSource
-                                                                                        */
-                    s ? LimitSwitchNormal.NormallyOpen : LimitSwitchNormal.NormallyClosed,
-                    sDefaultTimeoutMS);
+            mTalon.configPeakCurrentLimit((int) l, sUpdateTimeoutMS); // XXX: Is this actually equivalent?
         }
     }
 
@@ -905,40 +697,18 @@ public class CANTalon4915 implements Sendable, MotorSafety
     {
         if (mTalon != null)
             return mTalon.configGetParameter(ParamEnum.eForwardSoftLimitEnable, sDefaultOrdinal,
-                    sDefaultTimeoutMS) == 1 ? true : false;
+                    sUpdateTimeoutMS) == 1 ? true : false;
         else
             return true;
-    }
-
-    /**
-     * There is no equivalent in the new api for this.
-     * 
-     * @deprecated
-     * @return void
-     */
-    public int getStickyFaultOverTemp()
-    {
-        return 0;
     }
 
     public boolean isZeroSensorPosOnFwdLimitEnabled()
     {
         if (mTalon != null)
             return mTalon.configGetParameter(ParamEnum.eClearPositionOnLimitF, sDefaultOrdinal,
-                    sDefaultTimeoutMS) == 1 ? true : false;
+                    sUpdateTimeoutMS) == 1 ? true : false;
         else
             return false;
-    }
-
-    /**
-     * There is no equivalent in the new api for this.
-     * 
-     * @deprecated
-     * @return void
-     */
-    public int getNumberOfQuadIdxRises()
-    {
-        return 0;
     }
 
     public int getPulseWidthRiseToRiseUs()
@@ -985,7 +755,7 @@ public class CANTalon4915 implements Sendable, MotorSafety
     {
         if (mTalon != null)
             return mTalon.configGetParameter(ParamEnum.eClearPositionOnLimitR, sDefaultOrdinal,
-                    sDefaultTimeoutMS) == 1 ? true : false;
+                    sUpdateTimeoutMS) == 1 ? true : false;
         else
             return false;
     }
@@ -996,16 +766,6 @@ public class CANTalon4915 implements Sendable, MotorSafety
             return mTalon.getMotorOutputVoltage();
         else
             return 0.0;
-    }
-
-    /**
-     * There is no equivalent in the new api for this.
-     * 
-     * @deprecated
-     * @return void
-     */
-    public void getSmartDashboardType()
-    {
     }
 
     public int getPulseWidthPosition()
@@ -1020,34 +780,34 @@ public class CANTalon4915 implements Sendable, MotorSafety
     {
         if (mTalon != null)
             return mTalon.configGetParameter(ParamEnum.eClearPositionOnIdx, sDefaultOrdinal,
-                    sDefaultTimeoutMS) == 1 ? true : false;
+                    sUpdateTimeoutMS) == 1 ? true : false;
         else
             return false;
     }
 
     /**
      * Get motion magic cruise velocity.
-     * 
+     *
      * @return Velocity native units.
      */
     public double getMotionMagicCruiseVelocity()
     {
         if (mTalon != null)
             return mTalon.configGetParameter(ParamEnum.eMotMag_VelCruise, sDefaultOrdinal,
-                    sDefaultTimeoutMS);
+                    sUpdateTimeoutMS);
         else
             return 0.0;
     }
 
     /**
      * Check if there's a reverse limit switch issue.
-     * 
+     *
      * In the old api this returned an int, but the new one only
      * returns a boolean. I suspect this is just more bad CTRE code, and
      * they should have used a boolean. It's also possible that
      * it meant something else before.
      * <b>Not backwards compatible</b>
-     * 
+     *
      * @return Is there limit switch issue.
      */
     public boolean getFaultRevSoftLim()
@@ -1064,13 +824,13 @@ public class CANTalon4915 implements Sendable, MotorSafety
 
     /**
      * Check if there's a reverse limit switch issue.
-     * 
+     *
      * In the old api this returned an int, but the new one only
      * returns a boolean. I suspect this is just more bad CTRE code, and
      * they should have used a boolean. It's also possible that
      * it meant something else before.
      * <b>Not backwards compatible</b>
-     * 
+     *
      * @return Is there limit switch issue.
      */
     public boolean getFaultRevLim()
@@ -1088,13 +848,13 @@ public class CANTalon4915 implements Sendable, MotorSafety
     /**
      * Check if there's a reverse limit switch issue.
      * A sticky fault is just one that persists.
-     * 
+     *
      * In the old api this returned an int, but the new one only
      * returns a boolean. I suspect this is just more bad CTRE code, and
      * they should have used a boolean. It's also possible that
      * it meant something else before.
      * <b>Not backwards compatible</b>
-     * 
+     *
      * @return Is there a limit switch issue.
      */
     public boolean getStickyFaultRevLim()
@@ -1112,13 +872,13 @@ public class CANTalon4915 implements Sendable, MotorSafety
     /**
      * Check if there's a reverse limit switch issue.
      * A sticky fault is just one that persists.
-     * 
+     *
      * In the old api this returned an int, but the new one only
      * returns a boolean. I suspect this is just more bad CTRE code, and
      * they should have used a boolean. It's also possible that
      * it meant something else before.
      * <b>Not backwards compatible</b>
-     * 
+     *
      * @return Is there a limit switch issue.
      */
     public boolean getStickyFaultRevSoftLim()
@@ -1135,7 +895,7 @@ public class CANTalon4915 implements Sendable, MotorSafety
 
     /**
      * Get the current encoder position in encoder native units.
-     * 
+     *
      * @return Encoder position.
      */
     public int getEncPosition()
@@ -1150,29 +910,29 @@ public class CANTalon4915 implements Sendable, MotorSafety
 
     /**
      * Get the analog position of the encoder, in volts?
-     * 
+     *
      * <b>Not backwards compatible</b>
-     * 
+     *
      * @return Analog position (probably volts?)
      */
     public double getAnalogInPosition()
     {
         if (mTalon != null)
             return mTalon.configGetParameter(ParamEnum.eAnalogPosition, sDefaultOrdinal,
-                    sDefaultTimeoutMS);
+                    sUpdateTimeoutMS);
         else
             return 0.0;
     }
 
     /**
      * Check if the voltage in went under 6.5V.
-     * 
+     *
      * In the old api this returned an int, but the new one only
      * returns a boolean. I suspect this is just more bad CTRE code, and
      * they should have used a boolean. It's also possible that
      * it meant something else before.
      * <b>Not backwards compatible</b>
-     * 
+     *
      * @return Is there a hardware failure.
      */
     public boolean getFaultUnderVoltage()
@@ -1189,7 +949,7 @@ public class CANTalon4915 implements Sendable, MotorSafety
 
     /**
      * The current ramp rate in closed loop mode.
-     * 
+     *
      * @return Closed loop ramp rate.
      */
     public double getCloseLoopRampRate()
@@ -1197,7 +957,7 @@ public class CANTalon4915 implements Sendable, MotorSafety
         if (mTalon != null)
         {
             return mTalon.configGetParameter(ParamEnum.eClosedloopRamp, sDefaultOrdinal,
-                    sDefaultTimeoutMS);
+                    sUpdateTimeoutMS);
         }
         else
             return 0.0;
@@ -1205,7 +965,7 @@ public class CANTalon4915 implements Sendable, MotorSafety
 
     /**
      * Get the position of the active trajectory.
-     * 
+     *
      * @return Position of the active trajectory.
      */
     public double getMotionMagicActTrajPosition()
@@ -1218,28 +978,28 @@ public class CANTalon4915 implements Sendable, MotorSafety
 
     /**
      * Get the currently set proportional of the PID.
-     * 
+     *
      * @return Current proportional of the PID.
      */
     public double getP()
     {
         if (mTalon != null)
             return mTalon.configGetParameter(ParamEnum.eProfileParamSlot_P, sDefaultOrdinal,
-                    sDefaultTimeoutMS);
+                    sUpdateTimeoutMS);
         else
             return 0.0;
     }
 
     /**
      * Get the currently set feedforward of the PID.
-     * 
+     *
      * @return Current proportional of the PID.
      */
     public double getF()
     {
         if (mTalon != null)
             return mTalon.configGetParameter(ParamEnum.eProfileParamSlot_F, sDefaultOrdinal,
-                    sDefaultTimeoutMS);
+                    sUpdateTimeoutMS);
         else
             return 0.0;
     }
@@ -1254,28 +1014,28 @@ public class CANTalon4915 implements Sendable, MotorSafety
 
     /**
      * Get the currently set integral of the PID.
-     * 
+     *
      * @return Current derivative of the PID.
      */
     public double getI()
     {
         if (mTalon != null)
             return mTalon.configGetParameter(ParamEnum.eProfileParamSlot_I, sDefaultOrdinal,
-                    sDefaultTimeoutMS);
+                    sUpdateTimeoutMS);
         else
             return 0.0;
     }
 
     /**
      * Sets the integral zone. Who knows what that is.
-     * 
+     *
      * @return The integral zone.
      */
     public double getIZone()
     {
         if (mTalon != null)
             return mTalon.configGetParameter(ParamEnum.eProfileParamSlot_IZone, sDefaultOrdinal,
-                    sDefaultTimeoutMS);
+                    sUpdateTimeoutMS);
         else
             return 0.0;
     }
@@ -1283,27 +1043,16 @@ public class CANTalon4915 implements Sendable, MotorSafety
     /**
      * This checks if the soft limit (switch) that's
      * reversed is enabled? I don't know.
-     * 
+     *
      * @return Is the reverse(d?) soft limit (switch?) enabled
      */
     public boolean isReverseSoftLimitEnabled()
     {
         if (mTalon != null)
             return mTalon.configGetParameter(ParamEnum.eReverseSoftLimitEnable, sDefaultOrdinal,
-                    sDefaultTimeoutMS) == 1 ? true : false;
+                    sUpdateTimeoutMS) == 1 ? true : false;
         else
             return false;
-    }
-
-    /**
-     * There is no equivalent in the new api for this.
-     * 
-     * @deprecated
-     * @return void
-     */
-    public void getPIDSourceType()
-    {
-        // not implemented - not available in 2018
     }
 
     public int getEncVelocity()
@@ -1318,14 +1067,14 @@ public class CANTalon4915 implements Sendable, MotorSafety
      * I think this is how fast we can get velocity measurements, but that's
      * just because they use simmilar terminology in their old documentation
      * when referring to pwm pulses. There's very little to work off here.
-     * 
+     *
      * @return Velocity measurement speed?
      */
     public double getVelocityMeasurementPeriod()
     {
         if (mTalon != null)
             return mTalon.configGetParameter(ParamEnum.eSampleVelocityPeriod, sDefaultOrdinal,
-                    sDefaultTimeoutMS);
+                    sUpdateTimeoutMS);
         else
             return 0.0;
     }
@@ -1333,14 +1082,14 @@ public class CANTalon4915 implements Sendable, MotorSafety
     /**
      * This appears to set the amount of time that the Talon is allowed to take
      * to make velocity measurements?
-     * 
+     *
      * @return
      */
     public double getVelocityMeasurementWindow()
     {
         if (mTalon != null)
             return mTalon.configGetParameter(ParamEnum.eSampleVelocityWindow, sDefaultOrdinal,
-                    sDefaultTimeoutMS);
+                    sUpdateTimeoutMS);
         else
             return 0.0;
     }
@@ -1350,41 +1099,30 @@ public class CANTalon4915 implements Sendable, MotorSafety
      * <b>I don't know if that's what it did in the
      * old API</b>, because the documentation of the
      * old API was crap.
-     * 
+     *
      * @return Is the forward soft limit (switch?) enabled
      */
     public double getReverseSoftLimit()
     {
         if (mTalon != null)
             return mTalon.configGetParameter(ParamEnum.eReverseSoftLimitEnable, sDefaultOrdinal,
-                    sDefaultTimeoutMS);
+                    sUpdateTimeoutMS);
         else
             return 0.0;
     }
 
     /**
      * Get the currently set derivative of the PID.
-     * 
+     *
      * @return Current derivative of the PID.
      */
     public double getD()
     {
         if (mTalon != null)
             return mTalon.configGetParameter(ParamEnum.eProfileParamSlot_D, sDefaultOrdinal,
-                    sDefaultTimeoutMS);
+                    sUpdateTimeoutMS);
         else
             return 0.0;
-    }
-
-    /**
-     * There is no equivalent in the new api for this.
-     * 
-     * @deprecated
-     * @return 0
-     */
-    public boolean getFaultOverTemp()
-    {
-        return false;
     }
 
     /**
@@ -1392,14 +1130,14 @@ public class CANTalon4915 implements Sendable, MotorSafety
      * I don't know if that's what it did in the
      * old API, because the documentation of the
      * old API was crap.
-     * 
+     *
      * @return Is the forward soft limit (switch?) enabled
      */
     public double getForwardSoftLimit()
     {
         if (mTalon != null)
             return mTalon.configGetParameter(ParamEnum.eForwardSoftLimitEnable, sDefaultOrdinal,
-                    sDefaultTimeoutMS);
+                    sUpdateTimeoutMS);
         else
             return 0.0;
     }
@@ -1425,7 +1163,7 @@ public class CANTalon4915 implements Sendable, MotorSafety
 
     /**
      * Get sensor speed/velocity.
-     * 
+     *
      * The speed units will be in the sensor's native ticks per 100ms.
      * For analog sensors, 3.3V corresponds to 1023 units. So a speed
      * of 200 equates to ~0.645 dV per 100ms or 6.451 dV per second.
@@ -1434,7 +1172,7 @@ public class CANTalon4915 implements Sendable, MotorSafety
      * edge (4X). So a 250 count encoder will produce 1000 edge events
      * per rotation. An example speed of 200 would then equate to 20%
      * of a rotation per 100ms, or 10 rotations per second.
-     * 
+     *
      * @return Sensor speed in native units per 100ms.
      */
     public double getSpeed()
@@ -1447,13 +1185,13 @@ public class CANTalon4915 implements Sendable, MotorSafety
 
     /**
      * Check if there's a forward limit switch issue.
-     * 
+     *
      * In the old api this returned an int, but the new one only
      * returns a boolean. I suspect this is just more bad CTRE code, and
      * they should have used a boolean. It's also possible that
      * it meant something else before.
      * <b>Not backwards compatible</b>
-     * 
+     *
      * @return Is there a hardware failure.
      */
     public boolean getFaultForLim()
@@ -1471,13 +1209,13 @@ public class CANTalon4915 implements Sendable, MotorSafety
     /**
      * Check if there's a forward limit switch issue.
      * A sticky fault is just one that persists.
-     * 
+     *
      * In the old api this returned an int, but the new one only
      * returns a boolean. I suspect this is just more bad CTRE code, and
      * they should have used a boolean. It's also possible that
      * it meant something else before.
      * <b>Not backwards compatible</b>
-     * 
+     *
      * @return Is there a limit switch issue.
      */
     public boolean getStickyFaultForLim()
@@ -1496,13 +1234,13 @@ public class CANTalon4915 implements Sendable, MotorSafety
      * Check if there's a forward soft limit issue. I think forward soft limit
      * refers to a limit switch, but CTRE docs are not exactly good
      * or comprehensive.
-     * 
+     *
      * In the old api this returned an int, but the new one only
      * returns a boolean. I suspect this is just more bad CTRE code, and
      * they should have used a boolean. It's also possible that
      * it meant something else before.
      * <b>Not backwards compatible</b>
-     * 
+     *
      * @return Is there a hardware failure.
      */
     public boolean getFaultForSoftLim()
@@ -1522,13 +1260,13 @@ public class CANTalon4915 implements Sendable, MotorSafety
      * refers to a limit switch, but CTRE docs are not exactly good
      * or comprehensive.
      * A sticky fault is just one that persists.
-     * 
+     *
      * In the old api this returned an int, but the new one only
      * returns a boolean. I suspect this is just more bad CTRE code, and
      * they should have used a boolean. It's also possible that
      * it meant something else before.
      * <b>Not backwards compatible</b>
-     * 
+     *
      * @return Is there a limit switch issue.
      */
     public boolean getStickyFaultForSoftLim()
@@ -1545,18 +1283,18 @@ public class CANTalon4915 implements Sendable, MotorSafety
 
     /**
      * Get the PID error, if we're in a closed loop control mode.
-     * 
+     *
      * @return The current PID error.
      */
     public int getClosedLoopError()
     {
         if (mTalon != null)
         {
-            // This method appears to be mis-documented. The 
+            // This method appears to be mis-documented. The
             // @param part of the javadoc says slotIdx (PID
             // gain slot), which makes the most sense, so
             // I'm going with that.
-            return mTalon.getClosedLoopError(mPidSlot);
+            return mTalon.getClosedLoopError(sPidIdx);
         }
         else
             return 0;
@@ -1564,7 +1302,7 @@ public class CANTalon4915 implements Sendable, MotorSafety
 
     /**
      * Get the last value passed to the {@link set} method.
-     * 
+     *
      * @return The last value passed to set.
      */
     public double getSetpoint()
@@ -1575,7 +1313,7 @@ public class CANTalon4915 implements Sendable, MotorSafety
     /**
      * Get the state of the forward limit switch.
      * <b>This might be buggy.</b>
-     * 
+     *
      * @return State of the forward limit switch.
      */
     public boolean isFwdLimitSwitchClosed()
@@ -1614,7 +1352,7 @@ public class CANTalon4915 implements Sendable, MotorSafety
 
     /**
      * Gets the integral accumulation of the motor controller.
-     * 
+     *
      * @return Integral accumulation.
      */
     public double getIaccum()
@@ -1627,13 +1365,13 @@ public class CANTalon4915 implements Sendable, MotorSafety
 
     /**
      * Check if there's a hardware failure.
-     * 
+     *
      * In the old api this returned an int, but the new one only
      * returns a boolean. I suspect this is just more bad CTRE code, and
      * they should have used a boolean. It's also possible that
      * it meant something else before.
      * <b>Not backwards compatible</b>
-     * 
+     *
      * @return Is there a hardware failure.
      */
     public boolean getFaultHardwareFailure()
@@ -1649,20 +1387,9 @@ public class CANTalon4915 implements Sendable, MotorSafety
     }
 
     /**
-     * There is no equivalent in the new api for this.
-     * 
-     * @deprecated
-     * @return 0
-     */
-    public double pidGet() // wpilib PIDSource
-    {
-        return 0.;
-    }
-
-    /**
      * Get if the brake is enabled when the motor
      * becomes neutral.
-     * 
+     *
      * @return If we brake during neutral.
      */
     public boolean getBrakeEnableDuringNeutral()
@@ -1673,13 +1400,13 @@ public class CANTalon4915 implements Sendable, MotorSafety
     /**
      * Check if voltage dropped below 6.5V. A sticky fault is
      * just one that persists.
-     * 
+     *
      * In the old api this returned an int, but the new one only
      * returns a boolean. I suspect this is just more bad CTRE code, and
      * they should have used a boolean. It's also possible that
      * it meant something else before.
      * <b>Not backwards compatible</b>
-     * 
+     *
      * @return Is under voltage or not.
      */
     public boolean getStickyFaultUnderVoltage()
@@ -1703,34 +1430,22 @@ public class CANTalon4915 implements Sendable, MotorSafety
     }
 
     /**
-     * There is no equivalent in the new api for this.
-     * 
-     * @deprecated
-     * @return 0
-     */
-    public double getNominalClosedLoopVoltage()
-    {
-        // the currently selected nominal closed loop voltage. Zero (Default) means feature is disabled.
-        return 0.;
-    }
-
-    /**
      * Gets position. If {@link configEncoderCodesPerRev} has been called,
      * then this will return position in absolute wheel rotations. If that
      * hasn't been called, this will return absolute native units (see below).
-     * 
+     *
      * When using analog sensors, 0 units corresponds to 0V, 1023 units
      * corresponds to 3.3V
      * When using an analog encoder (wrapping around 1023 to 0 is possible) the
      * units are still
      * 3.3V per 1023 units.
-     * 
+     *
      * @return Absolute position in raw sensor units or wheel rotations.
      */
     public double getPosition()
     {
-        // When using analog sensors, 0 units corresponds to 0V, 1023 units corresponds to 3.3V 
-        // When using an analog encoder (wrapping around 1023 to 0 is possible) the units are still 
+        // When using analog sensors, 0 units corresponds to 0V, 1023 units corresponds to 3.3V
+        // When using an analog encoder (wrapping around 1023 to 0 is possible) the units are still
         // 3.3V per 1023 units.
         if (mTalon != null)
         {
@@ -1752,14 +1467,14 @@ public class CANTalon4915 implements Sendable, MotorSafety
      * Get the acceleration of the motion magic controller.
      * If units are configured its in RPM per second,
      * otherwise it's native units.
-     * 
+     *
      * @return Acceleration of the motion magic controller.
      */
     public double getMotionMagicAcceleration()
     {
         if (mTalon != null)
             return mTalon.configGetParameter(ParamEnum.eMotMag_Accel, sDefaultOrdinal,
-                    sDefaultTimeoutMS);
+                    sUpdateTimeoutMS);
         else
             return 0.0;
     }

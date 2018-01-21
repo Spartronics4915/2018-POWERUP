@@ -96,7 +96,7 @@ public class Constants extends ConstantsBase
     public static final double kDriveHighGearVelocityKd = 6.0;
     public static final double kDriveHighGearVelocityKf = .15;
     public static final int kDriveHighGearVelocityIZone = 0;
-    public static final double kDriveHighGearVelocityRampRate = 240.0;
+    public static final double kDriveHighGearVelocityRampRate = .05; // 240V/s -> 12V in .05s
     public static final double kDriveHighGearNominalOutput = 0.5;
     public static final double kDriveHighGearMaxSetpoint = 17.0 * 12.0; // 17 fps
 
@@ -107,8 +107,8 @@ public class Constants extends ConstantsBase
     public static final double kDriveLowGearPositionKd = 100.0;
     public static final double kDriveLowGearPositionKf = .45;
     public static final int kDriveLowGearPositionIZone = 700;
-    public static final double kDriveLowGearPositionRampRate = 48.0; // V/s
-    public static final double kDriveLowGearNominalOutput = 0.5; // V
+    public static final double kDriveLowGearPositionRampRate = .25; // 48.0 V/s -> 12V in .25s
+    public static final double kDriveLowGearNominalOutput = 0.5; // pct
     public static final double kDriveLowGearMaxVelocity = 3.0 * 12.0 * 60.0 / (Math.PI * kDriveWheelDiameterInches); // 6 fps
                                                                                                                // in RPM
     public static final double kDriveLowGearMaxAccel = 15.0 * 12.0 * 60.0 / (Math.PI * kDriveWheelDiameterInches); // 18 fps/s

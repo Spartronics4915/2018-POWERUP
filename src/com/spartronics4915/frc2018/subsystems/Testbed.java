@@ -4,7 +4,6 @@ import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.spartronics4915.frc2018.Constants;
 import com.spartronics4915.frc2018.loops.Loop;
 import com.spartronics4915.frc2018.loops.Looper;
-import com.spartronics4915.lib.util.CANProbe;
 import com.spartronics4915.lib.util.drivers.CANTalon4915;
 import com.spartronics4915.lib.util.drivers.CANTalonFactory;
 
@@ -62,18 +61,17 @@ public class Testbed extends Subsystem
     private Testbed()
     {
         // Instantiate member variables (motors, etc...) here.
-        CANProbe canProbe = CANProbe.getInstance();
         boolean success = true;
-        mMotor1 = CANTalonFactory.createDefaultTalon(Constants.kTestbedMotor1Id);
-        mMotor1.changeControlMode(ControlMode.PercentOutput);
+        mMotor1 = CANTalonFactory.createDefaultMotor(Constants.kTestbedMotor1Id);
+        mMotor1.setControlMode(ControlMode.PercentOutput);
         if(!mMotor1.isValid())
         {
             logWarning("can't find motor 1, id:" + Constants.kTestbedMotor1Id);
             success = false;
         }
 
-        mMotor2 = CANTalonFactory.createDefaultTalon(Constants.kTestbedMotor2Id);
-        mMotor2.changeControlMode(ControlMode.PercentOutput);
+        mMotor2 = CANTalonFactory.createDefaultMotor(Constants.kTestbedMotor2Id);
+        mMotor2.setControlMode(ControlMode.PercentOutput);
         mMotor2.setInverted(true);;
         if(!mMotor2.isValid())
         {
