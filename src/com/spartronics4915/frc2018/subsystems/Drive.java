@@ -52,6 +52,7 @@ public class Drive extends Subsystem
 
     private static final int kLowGearPositionControlSlot = 0;
     private static final int kHighGearVelocityControlSlot = 1;
+    private static final int kIMUTimeoutMs = 0; // No blocking, like the old behavior
 
     public static Drive getInstance()
     {
@@ -108,7 +109,6 @@ public class Drive extends Subsystem
     // Hardware
     private CANTalon4915 mLeftMaster = null, mRightMaster = null;
     private CANTalon4915 mLeftSlave = null, mRightSlave = null;
-    private CANTalon4915 mIMUTalon = null;
     private PigeonIMU mIMU = null;
 
     // Controllers
@@ -145,7 +145,7 @@ public class Drive extends Subsystem
                     DriverStation.reportError("IMU in non-ready state. Is it plugged in?", false);
                     return;
                 }
-                mIMU.setYaw(0, 5); // was SetYaw(0)
+                mIMU.setYaw(0, kIMUTimeoutMs);
             }
         }
 
@@ -200,6 +200,7 @@ public class Drive extends Subsystem
         mLeftMaster.configEncoderCodesPerRev(Constants.kEncoderCodesPerRev);
         mLeftMaster.reverseSensor(false); // If these aren't correctly reversed your PID will just spiral out of control
         mLeftMaster.reverseOutput(false);
+        mLeftMaster.setVoltageRampRate(48); // FIXME: This should be a constant
         if (!mLeftMaster.isSensorPresent(FeedbackDevice.QuadEncoder))
         {
             logError("Could not detect left encoder");
@@ -216,6 +217,7 @@ public class Drive extends Subsystem
         mRightMaster.reverseOutput(true);
         mRightMaster.setFeedbackDevice(FeedbackDevice.QuadEncoder);
         mRightMaster.configEncoderCodesPerRev(Constants.kEncoderCodesPerRev);
+        mRightMaster.setVoltageRampRate(48); // FIXME: This should be a constant
         if (!mRightMaster.isSensorPresent(FeedbackDevice.QuadEncoder))
         {
             logError("Could not detect right encoder");
@@ -239,14 +241,9 @@ public class Drive extends Subsystem
             setHighGear(true);
             setOpenLoop(DriveSignal.NEUTRAL);
             // Path Following stuff
-            mIMUTalon = new CANTalon4915(Constants.kIMUTalonId);
-            if(mIMUTalon.isValid())
-            {
-                // FIXME: Don't use the pigeon, or at least wire it directly into the CAN bus
-                mIMU = new PigeonIMU(mIMUTalon.getTalon());
-                if (mIMU.getState() == PigeonState.NoComm)
-                    logError("Could not detect the IMU. Is it plugged in?");
-            }
+            mIMU = new PigeonIMU(mRightSlave.getTalon());
+            if (mIMU.getState() == PigeonState.NoComm)
+                logError("Could not detect the IMU. Is it plugged in?");
             // Force a CAN message across.
             mIsBrakeMode = true;
             setBrakeMode(false);
@@ -332,12 +329,14 @@ public class Drive extends Subsystem
     public void outputToSmartDashboard()
     {
         if(!this.isInitialized()) return;
+        
         final double left_speed = getLeftVelocityInchesPerSec();
         final double right_speed = getRightVelocityInchesPerSec();
         SmartDashboard.putNumber("left voltage (V)", mLeftMaster.getOutputVoltage());
         SmartDashboard.putNumber("right voltage (V)", mRightMaster.getOutputVoltage());
         SmartDashboard.putNumber("left speed (ips)", left_speed);
         SmartDashboard.putNumber("right speed (ips)", right_speed);
+        SmartDashboard.putString("Drive state", mDriveControlState.toString());
         if (usesTalonVelocityControl(mDriveControlState))
         {
             SmartDashboard.putNumber("left speed error (ips)",
@@ -390,7 +389,7 @@ public class Drive extends Subsystem
             DriverStation.reportError("IMU in non-ready state. Is it plugged in?", false);
             return;
         }
-        mIMU.setYaw(0, 5/* timeoutMS */);
+        mIMU.setYaw(0, kIMUTimeoutMs);
     }
 
     /**
@@ -556,7 +555,7 @@ public class Drive extends Subsystem
             DriverStation.reportError("IMU in non-ready state. Is it plugged in?", false);
             return Rotation2d.fromDegrees(0);
         }
-        double[] ypr = new double[3]; // This is ridiculous. Quick fix: don't use the pigeon!
+        double[] ypr = new double[3];
         mIMU.getYawPitchRoll(ypr);
         return Rotation2d.fromDegrees(ypr[0]); // Rotation2d normalizes between -180 and 180 automatically
     }
@@ -566,7 +565,7 @@ public class Drive extends Subsystem
         if(!this.isInitialized()) return;
         if (mIMU.getState() == PigeonState.NoComm)
             DriverStation.reportError("Could not detect the IMU. Is it plugged in?", false);
-        mIMU.setYaw(angle.getDegrees(), 5 /* delayMS */);
+        mIMU.setYaw(angle.getDegrees(), kIMUTimeoutMs);
     }
 
     /**

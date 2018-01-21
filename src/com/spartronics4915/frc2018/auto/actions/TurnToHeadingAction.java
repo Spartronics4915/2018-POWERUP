@@ -34,11 +34,13 @@ public class TurnToHeadingAction implements Action
     @Override
     public void done()
     {
+        System.out.println("TurnToHeadingAction done.");
     }
 
     @Override
     public void start()
     {
+        System.out.println("Starting TurnToHeadingAction");
         mDrive.setWantTurnToHeading(mTargetHeading);
     }
 }

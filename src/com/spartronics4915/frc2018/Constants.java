@@ -26,10 +26,10 @@ public class Constants extends ConstantsBase
     //  -- Talon SRX Channels --------------
     //      (Note that if multiple talons are dedicated to a mechanism, any sensors
     //      are attached to the master)
-    public static final int kLeftDriveSlaveId = 1;
-    public static final int kRightDriveSlaveId = 3;
-    public static final int kLeftDriveMasterId = 2;
-    public static final int kRightDriveMasterId = 4; // The Pigeon IMU is connected to this Talon
+    public static final int kLeftDriveSlaveId = 2;
+    public static final int kRightDriveSlaveId = 4; // The Pigeon IMU is connected to this Talon
+    public static final int kLeftDriveMasterId = 1;
+    public static final int kRightDriveMasterId = 3;
     public static final int kTestbedMotor1Id = 16;
     public static final int kTestbedMotor2Id = 18;
     public static final int kNumTalons = 4;
@@ -73,14 +73,13 @@ public class Constants extends ConstantsBase
 
     // Wheels
     public static final double kDriveWheelDiameterInches = 6;
-    public static final double kTrackWidthInches = 27.75;
+    public static final double kTrackWidthInches = 23.75;
     public static final double kTrackScrubFactor = 0.624;
 
     // Geometry
-    public static final double kCenterToFrontBumperDistance = 14.1875;
-    public static final double kCenterToIntakeDistance = 20.9675;
-    public static final double kCenterToRearBumperDistance = 14.1875;
-    public static final double kCenterToSideBumperDistance = 15.75;
+    public static final double kCenterToFrontBumperDistance = 16.14;
+    public static final double kCenterToRearBumperDistance = 16.14;
+    public static final double kCenterToSideBumperDistance = 13.78;
 
     /* CONTROL LOOP GAINS */
 
