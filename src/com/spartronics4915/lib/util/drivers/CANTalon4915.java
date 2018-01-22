@@ -81,26 +81,29 @@ import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 //    We'd like to encapsulate all the CANTalon details here.  Creating named
 //    configs is a good thing, but configuring the motors is private business
 //    which, if dealt with here means our interface can be more minimal/private.
-//    
+//
 public class CANTalon4915 implements Sendable, MotorSafety
 {
+
     static final int sInitTimeoutMS = 10;
     static final int sUpdateTimeoutMS = 0; // 0 for no blocking. This is like the old behavior (I think).
-    
+
     public enum Config
     {
         kCustomMotor(0),
         kDefaultMotor(1),
         kDriveMotor(2),
         kDriveFollowerMotor(3);
+
         public final int mValue;
+
         Config(int initValue)
         {
             mValue = initValue;
         }
     };
 
-    /* CANTalon4915  members ------------------------------------------------*/
+    /* CANTalon4915 members ------------------------------------------------ */
     static final int sPidIdx = 0; // 0 is primary closed-loop, 1 is cascaded (unused atm)
     static final int sDefaultOrdinal = 0; // This probably does something specific on certain ParamEnums
 
@@ -116,12 +119,12 @@ public class CANTalon4915 implements Sendable, MotorSafety
     String mSubsystem = "Ungrouped"; // for Sendable
     MotorSafetyHelper mSafetyHelper;
 
-    /* CANTalon4915  methods ------------------------------------------------*/
+    /* CANTalon4915 methods ------------------------------------------------ */
     public CANTalon4915(int deviceNumber)
     {
-        this(deviceNumber,  Config.kDefaultMotor);
+        this(deviceNumber, Config.kDefaultMotor);
     }
-    
+
     public CANTalon4915(int deviceNumber, Config c)
     {
         mDeviceId = deviceNumber;
@@ -133,14 +136,14 @@ public class CANTalon4915 implements Sendable, MotorSafety
         if (canProbe.validateSRXId(deviceNumber))
         {
             mTalon = new TalonSRX(deviceNumber);
-            HAL.report(66,  deviceNumber+1); // from WPI_TalonSRX
+            HAL.report(66, deviceNumber + 1); // from WPI_TalonSRX
             mSafetyHelper = new MotorSafetyHelper(this);
             mSafetyHelper.setExpiration(0.0);
             mSafetyHelper.setSafetyEnabled(false);
             configGeneral(c, sInitTimeoutMS);
         }
     }
-    
+
     public boolean isValid()
     {
         return mTalon != null;
@@ -150,25 +153,29 @@ public class CANTalon4915 implements Sendable, MotorSafety
     {
         return mTalon;
     }
-    
+
     // configuration { -----------------------------------------------------------------------
+    // NB: be *very* careful if you comment out any lines here.
+    //   these values are persistent and you can "lock" values
+    //   int a motor controller.
     private void configGeneral(Config c, int timeOutMS)
     {
-        if(mTalon == null) return;
-        
+        if (mTalon == null)
+            return;
+
         // power and response ------------------------------------------------------------------
         mTalon.configClosedloopRamp(.5, timeOutMS); // .5 sec to go from 0 to max
-        mTalon.configOpenloopRamp(.5,  timeOutMS);
-        mTalon.configNeutralDeadband(.04,  timeOutMS); // output deadband pct 4% (factory default)
-        mTalon.configNominalOutputForward(1.0, timeOutMS);  // [0, 1]
+        mTalon.configOpenloopRamp(.5, timeOutMS);
+        mTalon.configNeutralDeadband(.04, timeOutMS); // output deadband pct 4% (factory default)
+        mTalon.configNominalOutputForward(1.0, timeOutMS); // [0, 1]
         mTalon.configNominalOutputReverse(-1.0, timeOutMS); // [-1, 0]
         mTalon.configPeakOutputForward(1.0, timeOutMS);
         mTalon.configPeakOutputReverse(-1.0, timeOutMS);
-        
+
         // current limits are TalonSRX-specific
         // Configure the continuous allowable current-draw (when current limit is enabled).
-        // Current limit is activated when current exceeds the peak limit for longer than the 
-        // peak duration. Then software will limit to the continuous limit. This ensures current 
+        // Current limit is activated when current exceeds the peak limit for longer than the
+        // peak duration. Then software will limit to the continuous limit. This ensures current
         // limiting while allowing for momentary excess current events.
         // For simpler current-limiting (single threshold) use configContinuousCurrentLimit() and
         // set the peak to zero: configPeakCurrentLimit(0).
@@ -176,11 +183,11 @@ public class CANTalon4915 implements Sendable, MotorSafety
         mTalon.configPeakCurrentLimit(0, timeOutMS);
         mTalon.configPeakCurrentDuration(5000, timeOutMS); // milliseconds
         mTalon.enableCurrentLimit(false);
-               
+
         // voltageCompSaturation:
-        //  This is the max voltage to apply to the hbridge when voltage compensation is enabled. 
-        //  For example, if 10 (volts) is specified and a TalonSRX is commanded to 0.5 
-        //  (PercentOutput, closed-loop, etc) then the TalonSRX will attempt to apply a 
+        //  This is the max voltage to apply to the hbridge when voltage compensation is enabled.
+        //  For example, if 10 (volts) is specified and a TalonSRX is commanded to 0.5
+        //  (PercentOutput, closed-loop, etc) then the TalonSRX will attempt to apply a
         //  duty-cycle to produce 5V.
         mTalon.configVoltageCompSaturation(12.0, timeOutMS);
         mTalon.configVoltageMeasurementFilter(64, timeOutMS);
@@ -191,40 +198,41 @@ public class CANTalon4915 implements Sendable, MotorSafety
         mTalon.configMotionProfileTrajectoryPeriod(0, timeOutMS);
         mTalon.clearMotionProfileHasUnderrun(timeOutMS);
         mTalon.clearMotionProfileTrajectories();
-      
+
         // filters and sensors, remote and local --------------------------------------------------
         // no remote feedback filters for now (for remote sensors, like remote, not direct, IMU
-        mTalon.configRemoteFeedbackFilter(0, RemoteSensorSource.Off, 0, 0);
-        mTalon.configRemoteFeedbackFilter(0, RemoteSensorSource.Off, 1, 0);
-        mTalon.configSelectedFeedbackSensor(RemoteFeedbackDevice.None, 0, 0);
-        
+        // nb: these are intentionally left blank
+        // mTalon.configRemoteFeedbackFilter(0, RemoteSensorSource.Off, 0, 0);
+        // mTalon.configRemoteFeedbackFilter(0, RemoteSensorSource.Off, 1, 0);
+        // mTalon.configSelectedFeedbackSensor(RemoteFeedbackDevice.None, 0, 0);
+
         // default to no local feedback sensors
         mTalon.configSelectedFeedbackSensor(FeedbackDevice.None, 0, 0);
-        
+
         // no forward limit switch
-        mTalon.configForwardLimitSwitchSource(LimitSwitchSource.Deactivated, 
+        mTalon.configForwardLimitSwitchSource(LimitSwitchSource.Deactivated,
                 LimitSwitchNormal.NormallyOpen, timeOutMS);
         mTalon.configForwardSoftLimitEnable(false, timeOutMS);
         mTalon.configForwardSoftLimitThreshold(0, timeOutMS); // in raw sensor units
-       
+
         // no reverse limit switch
-        mTalon.configReverseLimitSwitchSource(LimitSwitchSource.Deactivated, 
+        mTalon.configReverseLimitSwitchSource(LimitSwitchSource.Deactivated,
                 LimitSwitchNormal.NormallyOpen, timeOutMS);
         mTalon.configReverseSoftLimitEnable(false, timeOutMS);
         mTalon.configReverseSoftLimitThreshold(0, timeOutMS);
-       
+
         // misc non-config, but valuable defaults -----------------------------------------------
         this.setControlMode(ControlMode.PercentOutput);
         mTalon.setInverted(false);
         mTalon.setSensorPhase(false);
         mTalon.setNeutralMode(NeutralMode.Brake);
         mTalon.clearStickyFaults(timeOutMS);
-       
+
         // feedback rate control ----------------------------------------------------------------
         //  nb: frame periods aren't persistent
         //  setStatusFramePeriod is used to tradeoff CAN bus utilization for feedback
         //  period is measured in milliseconds
-        if(c == Config.kDriveMotor)
+        if (c == Config.kDriveMotor)
         {
             // drive wants very tight feedback
             mTalon.configVelocityMeasurementPeriod(VelocityMeasPeriod.Period_10Ms, timeOutMS);
@@ -232,8 +240,7 @@ public class CANTalon4915 implements Sendable, MotorSafety
             mTalon.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0, 5, timeOutMS);
             mTalon.setStatusFramePeriod(StatusFrameEnhanced.Status_1_General, 5, timeOutMS);
         }
-        else
-        if(c == Config.kDriveFollowerMotor)
+        else if (c == Config.kDriveFollowerMotor)
         {
             // followers don't need feedback 'tall
             mTalon.configVelocityMeasurementPeriod(VelocityMeasPeriod.Period_100Ms, timeOutMS);
@@ -243,7 +250,8 @@ public class CANTalon4915 implements Sendable, MotorSafety
             mTalon.setStatusFramePeriod(StatusFrameEnhanced.Status_4_AinTempVbat, 1000, timeOutMS);
             mTalon.setStatusFramePeriod(StatusFrameEnhanced.Status_6_Misc, 1000, timeOutMS);
             mTalon.setStatusFramePeriod(StatusFrameEnhanced.Status_7_CommStatus, 1000, timeOutMS);
-            mTalon.setStatusFramePeriod(StatusFrameEnhanced.Status_9_MotProfBuffer, 1000, timeOutMS);
+            mTalon.setStatusFramePeriod(StatusFrameEnhanced.Status_9_MotProfBuffer, 1000,
+                    timeOutMS);
             mTalon.setStatusFramePeriod(StatusFrameEnhanced.Status_10_MotionMagic, 1000, timeOutMS);
             mTalon.setStatusFramePeriod(StatusFrameEnhanced.Status_12_Feedback1, 1000, timeOutMS);
             mTalon.setStatusFramePeriod(StatusFrameEnhanced.Status_13_Base_PIDF0, 1000, timeOutMS);
@@ -256,40 +264,42 @@ public class CANTalon4915 implements Sendable, MotorSafety
             mTalon.configVelocityMeasurementPeriod(VelocityMeasPeriod.Period_100Ms, timeOutMS);
             mTalon.configVelocityMeasurementWindow(64, timeOutMS);
         }
-        // Calling application can opt to speed up the handshaking between the robot API and 
-        // the controller to increase the download rate of the controller's Motion Profile. 
+        // Calling application can opt to speed up the handshaking between the robot API and
+        // the controller to increase the download rate of the controller's Motion Profile.
         // Ideally the period should be no more than half the period of a trajectory point
         mTalon.changeMotionControlFramePeriod(100); // millis
     }
-    
+
     // configEncoder:
     //
     // pidIdx:
-    // 
+    //
     // sensorPhase:
-    //  Sets the phase of the sensor. Use when controller forward/reverse output doesn't 
-    //  correlate to appropriate forward/reverse reading of sensor. Pick a value so that 
-    //  positive PercentOutput yields a positive change in sensor. After setting this, user 
+    //  Sets the phase of the sensor. Use when controller forward/reverse output doesn't
+    //  correlate to appropriate forward/reverse reading of sensor. Pick a value so that
+    //  positive PercentOutput yields a positive change in sensor. After setting this, user
     //  can freely call SetInvert() with any value.
-    public void configEncoder(int pidIdx, FeedbackDevice dev, boolean sensorPhase, 
+    public void configEncoder(int pidIdx, FeedbackDevice dev, boolean sensorPhase,
             boolean isInverted, int encoderCodesPerRev)
     {
-        if(mTalon == null) return;
+        if (mTalon == null)
+            return;
         mTalon.configSelectedFeedbackSensor(dev, pidIdx, sInitTimeoutMS);
         mTalon.setSensorPhase(sensorPhase);
         this.setEncoderCodesPerRev(encoderCodesPerRev);
         mTalon.setInverted(isInverted);
     }
-    
+
     public void configNominalOutput(double fwd, double rev)
     {
-        if(mTalon == null) return;
+        if (mTalon == null)
+            return;
         mTalon.configNominalOutputForward(fwd, sInitTimeoutMS);
         mTalon.configNominalOutputForward(rev, sInitTimeoutMS);
     }
-    
-    public void configPID(int slotIdx, double p, double i, double d, double f, int izone, 
-                        double closedLoopRampRate)
+
+    public void configPID(int slotIdx, double p, double i, double d, double f, int izone,
+            double closedLoopRampRate)
     {
         if (mTalon != null)
         {
@@ -302,10 +312,11 @@ public class CANTalon4915 implements Sendable, MotorSafety
             // mTalon.configOpenloopRamp(newRampRate, sUpdateTimeoutMS);
         }
     }
-    
+
     public void configMotionMagic(int maxVelocity, int maxAcceleration)
     {
-        if(mTalon == null) return;
+        if (mTalon == null)
+            return;
         mTalon.configMotionCruiseVelocity(maxVelocity, sUpdateTimeoutMS);
         mTalon.configMotionAcceleration(maxAcceleration, sUpdateTimeoutMS);
         // mTalon.configMotionProfileTrajectoryPeriod(trajPeriod, sUpdateTimeoutMS);
@@ -316,18 +327,17 @@ public class CANTalon4915 implements Sendable, MotorSafety
         if (mTalon != null)
         {
             StringBuilder sb = new StringBuilder()
-                         .append("firmware version:")
-                             .append(Integer.toHexString(mTalon.getFirmwareVersion()))
-                             .append("\n")
-                         ;
+                    .append("firmware version:")
+                    .append(Integer.toHexString(mTalon.getFirmwareVersion()))
+                    .append("\n");
             return sb.toString();
-         }
+        }
         else
         {
             return "Talon " + mDeviceId + " was not found on the CAN bus";
         }
     }
-    
+
     // } configuration
 
     // MotorSafety Interface { -------------------------------------------------------------
@@ -340,7 +350,7 @@ public class CANTalon4915 implements Sendable, MotorSafety
     @Override
     public double getExpiration()
     {
-        if(mSafetyHelper != null)
+        if (mSafetyHelper != null)
             return mSafetyHelper.getExpiration();
         else
             return 0.0;
@@ -349,7 +359,7 @@ public class CANTalon4915 implements Sendable, MotorSafety
     @Override
     public boolean isAlive()
     {
-        if(mSafetyHelper != null)
+        if (mSafetyHelper != null)
             return mSafetyHelper.isAlive();
         else
             return false;
@@ -358,7 +368,7 @@ public class CANTalon4915 implements Sendable, MotorSafety
     @Override
     public boolean isSafetyEnabled()
     {
-        if(mSafetyHelper != null)
+        if (mSafetyHelper != null)
             return mSafetyHelper.isSafetyEnabled();
         else
             return false;
@@ -367,14 +377,14 @@ public class CANTalon4915 implements Sendable, MotorSafety
     @Override
     public void setExpiration(double arg0)
     {
-        if(mSafetyHelper != null)
+        if (mSafetyHelper != null)
             mSafetyHelper.setExpiration(arg0);
     }
 
     @Override
     public void setSafetyEnabled(boolean arg0)
     {
-        if(mSafetyHelper != null)
+        if (mSafetyHelper != null)
             mSafetyHelper.setSafetyEnabled(arg0);
 
     }
@@ -382,7 +392,7 @@ public class CANTalon4915 implements Sendable, MotorSafety
     @Override
     public void stopMotor()
     {
-        if(mTalon != null)
+        if (mTalon != null)
         {
             mTalon.neutralOutput();
         }
@@ -424,11 +434,13 @@ public class CANTalon4915 implements Sendable, MotorSafety
 
     // } Sendable Interface
 
-
-    /* TalonSRX dispatch -------------------------------------------------------------------*/
+    /*
+     * TalonSRX dispatch
+     * -------------------------------------------------------------------
+     */
     public double getOutputCurrent()
     {
-        if(mTalon != null)
+        if (mTalon != null)
             return mTalon.getOutputCurrent();
         else
             return 0.0;
@@ -499,7 +511,7 @@ public class CANTalon4915 implements Sendable, MotorSafety
     {
         if (mTalon != null)
         {
-            if(mSafetyHelper != null)
+            if (mSafetyHelper != null)
                 mSafetyHelper.feed();
             if (value != mLastSetpoint || mControlMode != mLastControlMode)
             {
@@ -510,7 +522,7 @@ public class CANTalon4915 implements Sendable, MotorSafety
         }
     }
 
-     /**
+    /**
      * Sets the output on the Talon, with the mode specified explicitly.
      * This overrides the new-style method, so that we can maintain
      * state in the wrapper subsystem.
@@ -537,7 +549,7 @@ public class CANTalon4915 implements Sendable, MotorSafety
         this.mControlMode = m; // in SRX mode, set() requires controlmode
     }
 
-     private void setEncoderCodesPerRev(int cpr)
+    private void setEncoderCodesPerRev(int cpr)
     {
         mCodesPerRevolution = cpr;
     }
@@ -610,7 +622,7 @@ public class CANTalon4915 implements Sendable, MotorSafety
     {
         if (mTalon != null)
         {
-           mTalon.setInverted(isInverted);
+            mTalon.setInverted(isInverted);
         }
     }
 
@@ -621,7 +633,7 @@ public class CANTalon4915 implements Sendable, MotorSafety
             mTalon.getSensorCollection().setAnalogPosition(d, sUpdateTimeoutMS);
         }
     }
-    
+
     // Selects which profile slot to use for closed-loop control.
     //  slotIdx is an 'arbitrary' stash identifier
     //  pidIdx is 0 for primary closed-loop and 1 for cascaded closed-loop
