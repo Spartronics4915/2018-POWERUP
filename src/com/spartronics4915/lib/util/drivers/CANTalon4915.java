@@ -153,7 +153,7 @@ public class CANTalon4915 implements Sendable, MotorSafety
     {
         return mTalon;
     }
-    
+
     public int getId()
     {
         return mDeviceId;
@@ -289,12 +289,12 @@ public class CANTalon4915 implements Sendable, MotorSafety
     //  positive PercentOutput yields a positive change in sensor. After setting this, user
     //  can freely call SetInvert() with any value.
     public void configMotorAndEncoder(boolean invertMotorOutput,
-                            FeedbackDevice dev, boolean sensorPhase,
-                            int encoderCodesPerRev)
+            FeedbackDevice dev, boolean sensorPhase,
+            int encoderCodesPerRev)
     {
         if (mTalon == null)
             return;
-        mTalon.configSelectedFeedbackSensor(dev, 0/*pidIdx*/, sInitTimeoutMS);
+        mTalon.configSelectedFeedbackSensor(dev, 0/* pidIdx */, sInitTimeoutMS);
         mTalon.setSensorPhase(sensorPhase);
         this.setEncoderCodesPerRev(encoderCodesPerRev);
         mTalon.setInverted(invertMotorOutput);
@@ -309,14 +309,15 @@ public class CANTalon4915 implements Sendable, MotorSafety
     }
 
     public void configOutputPower(boolean isOpenLoop,
-                                  double rampRate,
-                                  double nominalFwdOutput, // [0,1]
-                                  double peakFwdOutput, // [0,1]
-                                  double nominalRevOutput, // [-1,0]
-                                  double peakRevOutput) // [-1, 0]
+            double rampRate,
+            double nominalFwdOutput, // [0,1]
+            double peakFwdOutput, // [0,1]
+            double nominalRevOutput, // [-1,0]
+            double peakRevOutput) // [-1, 0]
     {
-        if(mTalon == null) return;
-        if(isOpenLoop)
+        if (mTalon == null)
+            return;
+        if (isOpenLoop)
             mTalon.configOpenloopRamp(rampRate, sInitTimeoutMS);
         else
             mTalon.configClosedloopRamp(rampRate, sInitTimeoutMS);
@@ -356,8 +357,8 @@ public class CANTalon4915 implements Sendable, MotorSafety
         {
             StringBuilder sb = new StringBuilder()
                     .append("TalonSRX4915 dumpState for: ")
-                        .append(mDescription)
-                        .append("\n")
+                    .append(mDescription)
+                    .append("\n")
                     .append("  firmware version:")
                     .append(Integer.toHexString(mTalon.getFirmwareVersion()))
                     .append("\n");

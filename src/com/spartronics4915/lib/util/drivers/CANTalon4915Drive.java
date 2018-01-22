@@ -1,4 +1,5 @@
 package com.spartronics4915.lib.util.drivers;
+
 import com.ctre.phoenix.sensors.PigeonIMU;
 import com.ctre.phoenix.sensors.PigeonIMU.PigeonState;
 import com.spartronics4915.lib.util.Logger;
@@ -14,20 +15,23 @@ import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 
 /**
  * CANTalon4915Drive ecapsulates a 'standard' 4 CIM drive with IMU.
- *      We currently assume that there are encoders on the master
- *      motors and that these are speced & mounted following 4915
- *      conventions.
+ * We currently assume that there are encoders on the master
+ * motors and that these are speced & mounted following 4915
+ * conventions.
  *
- *  Future plans
- *      - add support for low/high gear shifter
+ * Future plans
+ * - add support for low/high gear shifter
  **/
 public class CANTalon4915Drive
 {
+
     public enum Config
     {
         kLeftNormalRightInverted(0),
         kRightNormalLeftInverted(1);
+
         public final int mValue;
+
         Config(int initValue)
         {
             mValue = initValue;
@@ -48,18 +52,18 @@ public class CANTalon4915Drive
     private double mWheelDiameterInches;
 
     public CANTalon4915Drive(double wheelDiameterInches,
-                            int leftMasterId, int leftSlaveId,
-                            int rightMasterId, int rightSlaveId,
-                            int pigeonHostId, // set the connected motor or -1
-                                              // assuming we have encoders on master
-                                              // we pigeon should be connected to
-                                              // a slave
-                            Config c)
+            int leftMasterId, int leftSlaveId,
+            int rightMasterId, int rightSlaveId,
+            int pigeonHostId, // set the connected motor or -1
+            // assuming we have encoders on master
+            // we pigeon should be connected to
+            // a slave
+            Config c)
     {
         boolean invertLeft, invertRight;
         CANTalon4915 pigeonTalon = null;
         mConfig = c;
-        if(mConfig == Config.kLeftNormalRightInverted)
+        if (mConfig == Config.kLeftNormalRightInverted)
         {
             invertLeft = false;
             invertRight = true;
@@ -71,30 +75,30 @@ public class CANTalon4915Drive
         mWheelDiameterInches = wheelDiameterInches;
         mLeftMaster = CANTalonFactory.createDefaultDrive(leftMasterId);
         mLeftMaster.configMotorAndEncoder(invertLeft,
-                    FeedbackDevice.QuadEncoder, invertLeft/*phase*/,
-                    kEncoderCodesPerRev);
+                FeedbackDevice.QuadEncoder, invertLeft/* phase */,
+                kEncoderCodesPerRev);
         mLeftSlave = CANTalonFactory.createDefaultSlave(leftSlaveId, leftMasterId,
-                    invertLeft);
-        if(pigeonHostId == leftSlaveId)
+                invertLeft);
+        if (pigeonHostId == leftSlaveId)
             pigeonTalon = mLeftSlave;
 
         mRightMaster = CANTalonFactory.createDefaultDrive(rightMasterId);
         mRightMaster.configMotorAndEncoder(invertRight,
-                    FeedbackDevice.QuadEncoder, invertRight/*phase*/,
-                    kEncoderCodesPerRev);
+                FeedbackDevice.QuadEncoder, invertRight/* phase */,
+                kEncoderCodesPerRev);
         mRightSlave = CANTalonFactory.createDefaultSlave(rightSlaveId, rightMasterId,
-                    invertRight);
-        if(pigeonHostId == rightSlaveId)
+                invertRight);
+        if (pigeonHostId == rightSlaveId)
             pigeonTalon = mRightSlave;
 
-        if(mLeftMaster != null && mLeftSlave != null &&
-           mRightMaster != null && mRightSlave != null)
+        if (mLeftMaster != null && mLeftSlave != null &&
+                mRightMaster != null && mRightSlave != null)
         {
             mInitialized = true;
-            if(pigeonTalon != null)
+            if (pigeonTalon != null)
             {
                 mIMU = new PigeonIMU(pigeonTalon.getTalon());
-                if(mIMU.getState() == PigeonState.NoComm)
+                if (mIMU.getState() == PigeonState.NoComm)
                     mIMU = null; // caller should report error checking hasIMU
             }
         }
@@ -113,56 +117,56 @@ public class CANTalon4915Drive
         return (mIMU != null);
     }
 
-    /* drive methods (typically called via looper) --------------------------*/
+    /* drive methods (typically called via looper) -------------------------- */
     public void stop()
     {
         mLeftMaster.stopMotor();
         mRightMaster.stopMotor();
     }
-    
+
     public void beginOpenLoop(double rampRate,
-         double nominalOutput, double peakOutput)
+            double nominalOutput, double peakOutput)
     {
         mLeftMaster.configOutputPower(true, /* isOpenLoop */
-                                    rampRate, 
-                                    nominalOutput, peakOutput, // fwd
-                                    -nominalOutput, -peakOutput // rev
-                                    );
+                rampRate,
+                nominalOutput, peakOutput, // fwd
+                -nominalOutput, -peakOutput // rev
+        );
         mLeftMaster.set(ControlMode.PercentOutput, 0.0);
         mRightMaster.set(ControlMode.PercentOutput, 0.0);
-        
+
     }
-    
+
     public void driveOpenLoop(double left, double right)
     {
         mLeftMaster.set(ControlMode.PercentOutput, left);
         mRightMaster.set(ControlMode.PercentOutput, right);
     }
-    
+
     public void beginClosedLoopVelocity(int slotIdx, double nominalOutput)
     {
         mLeftMaster.setControlMode(ControlMode.Velocity);
         mLeftMaster.selectProfileSlot(slotIdx);
         mLeftMaster.configNominalOutput(nominalOutput, -nominalOutput);
-        
+
         mRightMaster.setControlMode(ControlMode.Velocity);
         mRightMaster.selectProfileSlot(slotIdx);
         mRightMaster.configNominalOutput(nominalOutput, -nominalOutput);
     }
-    
+
     public void driveVelocityInchesPerSec(double left, double right)
     {
         driveVelocity(inchesPerSecondToRpm(left), inchesPerSecondToRpm(right));
     }
-    
+
     private void driveVelocity(double left, double right)
     {
         mLeftMaster.set(ControlMode.Velocity, left);
         mRightMaster.set(ControlMode.Velocity, right);
     }
-    
+
     public void beginClosedLoopPosition(int slotIdx, double nominalOutput,
-                                    double maxVelocity, double maxAcceleration)
+            double maxVelocity, double maxAcceleration)
     {
         int maxV = rpmToSensorUnitsPer100ms(maxVelocity);
         int maxA = rpmPerSecToSensorUnitsPer100msPerSec(maxAcceleration);
@@ -170,49 +174,53 @@ public class CANTalon4915Drive
         mLeftMaster.selectProfileSlot(slotIdx);
         mLeftMaster.configNominalOutput(nominalOutput, -nominalOutput);
         mLeftMaster.configMotionMagic(maxV, maxA);
-        
+
         mRightMaster.setControlMode(ControlMode.MotionMagic);
         mRightMaster.selectProfileSlot(slotIdx);
         mRightMaster.configNominalOutput(nominalOutput, -nominalOutput);
         mRightMaster.configMotionMagic(maxV, maxA);
     }
-    
+
     public void drivePositionInches(double left, double right)
     {
         drivePosition(inchesToRotations(left), inchesToRotations(right));
     }
-    
+
     private void drivePosition(double left, double right)
     {
         mLeftMaster.set(ControlMode.MotionMagic, left);
         mRightMaster.set(ControlMode.MotionMagic, right);
     }
-    
-    /* distance and speed conversions -----------------------------------*/
+
+    /* distance and speed conversions ----------------------------------- */
     public double getLeftDistanceInches()
     {
-        if(!isInitialized()) return 0.0;
+        if (!isInitialized())
+            return 0.0;
         return rotationsToInches(mLeftMaster.getPosition());
     }
 
     public double getRightDistanceInches()
     {
-        if(!isInitialized()) return 0.0;
+        if (!isInitialized())
+            return 0.0;
         return rotationsToInches(mRightMaster.getPosition());
     }
 
     public double getLeftVelocityInchesPerSec()
     {
-        if(!isInitialized()) return 0.0;
+        if (!isInitialized())
+            return 0.0;
         return rpmToInchesPerSecond(mLeftMaster.getSpeed());
     }
 
     public double getRightVelocityInchesPerSec()
     {
-        if(!isInitialized()) return 0.0;
+        if (!isInitialized())
+            return 0.0;
         return rpmToInchesPerSecond(mRightMaster.getSpeed());
     }
-    
+
     private double rotationsToInches(double rotations)
     {
         return rotations * (mWheelDiameterInches * Math.PI);
@@ -232,29 +240,31 @@ public class CANTalon4915Drive
     {
         return inchesToRotations(inchesPerSec) * 60;
     }
-    
+
     private int rpmToSensorUnitsPer100ms(double maxRPM)
     {
         return mLeftMaster.rpmToNativeVelocity(maxRPM);
     }
-    
+
     private int rpmPerSecToSensorUnitsPer100msPerSec(double maxRPMPerSec)
     {
         return mLeftMaster.rpmToNativeVelocity(maxRPMPerSec);
     }
-    
-    /* support/misc -------------------------------------------------------*/
+
+    /* support/misc ------------------------------------------------------- */
     public double getGyroAngle()
     {
-        if(mIMU == null) return 0.0;
+        if (mIMU == null)
+            return 0.0;
         double[] ypr = new double[3];
         mIMU.getYawPitchRoll(ypr);
         return ypr[0]; // degrees
     }
-    
+
     public void setGyroAngle(double yawDegrees)
     {
-        if(mIMU == null) return;
+        if (mIMU == null)
+            return;
         mIMU.setYaw(yawDegrees, 5);
     }
 
@@ -269,8 +279,8 @@ public class CANTalon4915Drive
         mLeftSlave.setPosition(0);
         mRightSlave.setPosition(0);
 
-        if(mIMU != null && resetYaw)
-            mIMU.setYaw(0, 5/*ms*/);
+        if (mIMU != null && resetYaw)
+            mIMU.setYaw(0, 5/* ms */);
     }
 
     public void enableBraking(boolean onoff)
@@ -281,14 +291,14 @@ public class CANTalon4915Drive
         mLeftSlave.enableBrakeMode(onoff);
         mRightSlave.enableBrakeMode(onoff);
     }
-    
+
     public void reloadGains(int slotIdx, double kp, double ki, double kd, double kf,
-                        int izone, double rampRate)
+            int izone, double rampRate)
     {
         mLeftMaster.configPID(slotIdx, kp, ki, kd, kf, izone, rampRate);
         mRightMaster.configPID(slotIdx, kp, ki, kd, kf, izone, rampRate);
     }
-    
+
     public void outputToSmartDashboard(boolean usesVelocityControl)
     {
         final double left_speed = getLeftVelocityInchesPerSec();
@@ -313,7 +323,7 @@ public class CANTalon4915Drive
         SmartDashboard.putNumber("right position (rotations)", mRightMaster.getPosition());
         SmartDashboard.putNumber("Drivetrain_IMU_Heading", getGyroAngle());
     }
-    
+
     public boolean checkSystem()
     {
         logNotice("checkSystem() ---------------------------------");
@@ -450,19 +460,19 @@ public class CANTalon4915Drive
             logWarning("!!!!!!!!!!!!!!!!!!! Drive RPMs different !!!!!!!!!!!!!!!!!!!");
         }
 
-        return !failure;    
+        return !failure;
     }
-    
+
     private void logNotice(String msg)
     {
         Logger.warning("CANTalonDrive " + msg);
     }
-    
+
     private void logWarning(String msg)
     {
         Logger.warning("CANTalonDrive " + msg);
     }
-    
+
     private void logError(String msg)
     {
         Logger.error("CANTalonDrive " + msg);

@@ -23,9 +23,9 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
  * This subsystem consists of the robot's drivetrain: 4 CIM motors, 4 talons,
- * one solenoid and 2 pistons to shift gears, and a Pigeon IMU board. 
- * The Drive subsystem has several control methods including open loop, 
- * velocity control, and position control. The Drive subsystem also has 
+ * one solenoid and 2 pistons to shift gears, and a Pigeon IMU board.
+ * The Drive subsystem has several control methods including open loop,
+ * velocity control, and position control. The Drive subsystem also has
  * several methods that handle automatic aiming, autonomous path driving, and
  * manual control.
  * 
@@ -153,24 +153,23 @@ public class Drive2 extends Subsystem
     {
         // encoder phase must match output sense or PID will spiral out of control
         mDrive = new CANTalon4915Drive(Constants.kDriveWheelDiameterInches,
-                                       Constants.kLeftDriveMasterId,
-                                       Constants.kLeftDriveSlaveId,
-                                       Constants.kRightDriveMasterId,
-                                       Constants.kRightDriveSlaveId,
-                                       Constants.kDriveIMUTalonId,
-                                       CANTalon4915Drive.Config.kLeftNormalRightInverted
-                                    );
- 
+                Constants.kLeftDriveMasterId,
+                Constants.kLeftDriveSlaveId,
+                Constants.kRightDriveMasterId,
+                Constants.kRightDriveSlaveId,
+                Constants.kDriveIMUTalonId,
+                CANTalon4915Drive.Config.kLeftNormalRightInverted);
+
         if (mDrive.isInitialized())
         {
             reloadGains();
             mIsHighGear = false;
             setHighGear(true);
             mDrive.beginOpenLoop(kOpenLoopRampRate,
-                                 kOpenLoopNominalOutput, kOpenLoopPeakOutput);
+                    kOpenLoopNominalOutput, kOpenLoopPeakOutput);
             // Path Following stuff
             if (!mDrive.hasIMU())
-                    logError("Could not detect the IMU. Is it plugged in?");
+                logError("Could not detect the IMU. Is it plugged in?");
             mIsBrakeMode = true;
             mDrive.enableBraking(mIsBrakeMode);
             logInitialized(true);
@@ -188,7 +187,8 @@ public class Drive2 extends Subsystem
     @Override
     public void registerEnabledLoops(Looper in)
     {
-        if(!this.isInitialized()) return;
+        if (!this.isInitialized())
+            return;
 
         in.register(mLoop);
     }
@@ -198,7 +198,8 @@ public class Drive2 extends Subsystem
      */
     public synchronized void setOpenLoop(DriveSignal signal)
     {
-        if(!this.isInitialized()) return;
+        if (!this.isInitialized())
+            return;
         if (mDriveControlState != DriveControlState.OPEN_LOOP)
         {
             configureTalonsForOpenLoop();
@@ -227,7 +228,8 @@ public class Drive2 extends Subsystem
 
     public synchronized void setBrakeMode(boolean s)
     {
-        if(!this.isInitialized()) return;
+        if (!this.isInitialized())
+            return;
         if (mIsBrakeMode != s)
         {
             mIsBrakeMode = s;
@@ -244,7 +246,8 @@ public class Drive2 extends Subsystem
     @Override
     public void outputToSmartDashboard()
     {
-        if(!this.isInitialized()) return;
+        if (!this.isInitialized())
+            return;
         mDrive.outputToSmartDashboard(usesTalonVelocityControl(mDriveControlState));
         synchronized (this)
         {
@@ -264,14 +267,16 @@ public class Drive2 extends Subsystem
 
     public synchronized void resetEncoders()
     {
-        if(!this.isInitialized()) return;
+        if (!this.isInitialized())
+            return;
         mDrive.resetEncoders(false);
     }
 
     @Override
     public void zeroSensors()
     {
-        if(!this.isInitialized()) return;
+        if (!this.isInitialized())
+            return;
         mDrive.resetEncoders(true);
     }
 
@@ -284,15 +289,17 @@ public class Drive2 extends Subsystem
     public synchronized void setVelocitySetpoint(double left_inches_per_sec,
             double right_inches_per_sec)
     {
-        if(!this.isInitialized()) return;
+        if (!this.isInitialized())
+            return;
         configureTalonsForSpeedControl();
         mDriveControlState = DriveControlState.VELOCITY_SETPOINT;
         updateVelocitySetpoint(left_inches_per_sec, right_inches_per_sec);
     }
-    
+
     private void configureTalonsForOpenLoop()
     {
-        if(!this.isInitialized()) return;
+        if (!this.isInitialized())
+            return;
         logNotice("beginOpenLoop");
         mDrive.beginOpenLoop(kOpenLoopRampRate, kOpenLoopNominalOutput, kOpenLoopPeakOutput);
         setBrakeMode(false);
@@ -304,13 +311,14 @@ public class Drive2 extends Subsystem
      */
     private void configureTalonsForSpeedControl()
     {
-        if(!this.isInitialized()) return;
+        if (!this.isInitialized())
+            return;
         if (!usesTalonVelocityControl(mDriveControlState))
         {
             // We entered a velocity control state.
             logNotice("beginSpeedControl");
             mDrive.beginClosedLoopVelocity(kHighGearVelocityControlSlot,
-                                        Constants.kDriveHighGearNominalOutput);           
+                    Constants.kDriveHighGearNominalOutput);
             setBrakeMode(true);
         }
     }
@@ -320,16 +328,17 @@ public class Drive2 extends Subsystem
      */
     private void configureTalonsForPositionControl()
     {
-        if(!this.isInitialized()) return;
+        if (!this.isInitialized())
+            return;
         if (!usesTalonPositionControl(mDriveControlState))
         {
             // We entered a position control state.
             logNotice("beginPositionControl");
-            mDrive.beginClosedLoopPosition(kLowGearPositionControlSlot, 
+            mDrive.beginClosedLoopPosition(kLowGearPositionControlSlot,
                     Constants.kDriveLowGearNominalOutput,
-                    Constants.kDriveLowGearMaxVelocity, 
+                    Constants.kDriveLowGearMaxVelocity,
                     Constants.kDriveLowGearMaxAccel);
-            
+
             // XXX: need to disable voltage compensation ramp rate
             // mLeftMaster.setVoltageCompensationRampRate(Constants.kDriveVoltageCompensationRampRate);
             // mRightMaster.setVoltageCompensationRampRate(Constants.kDriveVoltageCompensationRampRate);
@@ -347,14 +356,15 @@ public class Drive2 extends Subsystem
     private synchronized void updateVelocitySetpoint(double left_inches_per_sec,
             double right_inches_per_sec)
     {
-        if(!this.isInitialized()) return;
+        if (!this.isInitialized())
+            return;
         if (usesTalonVelocityControl(mDriveControlState))
         {
             final double max_desired =
                     Math.max(Math.abs(left_inches_per_sec), Math.abs(right_inches_per_sec));
             final double scale = max_desired > Constants.kDriveHighGearMaxSetpoint
                     ? Constants.kDriveHighGearMaxSetpoint / max_desired : 1.0;
-            mDrive.driveVelocityInchesPerSec(left_inches_per_sec * scale, 
+            mDrive.driveVelocityInchesPerSec(left_inches_per_sec * scale,
                     right_inches_per_sec * scale);
         }
         else
@@ -373,7 +383,8 @@ public class Drive2 extends Subsystem
     private synchronized void updatePositionSetpoint(double left_position_inches,
             double right_position_inches)
     {
-        if(!this.isInitialized()) return;
+        if (!this.isInitialized())
+            return;
         if (usesTalonPositionControl(mDriveControlState))
         {
             mDrive.drivePositionInches(left_position_inches, right_position_inches);
@@ -409,7 +420,8 @@ public class Drive2 extends Subsystem
      */
     private void updateTurnToHeading(double timestamp)
     {
-        if(!this.isInitialized()) return;
+        if (!this.isInitialized())
+            return;
         final Rotation2d field_to_robot =
                 mRobotState.getLatestFieldToVehicle().getValue().getRotation(); // We need the field frame because this is specified in field coordinates, not robot ones
         // Figure out the rotation necessary to turn to face the goal.
@@ -441,7 +453,8 @@ public class Drive2 extends Subsystem
      */
     private void updateDriveTowardsGoalCoarseAlign(double timestamp)
     {
-        if(!this.isInitialized()) return;
+        if (!this.isInitialized())
+            return;
         updateGoalHeading(timestamp);
         updateTurnToHeading(timestamp);
         mIsApproaching = true;
@@ -461,7 +474,7 @@ public class Drive2 extends Subsystem
                     mDriveControlState = DriveControlState.AIM_TO_GOAL;
                     mIsApproaching = false;
                     mIsOnTarget = false;
-                    updatePositionSetpoint(mDrive.getLeftDistanceInches(), 
+                    updatePositionSetpoint(mDrive.getLeftDistanceInches(),
                             mDrive.getRightDistanceInches());
                     return;
                 }
@@ -479,7 +492,8 @@ public class Drive2 extends Subsystem
      */
     private void updateDriveTowardsGoalApproach(double timestamp)
     {
-        if(!this.isInitialized()) return;
+        if (!this.isInitialized())
+            return;
         Optional<ShooterAimingParameters> aim = mRobotState.getAimingParameters();
         mIsApproaching = true;
         if (aim.isPresent())
@@ -501,7 +515,7 @@ public class Drive2 extends Subsystem
                 mDriveControlState = DriveControlState.AIM_TO_GOAL;
                 RobotState.getInstance().resetVision();
                 mIsApproaching = false;
-                updatePositionSetpoint(mDrive.getLeftDistanceInches(), 
+                updatePositionSetpoint(mDrive.getLeftDistanceInches(),
                         mDrive.getRightDistanceInches());
                 return;
             }
@@ -510,7 +524,7 @@ public class Drive2 extends Subsystem
         }
         else
         {
-            updatePositionSetpoint(mDrive.getLeftDistanceInches(), 
+            updatePositionSetpoint(mDrive.getLeftDistanceInches(),
                     mDrive.getRightDistanceInches());
         }
     }
@@ -523,7 +537,8 @@ public class Drive2 extends Subsystem
      */
     private void updatePathFollower(double timestamp)
     {
-        if(!this.isInitialized()) return;
+        if (!this.isInitialized())
+            return;
         RigidTransform2d robot_pose = mRobotState.getLatestFieldToVehicle().getValue();
         Twist2d command = mPathFollower.update(timestamp, robot_pose,
                 RobotState.getInstance().getDistanceDriven(),
@@ -561,7 +576,7 @@ public class Drive2 extends Subsystem
             mIsOnTarget = false;
             configureTalonsForPositionControl();
             mDriveControlState = DriveControlState.AIM_TO_GOAL;
-            updatePositionSetpoint(mDrive.getLeftDistanceInches(), 
+            updatePositionSetpoint(mDrive.getLeftDistanceInches(),
                     mDrive.getRightDistanceInches());
             mTargetHeading = Rotation2d.fromDegrees(mDrive.getGyroAngle());
         }
@@ -580,8 +595,8 @@ public class Drive2 extends Subsystem
             mIsOnTarget = false;
             configureTalonsForPositionControl();
             mDriveControlState = DriveControlState.DRIVE_TOWARDS_GOAL_COARSE_ALIGN;
-            updatePositionSetpoint(mDrive.getLeftDistanceInches(), 
-                                mDrive.getRightDistanceInches());
+            updatePositionSetpoint(mDrive.getLeftDistanceInches(),
+                    mDrive.getRightDistanceInches());
             mTargetHeading = Rotation2d.fromDegrees(mDrive.getGyroAngle());
         }
         setHighGear(false);
@@ -596,7 +611,7 @@ public class Drive2 extends Subsystem
         {
             configureTalonsForPositionControl();
             mDriveControlState = DriveControlState.TURN_TO_HEADING;
-            updatePositionSetpoint(mDrive.getLeftDistanceInches(), 
+            updatePositionSetpoint(mDrive.getLeftDistanceInches(),
                     mDrive.getRightDistanceInches());
         }
         if (Math.abs(heading.inverse().rotateBy(mTargetHeading).getDegrees()) > 1E-3)
@@ -698,23 +713,22 @@ public class Drive2 extends Subsystem
     // fill our two slots with gains...
     public synchronized void reloadGains()
     {
-        if(!isInitialized()) return;
-        
+        if (!isInitialized())
+            return;
+
         mDrive.reloadGains(kLowGearPositionControlSlot,
                 Constants.kDriveLowGearPositionKp, Constants.kDriveLowGearPositionKi,
                 Constants.kDriveLowGearPositionKd, Constants.kDriveLowGearPositionKf,
-                Constants.kDriveLowGearPositionIZone, Constants.kDriveLowGearPositionRampRate
-                );
-        
-         mDrive.reloadGains(kHighGearVelocityControlSlot,
+                Constants.kDriveLowGearPositionIZone, Constants.kDriveLowGearPositionRampRate);
+
+        mDrive.reloadGains(kHighGearVelocityControlSlot,
                 Constants.kDriveHighGearVelocityKp, Constants.kDriveHighGearVelocityKi,
                 Constants.kDriveHighGearVelocityKd, Constants.kDriveHighGearVelocityKf,
-                Constants.kDriveHighGearVelocityIZone, Constants.kDriveHighGearVelocityRampRate
-                );
-         
-         // nb: motionMagic velocity and accel aren't slot-based, so should be established
-         //   when we enter the control mode.
-         
+                Constants.kDriveHighGearVelocityIZone, Constants.kDriveHighGearVelocityRampRate);
+
+        // nb: motionMagic velocity and accel aren't slot-based, so should be established
+        //   when we enter the control mode.
+
     }
 
     @Override
@@ -722,7 +736,7 @@ public class Drive2 extends Subsystem
     {
         mCSVWriter.write();
     }
-    
+
     /**
      * Check if the drive talons are configured for velocity control
      */
@@ -751,10 +765,9 @@ public class Drive2 extends Subsystem
         return false;
     }
 
-
     public boolean checkSystem()
     {
-        if(!isInitialized())
+        if (!isInitialized())
         {
             logWarning("can't check un-initialized system");
             return false;
