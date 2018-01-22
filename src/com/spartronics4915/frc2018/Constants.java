@@ -30,12 +30,13 @@ public class Constants extends ConstantsBase
     public static final int kRightDriveSlaveId = 2;
     public static final int kLeftDriveMasterId = 3;
     public static final int kRightDriveMasterId = 4;
-    public static final int kIMUTalonId = 6;
-    public static final int kNumTalons = 6;
+    public static final int kDriveIMUTalonId = 2; // must be a slave
     
     public static final int kTestbedMotor1Id = 16;
     public static final int kTestbedMotor2Id = 18;
-   
+ 
+    public static final int kNumTalons = 6; // total talon count on robot
+    
     public static final int kNumPDPs = 1;
     public static final int kNumPCMs = 0; // XXX: change me if/when pneumatics are added
     public static final int kNumCANDevices = kNumTalons + kNumPCMs + kNumPDPs;
@@ -111,7 +112,7 @@ public class Constants extends ConstantsBase
     public static final double kDriveLowGearNominalOutput = 0.5; // pct
     public static final double kDriveLowGearMaxVelocity = 3.0 * 12.0 * 60.0 / (Math.PI * kDriveWheelDiameterInches); // 6 fps
                                                                                                                // in RPM
-    public static final double kDriveLowGearMaxAccel = 15.0 * 12.0 * 60.0 / (Math.PI * kDriveWheelDiameterInches); // 18 fps/s
+    public static final double kDriveLowGearMaxAccel = 15.0 * 12.0 * 60.0 / (Math.PI * kDriveWheelDiameterInches); // 15 fps/s
                                                                                                              // in RPM/s
 
     public static final double kDriveVoltageCompensationRampRate = 0.0;

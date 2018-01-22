@@ -140,7 +140,7 @@ public class CANTalon4915 implements Sendable, MotorSafety
             mSafetyHelper = new MotorSafetyHelper(this);
             mSafetyHelper.setExpiration(0.0);
             mSafetyHelper.setSafetyEnabled(false);
-            configGeneral(c, sInitTimeoutMS);
+            configUniversal(c, sInitTimeoutMS);
         }
     }
 
@@ -153,12 +153,23 @@ public class CANTalon4915 implements Sendable, MotorSafety
     {
         return mTalon;
     }
+    
+    public int getId()
+    {
+        return mDeviceId;
+    }
 
     // configuration { -----------------------------------------------------------------------
+    //
+    // configUniversal represents the default/'factory' settings for all our CANTalons.
+    // These values should only be changed if you wish them to apply to all robot motors.
+    // Alternatively, you should invoke or create special config-groups intended for use
+    // by a particular motor usage class (eg driveTrain invokes configOutputPower repeatedly)
+    //
     // NB: be *very* careful if you comment out any lines here.
     //   these values are persistent and you can "lock" values
     //   int a motor controller.
-    private void configGeneral(Config c, int timeOutMS)
+    private void configUniversal(Config c, int timeOutMS)
     {
         if (mTalon == null)
             return;
@@ -167,8 +178,8 @@ public class CANTalon4915 implements Sendable, MotorSafety
         mTalon.configClosedloopRamp(.5, timeOutMS); // .5 sec to go from 0 to max
         mTalon.configOpenloopRamp(.5, timeOutMS);
         mTalon.configNeutralDeadband(.04, timeOutMS); // output deadband pct 4% (factory default)
-        mTalon.configNominalOutputForward(1.0, timeOutMS); // [0, 1]
-        mTalon.configNominalOutputReverse(-1.0, timeOutMS); // [-1, 0]
+        mTalon.configNominalOutputForward(0.0, timeOutMS); // [0, 1]
+        mTalon.configNominalOutputReverse(0.0, timeOutMS); // [-1, 0]
         mTalon.configPeakOutputForward(1.0, timeOutMS);
         mTalon.configPeakOutputReverse(-1.0, timeOutMS);
 
@@ -184,11 +195,12 @@ public class CANTalon4915 implements Sendable, MotorSafety
         mTalon.configPeakCurrentDuration(5000, timeOutMS); // milliseconds
         mTalon.enableCurrentLimit(false);
 
-        // voltageCompSaturation:
+        // voltageCompensation:
         //  This is the max voltage to apply to the hbridge when voltage compensation is enabled.
         //  For example, if 10 (volts) is specified and a TalonSRX is commanded to 0.5
         //  (PercentOutput, closed-loop, etc) then the TalonSRX will attempt to apply a
         //  duty-cycle to produce 5V.
+        mTalon.enableVoltageCompensation(false);
         mTalon.configVoltageCompSaturation(12.0, timeOutMS);
         mTalon.configVoltageMeasurementFilter(64, timeOutMS);
 
@@ -270,24 +282,22 @@ public class CANTalon4915 implements Sendable, MotorSafety
         mTalon.changeMotionControlFramePeriod(100); // millis
     }
 
-    // configEncoder:
-    //
-    // pidIdx:
-    //
+    // configMotorAndEncoder:
     // sensorPhase:
     //  Sets the phase of the sensor. Use when controller forward/reverse output doesn't
     //  correlate to appropriate forward/reverse reading of sensor. Pick a value so that
     //  positive PercentOutput yields a positive change in sensor. After setting this, user
     //  can freely call SetInvert() with any value.
-    public void configEncoder(int pidIdx, FeedbackDevice dev, boolean sensorPhase,
-            boolean isInverted, int encoderCodesPerRev)
+    public void configMotorAndEncoder(boolean invertMotorOutput,
+                            FeedbackDevice dev, boolean sensorPhase,
+                            int encoderCodesPerRev)
     {
         if (mTalon == null)
             return;
-        mTalon.configSelectedFeedbackSensor(dev, pidIdx, sInitTimeoutMS);
+        mTalon.configSelectedFeedbackSensor(dev, 0/*pidIdx*/, sInitTimeoutMS);
         mTalon.setSensorPhase(sensorPhase);
         this.setEncoderCodesPerRev(encoderCodesPerRev);
-        mTalon.setInverted(isInverted);
+        mTalon.setInverted(invertMotorOutput);
     }
 
     public void configNominalOutput(double fwd, double rev)
@@ -296,6 +306,24 @@ public class CANTalon4915 implements Sendable, MotorSafety
             return;
         mTalon.configNominalOutputForward(fwd, sInitTimeoutMS);
         mTalon.configNominalOutputForward(rev, sInitTimeoutMS);
+    }
+
+    public void configOutputPower(boolean isOpenLoop,
+                                  double rampRate,
+                                  double nominalFwdOutput, // [0,1]
+                                  double peakFwdOutput, // [0,1]
+                                  double nominalRevOutput, // [-1,0]
+                                  double peakRevOutput) // [-1, 0]
+    {
+        if(mTalon == null) return;
+        if(isOpenLoop)
+            mTalon.configOpenloopRamp(rampRate, sInitTimeoutMS);
+        else
+            mTalon.configClosedloopRamp(rampRate, sInitTimeoutMS);
+        mTalon.configNominalOutputForward(nominalFwdOutput, sInitTimeoutMS);
+        mTalon.configNominalOutputReverse(nominalRevOutput, sInitTimeoutMS);
+        mTalon.configPeakOutputForward(peakFwdOutput, sInitTimeoutMS);
+        mTalon.configPeakOutputReverse(peakRevOutput, sInitTimeoutMS);
     }
 
     public void configPID(int slotIdx, double p, double i, double d, double f, int izone,
@@ -327,7 +355,10 @@ public class CANTalon4915 implements Sendable, MotorSafety
         if (mTalon != null)
         {
             StringBuilder sb = new StringBuilder()
-                    .append("firmware version:")
+                    .append("TalonSRX4915 dumpState for: ")
+                        .append(mDescription)
+                        .append("\n")
+                    .append("  firmware version:")
                     .append(Integer.toHexString(mTalon.getFirmwareVersion()))
                     .append("\n");
             return sb.toString();
@@ -456,7 +487,7 @@ public class CANTalon4915 implements Sendable, MotorSafety
      * @param Rotations per minute
      * @return Native Units per 100 milliseconds
      */
-    private int rpmToNativeVelocity(double rpm)
+    public int rpmToNativeVelocity(double rpm)
     {
         if (mCodesPerRevolution == 0)
             return (int) Math.round(rpm);

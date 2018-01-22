@@ -1,6 +1,5 @@
 package com.spartronics4915.frc2018.subsystems;
 
-import java.util.Arrays;
 import java.util.Optional;
 
 import com.spartronics4915.frc2018.Constants;
@@ -9,55 +8,45 @@ import com.spartronics4915.frc2018.RobotState;
 import com.spartronics4915.frc2018.ShooterAimingParameters;
 import com.spartronics4915.frc2018.loops.Loop;
 import com.spartronics4915.frc2018.loops.Looper;
-import com.spartronics4915.lib.util.CANProbe;
 import com.spartronics4915.lib.util.DriveSignal;
 import com.spartronics4915.lib.util.ReflectingCSVWriter;
 import com.spartronics4915.lib.util.Util;
 import com.spartronics4915.lib.util.control.Lookahead;
 import com.spartronics4915.lib.util.control.Path;
 import com.spartronics4915.lib.util.control.PathFollower;
+import com.spartronics4915.lib.util.drivers.CANTalon4915Drive;
 import com.spartronics4915.lib.util.math.RigidTransform2d;
 import com.spartronics4915.lib.util.math.Rotation2d;
 import com.spartronics4915.lib.util.math.Twist2d;
-import com.spartronics4915.lib.util.drivers.CANTalonFactory;
-import com.spartronics4915.lib.util.drivers.CANTalon4915;
 
-import com.ctre.phoenix.motorcontrol.ControlMode;
-import com.ctre.phoenix.motorcontrol.FeedbackDevice;
-import com.ctre.phoenix.motorcontrol.StatusFrameEnhanced;
-import com.ctre.phoenix.motorcontrol.VelocityMeasPeriod;
-import com.ctre.phoenix.sensors.PigeonIMU;
-import com.ctre.phoenix.sensors.PigeonIMU.PigeonState;
-
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
  * This subsystem consists of the robot's drivetrain: 4 CIM motors, 4 talons,
- * one solenoid and 2 pistons to shift gears,
- * and a Pigeon IMU board. The Drive subsystem has several control methods
- * including
- * open loop, velocity control, and position
- * control. The Drive subsystem also has several methods that handle automatic
- * aiming, autonomous path driving, and
+ * one solenoid and 2 pistons to shift gears, and a Pigeon IMU board. 
+ * The Drive subsystem has several control methods including open loop, 
+ * velocity control, and position control. The Drive subsystem also has 
+ * several methods that handle automatic aiming, autonomous path driving, and
  * manual control.
  * 
  * @see Subsystem.java
  */
-public class Drive extends Subsystem
+public class Drive2 extends Subsystem
 {
 
-    private static Drive mInstance = null;
+    private static Drive2 mInstance = null;
 
     private static final int kLowGearPositionControlSlot = 0;
     private static final int kHighGearVelocityControlSlot = 1;
+    private static final double kOpenLoopRampRate = .5;
+    private static final double kOpenLoopNominalOutput = 0.0; // fwd & rev
+    private static final double kOpenLoopPeakOutput = .5; // fwd: .5, rev: -.5
 
-    public static Drive getInstance()
+    public static Drive2 getInstance()
     {
         if (mInstance == null)
         {
-            mInstance = new Drive();
+            mInstance = new Drive2();
         }
         return mInstance;
     }
@@ -74,42 +63,11 @@ public class Drive extends Subsystem
         DRIVE_TOWARDS_GOAL_APPROACH // drive forwards until we are at optimal shooting distance
     }
 
-    /**
-     * Check if the drive talons are configured for velocity control
-     */
-    protected static boolean usesTalonVelocityControl(DriveControlState state)
-    {
-        if (state == DriveControlState.VELOCITY_SETPOINT
-                || state == DriveControlState.PATH_FOLLOWING)
-        {
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * Check if the drive talons are configured for position control
-     */
-    protected static boolean usesTalonPositionControl(DriveControlState state)
-    {
-        if (state == DriveControlState.AIM_TO_GOAL ||
-                state == DriveControlState.TURN_TO_HEADING ||
-                state == DriveControlState.DRIVE_TOWARDS_GOAL_COARSE_ALIGN ||
-                state == DriveControlState.DRIVE_TOWARDS_GOAL_APPROACH)
-        {
-            return true;
-        }
-        return false;
-    }
-
     // Control states
     private DriveControlState mDriveControlState;
 
     // Hardware
-    private CANTalon4915 mLeftMaster = null, mRightMaster = null;
-    private CANTalon4915 mLeftSlave = null, mRightSlave = null;
-    private CANTalon4915 mIMUTalon = null;
-    private PigeonIMU mIMU = null;
+    private CANTalon4915Drive mDrive = null;
 
     // Controllers
     private RobotState mRobotState = RobotState.getInstance();
@@ -135,24 +93,24 @@ public class Drive extends Subsystem
         @Override
         public void onStart(double timestamp)
         {
-            synchronized (Drive.this)
+            synchronized (Drive2.this)
             {
                 setOpenLoop(DriveSignal.NEUTRAL);
                 setBrakeMode(false);
                 setVelocitySetpoint(0, 0);
-                if (mIMU.getState() != PigeonState.Ready)
+                if (!mDrive.hasIMU())
                 {
-                    DriverStation.reportError("IMU in non-ready state. Is it plugged in?", false);
+                    logError("IMU in non-ready state. Is it plugged in?");
                     return;
                 }
-                mIMU.setYaw(0, 5); // was SetYaw(0)
+                mDrive.setGyroAngle(0);
             }
         }
 
         @Override
         public void onLoop(double timestamp)
         {
-            synchronized (Drive.this)
+            synchronized (Drive2.this)
             {
                 switch (mDriveControlState)
                 {
@@ -191,44 +149,30 @@ public class Drive extends Subsystem
         }
     };
 
-    private Drive()
+    private Drive2()
     {
         // encoder phase must match output sense or PID will spiral out of control
-        mLeftMaster = CANTalonFactory.createDefaultDrive(Constants.kLeftDriveMasterId);
-        mLeftMaster.configMotorAndEncoder(false, FeedbackDevice.QuadEncoder, false/*phase*/, 
-                Constants.kEncoderCodesPerRev);
-        
-        mLeftSlave = CANTalonFactory.createDefaultSlave(Constants.kLeftDriveSlaveId,
-                                                        Constants.kLeftDriveMasterId,
-                                                        false /* isInverted */);
-
-        mRightMaster = CANTalonFactory.createDefaultDrive(Constants.kRightDriveMasterId);
-        mRightMaster.configMotorAndEncoder(true, FeedbackDevice.QuadEncoder, true/*phase*/, 
-                Constants.kEncoderCodesPerRev);
-
-        mRightSlave =  CANTalonFactory.createDefaultSlave(Constants.kRightDriveSlaveId,
-                                                          Constants.kRightDriveMasterId,
-                                                          false);
-
-        if (mRightMaster.isValid() && mRightSlave.isValid() &&
-                mLeftMaster.isValid() && mLeftSlave.isValid())
+        mDrive = new CANTalon4915Drive(Constants.kDriveWheelDiameterInches,
+                                       Constants.kLeftDriveMasterId,
+                                       Constants.kLeftDriveSlaveId,
+                                       Constants.kRightDriveMasterId,
+                                       Constants.kRightDriveSlaveId,
+                                       Constants.kDriveIMUTalonId,
+                                       CANTalon4915Drive.Config.kLeftNormalRightInverted
+                                    );
+ 
+        if (mDrive.isInitialized())
         {
             reloadGains();
             mIsHighGear = false;
             setHighGear(true);
-            setOpenLoop(DriveSignal.NEUTRAL);
+            mDrive.beginOpenLoop(kOpenLoopRampRate,
+                                 kOpenLoopNominalOutput, kOpenLoopPeakOutput);
             // Path Following stuff
-            mIMUTalon = new CANTalon4915(Constants.kDriveIMUTalonId);
-            if(mIMUTalon.isValid())
-            {
-                // FIXME: Don't use the pigeon, or at least wire it directly into the CAN bus
-                mIMU = new PigeonIMU(mIMUTalon.getTalon());
-                if (mIMU.getState() == PigeonState.NoComm)
+            if (!mDrive.hasIMU())
                     logError("Could not detect the IMU. Is it plugged in?");
-            }
-            // Force a CAN message across.
             mIsBrakeMode = true;
-            setBrakeMode(false);
+            mDrive.enableBraking(mIsBrakeMode);
             logInitialized(true);
         }
         else
@@ -250,23 +194,16 @@ public class Drive extends Subsystem
     }
 
     /**
-     * Configure talons for open loop control
+     * drives with open-loop control mode, called frequently!
      */
     public synchronized void setOpenLoop(DriveSignal signal)
     {
         if(!this.isInitialized()) return;
         if (mDriveControlState != DriveControlState.OPEN_LOOP)
         {
-            mLeftMaster.setControlMode(ControlMode.PercentOutput);
-            mRightMaster.setControlMode(ControlMode.PercentOutput);
-            mLeftMaster.configNominalOutput(0.0, 0.0);
-            mRightMaster.configNominalOutput(0.0, 0.0);
-            mDriveControlState = DriveControlState.OPEN_LOOP;
-            setBrakeMode(false);
+            configureTalonsForOpenLoop();
         }
-        logNotice("setOpenLoop:" + signal.getLeft());
-        mRightMaster.set(signal.getRight());
-        mLeftMaster.set(signal.getLeft());
+        mDrive.driveOpenLoop(signal.getLeft(), signal.getRight());
     }
 
     public boolean isHighGear()
@@ -294,41 +231,21 @@ public class Drive extends Subsystem
         if (mIsBrakeMode != s)
         {
             mIsBrakeMode = s;
-            mRightMaster.enableBrakeMode(s);
-            mRightSlave.enableBrakeMode(s);
-            mLeftMaster.enableBrakeMode(s);
-            mLeftSlave.enableBrakeMode(s);
+            mDrive.enableBraking(s);
         }
     }
 
     @Override
     public synchronized void stop()
     {
-        setOpenLoop(DriveSignal.NEUTRAL);
+        this.setOpenLoop(new DriveSignal(0.0, 0.0));
     }
 
     @Override
     public void outputToSmartDashboard()
     {
         if(!this.isInitialized()) return;
-        final double left_speed = getLeftVelocityInchesPerSec();
-        final double right_speed = getRightVelocityInchesPerSec();
-        SmartDashboard.putNumber("left voltage (V)", mLeftMaster.getOutputVoltage());
-        SmartDashboard.putNumber("right voltage (V)", mRightMaster.getOutputVoltage());
-        SmartDashboard.putNumber("left speed (ips)", left_speed);
-        SmartDashboard.putNumber("right speed (ips)", right_speed);
-        if (usesTalonVelocityControl(mDriveControlState))
-        {
-            SmartDashboard.putNumber("left speed error (ips)",
-                    rpmToInchesPerSecond(mLeftMaster.getSetpoint()) - left_speed);
-            SmartDashboard.putNumber("right speed error (ips)",
-                    rpmToInchesPerSecond(mRightMaster.getSetpoint()) - right_speed);
-        }
-        else
-        {
-            SmartDashboard.putNumber("left speed error (ips)", 0.0);
-            SmartDashboard.putNumber("right speed error (ips)", 0.0);
-        }
+        mDrive.outputToSmartDashboard(usesTalonVelocityControl(mDriveControlState));
         synchronized (this)
         {
             if (mDriveControlState == DriveControlState.PATH_FOLLOWING && mPathFollower != null)
@@ -342,34 +259,20 @@ public class Drive extends Subsystem
                 SmartDashboard.putNumber("drive ATE", 0.0);
             }
         }
-        SmartDashboard.putNumber("left position (rotations)", mLeftMaster.getPosition());
-        SmartDashboard.putNumber("right position (rotations)", mRightMaster.getPosition());
-        SmartDashboard.putNumber("Drivetrain_IMU_Heading", getGyroAngle().getDegrees());
         SmartDashboard.putBoolean("drive on target", isOnTarget());
     }
 
     public synchronized void resetEncoders()
     {
         if(!this.isInitialized()) return;
-        mLeftMaster.setEncPosition(0);
-        mLeftMaster.setPosition(0);
-        mRightMaster.setPosition(0);
-        mRightMaster.setEncPosition(0);
-        mLeftSlave.setPosition(0);
-        mRightSlave.setPosition(0);
+        mDrive.resetEncoders(false);
     }
 
     @Override
     public void zeroSensors()
     {
         if(!this.isInitialized()) return;
-        resetEncoders();
-        if (mIMU.getState() != PigeonState.Ready)
-        {
-            DriverStation.reportError("IMU in non-ready state. Is it plugged in?", false);
-            return;
-        }
-        mIMU.setYaw(0, 5/* timeoutMS */);
+        mDrive.resetEncoders(true);
     }
 
     /**
@@ -386,6 +289,15 @@ public class Drive extends Subsystem
         mDriveControlState = DriveControlState.VELOCITY_SETPOINT;
         updateVelocitySetpoint(left_inches_per_sec, right_inches_per_sec);
     }
+    
+    private void configureTalonsForOpenLoop()
+    {
+        if(!this.isInitialized()) return;
+        logNotice("beginOpenLoop");
+        mDrive.beginOpenLoop(kOpenLoopRampRate, kOpenLoopNominalOutput, kOpenLoopPeakOutput);
+        setBrakeMode(false);
+        mDriveControlState = DriveControlState.OPEN_LOOP;
+    }
 
     /**
      * Configures talons for velocity control
@@ -396,15 +308,9 @@ public class Drive extends Subsystem
         if (!usesTalonVelocityControl(mDriveControlState))
         {
             // We entered a velocity control state.
-            mLeftMaster.setControlMode(ControlMode.Velocity);
-            mLeftMaster.selectProfileSlot(kHighGearVelocityControlSlot);
-            mLeftMaster.configNominalOutput(Constants.kDriveHighGearNominalOutput,
-                    -Constants.kDriveHighGearNominalOutput);
-            
-            mRightMaster.setControlMode(ControlMode.Velocity);
-            mRightMaster.selectProfileSlot(kHighGearVelocityControlSlot);
-            mRightMaster.configNominalOutput(Constants.kDriveHighGearNominalOutput,
-                    -Constants.kDriveHighGearNominalOutput);
+            logNotice("beginSpeedControl");
+            mDrive.beginClosedLoopVelocity(kHighGearVelocityControlSlot,
+                                        Constants.kDriveHighGearNominalOutput);           
             setBrakeMode(true);
         }
     }
@@ -418,26 +324,15 @@ public class Drive extends Subsystem
         if (!usesTalonPositionControl(mDriveControlState))
         {
             // We entered a position control state.
-            mLeftMaster.setControlMode(ControlMode.MotionMagic);
-            mLeftMaster.selectProfileSlot(kLowGearPositionControlSlot);
-            mLeftMaster.configNominalOutput(Constants.kDriveLowGearNominalOutput,
-                    -Constants.kDriveLowGearNominalOutput);
-            mRightMaster.setControlMode(ControlMode.MotionMagic);
-            mRightMaster.selectProfileSlot(kLowGearPositionControlSlot);
-            mRightMaster.configNominalOutput(Constants.kDriveLowGearNominalOutput,
-                    -Constants.kDriveLowGearNominalOutput);
-
-//            These constants are doubles, but we need ints
-//            mLeftMaster.configMotionMagic(Constants.kDriveLowGearMaxVelocity, 
-//                    Constants.kDriveLowGearMaxAccel);
-//            
-//            mRightMaster.configMotionMagic(Constants.kDriveLowGearMaxVelocity, 
-//                    Constants.kDriveLowGearMaxAccel);
-//            
+            logNotice("beginPositionControl");
+            mDrive.beginClosedLoopPosition(kLowGearPositionControlSlot, 
+                    Constants.kDriveLowGearNominalOutput,
+                    Constants.kDriveLowGearMaxVelocity, 
+                    Constants.kDriveLowGearMaxAccel);
+            
             // XXX: need to disable voltage compensation ramp rate
             // mLeftMaster.setVoltageCompensationRampRate(Constants.kDriveVoltageCompensationRampRate);
             // mRightMaster.setVoltageCompensationRampRate(Constants.kDriveVoltageCompensationRampRate);
-
 
             setBrakeMode(true);
         }
@@ -459,14 +354,13 @@ public class Drive extends Subsystem
                     Math.max(Math.abs(left_inches_per_sec), Math.abs(right_inches_per_sec));
             final double scale = max_desired > Constants.kDriveHighGearMaxSetpoint
                     ? Constants.kDriveHighGearMaxSetpoint / max_desired : 1.0;
-            mLeftMaster.set(inchesPerSecondToRpm(left_inches_per_sec * scale));
-            mRightMaster.set(inchesPerSecondToRpm(right_inches_per_sec * scale));
+            mDrive.driveVelocityInchesPerSec(left_inches_per_sec * scale, 
+                    right_inches_per_sec * scale);
         }
         else
         {
             logError("Hit a bad velocity control state");
-            mLeftMaster.set(0);
-            mRightMaster.set(0);
+            mDrive.driveVelocityInchesPerSec(0, 0); // XXX: should we just mDrive.stop()?
         }
     }
 
@@ -482,80 +376,13 @@ public class Drive extends Subsystem
         if(!this.isInitialized()) return;
         if (usesTalonPositionControl(mDriveControlState))
         {
-            mLeftMaster.set(inchesToRotations(left_position_inches));
-            mRightMaster.set(inchesToRotations(right_position_inches));
+            mDrive.drivePositionInches(left_position_inches, right_position_inches);
         }
         else
         {
             logError("Hit a bad position control state");
-            mLeftMaster.set(0);
-            mRightMaster.set(0);
+            mDrive.stop();
         }
-    }
-
-    private static double rotationsToInches(double rotations)
-    {
-        return rotations * (Constants.kDriveWheelDiameterInches * Math.PI);
-    }
-
-    private static double rpmToInchesPerSecond(double rpm)
-    {
-        return rotationsToInches(rpm) / 60;
-    }
-
-    private static double inchesToRotations(double inches)
-    {
-        return inches / (Constants.kDriveWheelDiameterInches * Math.PI);
-    }
-
-    private static double inchesPerSecondToRpm(double inches_per_second)
-    {
-        return inchesToRotations(inches_per_second) * 60;
-    }
-
-    public double getLeftDistanceInches()
-    {
-        if(!isInitialized()) return 0.0;
-        return rotationsToInches(mLeftMaster.getPosition());
-    }
-
-    public double getRightDistanceInches()
-    {
-        if(!isInitialized()) return 0.0;
-        return rotationsToInches(mRightMaster.getPosition());
-    }
-
-    public double getLeftVelocityInchesPerSec()
-    {
-        if(!isInitialized()) return 0.0;
-        return rpmToInchesPerSecond(mLeftMaster.getSpeed());
-    }
-
-    public double getRightVelocityInchesPerSec()
-    {
-        if(!isInitialized()) return 0.0;
-        return rpmToInchesPerSecond(mRightMaster.getSpeed());
-    }
-
-    public synchronized Rotation2d getGyroAngle()
-    {
-        if(!this.isInitialized()) return new Rotation2d();
-        if (mIMU.getState() != PigeonState.Ready)
-        {
-            DriverStation.reportError("IMU in non-ready state. Is it plugged in?", false);
-            return Rotation2d.fromDegrees(0);
-        }
-        double[] ypr = new double[3]; // This is ridiculous. Quick fix: don't use the pigeon!
-        mIMU.getYawPitchRoll(ypr);
-        return Rotation2d.fromDegrees(ypr[0]); // Rotation2d normalizes between -180 and 180 automatically
-    }
-
-    public synchronized void setGyroAngle(Rotation2d angle)
-    {
-        if(!this.isInitialized()) return;
-        if (mIMU.getState() == PigeonState.NoComm)
-            DriverStation.reportError("Could not detect the IMU. Is it plugged in?", false);
-        mIMU.setYaw(angle.getDegrees(), 5 /* delayMS */);
     }
 
     /**
@@ -592,19 +419,19 @@ public class Drive extends Subsystem
         final double kGoalPosTolerance = 0.75; // degrees
         final double kGoalVelTolerance = 5.0; // inches per second
         if (Math.abs(robot_to_target.getDegrees()) < kGoalPosTolerance
-                && Math.abs(getLeftVelocityInchesPerSec()) < kGoalVelTolerance
-                && Math.abs(getRightVelocityInchesPerSec()) < kGoalVelTolerance)
+                && Math.abs(mDrive.getLeftVelocityInchesPerSec()) < kGoalVelTolerance
+                && Math.abs(mDrive.getRightVelocityInchesPerSec()) < kGoalVelTolerance)
         {
             // Use the current setpoint and base lock.
             mIsOnTarget = true;
-            updatePositionSetpoint(getLeftDistanceInches(), getRightDistanceInches());
+            updatePositionSetpoint(mDrive.getLeftDistanceInches(), mDrive.getRightDistanceInches());
             return;
         }
 
         Kinematics.DriveVelocity wheel_delta = Kinematics
                 .inverseKinematics(new Twist2d(0, 0, robot_to_target.getRadians()));
-        updatePositionSetpoint(wheel_delta.left + getLeftDistanceInches(),
-                wheel_delta.right + getRightDistanceInches());
+        updatePositionSetpoint(wheel_delta.left + mDrive.getLeftDistanceInches(),
+                wheel_delta.right + mDrive.getRightDistanceInches());
     }
 
     /**
@@ -634,7 +461,8 @@ public class Drive extends Subsystem
                     mDriveControlState = DriveControlState.AIM_TO_GOAL;
                     mIsApproaching = false;
                     mIsOnTarget = false;
-                    updatePositionSetpoint(getLeftDistanceInches(), getRightDistanceInches());
+                    updatePositionSetpoint(mDrive.getLeftDistanceInches(), 
+                            mDrive.getRightDistanceInches());
                     return;
                 }
             }
@@ -673,15 +501,17 @@ public class Drive extends Subsystem
                 mDriveControlState = DriveControlState.AIM_TO_GOAL;
                 RobotState.getInstance().resetVision();
                 mIsApproaching = false;
-                updatePositionSetpoint(getLeftDistanceInches(), getRightDistanceInches());
+                updatePositionSetpoint(mDrive.getLeftDistanceInches(), 
+                        mDrive.getRightDistanceInches());
                 return;
             }
-            updatePositionSetpoint(getLeftDistanceInches() + error,
-                    getRightDistanceInches() + error);
+            updatePositionSetpoint(mDrive.getLeftDistanceInches() + error,
+                    mDrive.getRightDistanceInches() + error);
         }
         else
         {
-            updatePositionSetpoint(getLeftDistanceInches(), getRightDistanceInches());
+            updatePositionSetpoint(mDrive.getLeftDistanceInches(), 
+                    mDrive.getRightDistanceInches());
         }
     }
 
@@ -731,8 +561,9 @@ public class Drive extends Subsystem
             mIsOnTarget = false;
             configureTalonsForPositionControl();
             mDriveControlState = DriveControlState.AIM_TO_GOAL;
-            updatePositionSetpoint(getLeftDistanceInches(), getRightDistanceInches());
-            mTargetHeading = getGyroAngle();
+            updatePositionSetpoint(mDrive.getLeftDistanceInches(), 
+                    mDrive.getRightDistanceInches());
+            mTargetHeading = Rotation2d.fromDegrees(mDrive.getGyroAngle());
         }
         setHighGear(false);
     }
@@ -749,8 +580,9 @@ public class Drive extends Subsystem
             mIsOnTarget = false;
             configureTalonsForPositionControl();
             mDriveControlState = DriveControlState.DRIVE_TOWARDS_GOAL_COARSE_ALIGN;
-            updatePositionSetpoint(getLeftDistanceInches(), getRightDistanceInches());
-            mTargetHeading = getGyroAngle();
+            updatePositionSetpoint(mDrive.getLeftDistanceInches(), 
+                                mDrive.getRightDistanceInches());
+            mTargetHeading = Rotation2d.fromDegrees(mDrive.getGyroAngle());
         }
         setHighGear(false);
     }
@@ -764,7 +596,8 @@ public class Drive extends Subsystem
         {
             configureTalonsForPositionControl();
             mDriveControlState = DriveControlState.TURN_TO_HEADING;
-            updatePositionSetpoint(getLeftDistanceInches(), getRightDistanceInches());
+            updatePositionSetpoint(mDrive.getLeftDistanceInches(), 
+                    mDrive.getRightDistanceInches());
         }
         if (Math.abs(heading.inverse().rotateBy(mTargetHeading).getDegrees()) > 1E-3)
         {
@@ -867,30 +700,21 @@ public class Drive extends Subsystem
     {
         if(!isInitialized()) return;
         
-        mLeftMaster.configPID(kLowGearPositionControlSlot,
+        mDrive.reloadGains(kLowGearPositionControlSlot,
                 Constants.kDriveLowGearPositionKp, Constants.kDriveLowGearPositionKi,
                 Constants.kDriveLowGearPositionKd, Constants.kDriveLowGearPositionKf,
                 Constants.kDriveLowGearPositionIZone, Constants.kDriveLowGearPositionRampRate
                 );
         
-        mRightMaster.configPID(kLowGearPositionControlSlot,
-                Constants.kDriveLowGearPositionKp, Constants.kDriveLowGearPositionKi,
-                Constants.kDriveLowGearPositionKd, Constants.kDriveLowGearPositionKf,
-                Constants.kDriveLowGearPositionIZone, Constants.kDriveLowGearPositionRampRate);
-        
-        // nb: motionMagic velocity and accel aren't slot-based, so should be established
-        //   when we enter the control mode.
-        
-        mLeftMaster.configPID(kHighGearVelocityControlSlot,
+         mDrive.reloadGains(kHighGearVelocityControlSlot,
                 Constants.kDriveHighGearVelocityKp, Constants.kDriveHighGearVelocityKi,
                 Constants.kDriveHighGearVelocityKd, Constants.kDriveHighGearVelocityKf,
                 Constants.kDriveHighGearVelocityIZone, Constants.kDriveHighGearVelocityRampRate
                 );
-        mRightMaster.configPID(kHighGearVelocityControlSlot,
-                Constants.kDriveHighGearVelocityKp, Constants.kDriveHighGearVelocityKi,
-                Constants.kDriveHighGearVelocityKd, Constants.kDriveHighGearVelocityKf,
-                Constants.kDriveHighGearVelocityIZone, Constants.kDriveHighGearVelocityRampRate
-                );
+         
+         // nb: motionMagic velocity and accel aren't slot-based, so should be established
+         //   when we enter the control mode.
+         
     }
 
     @Override
@@ -898,6 +722,35 @@ public class Drive extends Subsystem
     {
         mCSVWriter.write();
     }
+    
+    /**
+     * Check if the drive talons are configured for velocity control
+     */
+    protected static boolean usesTalonVelocityControl(DriveControlState state)
+    {
+        if (state == DriveControlState.VELOCITY_SETPOINT
+                || state == DriveControlState.PATH_FOLLOWING)
+        {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Check if the drive talons are configured for position control
+     */
+    protected static boolean usesTalonPositionControl(DriveControlState state)
+    {
+        if (state == DriveControlState.AIM_TO_GOAL ||
+                state == DriveControlState.TURN_TO_HEADING ||
+                state == DriveControlState.DRIVE_TOWARDS_GOAL_COARSE_ALIGN ||
+                state == DriveControlState.DRIVE_TOWARDS_GOAL_APPROACH)
+        {
+            return true;
+        }
+        return false;
+    }
+
 
     public boolean checkSystem()
     {
@@ -906,140 +759,6 @@ public class Drive extends Subsystem
             logWarning("can't check un-initialized system");
             return false;
         }
-        logNotice("checkSystem() ---------------------------------");
-        final double kCurrentThres = 0.5;
-        final double kRpmThres = 300;
-        final double kMaxVoltage = 12.0;
-
-        mRightMaster.setControlMode(ControlMode.PercentOutput); // was Voltage
-        mRightSlave.setControlMode(ControlMode.PercentOutput);
-        mLeftMaster.setControlMode(ControlMode.PercentOutput);
-        mLeftSlave.setControlMode(ControlMode.PercentOutput);
-
-        mRightMaster.set(0.0);
-        mRightSlave.set(0.0);
-        mLeftMaster.set(0.0);
-        mLeftSlave.set(0.0);
-
-        mRightMaster.set(-6.0f / kMaxVoltage);
-        Timer.delay(4.0);
-        final double currentRightMaster = mRightMaster.getOutputCurrent();
-        final double rpmRightMaster = mRightMaster.getSpeed();
-        mRightMaster.set(0.0f);
-
-        Timer.delay(2.0);
-
-        mRightSlave.set(-6.0f / kMaxVoltage);
-        Timer.delay(4.0);
-        final double currentRightSlave = mRightSlave.getOutputCurrent();
-        final double rpmRightSlave = mRightMaster.getSpeed();
-        mRightSlave.set(0.0f);
-
-        Timer.delay(2.0);
-
-        mLeftMaster.set(6.0f / kMaxVoltage);
-        Timer.delay(4.0);
-        final double currentLeftMaster = mLeftMaster.getOutputCurrent();
-        final double rpmLeftMaster = mLeftMaster.getSpeed();
-        mLeftMaster.set(0.0f);
-
-        Timer.delay(2.0);
-
-        mLeftSlave.set(6.0f / kMaxVoltage);
-        Timer.delay(4.0);
-        final double currentLeftSlave = mLeftSlave.getOutputCurrent();
-        final double rpmLeftSlave = mLeftMaster.getSpeed();
-        mLeftSlave.set(0.0);
-
-        mRightMaster.setControlMode(ControlMode.PercentOutput);
-        mLeftMaster.setControlMode(ControlMode.PercentOutput);
-
-        mRightSlave.setControlMode(ControlMode.Follower);
-        mRightSlave.set(Constants.kRightDriveMasterId);
-
-        mLeftSlave.setControlMode(ControlMode.Follower);
-        mLeftSlave.set(Constants.kLeftDriveMasterId);
-
-        logNotice("Right Master Current: " + currentRightMaster + " Drive Right Slave Current: "
-                + currentRightSlave);
-        logNotice("Left Master Current: " + currentLeftMaster + " Drive Left Slave Current: "
-                + currentLeftSlave);
-        logNotice("RPM RMaster: " + rpmRightMaster + " RSlave: " + rpmRightSlave + " LMaster: "
-                + rpmLeftMaster + " LSlave: " + rpmLeftSlave);
-
-        boolean failure = false;
-
-        if (currentRightMaster < kCurrentThres)
-        {
-            failure = true;
-            logWarning("!!!!!!!!!!!!!!!!!! Right Master Current Low !!!!!!!!!!");
-        }
-
-        if (currentRightSlave < kCurrentThres)
-        {
-            failure = true;
-            logWarning("!!!!!!!!!!!!!!!!!! Right Slave Current Low !!!!!!!!!!");
-        }
-
-        if (currentLeftMaster < kCurrentThres)
-        {
-            failure = true;
-            logWarning("!!!!!!!!!!!!!!!!!! Left Master Current Low !!!!!!!!!!");
-        }
-
-        if (currentLeftSlave < kCurrentThres)
-        {
-            failure = true;
-            logWarning("!!!!!!!!!!!!!!!!!! Left Slave Current Low !!!!!!!!!!");
-        }
-
-        if (!Util.allCloseTo(Arrays.asList(currentRightMaster, currentRightSlave),
-                currentRightMaster,
-                5.0))
-        {
-            failure = true;
-            logWarning("!!!!!!!!!!!!!!!!!! Right Currents Different !!!!!!!!!!");
-        }
-
-        if (!Util.allCloseTo(Arrays.asList(currentLeftMaster, currentLeftSlave), currentLeftSlave,
-                5.0))
-        {
-            failure = true;
-            logWarning("!!!!!!!!!!!!!!!!!! Drive Left Currents Different !!!!!!!!!!!!!");
-        }
-
-        if (rpmRightMaster < kRpmThres)
-        {
-            failure = true;
-            logWarning("!!!!!!!!!!!!!!!!!! Drive Right Master RPM Low !!!!!!!!!!!!!!!!!!!");
-        }
-
-        if (rpmRightSlave < kRpmThres)
-        {
-            failure = true;
-            logWarning("!!!!!!!!!!!!!!!!!! Drive Right Slave RPM Low !!!!!!!!!!!!!!!!!!!");
-        }
-
-        if (rpmLeftMaster < kRpmThres)
-        {
-            failure = true;
-            logWarning("!!!!!!!!!!!!!!!!!! Drive Left Master RPM Low !!!!!!!!!!!!!!!!!!!");
-        }
-
-        if (rpmLeftSlave < kRpmThres)
-        {
-            failure = true;
-            logWarning("!!!!!!!!!!!!!!!!!! Drive Left Slave RPM Low !!!!!!!!!!!!!!!!!!!");
-        }
-
-        if (!Util.allCloseTo(
-                Arrays.asList(rpmRightMaster, rpmRightSlave, rpmLeftMaster, rpmLeftSlave),
-                rpmRightMaster, 250))
-        {
-            failure = true;
-            logWarning("!!!!!!!!!!!!!!!!!!! Drive RPMs different !!!!!!!!!!!!!!!!!!!");
-        }
-
-        return !failure;
+        return mDrive.checkSystem();
     }
 }
