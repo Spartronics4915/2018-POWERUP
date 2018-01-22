@@ -162,8 +162,8 @@ public class CANTalon4915 implements Sendable, MotorSafety
         mTalon.configNeutralDeadband(.04,  timeOutMS); // output deadband pct 4% (factory default)
         mTalon.configNominalOutputForward(1.0, timeOutMS);  // [0, 1]
         mTalon.configNominalOutputReverse(-1.0, timeOutMS); // [-1, 0]
-        mTalon.configPeakOutputForward(1.0, timeOutMS);
-        mTalon.configPeakOutputReverse(-1.0, timeOutMS);
+        mTalon.configPeakOutputForward(0.5, timeOutMS);
+        mTalon.configPeakOutputReverse(-0.5, timeOutMS);
         
         // current limits are TalonSRX-specific
         // Configure the continuous allowable current-draw (when current limit is enabled).

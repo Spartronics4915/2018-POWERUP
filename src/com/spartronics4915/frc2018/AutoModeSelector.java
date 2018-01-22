@@ -6,6 +6,7 @@ import java.util.function.Supplier;
 
 import com.spartronics4915.frc2018.auto.AutoModeBase;
 import com.spartronics4915.frc2018.auto.modes.IntakeForwardMode;
+import com.spartronics4915.frc2018.auto.modes.TestOpenLoopMode;
 import com.spartronics4915.frc2018.auto.modes.StandStillMode;
 import com.spartronics4915.frc2018.auto.modes.TestPathMode;
 import com.spartronics4915.frc2018.auto.modes.TestTurnMode;
@@ -43,7 +44,8 @@ public class AutoModeSelector
     private static final AutoModeCreator[] mAllModes = {
             new AutoModeCreator("Test Path Mode", () -> new TestPathMode()),
             new AutoModeCreator("Test Turning Mode", () -> new TestTurnMode()),
-            new AutoModeCreator("Intake Forward Mode", () -> new IntakeForwardMode())
+            new AutoModeCreator("Test Open Loop", () -> new TestOpenLoopMode()),
+            new AutoModeCreator("Intake Forward Mode", () -> new IntakeForwardMode()),
             // e.g. new AutoModeCreator("Boiler Gear then 10 Ball Shoot Red", () -> new BoilerGearThenShootModeRed()),
     };
 

@@ -244,7 +244,7 @@ public class Robot extends IterativeRobot
             // Start loopers
             mEnabledLooper.start();
             mDrive.setOpenLoop(DriveSignal.NEUTRAL);
-            mDrive.setBrakeMode(false);
+            mDrive.setBrakeMode(true);
             // Shift to high
             mDrive.setHighGear(true);
             zeroAllSensors();
@@ -274,9 +274,11 @@ public class Robot extends IterativeRobot
         {
             double throttle = mControlBoard.getThrottle();
             double turn = mControlBoard.getTurn();
+            DriveSignal outputs = mCheesyDriveHelper.cheesyDrive(throttle, turn, mControlBoard.getQuickTurn(),
+                    !mControlBoard.getLowGear());
+            System.out.println(outputs);
             mDrive.setOpenLoop(
-                    mCheesyDriveHelper.cheesyDrive(throttle, turn, mControlBoard.getQuickTurn(),
-                            !mControlBoard.getLowGear()));
+                    outputs);
             boolean wantLowGear = mControlBoard.getLowGear();
             mDrive.setHighGear(!wantLowGear);
 

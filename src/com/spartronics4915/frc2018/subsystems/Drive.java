@@ -208,7 +208,7 @@ public class Drive extends Subsystem
 
         mRightSlave =  CANTalonFactory.createDefaultSlave(Constants.kRightDriveSlaveId,
                                                           Constants.kRightDriveMasterId,
-                                                          false);
+                                                          true /* isInverted */); // Is seems to be important that the follower is inverted along with its master
 
         if (mRightMaster.isValid() && mRightSlave.isValid() &&
                 mLeftMaster.isValid() && mLeftSlave.isValid())
@@ -259,7 +259,6 @@ public class Drive extends Subsystem
             mDriveControlState = DriveControlState.OPEN_LOOP;
             setBrakeMode(false);
         }
-        logNotice("setOpenLoop:" + signal.getLeft());
         mRightMaster.set(signal.getRight());
         mLeftMaster.set(signal.getLeft());
     }
@@ -423,7 +422,7 @@ public class Drive extends Subsystem
             mRightMaster.selectProfileSlot(kLowGearPositionControlSlot);
             mRightMaster.configNominalOutput(Constants.kDriveLowGearNominalOutput,
                     -Constants.kDriveLowGearNominalOutput);
-
+            
 //            These constants are doubles, but we need ints
 //            mLeftMaster.configMotionMagic(Constants.kDriveLowGearMaxVelocity, 
 //                    Constants.kDriveLowGearMaxAccel);
