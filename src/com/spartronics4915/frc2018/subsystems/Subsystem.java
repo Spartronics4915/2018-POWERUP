@@ -3,8 +3,6 @@ package com.spartronics4915.frc2018.subsystems;
 import com.spartronics4915.frc2018.loops.Looper;
 import com.spartronics4915.lib.util.Logger;
 
-import edu.wpi.first.wpilibj.DriverStation;
-
 /**
  * The Subsystem abstract class serves as a basic framework for all robot
  * subsystems.  Subsystems only have one instance (after all, one robot does not have two

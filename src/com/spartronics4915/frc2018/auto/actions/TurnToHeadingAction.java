@@ -1,6 +1,6 @@
 package com.spartronics4915.frc2018.auto.actions;
 
-import com.spartronics4915.frc2018.subsystems.Drive;
+import com.spartronics4915.frc2018.subsystems.DriveSys;
 import com.spartronics4915.lib.util.math.Rotation2d;
 
 /**
@@ -12,7 +12,7 @@ public class TurnToHeadingAction implements Action
 {
 
     private Rotation2d mTargetHeading;
-    private Drive mDrive = Drive.getInstance();
+    private DriveSys mDrive = DriveSys.getInstance();
 
     public TurnToHeadingAction(Rotation2d heading)
     {

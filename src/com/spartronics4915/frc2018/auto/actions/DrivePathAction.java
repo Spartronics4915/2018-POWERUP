@@ -1,7 +1,7 @@
 package com.spartronics4915.frc2018.auto.actions;
 
 import com.spartronics4915.frc2018.paths.PathContainer;
-import com.spartronics4915.frc2018.subsystems.Drive;
+import com.spartronics4915.frc2018.subsystems.DriveSys;
 import com.spartronics4915.lib.util.control.Path;
 
 /**
@@ -18,12 +18,18 @@ public class DrivePathAction implements Action
 
     private PathContainer mPathContainer;
     private Path mPath;
-    private Drive mDrive = Drive.getInstance();
+    private DriveSys mDrive = DriveSys.getInstance();
 
     public DrivePathAction(PathContainer p)
     {
         mPathContainer = p;
         mPath = mPathContainer.buildPath();
+    }
+
+    @Override
+    public void start()
+    {
+        mDrive.setWantDrivePath(mPath, mPathContainer.isReversed());
     }
 
     @Override
@@ -44,9 +50,4 @@ public class DrivePathAction implements Action
         mDrive.setVelocitySetpoint(0, 0);
     }
 
-    @Override
-    public void start()
-    {
-        mDrive.setWantDrivePath(mPath, mPathContainer.isReversed());
-    }
 }

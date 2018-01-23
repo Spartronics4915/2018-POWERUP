@@ -14,7 +14,7 @@ import com.spartronics4915.frc2018.loops.RobotStateEstimator;
 import com.spartronics4915.frc2018.loops.VisionProcessor;
 import com.spartronics4915.frc2018.paths.profiles.PathAdapter;
 import com.spartronics4915.frc2018.subsystems.ConnectionMonitor;
-import com.spartronics4915.frc2018.subsystems.Drive;
+import com.spartronics4915.frc2018.subsystems.DriveSys;
 import com.spartronics4915.frc2018.subsystems.Testbed;
 import com.spartronics4915.frc2018.subsystems.LED;
 import com.spartronics4915.frc2018.subsystems.Superstructure;
@@ -58,7 +58,7 @@ public class Robot extends IterativeRobot
 
     // NB: make sure to construct objects in robotInit, not member declaration,
     //  and usually not constructor.
-    private Drive mDrive = null;
+    private DriveSys mDrive = null;
     private Superstructure mSuperstructure = null;
     private LED mLED = null;
     private Testbed mTestbed = null;
@@ -137,7 +137,7 @@ public class Robot extends IterativeRobot
                     canReport.size() == Constants.kNumCANDevices ? "OK"
                             : ("" + canReport.size() + "/" + Constants.kNumCANDevices));
 
-            mDrive = Drive.getInstance();
+            mDrive = DriveSys.getInstance();
             mSuperstructure = Superstructure.getInstance();
             mLED = LED.getInstance();
             mTestbed = Testbed.getInstance();
@@ -204,10 +204,8 @@ public class Robot extends IterativeRobot
             mSuperstructure.setWantedState(Superstructure.WantedState.IDLE);
 
             mAutoModeExecuter = null;
-
-            // Shift to high
-            mDrive.setHighGear(true);
-            mDrive.setBrakeMode(true);
+            
+            mDrive.enableBraking(true);
 
             mEnabledLooper.start();
             mAutoModeExecuter = new AutoModeExecuter();
@@ -244,9 +242,7 @@ public class Robot extends IterativeRobot
             // Start loopers
             mEnabledLooper.start();
             mDrive.setOpenLoop(DriveSignal.NEUTRAL);
-            mDrive.setBrakeMode(false);
-            // Shift to high
-            mDrive.setHighGear(true);
+            mDrive.enableBraking(false);
             zeroAllSensors();
         }
         catch (Throwable t)
@@ -278,7 +274,6 @@ public class Robot extends IterativeRobot
                     mCheesyDriveHelper.cheesyDrive(throttle, turn, mControlBoard.getQuickTurn(),
                             !mControlBoard.getLowGear()));
             boolean wantLowGear = mControlBoard.getLowGear();
-            mDrive.setHighGear(!wantLowGear);
 
             if (mControlBoard.getBlinkLEDButton())
             {
@@ -354,7 +349,7 @@ public class Robot extends IterativeRobot
     {
         Timer.delay(0.5);
 
-        boolean results = Drive.getInstance().checkSystem();
+        boolean results = mDrive.checkSystem();
         // e.g. results &= Intake.getInstance().checkSystem();
 
         if (!results)

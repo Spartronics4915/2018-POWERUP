@@ -235,13 +235,18 @@ public class CANTalon4915Drive
         if(mIMU == null) return;
         mIMU.setYaw(yawDegrees, 5);
     }
-
+    
     public void resetEncoders(boolean resetYaw)
     {
         mLeftMaster.resetSensor();
         mRightMaster.resetSensor();
         if(mIMU != null && resetYaw)
             mIMU.setYaw(0, 5/*ms*/);
+    }
+
+    public boolean isBrakingEnabled()
+    {
+        return mLeftMaster.isBrakeEnabled();
     }
 
     public void enableBraking(boolean onoff)

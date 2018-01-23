@@ -31,10 +31,10 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  * 
  * @see Subsystem.java
  */
-public class Drive2 extends Subsystem
+public class DriveSys extends Subsystem
 {
 
-    private static Drive2 mInstance = null;
+    private static DriveSys mInstance = null;
 
     private static final int kLowGearPositionControlSlot = 0;
     private static final int kHighGearVelocityControlSlot = 1;
@@ -42,11 +42,11 @@ public class Drive2 extends Subsystem
     private static final double kOpenLoopNominalOutput = 0.0; // fwd & rev
     private static final double kOpenLoopPeakOutput = .5; // fwd: .5, rev: -.5
 
-    public static Drive2 getInstance()
+    public static DriveSys getInstance()
     {
         if (mInstance == null)
         {
-            mInstance = new Drive2();
+            mInstance = new DriveSys();
         }
         return mInstance;
     }
@@ -69,17 +69,10 @@ public class Drive2 extends Subsystem
     // Hardware
     private CANTalon4915Drive mDrive = null;
 
-    // Controllers
     private RobotState mRobotState = RobotState.getInstance();
     private PathFollower mPathFollower;
-
-    // These gains get reset below!!
     private Rotation2d mTargetHeading = new Rotation2d();
     private Path mCurrentPath = null;
-
-    // Hardware states
-    private boolean mIsHighGear;
-    private boolean mIsBrakeMode;
     private boolean mIsOnTarget = false;
     private boolean mIsApproaching = false;
 
@@ -89,14 +82,16 @@ public class Drive2 extends Subsystem
     // mLoop not registered when we're not initialized
     private final Loop mLoop = new Loop()
     {
-
         @Override
         public void onStart(double timestamp)
         {
-            synchronized (Drive2.this)
+            synchronized (DriveSys.this)
             {
+                // XXX: looper received onStart method, unclear why we're jumping
+                //  into velocity mode here? (without consulting mDriveControlState)
+                logNotice("onStart " + mDriveControlState);
                 setOpenLoop(DriveSignal.NEUTRAL);
-                setBrakeMode(false);
+                mDrive.enableBraking(false);
                 setVelocitySetpoint(0, 0);
                 if (!mDrive.hasIMU())
                 {
@@ -110,7 +105,7 @@ public class Drive2 extends Subsystem
         @Override
         public void onLoop(double timestamp)
         {
-            synchronized (Drive2.this)
+            synchronized (DriveSys.this)
             {
                 switch (mDriveControlState)
                 {
@@ -149,7 +144,7 @@ public class Drive2 extends Subsystem
         }
     };
 
-    private Drive2()
+    private DriveSys()
     {
         // encoder phase must match output sense or PID will spiral out of control
         mDrive = new CANTalon4915Drive(Constants.kDriveWheelDiameterInches,
@@ -164,15 +159,12 @@ public class Drive2 extends Subsystem
         if (mDrive.isInitialized())
         {
             reloadGains();
-            mIsHighGear = false;
-            setHighGear(true);
             mDrive.beginOpenLoop(kOpenLoopRampRate,
                     kOpenLoopNominalOutput, kOpenLoopPeakOutput);
             // Path Following stuff
             if (!mDrive.hasIMU())
                 logError("Could not detect the IMU. Is it plugged in?");
-            mIsBrakeMode = true;
-            mDrive.enableBraking(mIsBrakeMode);
+            mDrive.enableBraking(true);
             logInitialized(true);
         }
         else
@@ -207,35 +199,10 @@ public class Drive2 extends Subsystem
         }
         mDrive.driveOpenLoop(signal.getLeft(), signal.getRight());
     }
-
-    public boolean isHighGear()
+    
+    public void enableBraking(boolean s)
     {
-        return mIsHighGear;
-    }
-
-    public synchronized void setHighGear(boolean wantsHighGear)
-    {
-        // XXX: Dead code
-        if (wantsHighGear != mIsHighGear)
-        {
-            mIsHighGear = wantsHighGear;
-        }
-    }
-
-    public boolean isBrakeMode()
-    {
-        return mIsBrakeMode;
-    }
-
-    public synchronized void setBrakeMode(boolean s)
-    {
-        if (!this.isInitialized())
-            return;
-        if (mIsBrakeMode != s)
-        {
-            mIsBrakeMode = s;
-            mDrive.enableBraking(s);
-        }
+        mDrive.enableBraking(s);
     }
 
     @Override
@@ -280,21 +247,55 @@ public class Drive2 extends Subsystem
             return;
         mDrive.resetEncoders(true);
     }
+    
+    public synchronized Rotation2d getGyroAngle()
+    {
+        if(!this.isInitialized()) return new Rotation2d();
+        return Rotation2d.fromDegrees(mDrive.getGyroAngle()); 
+        // Rotation2d normalizes between -180 and 180 automatically
+    }
+    
+    public synchronized void setGyroAngle(Rotation2d rot)
+    {
+        if(!this.isInitialized())
+            return;
+        mDrive.setGyroAngle(rot.getDegrees());
+    }
 
     /**
      * Start up velocity mode. This sets the drive train in high gear as well.
      * 
-     * @param left_inches_per_sec
-     * @param right_inches_per_sec
+     * @param leftInchesPerSec
+     * @param rightInchesPerSec
      */
-    public synchronized void setVelocitySetpoint(double left_inches_per_sec,
-            double right_inches_per_sec)
+    public synchronized void setVelocitySetpoint(double leftInchesPerSec,
+            double rightInchesPerSec)
     {
         if (!this.isInitialized())
             return;
         configureTalonsForSpeedControl();
         mDriveControlState = DriveControlState.VELOCITY_SETPOINT;
-        updateVelocitySetpoint(left_inches_per_sec, right_inches_per_sec);
+        updateVelocitySetpoint(leftInchesPerSec, rightInchesPerSec);
+    }
+    
+    public double getLeftDistanceInches()
+    {
+        return mDrive.getLeftDistanceInches();
+    }
+    
+    public double getRightDistanceInches()
+    {
+        return mDrive.getRightDistanceInches();
+    }
+    
+    public double getLeftVelocityInchesPerSec()
+    {
+        return mDrive.getLeftVelocityInchesPerSec();
+    }
+    
+    public double getRightVelocityInchesPerSec()
+    {
+        return mDrive.getRightVelocityInchesPerSec();
     }
 
     private void configureTalonsForOpenLoop()
@@ -303,7 +304,7 @@ public class Drive2 extends Subsystem
             return;
         logNotice("beginOpenLoop");
         mDrive.beginOpenLoop(kOpenLoopRampRate, kOpenLoopNominalOutput, kOpenLoopPeakOutput);
-        setBrakeMode(false);
+        mDrive.enableBraking(false);
         mDriveControlState = DriveControlState.OPEN_LOOP;
     }
 
@@ -320,7 +321,7 @@ public class Drive2 extends Subsystem
             logNotice("beginSpeedControl");
             mDrive.beginClosedLoopVelocity(kHighGearVelocityControlSlot,
                     Constants.kDriveHighGearNominalOutput);
-            setBrakeMode(true);
+            mDrive.enableBraking(true);
         }
     }
 
@@ -344,7 +345,7 @@ public class Drive2 extends Subsystem
             // mLeftMaster.setVoltageCompensationRampRate(Constants.kDriveVoltageCompensationRampRate);
             // mRightMaster.setVoltageCompensationRampRate(Constants.kDriveVoltageCompensationRampRate);
 
-            setBrakeMode(true);
+            mDrive.enableBraking(true);
         }
     }
 
@@ -581,8 +582,7 @@ public class Drive2 extends Subsystem
                     mDrive.getRightDistanceInches());
             mTargetHeading = Rotation2d.fromDegrees(mDrive.getGyroAngle());
         }
-        setHighGear(false);
-    }
+     }
 
     /**
      * Configures the drivebase for auto driving
@@ -600,8 +600,7 @@ public class Drive2 extends Subsystem
                     mDrive.getRightDistanceInches());
             mTargetHeading = Rotation2d.fromDegrees(mDrive.getGyroAngle());
         }
-        setHighGear(false);
-    }
+     }
 
     /**
      * Configures the drivebase to turn to a desired heading
@@ -620,8 +619,7 @@ public class Drive2 extends Subsystem
             mTargetHeading = heading;
             mIsOnTarget = false;
         }
-        setHighGear(false);
-    }
+     }
 
     /**
      * Configures the drivebase to drive a path. Used for autonomous driving
