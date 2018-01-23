@@ -194,21 +194,23 @@ public class Drive extends Subsystem
     private Drive()
     {
         // encoder phase must match output sense or PID will spiral out of control
+        boolean invert = false;
         mLeftMaster = CANTalonFactory.createDefaultDrive(Constants.kLeftDriveMasterId);
-        mLeftMaster.configMotorAndEncoder(false, FeedbackDevice.QuadEncoder, false/*phase*/, 
+        mLeftMaster.configMotorAndSensor(invert, FeedbackDevice.QuadEncoder, false/*phase*/, 
                 Constants.kEncoderCodesPerRev);
         
         mLeftSlave = CANTalonFactory.createDefaultSlave(Constants.kLeftDriveSlaveId,
                                                         Constants.kLeftDriveMasterId,
-                                                        false /* isInverted */);
+                                                        invert /* isInverted */);
 
+        invert = true;
         mRightMaster = CANTalonFactory.createDefaultDrive(Constants.kRightDriveMasterId);
-        mRightMaster.configMotorAndEncoder(true, FeedbackDevice.QuadEncoder, true/*phase*/, 
+        mRightMaster.configMotorAndSensor(invert, FeedbackDevice.QuadEncoder, true/*phase*/, 
                 Constants.kEncoderCodesPerRev);
 
         mRightSlave =  CANTalonFactory.createDefaultSlave(Constants.kRightDriveSlaveId,
                                                           Constants.kRightDriveMasterId,
-                                                          false);
+                                                          invert);
 
         if (mRightMaster.isValid() && mRightSlave.isValid() &&
                 mLeftMaster.isValid() && mLeftSlave.isValid())
@@ -294,10 +296,10 @@ public class Drive extends Subsystem
         if (mIsBrakeMode != s)
         {
             mIsBrakeMode = s;
-            mRightMaster.enableBrakeMode(s);
-            mRightSlave.enableBrakeMode(s);
-            mLeftMaster.enableBrakeMode(s);
-            mLeftSlave.enableBrakeMode(s);
+            mRightMaster.setBrakeMode(s);
+            mRightSlave.setBrakeMode(s);
+            mLeftMaster.setBrakeMode(s);
+            mLeftSlave.setBrakeMode(s);
         }
     }
 
@@ -320,9 +322,9 @@ public class Drive extends Subsystem
         if (usesTalonVelocityControl(mDriveControlState))
         {
             SmartDashboard.putNumber("left speed error (ips)",
-                    rpmToInchesPerSecond(mLeftMaster.getSetpoint()) - left_speed);
+                    rpmToInchesPerSecond(mLeftMaster.getSetpointRotations()) - left_speed);
             SmartDashboard.putNumber("right speed error (ips)",
-                    rpmToInchesPerSecond(mRightMaster.getSetpoint()) - right_speed);
+                    rpmToInchesPerSecond(mRightMaster.getSetpointRotations()) - right_speed);
         }
         else
         {
@@ -342,8 +344,8 @@ public class Drive extends Subsystem
                 SmartDashboard.putNumber("drive ATE", 0.0);
             }
         }
-        SmartDashboard.putNumber("left position (rotations)", mLeftMaster.getPosition());
-        SmartDashboard.putNumber("right position (rotations)", mRightMaster.getPosition());
+        SmartDashboard.putNumber("left position (rotations)", mLeftMaster.getSensorPositionRotations());
+        SmartDashboard.putNumber("right position (rotations)", mRightMaster.getSensorPositionRotations());
         SmartDashboard.putNumber("Drivetrain_IMU_Heading", getGyroAngle().getDegrees());
         SmartDashboard.putBoolean("drive on target", isOnTarget());
     }
@@ -351,12 +353,8 @@ public class Drive extends Subsystem
     public synchronized void resetEncoders()
     {
         if(!this.isInitialized()) return;
-        mLeftMaster.setEncPosition(0);
-        mLeftMaster.setPosition(0);
-        mRightMaster.setPosition(0);
-        mRightMaster.setEncPosition(0);
-        mLeftSlave.setPosition(0);
-        mRightSlave.setPosition(0);
+        mLeftMaster.resetSensor();
+        mRightMaster.resetSensor();
     }
 
     @Override
@@ -516,25 +514,25 @@ public class Drive extends Subsystem
     public double getLeftDistanceInches()
     {
         if(!isInitialized()) return 0.0;
-        return rotationsToInches(mLeftMaster.getPosition());
+        return rotationsToInches(mLeftMaster.getSensorPositionRotations());
     }
 
     public double getRightDistanceInches()
     {
         if(!isInitialized()) return 0.0;
-        return rotationsToInches(mRightMaster.getPosition());
+        return rotationsToInches(mRightMaster.getSensorPositionRotations());
     }
 
     public double getLeftVelocityInchesPerSec()
     {
         if(!isInitialized()) return 0.0;
-        return rpmToInchesPerSecond(mLeftMaster.getSpeed());
+        return rpmToInchesPerSecond(mLeftMaster.getSensorVelocityRPM());
     }
 
     public double getRightVelocityInchesPerSec()
     {
         if(!isInitialized()) return 0.0;
-        return rpmToInchesPerSecond(mRightMaster.getSpeed());
+        return rpmToInchesPerSecond(mRightMaster.getSensorVelocityRPM());
     }
 
     public synchronized Rotation2d getGyroAngle()
@@ -924,7 +922,7 @@ public class Drive extends Subsystem
         mRightMaster.set(-6.0f / kMaxVoltage);
         Timer.delay(4.0);
         final double currentRightMaster = mRightMaster.getOutputCurrent();
-        final double rpmRightMaster = mRightMaster.getSpeed();
+        final double rpmRightMaster = mRightMaster.getSensorVelocityRPM();
         mRightMaster.set(0.0f);
 
         Timer.delay(2.0);
@@ -932,7 +930,7 @@ public class Drive extends Subsystem
         mRightSlave.set(-6.0f / kMaxVoltage);
         Timer.delay(4.0);
         final double currentRightSlave = mRightSlave.getOutputCurrent();
-        final double rpmRightSlave = mRightMaster.getSpeed();
+        final double rpmRightSlave = mRightMaster.getSensorVelocityRPM();
         mRightSlave.set(0.0f);
 
         Timer.delay(2.0);
@@ -940,7 +938,7 @@ public class Drive extends Subsystem
         mLeftMaster.set(6.0f / kMaxVoltage);
         Timer.delay(4.0);
         final double currentLeftMaster = mLeftMaster.getOutputCurrent();
-        final double rpmLeftMaster = mLeftMaster.getSpeed();
+        final double rpmLeftMaster = mLeftMaster.getSensorVelocityRPM();
         mLeftMaster.set(0.0f);
 
         Timer.delay(2.0);
@@ -948,7 +946,7 @@ public class Drive extends Subsystem
         mLeftSlave.set(6.0f / kMaxVoltage);
         Timer.delay(4.0);
         final double currentLeftSlave = mLeftSlave.getOutputCurrent();
-        final double rpmLeftSlave = mLeftMaster.getSpeed();
+        final double rpmLeftSlave = mLeftMaster.getSensorVelocityRPM();
         mLeftSlave.set(0.0);
 
         mRightMaster.setControlMode(ControlMode.PercentOutput);

@@ -26,11 +26,11 @@ public class Constants extends ConstantsBase
     //  -- Talon SRX Channels --------------
     //      (Note that if multiple talons are dedicated to a mechanism, any sensors
     //      are attached to the master)
-    public static final int kLeftDriveSlaveId = 1;
-    public static final int kRightDriveSlaveId = 2;
-    public static final int kLeftDriveMasterId = 3;
-    public static final int kRightDriveMasterId = 4;
-    public static final int kDriveIMUTalonId = 2; // must be a slave
+    public static final int kLeftDriveMasterId = 1;
+    public static final int kLeftDriveSlaveId = 2;
+    public static final int kRightDriveMasterId = 3;
+    public static final int kRightDriveSlaveId = 4;
+    public static final int kDriveIMUTalonId = kRightDriveSlaveId; // must be a slave
     
     public static final int kTestbedMotor1Id = 16;
     public static final int kTestbedMotor2Id = 18;
@@ -118,8 +118,15 @@ public class Constants extends ConstantsBase
     public static final double kDriveVoltageCompensationRampRate = 0.0;
     
     
-    // Drive
-    public static final int kEncoderCodesPerRev = 1000;
+    // Drive ------------------------------------------------------
+    // Encoder: https://cdn.usdigital.com/assets/datasheets/E4P_datasheet.pdf?k=636523267170919858
+    // modelr: E4P-360-250-N-S-D-D (western digital)
+    //              ^ EncoderCodesPerRev (later multiplied by 4 for quad)
+    //                  ^ .25" shaft mount 
+    //                     ^ "No Index"
+    //                        ^ "Single Output" (not Differential)
+    //                          ^ ^ Default cover, Default base
+    public static final int kEncoderCodesPerRev = 360;
 
     // Intake
  

@@ -27,9 +27,7 @@ public class CANTalonFactory
     public static CANTalon4915 createDefaultSlave(int id, int masterId, boolean isInverted)
     {
         CANTalon4915 talon = createTalon(id, CANTalon4915.Config.kDriveFollowerMotor);
-        talon.setControlMode(ControlMode.Follower);
-        talon.set(masterId);
-        talon.setInverted(isInverted);
+        talon.configFollower(masterId, isInverted);
         return talon;
     }
     

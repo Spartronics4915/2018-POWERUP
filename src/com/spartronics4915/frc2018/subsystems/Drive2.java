@@ -153,6 +153,7 @@ public class Drive2 extends Subsystem
     {
         // encoder phase must match output sense or PID will spiral out of control
         mDrive = new CANTalon4915Drive(Constants.kDriveWheelDiameterInches,
+                Constants.kEncoderCodesPerRev,
                 Constants.kLeftDriveMasterId,
                 Constants.kLeftDriveSlaveId,
                 Constants.kRightDriveMasterId,

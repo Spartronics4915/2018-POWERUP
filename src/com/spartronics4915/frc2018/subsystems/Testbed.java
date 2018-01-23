@@ -72,7 +72,7 @@ public class Testbed extends Subsystem
 
         mMotor2 = CANTalonFactory.createDefaultMotor(Constants.kTestbedMotor2Id);
         mMotor2.setControlMode(ControlMode.PercentOutput);
-        mMotor2.setInverted(true);;
+        mMotor2.setInverted(true);
         if(!mMotor2.isValid())
         {
             logWarning("can't find motor 2, id:" + Constants.kTestbedMotor2Id);
