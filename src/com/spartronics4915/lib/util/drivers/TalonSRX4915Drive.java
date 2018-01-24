@@ -109,7 +109,6 @@ public class TalonSRX4915Drive
             mInitialized = false;
         
         SmartDashboard.putString("Drivetrain_Status", mInitialized ? "OK" : "ERROR");
-
     }
 
     public boolean isInitialized()
@@ -327,27 +326,43 @@ public class TalonSRX4915Drive
     public boolean checkSystem()
     {
         logNotice("checkSystem() ---------------------------------");
-        final double kCurrentThres = 0.5;
-        final double kRpmThres = 300;
+        final double kCurrentThres = 9;
+        final double kRpmThres = 85;
+        
+        // first validate open-loop driving of all motors...
+        this.beginOpenLoop(.5, 0.0, 1.0); // ramp, nominal, peak
+        this.enableBraking(true);
         
         logNotice("rightMaster:\n" + mRightMaster.dumpState());
         logNotice("leftMaster:\n" + mLeftMaster.dumpState());
         logNotice("rightSlave:\n" + mRightSlave.dumpState());
         logNotice("leftSlave:\n" + mLeftSlave.dumpState());
+        
+        logNotice("Forward half power, 3 sec");
+        this.driveOpenLoop(.5, .5); // <---------------
+        Timer.delay(3.0);
+        final double rpmFwdL = mLeftMaster.getSensorVelocityRPM();
+        final double rpmFwdR = mRightMaster.getSensorVelocityRPM();
+        this.driveOpenLoop(0, 0);
+        this.resetEncoders(false);
+        Timer.delay(2.0);
+        
+        logNotice("Reverse half power, 3 sec");
+        this.driveOpenLoop(-.5, -.5); // <--------------
+        Timer.delay(3.0);
+        final double rpmRevL = mLeftMaster.getSensorVelocityRPM();
+        final double rpmRevR = mRightMaster.getSensorVelocityRPM();
+        this.driveOpenLoop(0, 0);
+        Timer.delay(2.0);
 
         // disable followers, but retain current sense of inversion
-        mRightMaster.setControlMode(ControlMode.PercentOutput); // was Voltage
+        mRightMaster.setControlMode(ControlMode.PercentOutput);
         mRightSlave.setControlMode(ControlMode.PercentOutput);
         mLeftMaster.setControlMode(ControlMode.PercentOutput);
         mLeftSlave.setControlMode(ControlMode.PercentOutput);
 
-        mRightMaster.set(0.0);
-        mRightSlave.set(0.0);
-        mLeftMaster.set(0.0);
-        mLeftSlave.set(0.0);
-
-        logNotice("rightMaster .5, four seconds");
-        mRightMaster.set(.5);
+        logNotice("rightMaster .5, 4 seconds");
+        mRightMaster.set(.5); // <---------------------
         Timer.delay(4.0);
         final double currentRightMaster = mRightMaster.getOutputCurrent();
         final double rpmRightMaster = mRightMaster.getSensorVelocityRPM();
@@ -355,8 +370,8 @@ public class TalonSRX4915Drive
 
         Timer.delay(2.0);
 
-        logNotice("rightSlave .5, four seconds");
-        mRightSlave.set(.5);
+        logNotice("rightSlave .5, 4 seconds");
+        mRightSlave.set(.5); // <---------------------
         Timer.delay(4.0);
         final double currentRightSlave = mRightSlave.getOutputCurrent();
         final double rpmRightSlave = mRightMaster.getSensorVelocityRPM(); // only master has sensor
@@ -365,7 +380,7 @@ public class TalonSRX4915Drive
         Timer.delay(2.0);
 
         logNotice("leftMaster .5, four seconds");
-        mLeftMaster.set(.5);
+        mLeftMaster.set(.5); // <--------------------
         Timer.delay(4.0);
         final double currentLeftMaster = mLeftMaster.getOutputCurrent();
         final double rpmLeftMaster = mLeftMaster.getSensorVelocityRPM();
@@ -374,20 +389,27 @@ public class TalonSRX4915Drive
         Timer.delay(2.0);
 
         logNotice("leftSlave .5, four seconds");
-        mLeftSlave.set(.5);
+        mLeftSlave.set(.5); // <-------------------
         Timer.delay(4.0);
         final double currentLeftSlave = mLeftSlave.getOutputCurrent();
         final double rpmLeftSlave = mLeftMaster.getSensorVelocityRPM(); // nb only master has sensor
         mLeftSlave.set(0.0);
 
+        // restore master/slaves ----------------------------
         mRightMaster.setControlMode(ControlMode.PercentOutput);
         mLeftMaster.setControlMode(ControlMode.PercentOutput);
-
         mRightSlave.setControlMode(ControlMode.Follower);
         mRightSlave.set(mRightMaster.getId());
-
         mLeftSlave.setControlMode(ControlMode.Follower);
         mLeftSlave.set(mLeftMaster.getId());
+        
+        logNotice("RPM FWD L/R: " + rpmFwdL + "/" + rpmFwdR);
+        logNotice("IPS FWD L/R: " + rpmToInchesPerSecond(rpmFwdL) + "/" +
+                rpmToInchesPerSecond(rpmFwdR));
+        
+        logNotice("RPM REV L/R: " + rpmRevL + "/" + rpmRevR);
+        logNotice("IPS REV L/R: " + rpmToInchesPerSecond(rpmRevL) + "/" +
+                rpmToInchesPerSecond(rpmRevR));
 
         logNotice("Right Master Current: " + currentRightMaster + " Drive Right Slave Current: "
                 + currentRightSlave);

@@ -113,9 +113,8 @@ public class TalonSRX4915 implements Sendable, MotorSafety
     int mQuadCodesPerRev = 0; // QuadEncoder codes per revolution, 0 means no encoder
     TalonSRX mTalon = null;
     String mDescription;
-    String mSubsystem = "Ungrouped"; // for Sendable
+    String mSubsystem = "TalonSRX4915"; // for Sendable/LiveWindow
     MotorSafetyHelper mSafetyHelper;
-    boolean mFollowing = false;
 
     /* CANTalon4915 methods ------------------------------------------------ */
     public TalonSRX4915(int deviceNumber)
@@ -267,7 +266,6 @@ public class TalonSRX4915 implements Sendable, MotorSafety
             mTalon.setStatusFramePeriod(StatusFrameEnhanced.Status_13_Base_PIDF0, 1000, timeOutMS);
             mTalon.setStatusFramePeriod(StatusFrameEnhanced.Status_14_Turn_PIDF1, 1000, timeOutMS);
             mTalon.setStatusFramePeriod(StatusFrameEnhanced.Status_3_Quadrature, 1000, timeOutMS);
-            mFollowing = true;
         }
         else
         {
@@ -475,19 +473,18 @@ public class TalonSRX4915 implements Sendable, MotorSafety
         StringBuilder sb = new StringBuilder()
                 .append("  inverted:")
                 .append(mTalon.getInverted())
-                .append("\n")
-                .append("  following:")
-                .append(mFollowing)
+                .append(",  following:")
+                .append(mTalon.getControlMode() != ControlMode.Follower)
                 .append("\n")
                 .append("  openLoopRampRate:")
                 .append(mTalon.configGetParameter(ParamEnum.eOpenloopRamp, 0, sInitTimeoutMS))
-                .append("  output, peak pos:")
+                .append("  output peak +,-:")
                 .append(mTalon.configGetParameter(ParamEnum.ePeakPosOutput, 0, sInitTimeoutMS))
-                .append("  peak neg: ")
+                .append(", ")
                 .append(mTalon.configGetParameter(ParamEnum.ePeakNegOutput, 0, sInitTimeoutMS))
-                .append("  nominal pos:")
+                .append(",  nominal +,-:")
                 .append(mTalon.configGetParameter(ParamEnum.eNominalPosOutput, 0, sInitTimeoutMS))
-                .append("  nominal neg:")
+                .append(", ")
                 .append(mTalon.configGetParameter(ParamEnum.eNominalNegOutput, 0, sInitTimeoutMS));
 
         if (!terse)
@@ -500,11 +497,10 @@ public class TalonSRX4915 implements Sendable, MotorSafety
             sb.append(mTalon.configGetParameter(ParamEnum.eNeutralDeadband, 0,
                     sInitTimeoutMS));
             sb.append("\n");
-            sb.append("  peak current limit (amps):");
+            sb.append("  current limits (if enabled) peak:");
             sb.append(mTalon.configGetParameter(ParamEnum.ePeakCurrentLimitAmps, 0,
                     sInitTimeoutMS));
-            sb.append("\n");
-            sb.append("  continuous current limit (amps):");
+            sb.append(",  continuous:");
             sb.append(mTalon.configGetParameter(ParamEnum.eContinuousCurrentLimitAmps, 0,
                     sInitTimeoutMS));
             sb.append("\n");
