@@ -7,40 +7,40 @@ import com.ctre.phoenix.motorcontrol.ControlMode;
  * factory defaults. Closed-loop and sensor
  * parameters are not set, as these are expected to be set by the application.
  */
-public class CANTalonFactory
+public class TalonSRX4915Factory
 {
     // Create a CANTalon with the default (out of the box) configuration.
-    public static CANTalon4915 createDefaultMotor(int id)
+    public static TalonSRX4915 createDefaultMotor(int id)
     {
-        CANTalon4915 talon = createTalon(id, CANTalon4915.Config.kDefaultMotor);
+        TalonSRX4915 talon = createTalon(id, TalonSRX4915.Config.kDefaultMotor);
         talon.setControlMode(ControlMode.PercentOutput);
         return talon;
     }
     
-    public static CANTalon4915 createDefaultDrive(int id)
+    public static TalonSRX4915 createDefaultDrive(int id)
     {
-        CANTalon4915 talon = createTalon(id, CANTalon4915.Config.kDriveMotor);
+        TalonSRX4915 talon = createTalon(id, TalonSRX4915.Config.kDriveMotor);
         talon.setControlMode(ControlMode.PercentOutput);
         return talon;
     }
     
-    public static CANTalon4915 createDefaultSlave(int id, int masterId, boolean isInverted)
+    public static TalonSRX4915 createDefaultSlave(int id, int masterId, boolean isInverted)
     {
-        CANTalon4915 talon = createTalon(id, CANTalon4915.Config.kDriveFollowerMotor);
+        TalonSRX4915 talon = createTalon(id, TalonSRX4915.Config.kDriveFollowerMotor);
         talon.configFollower(masterId, isInverted);
         return talon;
     }
     
-    public static CANTalon4915 createTalon(int id, CANTalon4915.Config config)
+    public static TalonSRX4915 createTalon(int id, TalonSRX4915.Config config)
     {
-        CANTalon4915 talon = new CANTalon4915(id, config);
+        TalonSRX4915 talon = new TalonSRX4915(id, config);
         return talon;
     }
 
     /**
      * Run this on a fresh talon to produce good values for the defaults.
      */
-    public static String getFullTalonInfo(CANTalon4915 talon)
+    public static String getFullTalonInfo(TalonSRX4915 talon)
     {
           return talon.dumpState();
     }

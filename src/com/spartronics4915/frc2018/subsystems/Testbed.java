@@ -4,8 +4,8 @@ import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.spartronics4915.frc2018.Constants;
 import com.spartronics4915.frc2018.loops.Loop;
 import com.spartronics4915.frc2018.loops.Looper;
-import com.spartronics4915.lib.util.drivers.CANTalon4915;
-import com.spartronics4915.lib.util.drivers.CANTalonFactory;
+import com.spartronics4915.lib.util.drivers.TalonSRX4915;
+import com.spartronics4915.lib.util.drivers.TalonSRX4915Factory;
 
 import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.DigitalInput;
@@ -51,8 +51,8 @@ public class Testbed extends Subsystem
     private WantedState mWantedState = WantedState.IDLE;
 
     // actuators and sensors
-    private CANTalon4915 mMotor1 = null;
-    private CANTalon4915 mMotor2 = null;
+    private TalonSRX4915 mMotor1 = null;
+    private TalonSRX4915 mMotor2 = null;
     private DigitalInput mLimitSwitch = null; // invoke .get() to read
     private AnalogInput mPotentiometer = null;
     private Relay mLightSwitch = null;
@@ -62,7 +62,7 @@ public class Testbed extends Subsystem
     {
         // Instantiate member variables (motors, etc...) here.
         boolean success = true;
-        mMotor1 = CANTalonFactory.createDefaultMotor(Constants.kTestbedMotor1Id);
+        mMotor1 = TalonSRX4915Factory.createDefaultMotor(Constants.kTestbedMotor1Id);
         mMotor1.setControlMode(ControlMode.PercentOutput);
         if(!mMotor1.isValid())
         {
@@ -70,7 +70,7 @@ public class Testbed extends Subsystem
             success = false;
         }
 
-        mMotor2 = CANTalonFactory.createDefaultMotor(Constants.kTestbedMotor2Id);
+        mMotor2 = TalonSRX4915Factory.createDefaultMotor(Constants.kTestbedMotor2Id);
         mMotor2.setControlMode(ControlMode.PercentOutput);
         mMotor2.setInverted(true);
         if(!mMotor2.isValid())

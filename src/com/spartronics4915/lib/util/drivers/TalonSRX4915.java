@@ -79,7 +79,7 @@ import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 //    configs is a good thing, but configuring the motors is private business
 //    which, if dealt with here means our interface can be more minimal/private.
 //
-public class CANTalon4915 implements Sendable, MotorSafety
+public class TalonSRX4915 implements Sendable, MotorSafety
 {
 
     static final int sInitTimeoutMS = 10;
@@ -118,12 +118,12 @@ public class CANTalon4915 implements Sendable, MotorSafety
     boolean mFollowing = false;
 
     /* CANTalon4915 methods ------------------------------------------------ */
-    public CANTalon4915(int deviceNumber)
+    public TalonSRX4915(int deviceNumber)
     {
         this(deviceNumber, Config.kDefaultMotor);
     }
 
-    public CANTalon4915(int deviceNumber, Config c)
+    public TalonSRX4915(int deviceNumber, Config c)
     {
         mDeviceId = deviceNumber;
         mDescription = "TalonSRX4915 " + deviceNumber;
@@ -188,10 +188,10 @@ public class CANTalon4915 implements Sendable, MotorSafety
         // limiting while allowing for momentary excess current events.
         // For simpler current-limiting (single threshold) use configContinuousCurrentLimit() and
         // set the peak to zero: configPeakCurrentLimit(0).
-        mTalon.configContinuousCurrentLimit(30, timeOutMS); // 30 amps
-        mTalon.configPeakCurrentLimit(0, timeOutMS);
-        mTalon.configPeakCurrentDuration(5000, timeOutMS); // milliseconds
         mTalon.enableCurrentLimit(false);
+        mTalon.configContinuousCurrentLimit(10, timeOutMS); // 10 amps
+        mTalon.configPeakCurrentLimit(50, timeOutMS);
+        mTalon.configPeakCurrentDuration(5000, timeOutMS); // milliseconds
 
         // voltageCompensation:
         //  This is the max voltage to apply to the hbridge when voltage compensation is enabled.

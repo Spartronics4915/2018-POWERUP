@@ -14,7 +14,7 @@ import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 
 /**
- * CANTalon4915Drive ecapsulates a 'standard' 4 CIM drive with IMU.
+ * CANTalon4915Drive encapsulates a 'standard' 4 CIM drive with IMU.
  * We currently assume that there are encoders on the master
  * motors and that these are speced & mounted following 4915
  * conventions.
@@ -22,7 +22,7 @@ import com.ctre.phoenix.motorcontrol.FeedbackDevice;
  * Future plans
  * - add support for low/high gear shifter
  **/
-public class CANTalon4915Drive
+public class TalonSRX4915Drive
 {
 
     public enum Config
@@ -40,16 +40,16 @@ public class CANTalon4915Drive
 
     private final int mQuadCodesPerRev;
 
-    private CANTalon4915 mLeftMaster;
-    private CANTalon4915 mLeftSlave;
-    private CANTalon4915 mRightMaster;
-    private CANTalon4915 mRightSlave;
+    private TalonSRX4915 mLeftMaster;
+    private TalonSRX4915 mLeftSlave;
+    private TalonSRX4915 mRightMaster;
+    private TalonSRX4915 mRightSlave;
     private PigeonIMU mIMU;
     private Config mConfig;
     private boolean mInitialized;
     private double mWheelDiameterInches;
 
-    public CANTalon4915Drive(double wheelDiameterInches,
+    public TalonSRX4915Drive(double wheelDiameterInches,
             int encoderCodesPerRev,
             int leftMasterId, int leftSlaveId,
             int rightMasterId, int rightSlaveId,
@@ -60,7 +60,7 @@ public class CANTalon4915Drive
             Config c)
     {
         boolean invertLeft, invertRight;
-        CANTalon4915 pigeonTalon = null;
+        TalonSRX4915 pigeonTalon = null;
         mConfig = c;
         if (mConfig == Config.kLeftNormalRightInverted)
         {
@@ -74,20 +74,20 @@ public class CANTalon4915Drive
         }
         mQuadCodesPerRev = encoderCodesPerRev * 4;
         mWheelDiameterInches = wheelDiameterInches;
-        mLeftMaster = CANTalonFactory.createDefaultDrive(leftMasterId);
+        mLeftMaster = TalonSRX4915Factory.createDefaultDrive(leftMasterId);
         mLeftMaster.configMotorAndSensor(invertLeft,
                 FeedbackDevice.QuadEncoder, invertLeft/* phase */,
                 mQuadCodesPerRev);
-        mLeftSlave = CANTalonFactory.createDefaultSlave(leftSlaveId, leftMasterId,
+        mLeftSlave = TalonSRX4915Factory.createDefaultSlave(leftSlaveId, leftMasterId,
                 invertLeft);
         if (pigeonHostId == leftSlaveId)
             pigeonTalon = mLeftSlave;
 
-        mRightMaster = CANTalonFactory.createDefaultDrive(rightMasterId);
+        mRightMaster = TalonSRX4915Factory.createDefaultDrive(rightMasterId);
         mRightMaster.configMotorAndSensor(invertRight,
                 FeedbackDevice.QuadEncoder, invertRight/* phase */,
                 mQuadCodesPerRev);
-        mRightSlave = CANTalonFactory.createDefaultSlave(rightSlaveId, rightMasterId,
+        mRightSlave = TalonSRX4915Factory.createDefaultSlave(rightSlaveId, rightMasterId,
                 invertRight);
         if (pigeonHostId == rightSlaveId)
             pigeonTalon = mRightSlave;
@@ -107,6 +107,8 @@ public class CANTalon4915Drive
         }
         else
             mInitialized = false;
+        
+        SmartDashboard.putString("Drivetrain_Status", mInitialized ? "OK" : "ERROR");
 
     }
 
@@ -140,7 +142,16 @@ public class CANTalon4915Drive
                 nominalOutput, peakOutput, // fwd
                 -nominalOutput, -peakOutput // rev
         );
-
+        mLeftSlave.configOutputPower(true, /* isOpenLoop */
+                rampRate,
+                nominalOutput, peakOutput, // fwd
+                -nominalOutput, -peakOutput // rev
+        );
+        mRightSlave.configOutputPower(true, /* isOpenLoop */
+                rampRate,
+                nominalOutput, peakOutput, // fwd
+                -nominalOutput, -peakOutput // rev
+        );
         mLeftMaster.set(ControlMode.PercentOutput, 0.0);
         mRightMaster.set(ControlMode.PercentOutput, 0.0);
     }
@@ -289,27 +300,28 @@ public class CANTalon4915Drive
         final double left_speed = getLeftVelocityInchesPerSec();
         final double right_speed = getRightVelocityInchesPerSec();
         
-        SmartDashboard.putNumber("CTDrive/left voltage (V)", mLeftMaster.getOutputVoltage());
-        SmartDashboard.putNumber("CTDrive/right voltage (V)", mRightMaster.getOutputVoltage());
-        SmartDashboard.putNumber("CTDrive/left speed (ips)", left_speed);
-        SmartDashboard.putNumber("CTDrive/right speed (ips)", right_speed);
+        SmartDashboard.putNumber("Drive/left voltage (V)", mLeftMaster.getOutputVoltage());
+        SmartDashboard.putNumber("Drive/right voltage (V)", mRightMaster.getOutputVoltage());
+        SmartDashboard.putNumber("Drive/left speed (ips)", left_speed);
+        SmartDashboard.putNumber("Drive/right speed (ips)", right_speed);
         if (usesVelocityControl)
         {
-            SmartDashboard.putNumber("CTDrive/left speed error (ips)",
+            SmartDashboard.putNumber("Drive/left speed error (ips)",
                     rpmToInchesPerSecond(mLeftMaster.getSetpointRPM()) - left_speed);
-            SmartDashboard.putNumber("CTDrive/right speed error (ips)",
+            SmartDashboard.putNumber("Drive/right speed error (ips)",
                     rpmToInchesPerSecond(mRightMaster.getSetpointRPM()) - right_speed);
         }
         else
         {
-            SmartDashboard.putNumber("CTDrive/left speed error (ips)", 0.0);
-            SmartDashboard.putNumber("CTDrive/right speed error (ips)", 0.0);
+            SmartDashboard.putNumber("Drive/left speed error (ips)", 0.0);
+            SmartDashboard.putNumber("Drive/right speed error (ips)", 0.0);
         }
-        SmartDashboard.putNumber("CTDrive/left position (rotations)",
+        SmartDashboard.putNumber("Drive/left position (rotations)",
                 mLeftMaster.getSetpointRotations());
-        SmartDashboard.putNumber("CTDrive/right position (rotations)",
+        SmartDashboard.putNumber("Drive/right position (rotations)",
                 mRightMaster.getSetpointRotations());
-        SmartDashboard.putNumber("CTDrive/Drivetrain_IMU_Heading", getGyroAngle());
+        // following names relied upon by dashboard.
+        SmartDashboard.putNumber("Drivetrain_IMU_Heading", getGyroAngle());
     }
 
     public boolean checkSystem()
