@@ -107,8 +107,6 @@ public class TalonSRX4915Drive
         }
         else
             mInitialized = false;
-        
-        SmartDashboard.putString("Drivetrain_Status", mInitialized ? "OK" : "ERROR");
     }
 
     public boolean isInitialized()
