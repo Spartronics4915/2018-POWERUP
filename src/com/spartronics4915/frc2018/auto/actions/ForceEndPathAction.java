@@ -1,6 +1,6 @@
 package com.spartronics4915.frc2018.auto.actions;
 
-import com.spartronics4915.frc2018.subsystems.DriveSys;
+import com.spartronics4915.frc2018.subsystems.Drive;
 
 /**
  * Forces the current path the robot is driving on to end early
@@ -15,6 +15,6 @@ public class ForceEndPathAction extends RunOnceAction
     @Override
     public synchronized void runOnce()
     {
-        DriveSys.getInstance().forceDoneWithPath();
+        Drive.getInstance().forceDoneWithPath();
     }
 }

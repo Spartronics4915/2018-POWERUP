@@ -1,11 +1,11 @@
 package com.spartronics4915.frc2018.auto.actions;
 
-import com.spartronics4915.frc2018.subsystems.DriveSys;
+import com.spartronics4915.frc2018.subsystems.Drive;
 import com.spartronics4915.lib.util.DriveSignal;
 
 public class DriveOpenLoopAction implements Action
 {
-    DriveSys mDrive = DriveSys.getInstance();
+    Drive mDrive = Drive.getInstance();
     
     @Override
     public boolean isFinished()

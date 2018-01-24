@@ -2,7 +2,7 @@ package com.spartronics4915.frc2018.loops;
 
 import com.spartronics4915.frc2018.Kinematics;
 import com.spartronics4915.frc2018.RobotState;
-import com.spartronics4915.frc2018.subsystems.DriveSys;
+import com.spartronics4915.frc2018.subsystems.Drive;
 import com.spartronics4915.lib.util.math.Rotation2d;
 import com.spartronics4915.lib.util.math.Twist2d;
 
@@ -31,7 +31,7 @@ public class RobotStateEstimator implements Loop
     }
 
     RobotState mRobotState_ = RobotState.getInstance();
-    DriveSys mDrive = DriveSys.getInstance();
+    Drive mDrive = Drive.getInstance();
     double mLeftEncoderPrevDist = 0;
     double mRightEncoderPrevDist = 0;
 

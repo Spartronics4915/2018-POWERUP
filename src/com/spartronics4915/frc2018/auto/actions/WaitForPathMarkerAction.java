@@ -1,6 +1,6 @@
 package com.spartronics4915.frc2018.auto.actions;
 
-import com.spartronics4915.frc2018.subsystems.DriveSys;
+import com.spartronics4915.frc2018.subsystems.Drive;
 
 /**
  * Waits for the robot to pass by a provided path marker (i.e. a waypoint on the
@@ -15,7 +15,7 @@ import com.spartronics4915.frc2018.subsystems.DriveSys;
 public class WaitForPathMarkerAction implements Action
 {
 
-    private DriveSys mDrive = DriveSys.getInstance();
+    private Drive mDrive = Drive.getInstance();
     private String mMarker;
 
     public WaitForPathMarkerAction(String marker)

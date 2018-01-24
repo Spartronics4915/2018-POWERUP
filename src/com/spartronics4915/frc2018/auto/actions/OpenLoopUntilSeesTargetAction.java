@@ -4,7 +4,7 @@ import java.util.Optional;
 
 import com.spartronics4915.frc2018.RobotState;
 import com.spartronics4915.frc2018.ShooterAimingParameters;
-import com.spartronics4915.frc2018.subsystems.DriveSys;
+import com.spartronics4915.frc2018.subsystems.Drive;
 import com.spartronics4915.frc2018.subsystems.LED;
 import com.spartronics4915.lib.util.DriveSignal;
 
@@ -57,7 +57,7 @@ public class OpenLoopUntilSeesTargetAction implements Action
     public void start()
     {
         LED.getInstance().setWantedState(LED.WantedState.FIND_RANGE);
-        DriveSys.getInstance().setOpenLoop(new DriveSignal(left, right));
+        Drive.getInstance().setOpenLoop(new DriveSignal(left, right));
     }
 
 }

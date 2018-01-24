@@ -31,10 +31,10 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  * 
  * @see Subsystem.java
  */
-public class DriveSys extends Subsystem
+public class Drive extends Subsystem
 {
 
-    private static DriveSys mInstance = null;
+    private static Drive mInstance = null;
 
     private static final int kLowGearPositionControlSlot = 0;
     private static final int kHighGearVelocityControlSlot = 1;
@@ -42,11 +42,11 @@ public class DriveSys extends Subsystem
     private static final double kOpenLoopNominalOutput = 0.0; // fwd & rev
     private static final double kOpenLoopPeakOutput = .5; // fwd: .5, rev: -.5
 
-    public static DriveSys getInstance()
+    public static Drive getInstance()
     {
         if (mInstance == null)
         {
-            mInstance = new DriveSys();
+            mInstance = new Drive();
         }
         return mInstance;
     }
@@ -85,7 +85,7 @@ public class DriveSys extends Subsystem
         @Override
         public void onStart(double timestamp)
         {
-            synchronized (DriveSys.this)
+            synchronized (Drive.this)
             {
                 // XXX: looper received onStart method, unclear why we're jumping
                 //  into velocity mode here? (without consulting mDriveControlState)
@@ -105,7 +105,7 @@ public class DriveSys extends Subsystem
         @Override
         public void onLoop(double timestamp)
         {
-            synchronized (DriveSys.this)
+            synchronized (Drive.this)
             {
                 switch (mDriveControlState)
                 {
@@ -144,7 +144,7 @@ public class DriveSys extends Subsystem
         }
     };
 
-    private DriveSys()
+    private Drive()
     {
         // encoder phase must match output sense or PID will spiral out of control
         mDrive = new CANTalon4915Drive(Constants.kDriveWheelDiameterInches,

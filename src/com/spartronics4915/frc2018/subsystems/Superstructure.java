@@ -42,7 +42,7 @@ public class Superstructure extends Subsystem
     private final LED mLED = LED.getInstance();
 
     // Superstructure doesn't own the drive, but needs to access it
-    private final DriveSys mDrive = DriveSys.getInstance();
+    private final Drive mDrive = Drive.getInstance();
 
     // Intenal state of the system
     public enum SystemState

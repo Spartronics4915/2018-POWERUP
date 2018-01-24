@@ -14,7 +14,7 @@ import com.spartronics4915.frc2018.loops.RobotStateEstimator;
 import com.spartronics4915.frc2018.loops.VisionProcessor;
 import com.spartronics4915.frc2018.paths.profiles.PathAdapter;
 import com.spartronics4915.frc2018.subsystems.ConnectionMonitor;
-import com.spartronics4915.frc2018.subsystems.DriveSys;
+import com.spartronics4915.frc2018.subsystems.Drive;
 import com.spartronics4915.frc2018.subsystems.Testbed;
 import com.spartronics4915.frc2018.subsystems.LED;
 import com.spartronics4915.frc2018.subsystems.Superstructure;
@@ -58,7 +58,7 @@ public class Robot extends IterativeRobot
 
     // NB: make sure to construct objects in robotInit, not member declaration,
     //  and usually not constructor.
-    private DriveSys mDrive = null;
+    private Drive mDrive = null;
     private Superstructure mSuperstructure = null;
     private LED mLED = null;
     private Testbed mTestbed = null;
@@ -137,7 +137,7 @@ public class Robot extends IterativeRobot
                     canReport.size() == Constants.kNumCANDevices ? "OK"
                             : ("" + canReport.size() + "/" + Constants.kNumCANDevices));
 
-            mDrive = DriveSys.getInstance();
+            mDrive = Drive.getInstance();
             mSuperstructure = Superstructure.getInstance();
             mLED = LED.getInstance();
             mTestbed = Testbed.getInstance();
