@@ -39,8 +39,8 @@ public class AutoModeSelector
     private static final AutoModeCreator[] mAllModes = {
             new AutoModeCreator("Test Path Mode", () -> new TestPathMode()),
             new AutoModeCreator("Test Turning Mode", () -> new TestTurnMode()),
+            new AutoModeCreator("Test Open Loop", () -> new TestOpenLoopMode()),
             new AutoModeCreator("Intake Forward Mode", () -> new IntakeForwardMode()),
-            new AutoModeCreator("Test Drivetrain Mode", () -> new TestDriveMode())
             // e.g. new AutoModeCreator("Boiler Gear then 10 Ball Shoot Red", () -> new BoilerGearThenShootModeRed()),
     };
 

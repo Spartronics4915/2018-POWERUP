@@ -180,7 +180,7 @@ public class CANTalon4915 implements Sendable, MotorSafety
         mTalon.configNominalOutputReverse(0.0, timeOutMS); // [-1, 0]
         mTalon.configPeakOutputForward(1.0, timeOutMS);
         mTalon.configPeakOutputReverse(-1.0, timeOutMS);
-
+        
         // current limits are TalonSRX-specific
         // Configure the continuous allowable current-draw (when current limit is enabled).
         // Current limit is activated when current exceeds the peak limit for longer than the

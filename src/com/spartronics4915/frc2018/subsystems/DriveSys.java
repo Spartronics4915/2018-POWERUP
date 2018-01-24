@@ -238,7 +238,7 @@ public class DriveSys extends Subsystem
     {
         if (!this.isInitialized())
             return;
-        mDrive.resetEncoders(false);
+        mDrive.resetEncoders(false/*resetYaw*/);
     }
 
     @Override
@@ -246,7 +246,7 @@ public class DriveSys extends Subsystem
     {
         if (!this.isInitialized())
             return;
-        mDrive.resetEncoders(true);
+        mDrive.resetEncoders(true/*resetYaw*/);
     }
     
     public synchronized Rotation2d getGyroAngle()
