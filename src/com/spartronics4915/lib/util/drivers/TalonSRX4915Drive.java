@@ -379,7 +379,7 @@ public class TalonSRX4915Drive
 
         Timer.delay(2.0);
 
-        logNotice("leftMaster .5, four seconds");
+        logNotice("leftMaster .5, 4 seconds");
         mLeftMaster.set(.5); // <--------------------
         Timer.delay(4.0);
         final double currentLeftMaster = mLeftMaster.getOutputCurrent();
@@ -388,7 +388,7 @@ public class TalonSRX4915Drive
 
         Timer.delay(2.0);
 
-        logNotice("leftSlave .5, four seconds");
+        logNotice("leftSlave .5, 4 seconds");
         mLeftSlave.set(.5); // <-------------------
         Timer.delay(4.0);
         final double currentLeftSlave = mLeftSlave.getOutputCurrent();
