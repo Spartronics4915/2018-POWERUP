@@ -60,6 +60,7 @@ public class AutoModeSelector
         String selectedModeName = SmartDashboard.getString(
                 SELECTED_AUTO_MODE_DASHBOARD_KEY,
                 "NO SELECTED MODE!!!!");
+        Logger.notice("Auto mode name " + selectedModeName);
         for (AutoModeCreator mode : mAllModes)
         {
             if (mode.mDashboardName.equals(selectedModeName))

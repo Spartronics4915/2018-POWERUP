@@ -219,18 +219,19 @@ public class DriveSys extends Subsystem
         mDrive.outputToSmartDashboard(usesTalonVelocityControl(mDriveControlState));
         synchronized (this)
         {
+            SmartDashboard.putString("Drive/state", mDriveControlState.toString());
             if (mDriveControlState == DriveControlState.PATH_FOLLOWING && mPathFollower != null)
             {
-                SmartDashboard.putNumber("drive CTE", mPathFollower.getCrossTrackError());
-                SmartDashboard.putNumber("drive ATE", mPathFollower.getAlongTrackError());
+                SmartDashboard.putNumber("Drive/CTE", mPathFollower.getCrossTrackError());
+                SmartDashboard.putNumber("Drive/ATE", mPathFollower.getAlongTrackError());
             }
             else
             {
-                SmartDashboard.putNumber("drive CTE", 0.0);
-                SmartDashboard.putNumber("drive ATE", 0.0);
+                SmartDashboard.putNumber("Drive/CTE", 0.0);
+                SmartDashboard.putNumber("Drive/ATE", 0.0);
             }
         }
-        SmartDashboard.putBoolean("drive on target", isOnTarget());
+        SmartDashboard.putBoolean("Drive/on target", isOnTarget());
     }
 
     public synchronized void resetEncoders()

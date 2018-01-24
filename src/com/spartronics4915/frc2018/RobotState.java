@@ -69,15 +69,15 @@ public class RobotState
             new Translation2d(Constants.kCameraXOffset, Constants.kCameraYOffset), new Rotation2d());
 
     // FPGATimestamp -> RigidTransform2d or Rotation2d
-    private InterpolatingTreeMap<InterpolatingDouble, RigidTransform2d> field_to_vehicle_;
-    private Twist2d vehicle_velocity_predicted_;
-    private Twist2d vehicle_velocity_measured_;
-    private double distance_driven_;
-    private GoalTracker goal_tracker_;
-    private Rotation2d camera_pitch_correction_;
-    private Rotation2d camera_yaw_correction_;
-    private double differential_height_;
-    private ShooterAimingParameters cached_shooter_aiming_params_ = null;
+    private InterpolatingTreeMap<InterpolatingDouble, RigidTransform2d> mFieldToVehicle;
+    private Twist2d mVehicleVelocityPredicted;
+    private Twist2d mVehicleVelocityMeasured;
+    private double mDistanceDriven;
+    private GoalTracker mGoalTracker;
+    private Rotation2d mCameraPitchCorrection;
+    private Rotation2d mCameraYawCorrection;
+    private double mDifferentialHeight;
+    private ShooterAimingParameters mCachedShooterAimingParameters = null;
 
     private RobotState()
     {
@@ -89,20 +89,20 @@ public class RobotState
      */
     public synchronized void reset(double start_time, RigidTransform2d initial_field_to_vehicle)
     {
-        field_to_vehicle_ = new InterpolatingTreeMap<>(kObservationBufferSize);
-        field_to_vehicle_.put(new InterpolatingDouble(start_time), initial_field_to_vehicle);
-        vehicle_velocity_predicted_ = Twist2d.identity();
-        vehicle_velocity_measured_ = Twist2d.identity();
-        goal_tracker_ = new GoalTracker();
-        camera_pitch_correction_ = Rotation2d.fromDegrees(-Constants.kCameraPitchAngleDegrees);
-        camera_yaw_correction_ = Rotation2d.fromDegrees(-Constants.kCameraYawAngleDegrees);
-        differential_height_ = Constants.kBoilerTargetTopHeight - Constants.kCameraZOffset;
-        distance_driven_ = 0.0;
+        mFieldToVehicle = new InterpolatingTreeMap<>(kObservationBufferSize);
+        mFieldToVehicle.put(new InterpolatingDouble(start_time), initial_field_to_vehicle);
+        mVehicleVelocityPredicted = Twist2d.identity();
+        mVehicleVelocityMeasured = Twist2d.identity();
+        mGoalTracker = new GoalTracker();
+        mCameraPitchCorrection = Rotation2d.fromDegrees(-Constants.kCameraPitchAngleDegrees);
+        mCameraYawCorrection = Rotation2d.fromDegrees(-Constants.kCameraYawAngleDegrees);
+        // mDifferentialHeight = Constants.kBoilerTargetTopHeight - Constants.kCameraZOffset;
+        mDistanceDriven = 0.0;
     }
 
     public synchronized void resetDistanceDriven()
     {
-        distance_driven_ = 0.0;
+        mDistanceDriven = 0.0;
     }
 
     /**
@@ -112,18 +112,18 @@ public class RobotState
      */
     public synchronized RigidTransform2d getFieldToVehicle(double timestamp)
     {
-        return field_to_vehicle_.getInterpolated(new InterpolatingDouble(timestamp));
+        return mFieldToVehicle.getInterpolated(new InterpolatingDouble(timestamp));
     }
 
     public synchronized Map.Entry<InterpolatingDouble, RigidTransform2d> getLatestFieldToVehicle()
     {
-        return field_to_vehicle_.lastEntry();
+        return mFieldToVehicle.lastEntry();
     }
 
     public synchronized RigidTransform2d getPredictedFieldToVehicle(double lookahead_time)
     {
         return getLatestFieldToVehicle().getValue()
-                .transformBy(RigidTransform2d.exp(vehicle_velocity_predicted_.scaled(lookahead_time)));
+                .transformBy(RigidTransform2d.exp(mVehicleVelocityPredicted.scaled(lookahead_time)));
     }
 
     public synchronized RigidTransform2d getFieldToCamera(double timestamp)
@@ -134,7 +134,7 @@ public class RobotState
     public synchronized List<RigidTransform2d> getCaptureTimeFieldToGoal()
     {
         List<RigidTransform2d> rv = new ArrayList<>();
-        for (TrackReport report : goal_tracker_.getTracks())
+        for (TrackReport report : mGoalTracker.getTracks())
         {
             rv.add(RigidTransform2d.fromTranslation(report.field_to_goal));
         }
@@ -143,7 +143,7 @@ public class RobotState
 
     public synchronized void addFieldToVehicleObservation(double timestamp, RigidTransform2d observation)
     {
-        field_to_vehicle_.put(new InterpolatingDouble(timestamp), observation);
+        mFieldToVehicle.put(new InterpolatingDouble(timestamp), observation);
     }
 
     public synchronized void addObservations(double timestamp, Twist2d measured_velocity,
@@ -151,8 +151,8 @@ public class RobotState
     {
         addFieldToVehicleObservation(timestamp,
                 Kinematics.integrateForwardKinematics(getLatestFieldToVehicle().getValue(), measured_velocity));
-        vehicle_velocity_measured_ = measured_velocity;
-        vehicle_velocity_predicted_ = predicted_velocity;
+        mVehicleVelocityMeasured = measured_velocity;
+        mVehicleVelocityPredicted = predicted_velocity;
     }
 
     public void addVisionUpdate(double timestamp, List<TargetInfo> vision_update)
@@ -167,42 +167,42 @@ public class RobotState
                         && target.getY() < Constants.kCameraDeadband) ? 0.0 : target.getY();
 
                 // Compensate for camera yaw
-                double xyaw = target.getX() * camera_yaw_correction_.cos() + ydeadband * camera_yaw_correction_.sin();
-                double yyaw = ydeadband * camera_yaw_correction_.cos() - target.getX() * camera_yaw_correction_.sin();
+                double xyaw = target.getX() * mCameraYawCorrection.cos() + ydeadband * mCameraYawCorrection.sin();
+                double yyaw = ydeadband * mCameraYawCorrection.cos() - target.getX() * mCameraYawCorrection.sin();
                 double zyaw = target.getZ();
 
                 // Compensate for camera pitch
-                double xr = zyaw * camera_pitch_correction_.sin() + xyaw * camera_pitch_correction_.cos();
+                double xr = zyaw * mCameraPitchCorrection.sin() + xyaw * mCameraPitchCorrection.cos();
                 double yr = yyaw;
-                double zr = zyaw * camera_pitch_correction_.cos() - xyaw * camera_pitch_correction_.sin();
+                double zr = zyaw * mCameraPitchCorrection.cos() - xyaw * mCameraPitchCorrection.sin();
 
-                // find intersection with the goal
-                if (zr > 0)
-                {
-                    double scaling = differential_height_ / zr;
-                    double distance = Math.hypot(xr, yr) * scaling + Constants.kBoilerRadius;
-                    Rotation2d angle = new Rotation2d(xr, yr, true);
-                    field_to_goals.add(field_to_camera
-                            .transformBy(RigidTransform2d
-                                    .fromTranslation(new Translation2d(distance * angle.cos(), distance * angle.sin())))
-                            .getTranslation());
-                }
+//                // find intersection with the goal
+//                if (zr > 0)
+//                {
+//                    double scaling = mDifferentialHeight / zr;
+//                    double distance = Math.hypot(xr, yr) * scaling + Constants.kBoilerRadius;
+//                    Rotation2d angle = new Rotation2d(xr, yr, true);
+//                    field_to_goals.add(field_to_camera
+//                            .transformBy(RigidTransform2d
+//                                    .fromTranslation(new Translation2d(distance * angle.cos(), distance * angle.sin())))
+//                            .getTranslation());
+//                }
             }
         }
         synchronized (this)
         {
-            goal_tracker_.update(timestamp, field_to_goals);
+            mGoalTracker.update(timestamp, field_to_goals);
         }
     }
 
     public synchronized Optional<ShooterAimingParameters> getCachedAimingParameters()
     {
-        return cached_shooter_aiming_params_ == null ? Optional.empty() : Optional.of(cached_shooter_aiming_params_);
+        return mCachedShooterAimingParameters == null ? Optional.empty() : Optional.of(mCachedShooterAimingParameters);
     }
 
     public synchronized Optional<ShooterAimingParameters> getAimingParameters()
     {
-        List<TrackReport> reports = goal_tracker_.getTracks();
+        List<TrackReport> reports = mGoalTracker.getTracks();
         if (!reports.isEmpty())
         {
             TrackReport report = reports.get(0);
@@ -213,7 +213,7 @@ public class RobotState
 
             ShooterAimingParameters params = new ShooterAimingParameters(robot_to_goal.norm(), robot_to_goal_rotation,
                     report.latest_timestamp, report.stability);
-            cached_shooter_aiming_params_ = params;
+            mCachedShooterAimingParameters = params;
 
             return Optional.of(params);
         }
@@ -225,8 +225,8 @@ public class RobotState
 
     public synchronized void resetVision()
     {
-        goal_tracker_.reset();
-        cached_shooter_aiming_params_ = null;
+        mGoalTracker.reset();
+        mCachedShooterAimingParameters = null;
     }
 
     public synchronized Twist2d generateOdometryFromSensors(double left_encoder_delta_distance,
@@ -235,23 +235,23 @@ public class RobotState
         final RigidTransform2d last_measurement = getLatestFieldToVehicle().getValue();
         final Twist2d delta = Kinematics.forwardKinematics(last_measurement.getRotation(),
                 left_encoder_delta_distance, right_encoder_delta_distance, current_gyro_angle);
-        distance_driven_ += delta.dx;
+        mDistanceDriven += delta.dx;
         return delta;
     }
 
     public synchronized double getDistanceDriven()
     {
-        return distance_driven_;
+        return mDistanceDriven;
     }
 
     public synchronized Twist2d getPredictedVelocity()
     {
-        return vehicle_velocity_predicted_;
+        return mVehicleVelocityPredicted;
     }
 
     public synchronized Twist2d getMeasuredVelocity()
     {
-        return vehicle_velocity_measured_;
+        return mVehicleVelocityMeasured;
     }
 
     public void outputToSmartDashboard()
@@ -260,7 +260,7 @@ public class RobotState
         SmartDashboard.putNumber("robot_pose_x", odometry.getTranslation().x());
         SmartDashboard.putNumber("robot_pose_y", odometry.getTranslation().y());
         SmartDashboard.putNumber("robot_pose_theta", odometry.getRotation().getDegrees());
-        SmartDashboard.putNumber("robot velocity", vehicle_velocity_measured_.dx);
+        SmartDashboard.putNumber("robot velocity", mVehicleVelocityMeasured.dx);
         SmartDashboard.putNumber("field_degrees", getLatestFieldToVehicle().getValue().getRotation().getDegrees());
         List<RigidTransform2d> poses = getCaptureTimeFieldToGoal();
         for (RigidTransform2d pose : poses)

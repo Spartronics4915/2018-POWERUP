@@ -35,7 +35,7 @@ public class Constants extends ConstantsBase
     public static final int kTestbedMotor1Id = 16;
     public static final int kTestbedMotor2Id = 18;
  
-    public static final int kNumTalons = 4; // total talon count on robot
+    public static final int kNumTalons = 4; // total talon count on robot (not testbed)
     
     public static final int kNumPDPs = 0; // CANProbe doesn't probe for this device
     public static final int kNumPCMs = 1; // Pressure control module (pneumatics)
@@ -62,33 +62,27 @@ public class Constants extends ConstantsBase
     public static final int kTestbedPotentiometerId = 0;
     public static final int kLEDOnId = 2;
     
-    
     // Software configuration constants ----------------------------------------------------------
 
     public static final double kLooperDt = 0.005;
+    
+    // Vision
+    public static final int kAndroidAppTcpPort = 8254;
 
-    // Target parameters
-    // Source of current values: https://firstfrc.blob.core.windows.net/frc2017/Manual/2017FRCGameSeasonManual.pdf
-    // Section 3.13
-    // ...and https://firstfrc.blob.core.windows.net/frc2017/Drawings/2017FieldComponents.pdf
-    // Parts GE-17203-FLAT and GE-17371 (sheet 7)
-    public static final double kBoilerTargetTopHeight = 88.0;
-    public static final double kBoilerRadius = 8;
-
-    /* ROBOT PHYSICAL CONSTANTS */
+    /* ROBOT PHYSICAL CONSTANTS ---------------------------------------------------------  */
 
     // Wheels
     public static final double kDriveWheelDiameterInches = 6;
-    public static final double kTrackWidthInches = 27.75;
+    public static final double kTrackWidthInches = 23.75;
     public static final double kTrackScrubFactor = 0.624;
 
-    // Geometry
-    public static final double kCenterToFrontBumperDistance = 14.1875;
-    public static final double kCenterToIntakeDistance = 20.9675;
-    public static final double kCenterToRearBumperDistance = 14.1875;
-    public static final double kCenterToSideBumperDistance = 15.75;
+    // Chassis Geometry
+    public static final double kCenterToFrontBumperDistance = 16.14;
+    // public static final double kCenterToIntakeDistance = 20.9675;
+    public static final double kCenterToRearBumperDistance = 16.14;
+    public static final double kCenterToSideBumperDistance = 13.78;
 
-    /* CONTROL LOOP GAINS */
+    /* CONTROL LOOP GAINS ---------------------------------------------------------------- */
 
     // PID gains for drive velocity loop (HIGH GEAR)
     // Units: setpoint, error, and output are in inches per second.
@@ -114,7 +108,6 @@ public class Constants extends ConstantsBase
                                                                                                                // in RPM
     public static final double kDriveLowGearMaxAccel = 15.0 * 12.0 * 60.0 / (Math.PI * kDriveWheelDiameterInches); // 15 fps/s
                                                                                                              // in RPM/s
-
     public static final double kDriveVoltageCompensationRampRate = 0.0;
     
     
@@ -128,14 +121,8 @@ public class Constants extends ConstantsBase
     //                          ^ ^ Default cover, Default base
     public static final int kEncoderCodesPerRev = 360;
 
-    // Intake
- 
 
-
-    // Phone
-    public static final int kAndroidAppTcpPort = 8254;
-
-    // Path following constants
+    // Path following constants -----------------------------------
     public static final double kMinLookAhead = 12.0; // inches
     public static final double kMinLookAheadSpeed = 9.0; // inches per second
     public static final double kMaxLookAhead = 24.0; // inches

@@ -252,7 +252,7 @@ public class CANTalon4915Drive
     {
         if (mIMU == null)
             return;
-        mIMU.setYaw(yawDegrees, 5);
+        mIMU.setYaw(yawDegrees, 0); // nonblocking
     }
 
     public void resetEncoders(boolean resetYaw)
@@ -260,7 +260,7 @@ public class CANTalon4915Drive
         mLeftMaster.resetSensor();
         mRightMaster.resetSensor();
         if (mIMU != null && resetYaw)
-            mIMU.setYaw(0, 5/* ms */);
+            mIMU.setYaw(0, 0); // nonblocking
     }
 
     public boolean isBrakingEnabled()
@@ -288,6 +288,7 @@ public class CANTalon4915Drive
     {
         final double left_speed = getLeftVelocityInchesPerSec();
         final double right_speed = getRightVelocityInchesPerSec();
+        
         SmartDashboard.putNumber("CTDrive/left voltage (V)", mLeftMaster.getOutputVoltage());
         SmartDashboard.putNumber("CTDrive/right voltage (V)", mRightMaster.getOutputVoltage());
         SmartDashboard.putNumber("CTDrive/left speed (ips)", left_speed);
