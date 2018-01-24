@@ -204,7 +204,7 @@ public class Robot extends IterativeRobot
             mSuperstructure.setWantedState(Superstructure.WantedState.IDLE);
 
             mAutoModeExecuter = null;
-            
+
             mDrive.enableBraking(true);
 
             mEnabledLooper.start();
@@ -226,7 +226,7 @@ public class Robot extends IterativeRobot
     @Override
     public void autonomousPeriodic()
     {
-        allPeriodic();
+        allButTestPeriodic();
     }
 
     /**
@@ -289,7 +289,7 @@ public class Robot extends IterativeRobot
                 mTestbed.setWantedState(WantedState.IDLE);
             }
 
-            allPeriodic();
+            allButTestPeriodic();
         }
         catch (Throwable t)
         {
@@ -340,8 +340,8 @@ public class Robot extends IterativeRobot
             mLED.setLEDOff();
         }
 
-        zeroAllSensors();
-        allPeriodic();
+        // don't zero sensors during disabledPeriodic... zeroAllSensors();
+        allButTestPeriodic();
     }
 
     @Override
@@ -368,9 +368,9 @@ public class Robot extends IterativeRobot
     }
 
     /**
-     * Helper function that is called in all periodic functions
+     * Helper function that is shared between above periodic functions
      */
-    public void allPeriodic()
+    private void allButTestPeriodic()
     {
         mRobotState.outputToSmartDashboard();
         mSubsystemManager.outputToSmartDashboard();
@@ -380,7 +380,7 @@ public class Robot extends IterativeRobot
     }
 
     /**
-     * Unused but required periodic function.  Plays a similar role to our
+     * Unused but required function. Plays a similar role to our
      * allPeriodic method. Presumably the timing in IterativeRobotBase wasn't
      * to the liking of initial designers of this system. Perhaps because
      * we don't want it to run during testPeriodic.

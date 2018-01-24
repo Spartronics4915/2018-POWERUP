@@ -299,7 +299,7 @@ public class CANTalon4915 implements Sendable, MotorSafety
         mTalon.setSensorPhase(sensorPhase);
         mTalon.setInverted(invertMotorOutput);
     }
- 
+
     public void configFollower(int masterId, boolean invert)
     {
         if (mTalon == null)
@@ -382,18 +382,19 @@ public class CANTalon4915 implements Sendable, MotorSafety
             mTalon.setNeutralMode(mNeutralMode);
         }
     }
-    
+
     public void setInverted(boolean s)
     {
-        if(mTalon != null)
+        if (mTalon != null)
         {
-            mTalon.setInverted(s);;
+            mTalon.setInverted(s);
+            ;
         }
     }
-    
+
     public boolean getInverted()
     {
-        if(mTalon != null)
+        if (mTalon != null)
         {
             return mTalon.getInverted();
         }
@@ -428,51 +429,7 @@ public class CANTalon4915 implements Sendable, MotorSafety
                     .append("  firmware version:")
                     .append(Integer.toHexString(mTalon.getFirmwareVersion()))
                     .append("\n")
-                    .append("  inverted:")
-                    .append(mTalon.getInverted())
-                    .append("\n")
-                    .append("  following:")
-                    .append(mFollowing)
-                    .append("\n")
-                    .append("  outputVoltage:")
-                    .append(getOutputVoltage())
-                    .append("\n")
-                    .append("  outputCurrent:")
-                    .append(getOutputCurrent())
-                    .append("\n")
-                    .append("  openLoopRampRate:")
-                    .append(mTalon.configGetParameter(ParamEnum.eOpenloopRamp, 0, sInitTimeoutMS))
-                    .append("\n")
-                    .append("  closedLoopRampRate:")
-                    .append(mTalon.configGetParameter(ParamEnum.eClosedloopRamp, 0, sInitTimeoutMS))
-                    .append("\n")
-                    .append("  neutral deadband:")
-                    .append(mTalon.configGetParameter(ParamEnum.eNeutralDeadband, 0,
-                            sInitTimeoutMS))
-                    .append("\n")
-                    .append("  peak pos output:")
-                    .append(mTalon.configGetParameter(ParamEnum.ePeakPosOutput, 0, sInitTimeoutMS))
-                    .append("  peak neg output: ")
-                    .append(mTalon.configGetParameter(ParamEnum.ePeakNegOutput, 0, sInitTimeoutMS))
-                    .append("\n")
-                    .append("  nominal pos output:")
-                    .append(mTalon.configGetParameter(ParamEnum.eNominalPosOutput, 0,
-                            sInitTimeoutMS))
-                    .append("  nominal neg output:")
-                    .append(mTalon.configGetParameter(ParamEnum.eNominalNegOutput, 0,
-                            sInitTimeoutMS))
-                    .append("\n")
-                    .append("  peak current limit (amps):")
-                    .append(mTalon.configGetParameter(ParamEnum.ePeakCurrentLimitAmps, 0,
-                            sInitTimeoutMS))
-                    .append("\n")
-                    .append("  continuous current limit (amps):")
-                    .append(mTalon.configGetParameter(ParamEnum.eContinuousCurrentLimitAmps, 0,
-                            sInitTimeoutMS))
-                    .append("\n")
-                    .append("  nominal battery voltage:")
-                    .append(mTalon.configGetParameter(ParamEnum.eNominalBatteryVoltage, 0,
-                            sInitTimeoutMS))
+                    .append(dumpPowerState(false/* means !terse */))
                     .append("\n")
                     .append("  feedback sensor type:")
                     .append(mTalon.configGetParameter(ParamEnum.eFeedbackSensorType, 0,
@@ -501,70 +458,7 @@ public class CANTalon4915 implements Sendable, MotorSafety
                             sInitTimeoutMS))
                     .append("\n")
                     .append("  faults: ")
-                    .append(checkFaults())
-                    .append("\n")
-                    .append(" Motion Magic Cruise Velocity:")
-                    .append(mTalon.configGetParameter(ParamEnum.eMotMag_VelCruise, 0,
-                            sInitTimeoutMS))
-                    .append("\n")
-                    .append("  Motion Magic Max Accel:")
-                    .append(mTalon.configGetParameter(ParamEnum.eMotMag_Accel, 0, sInitTimeoutMS))
-                    .append("\n")
-                    .append("  slot0 P:")
-                    .append(mTalon.configGetParameter(ParamEnum.eProfileParamSlot_P, 0,
-                            sInitTimeoutMS))
-                    .append("\n")
-                    .append("       I:")
-                    .append(mTalon.configGetParameter(ParamEnum.eProfileParamSlot_I, 0,
-                            sInitTimeoutMS))
-                    .append("\n")
-                    .append("       D:")
-                    .append(mTalon.configGetParameter(ParamEnum.eProfileParamSlot_D, 0,
-                            sInitTimeoutMS))
-                    .append("\n")
-                    .append("       F:")
-                    .append(mTalon.configGetParameter(ParamEnum.eProfileParamSlot_F, 0,
-                            sInitTimeoutMS))
-                    .append("\n")
-                    .append("       allowable error:")
-                    .append(mTalon.configGetParameter(ParamEnum.eProfileParamSlot_AllowableErr, 0,
-                            sInitTimeoutMS))
-                    .append("\n")
-                    .append("       izone:")
-                    .append(mTalon.configGetParameter(ParamEnum.eProfileParamSlot_IZone, 0,
-                            sInitTimeoutMS))
-                    .append("\n")
-                    .append("       maxiaccum:")
-                    .append(mTalon.configGetParameter(ParamEnum.eProfileParamSlot_MaxIAccum, 0,
-                            sInitTimeoutMS))
-                    .append("\n")
-                    .append("  slot1 P:")
-                    .append(mTalon.configGetParameter(ParamEnum.eProfileParamSlot_P, 1,
-                            sInitTimeoutMS))
-                    .append("\n")
-                    .append("       I:")
-                    .append(mTalon.configGetParameter(ParamEnum.eProfileParamSlot_I, 1,
-                            sInitTimeoutMS))
-                    .append("\n")
-                    .append("       D:")
-                    .append(mTalon.configGetParameter(ParamEnum.eProfileParamSlot_D, 1,
-                            sInitTimeoutMS))
-                    .append("\n")
-                    .append("       F:")
-                    .append(mTalon.configGetParameter(ParamEnum.eProfileParamSlot_F, 1,
-                            sInitTimeoutMS))
-                    .append("\n")
-                    .append("       allowable error:")
-                    .append(mTalon.configGetParameter(ParamEnum.eProfileParamSlot_AllowableErr, 1,
-                            sInitTimeoutMS))
-                    .append("\n")
-                    .append("       izone:")
-                    .append(mTalon.configGetParameter(ParamEnum.eProfileParamSlot_IZone, 1,
-                            sInitTimeoutMS))
-                    .append("\n")
-                    .append("       maxiaccum:")
-                    .append(mTalon.configGetParameter(ParamEnum.eProfileParamSlot_MaxIAccum, 1,
-                            sInitTimeoutMS))
+                    .append(dumpFaults())
                     .append("\n")
                     .append("--------------}\n");
             ;
@@ -576,7 +470,122 @@ public class CANTalon4915 implements Sendable, MotorSafety
         }
     }
 
-    public String checkFaults()
+    public String dumpPowerState(boolean terse)
+    {
+        StringBuilder sb = new StringBuilder()
+                .append("  inverted:")
+                .append(mTalon.getInverted())
+                .append("\n")
+                .append("  following:")
+                .append(mFollowing)
+                .append("\n")
+                .append("  openLoopRampRate:")
+                .append(mTalon.configGetParameter(ParamEnum.eOpenloopRamp, 0, sInitTimeoutMS))
+                .append("  output, peak pos:")
+                .append(mTalon.configGetParameter(ParamEnum.ePeakPosOutput, 0, sInitTimeoutMS))
+                .append("  peak neg: ")
+                .append(mTalon.configGetParameter(ParamEnum.ePeakNegOutput, 0, sInitTimeoutMS))
+                .append("  nominal pos:")
+                .append(mTalon.configGetParameter(ParamEnum.eNominalPosOutput, 0, sInitTimeoutMS))
+                .append("  nominal neg:")
+                .append(mTalon.configGetParameter(ParamEnum.eNominalNegOutput, 0, sInitTimeoutMS));
+
+        if (!terse)
+        {
+            sb.append("\n");
+            sb.append("  closedLoopRampRate:");
+            sb.append(mTalon.configGetParameter(ParamEnum.eClosedloopRamp, 0, sInitTimeoutMS));
+            sb.append("\n");
+            sb.append("  neutral deadband:");
+            sb.append(mTalon.configGetParameter(ParamEnum.eNeutralDeadband, 0,
+                    sInitTimeoutMS));
+            sb.append("\n");
+            sb.append("  peak current limit (amps):");
+            sb.append(mTalon.configGetParameter(ParamEnum.ePeakCurrentLimitAmps, 0,
+                    sInitTimeoutMS));
+            sb.append("\n");
+            sb.append("  continuous current limit (amps):");
+            sb.append(mTalon.configGetParameter(ParamEnum.eContinuousCurrentLimitAmps, 0,
+                    sInitTimeoutMS));
+            sb.append("\n");
+            sb.append("  output voltage:");
+            sb.append(getOutputVoltage());
+            sb.append("  current:");
+            sb.append(getOutputCurrent());
+        }
+        return sb.toString();
+    }
+
+    public String dumpPIDState()
+    {
+        StringBuilder sb = new StringBuilder()
+                .append(" Motion Magic Cruise Velocity:")
+                .append(mTalon.configGetParameter(ParamEnum.eMotMag_VelCruise, 0,
+                        sInitTimeoutMS))
+                .append("\n")
+                .append("  Motion Magic Max Accel:")
+                .append(mTalon.configGetParameter(ParamEnum.eMotMag_Accel, 0, sInitTimeoutMS))
+                .append("\n")
+                .append("  slot0 P:")
+                .append(mTalon.configGetParameter(ParamEnum.eProfileParamSlot_P, 0,
+                        sInitTimeoutMS))
+                .append("\n")
+                .append("       I:")
+                .append(mTalon.configGetParameter(ParamEnum.eProfileParamSlot_I, 0,
+                        sInitTimeoutMS))
+                .append("\n")
+                .append("       D:")
+                .append(mTalon.configGetParameter(ParamEnum.eProfileParamSlot_D, 0,
+                        sInitTimeoutMS))
+                .append("\n")
+                .append("       F:")
+                .append(mTalon.configGetParameter(ParamEnum.eProfileParamSlot_F, 0,
+                        sInitTimeoutMS))
+                .append("\n")
+                .append("       allowable error:")
+                .append(mTalon.configGetParameter(ParamEnum.eProfileParamSlot_AllowableErr, 0,
+                        sInitTimeoutMS))
+                .append("\n")
+                .append("       izone:")
+                .append(mTalon.configGetParameter(ParamEnum.eProfileParamSlot_IZone, 0,
+                        sInitTimeoutMS))
+                .append("\n")
+                .append("       maxiaccum:")
+                .append(mTalon.configGetParameter(ParamEnum.eProfileParamSlot_MaxIAccum, 0,
+                        sInitTimeoutMS))
+                .append("\n")
+                .append("  slot1 P:")
+                .append(mTalon.configGetParameter(ParamEnum.eProfileParamSlot_P, 1,
+                        sInitTimeoutMS))
+                .append("\n")
+                .append("       I:")
+                .append(mTalon.configGetParameter(ParamEnum.eProfileParamSlot_I, 1,
+                        sInitTimeoutMS))
+                .append("\n")
+                .append("       D:")
+                .append(mTalon.configGetParameter(ParamEnum.eProfileParamSlot_D, 1,
+                        sInitTimeoutMS))
+                .append("\n")
+                .append("       F:")
+                .append(mTalon.configGetParameter(ParamEnum.eProfileParamSlot_F, 1,
+                        sInitTimeoutMS))
+                .append("\n")
+                .append("       allowable error:")
+                .append(mTalon.configGetParameter(ParamEnum.eProfileParamSlot_AllowableErr, 1,
+                        sInitTimeoutMS))
+                .append("\n")
+                .append("       izone:")
+                .append(mTalon.configGetParameter(ParamEnum.eProfileParamSlot_IZone, 1,
+                        sInitTimeoutMS))
+                .append("\n")
+                .append("       maxiaccum:")
+                .append(mTalon.configGetParameter(ParamEnum.eProfileParamSlot_MaxIAccum, 1,
+                        sInitTimeoutMS));
+        return sb.toString();
+
+    }
+
+    public String dumpFaults()
     {
         StringBuilder sb = new StringBuilder();
         if (getFaultHardwareFailure())
@@ -674,18 +683,18 @@ public class CANTalon4915 implements Sendable, MotorSafety
     {
         return mLastSetpoint;
     }
-    
+
     public double getSetpointRPM()
     {
-        if(mControlMode == ControlMode.Velocity)
+        if (mControlMode == ControlMode.Velocity)
             return nativeVelocityToRPM(mLastSetpoint);
         else
             return 0;
     }
-    
+
     public double getSetpointRotations()
     {
-        if(mControlMode == ControlMode.Position || mControlMode == ControlMode.MotionMagic)
+        if (mControlMode == ControlMode.Position || mControlMode == ControlMode.MotionMagic)
             return nativeToRotations(mLastSetpoint);
         else
             return 0;
