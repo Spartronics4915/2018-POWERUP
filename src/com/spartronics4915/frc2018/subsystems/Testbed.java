@@ -4,9 +4,8 @@ import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.spartronics4915.frc2018.Constants;
 import com.spartronics4915.frc2018.loops.Loop;
 import com.spartronics4915.frc2018.loops.Looper;
-import com.spartronics4915.lib.util.CANProbe;
-import com.spartronics4915.lib.util.drivers.CANTalon4915;
-import com.spartronics4915.lib.util.drivers.CANTalonFactory;
+import com.spartronics4915.lib.util.drivers.TalonSRX4915;
+import com.spartronics4915.lib.util.drivers.TalonSRX4915Factory;
 
 import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.DigitalInput;
@@ -52,8 +51,8 @@ public class Testbed extends Subsystem
     private WantedState mWantedState = WantedState.IDLE;
 
     // actuators and sensors
-    private CANTalon4915 mMotor1 = null;
-    private CANTalon4915 mMotor2 = null;
+    private TalonSRX4915 mMotor1 = null;
+    private TalonSRX4915 mMotor2 = null;
     private DigitalInput mLimitSwitch = null; // invoke .get() to read
     private AnalogInput mPotentiometer = null;
     private Relay mLightSwitch = null;
@@ -62,19 +61,18 @@ public class Testbed extends Subsystem
     private Testbed()
     {
         // Instantiate member variables (motors, etc...) here.
-        CANProbe canProbe = CANProbe.getInstance();
         boolean success = true;
-        mMotor1 = CANTalonFactory.createDefaultTalon(Constants.kTestbedMotor1Id);
-        mMotor1.changeControlMode(ControlMode.PercentOutput);
+        mMotor1 = TalonSRX4915Factory.createDefaultMotor(Constants.kTestbedMotor1Id);
+        mMotor1.setControlMode(ControlMode.PercentOutput);
         if(!mMotor1.isValid())
         {
             logWarning("can't find motor 1, id:" + Constants.kTestbedMotor1Id);
             success = false;
         }
 
-        mMotor2 = CANTalonFactory.createDefaultTalon(Constants.kTestbedMotor2Id);
-        mMotor2.changeControlMode(ControlMode.PercentOutput);
-        mMotor2.setInverted(true);;
+        mMotor2 = TalonSRX4915Factory.createDefaultMotor(Constants.kTestbedMotor2Id);
+        mMotor2.setControlMode(ControlMode.PercentOutput);
+        mMotor2.setInverted(true);
         if(!mMotor2.isValid())
         {
             logWarning("can't find motor 2, id:" + Constants.kTestbedMotor2Id);

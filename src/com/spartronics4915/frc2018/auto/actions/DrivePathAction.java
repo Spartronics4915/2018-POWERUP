@@ -27,6 +27,12 @@ public class DrivePathAction implements Action
     }
 
     @Override
+    public void start()
+    {
+        mDrive.setWantDrivePath(mPath, mPathContainer.isReversed());
+    }
+
+    @Override
     public boolean isFinished()
     {
         return mDrive.isDoneWithPath();
@@ -44,9 +50,4 @@ public class DrivePathAction implements Action
         mDrive.setVelocitySetpoint(0, 0);
     }
 
-    @Override
-    public void start()
-    {
-        mDrive.setWantDrivePath(mPath, mPathContainer.isReversed());
-    }
 }

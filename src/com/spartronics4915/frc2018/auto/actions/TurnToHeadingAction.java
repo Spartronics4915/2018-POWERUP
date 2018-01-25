@@ -2,6 +2,7 @@ package com.spartronics4915.frc2018.auto.actions;
 
 import com.spartronics4915.frc2018.subsystems.Drive;
 import com.spartronics4915.lib.util.math.Rotation2d;
+import com.spartronics4915.lib.util.Logger;
 
 /**
  * Turns the robot to a specified heading
@@ -20,6 +21,13 @@ public class TurnToHeadingAction implements Action
     }
 
     @Override
+    public void start()
+    {
+        Logger.notice("TurnToHeadingAction starting.");
+        mDrive.setWantTurnToHeading(mTargetHeading);
+    }
+
+    @Override
     public boolean isFinished()
     {
         return mDrive.isDoneWithTurn();
@@ -34,11 +42,7 @@ public class TurnToHeadingAction implements Action
     @Override
     public void done()
     {
+        Logger.notice("TurnToHeadingAction done.");
     }
 
-    @Override
-    public void start()
-    {
-        mDrive.setWantTurnToHeading(mTargetHeading);
-    }
 }

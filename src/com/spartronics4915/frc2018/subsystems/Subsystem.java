@@ -3,7 +3,7 @@ package com.spartronics4915.frc2018.subsystems;
 import com.spartronics4915.frc2018.loops.Looper;
 import com.spartronics4915.lib.util.Logger;
 
-import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
  * The Subsystem abstract class serves as a basic framework for all robot
@@ -63,6 +63,8 @@ public abstract class Subsystem
             this.logNotice("init SUCCEEDED");
         else
             this.logWarning("init FAILED");
+        
+        SmartDashboard.putString(mName+"_SubsystemStatus", mInitialized ? "OK" : "ERROR");
     }
 
     public void logError(String msg)

@@ -205,9 +205,7 @@ public class Robot extends IterativeRobot
 
             mAutoModeExecuter = null;
 
-            // Shift to high
-            mDrive.setHighGear(true);
-            mDrive.setBrakeMode(true);
+            mDrive.enableBraking(true);
 
             mEnabledLooper.start();
             mAutoModeExecuter = new AutoModeExecuter();
@@ -228,7 +226,7 @@ public class Robot extends IterativeRobot
     @Override
     public void autonomousPeriodic()
     {
-        allPeriodic();
+        allButTestPeriodic();
     }
 
     /**
@@ -244,9 +242,7 @@ public class Robot extends IterativeRobot
             // Start loopers
             mEnabledLooper.start();
             mDrive.setOpenLoop(DriveSignal.NEUTRAL);
-            mDrive.setBrakeMode(false);
-            // Shift to high
-            mDrive.setHighGear(true);
+            mDrive.enableBraking(false);
             zeroAllSensors();
         }
         catch (Throwable t)
@@ -278,7 +274,6 @@ public class Robot extends IterativeRobot
                     mCheesyDriveHelper.cheesyDrive(throttle, turn, mControlBoard.getQuickTurn(),
                             !mControlBoard.getLowGear()));
             boolean wantLowGear = mControlBoard.getLowGear();
-            mDrive.setHighGear(!wantLowGear);
 
             if (mControlBoard.getBlinkLEDButton())
             {
@@ -294,7 +289,7 @@ public class Robot extends IterativeRobot
                 mTestbed.setWantedState(WantedState.IDLE);
             }
 
-            allPeriodic();
+            allButTestPeriodic();
         }
         catch (Throwable t)
         {
@@ -345,8 +340,8 @@ public class Robot extends IterativeRobot
             mLED.setLEDOff();
         }
 
-        zeroAllSensors();
-        allPeriodic();
+        // don't zero sensors during disabledPeriodic... zeroAllSensors();
+        allButTestPeriodic();
     }
 
     @Override
@@ -354,7 +349,7 @@ public class Robot extends IterativeRobot
     {
         Timer.delay(0.5);
 
-        boolean results = Drive.getInstance().checkSystem();
+        boolean results = mDrive.checkSystem();
         // e.g. results &= Intake.getInstance().checkSystem();
 
         if (!results)
@@ -373,9 +368,9 @@ public class Robot extends IterativeRobot
     }
 
     /**
-     * Helper function that is called in all periodic functions
+     * Helper function that is shared between above periodic functions
      */
-    public void allPeriodic()
+    private void allButTestPeriodic()
     {
         mRobotState.outputToSmartDashboard();
         mSubsystemManager.outputToSmartDashboard();
@@ -385,7 +380,7 @@ public class Robot extends IterativeRobot
     }
 
     /**
-     * Unused but required periodic function.  Plays a similar role to our
+     * Unused but required function. Plays a similar role to our
      * allPeriodic method. Presumably the timing in IterativeRobotBase wasn't
      * to the liking of initial designers of this system. Perhaps because
      * we don't want it to run during testPeriodic.

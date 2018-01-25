@@ -26,18 +26,19 @@ public class Constants extends ConstantsBase
     //  -- Talon SRX Channels --------------
     //      (Note that if multiple talons are dedicated to a mechanism, any sensors
     //      are attached to the master)
-    public static final int kLeftDriveSlaveId = 1;
-    public static final int kRightDriveSlaveId = 2;
-    public static final int kLeftDriveMasterId = 3;
-    public static final int kRightDriveMasterId = 4;
-    public static final int kIMUTalonId = 6;
-    public static final int kNumTalons = 6;
+    public static final int kLeftDriveMasterId = 1;
+    public static final int kLeftDriveSlaveId = 2;
+    public static final int kRightDriveMasterId = 3;
+    public static final int kRightDriveSlaveId = 4;
+    public static final int kDriveIMUTalonId = kRightDriveSlaveId; // must be a slave
     
     public static final int kTestbedMotor1Id = 16;
     public static final int kTestbedMotor2Id = 18;
-   
-    public static final int kNumPDPs = 1;
-    public static final int kNumPCMs = 0; // XXX: change me if/when pneumatics are added
+ 
+    public static final int kNumTalons = 4; // total talon count on robot (not testbed)
+    
+    public static final int kNumPDPs = 0; // CANProbe doesn't probe for this device
+    public static final int kNumPCMs = 1; // Pressure control module (pneumatics)
     public static final int kNumCANDevices = kNumTalons + kNumPCMs + kNumPDPs;
     
     // -- Pressure Control Module (PCM) Channels ----
@@ -61,33 +62,27 @@ public class Constants extends ConstantsBase
     public static final int kTestbedPotentiometerId = 0;
     public static final int kLEDOnId = 2;
     
-    
     // Software configuration constants ----------------------------------------------------------
 
     public static final double kLooperDt = 0.005;
+    
+    // Vision
+    public static final int kAndroidAppTcpPort = 8254;
 
-    // Target parameters
-    // Source of current values: https://firstfrc.blob.core.windows.net/frc2017/Manual/2017FRCGameSeasonManual.pdf
-    // Section 3.13
-    // ...and https://firstfrc.blob.core.windows.net/frc2017/Drawings/2017FieldComponents.pdf
-    // Parts GE-17203-FLAT and GE-17371 (sheet 7)
-    public static final double kBoilerTargetTopHeight = 88.0;
-    public static final double kBoilerRadius = 8;
-
-    /* ROBOT PHYSICAL CONSTANTS */
+    /* ROBOT PHYSICAL CONSTANTS ---------------------------------------------------------  */
 
     // Wheels
     public static final double kDriveWheelDiameterInches = 6;
-    public static final double kTrackWidthInches = 27.75;
+    public static final double kTrackWidthInches = 23.75;
     public static final double kTrackScrubFactor = 0.624;
 
-    // Geometry
-    public static final double kCenterToFrontBumperDistance = 14.1875;
-    public static final double kCenterToIntakeDistance = 20.9675;
-    public static final double kCenterToRearBumperDistance = 14.1875;
-    public static final double kCenterToSideBumperDistance = 15.75;
+    // Chassis Geometry
+    public static final double kCenterToFrontBumperDistance = 16.14;
+    // public static final double kCenterToIntakeDistance = 20.9675;
+    public static final double kCenterToRearBumperDistance = 16.14;
+    public static final double kCenterToSideBumperDistance = 13.78;
 
-    /* CONTROL LOOP GAINS */
+    /* CONTROL LOOP GAINS ---------------------------------------------------------------- */
 
     // PID gains for drive velocity loop (HIGH GEAR)
     // Units: setpoint, error, and output are in inches per second.
@@ -96,7 +91,7 @@ public class Constants extends ConstantsBase
     public static final double kDriveHighGearVelocityKd = 6.0;
     public static final double kDriveHighGearVelocityKf = .15;
     public static final int kDriveHighGearVelocityIZone = 0;
-    public static final double kDriveHighGearVelocityRampRate = 240.0;
+    public static final double kDriveHighGearVelocityRampRate = .05; // 240V/s -> 12V in .05s
     public static final double kDriveHighGearNominalOutput = 0.5;
     public static final double kDriveHighGearMaxSetpoint = 17.0 * 12.0; // 17 fps
 
@@ -107,27 +102,27 @@ public class Constants extends ConstantsBase
     public static final double kDriveLowGearPositionKd = 100.0;
     public static final double kDriveLowGearPositionKf = .45;
     public static final int kDriveLowGearPositionIZone = 700;
-    public static final double kDriveLowGearPositionRampRate = 48.0; // V/s
-    public static final double kDriveLowGearNominalOutput = 0.5; // V
+    public static final double kDriveLowGearPositionRampRate = .25; // 48.0 V/s -> 12V in .25s
+    public static final double kDriveLowGearNominalOutput = 0.5; // pct
     public static final double kDriveLowGearMaxVelocity = 3.0 * 12.0 * 60.0 / (Math.PI * kDriveWheelDiameterInches); // 6 fps
                                                                                                                // in RPM
-    public static final double kDriveLowGearMaxAccel = 15.0 * 12.0 * 60.0 / (Math.PI * kDriveWheelDiameterInches); // 18 fps/s
+    public static final double kDriveLowGearMaxAccel = 15.0 * 12.0 * 60.0 / (Math.PI * kDriveWheelDiameterInches); // 15 fps/s
                                                                                                              // in RPM/s
-
     public static final double kDriveVoltageCompensationRampRate = 0.0;
     
     
-    // Drive
-    public static final int kEncoderCodesPerRev = 1000;
+    // Drive ------------------------------------------------------
+    // Encoder: https://cdn.usdigital.com/assets/datasheets/E4P_datasheet.pdf?k=636523267170919858
+    // modelr: E4P-360-250-N-S-D-D (western digital)
+    //              ^ EncoderCodesPerRev (later multiplied by 4 for quad)
+    //                  ^ .25" shaft mount 
+    //                     ^ "No Index"
+    //                        ^ "Single Output" (not Differential)
+    //                          ^ ^ Default cover, Default base
+    public static final int kEncoderCodesPerRev = 360;
 
-    // Intake
- 
 
-
-    // Phone
-    public static final int kAndroidAppTcpPort = 8254;
-
-    // Path following constants
+    // Path following constants -----------------------------------
     public static final double kMinLookAhead = 12.0; // inches
     public static final double kMinLookAheadSpeed = 9.0; // inches per second
     public static final double kMaxLookAhead = 24.0; // inches

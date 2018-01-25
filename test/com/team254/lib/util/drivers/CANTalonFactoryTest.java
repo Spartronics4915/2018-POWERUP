@@ -1,7 +1,7 @@
 package com.team254.lib.util.drivers;
 
-import com.spartronics4915.lib.util.drivers.CANTalonFactory;
-import com.spartronics4915.lib.util.drivers.CANTalon4915;
+import com.spartronics4915.lib.util.drivers.TalonSRX4915Factory;
+import com.spartronics4915.lib.util.drivers.TalonSRX4915;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -20,7 +20,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest(CANTalonFactory.class)
+@PrepareForTest(TalonSRX4915Factory.class)
 public class CANTalonFactoryTest {
 
     @Test
@@ -63,22 +63,22 @@ public class CANTalonFactoryTest {
                 "createTableListener");
 
         final Set<String> uncalledMethodNames = new HashSet<>(
-                Arrays.stream(CANTalon4915.class.getMethods())
+                Arrays.stream(TalonSRX4915.class.getMethods())
                         .map(m -> m.getName())
                         .filter(name -> !acceptableUncalledMethodNames.contains(name))
                         .collect(Collectors.toSet()));
 
-        CANTalon4915 talon = Mockito.mock(CANTalon4915.class, new Answer() {
+        TalonSRX4915 talon = Mockito.mock(TalonSRX4915.class, new Answer() {
             @Override
             public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
                 uncalledMethodNames.remove(invocationOnMock.getMethod().getName());
                 return null;
             }
         });
-        PowerMockito.whenNew(CANTalon4915.class).withAnyArguments().thenReturn(talon);
+        PowerMockito.whenNew(TalonSRX4915.class).withAnyArguments().thenReturn(talon);
 
-        CANTalon4915 returnedTalon = CANTalonFactory.createDefaultTalon(1);
-        String talonInfo = CANTalonFactory.getFullTalonInfo(returnedTalon);
+        TalonSRX4915 returnedTalon = TalonSRX4915Factory.createDefaultMotor(1);
+        String talonInfo = TalonSRX4915Factory.getFullTalonInfo(returnedTalon);
 
         Assert.assertEquals(
                 new HashSet<>(),
@@ -87,6 +87,6 @@ public class CANTalonFactoryTest {
 
     @Test
     public void testCanPrintInfo() {
-        System.out.println(CANTalonFactory.getFullTalonInfo(Mockito.mock(CANTalon4915.class)));
+        System.out.println(TalonSRX4915Factory.getFullTalonInfo(Mockito.mock(TalonSRX4915.class)));
     }
 }
