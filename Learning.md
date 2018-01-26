@@ -360,7 +360,7 @@ best place to start if you're trying to understand Subsystem design.
 * What is the processing required to act upon vision target acquisition?
 > Remember that the goal is captured in the coordinate frame of the camera
 > and must be converted through the coordinate frame of the robot
-> _at the time of capture_ (ie in the past) > to the field coordinate frame,
+> _at the time of capture_ (ie in the past) to the field coordinate frame,
 > then back to the _current_ robot coordinate frame in order to inform robot
 > motion planning.
 
@@ -441,7 +441,7 @@ mRobotState_.addObservations(timestamp, odometryV, predictedV);
 
 * How is it we can look up the position of the robot at any point in the past?
 > `RobotState` maintains a sorted list of robot positions:
-````
+```
 private InterpolatingTreeMap<InterpolatingDouble, RigidTransform2d> mFieldToVehicle;
 ```
 > where the key to this map is the timestamp associated with the robot's
