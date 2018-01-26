@@ -349,6 +349,29 @@ vision app and communicating state via a internet-over-usb connection hosted
 on the robot side by a port of adb (android debugger). They had a separate
 thread that launched and kept the adb connection alive.  They also had a separate
 vision control thread to receive data from adb and update robot target state.
+We have the option of simplying invoking the networktable getValue in the
+drivetrain control-loop, or following their separate-thread approach.
+
+* What threads are involved in delivering vision targets?
+> `VisionProcessor` implements Loop and VisionUpdateReceiver.  Its job is to
+> to deliver VisionUpdates (received via synchronized gotUpdate())
+> to RobotState.  `RobotStateEstimator` is also running in a separate thread
+> and computes/delivers updates to the RobotState based on the `Drive` sensors.
+> Note that VisionProcess sends data directly to RobotState in a manner
+> analogous to the RobotStateEstimator.  In that sense, the VisionProcessor
+> can be thought of as a `GoalStateEstimator`.
+
+* Why is `TargetInfo`'s X coordinate always zero?
+> Not clear why this is so.  Here's their comment justifying the reassigment
+> of the camera's x to the target Y and the camera's Y to target Z.
+> Also of note is the sign conversion.
+```
+ // Convert to a homogeneous 3d vector with x = 1
+ double y = -(target.centroidX - kCenterCol) / getFocalLengthPixels();
+ double z = (target.centroidY - kCenterRow) / getFocalLengthPixels();
+```
+* H
+
 
 ### References
 
