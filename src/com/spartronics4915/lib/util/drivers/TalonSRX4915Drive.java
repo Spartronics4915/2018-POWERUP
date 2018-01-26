@@ -199,29 +199,21 @@ public class TalonSRX4915Drive
     /* distance and speed conversions ----------------------------------- */
     public double getLeftDistanceInches()
     {
-        if (!isInitialized())
-            return 0.0;
         return rotationsToInches(mLeftMaster.getSensorPositionRotations());
     }
 
     public double getRightDistanceInches()
     {
-        if (!isInitialized())
-            return 0.0;
         return rotationsToInches(mRightMaster.getSensorPositionRotations());
     }
 
     public double getLeftVelocityInchesPerSec()
     {
-        if (!isInitialized())
-            return 0.0;
         return rpmToInchesPerSecond(mLeftMaster.getSensorVelocityRPM());
     }
 
     public double getRightVelocityInchesPerSec()
     {
-        if (!isInitialized())
-            return 0.0;
         return rpmToInchesPerSecond(mRightMaster.getSensorVelocityRPM());
     }
 
@@ -494,7 +486,7 @@ public class TalonSRX4915Drive
 
     private void logNotice(String msg)
     {
-        Logger.warning("CANTalonDrive " + msg);
+        Logger.notice("CANTalonDrive " + msg);
     }
 
     private void logWarning(String msg)

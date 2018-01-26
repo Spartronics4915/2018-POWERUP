@@ -161,7 +161,6 @@ public class Drive extends Subsystem
             reloadGains();
             mMotorGroup.beginOpenLoop(kOpenLoopRampRate,
                     kOpenLoopNominalOutput, kOpenLoopPeakOutput);
-            // Path Following stuff
             if (!mMotorGroup.hasIMU())
                 logError("Could not detect the IMU. Is it plugged in?");
             mMotorGroup.enableBraking(true);
