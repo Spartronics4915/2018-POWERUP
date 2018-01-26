@@ -285,14 +285,6 @@ best place to start if you're trying to understand Subsystem design.
 > it's too far away. driveTowardsGoal actually just drives forwards
 > until it gets within kShooterOptimalRange.
 
-### Paths
-* what is the output format of the cheesypath webapp?  	
-> The cheesypath webapp outputs a class that implements PathContainer, and
-> has an ArrayList of waypoints which it builds a bath from.
-
-* How are these paths brought into the robot code?
-> TBD
-
 ### OI
 * How do UI events trigger robot actions… are network tables involved?
 > Dashboard UI events trigger robot behavior using NetworkTables. Currently,
@@ -342,13 +334,141 @@ best place to start if you're trying to understand Subsystem design.
 > so it's natural for all the choices to be localized to the code that
 > implements the entire interface.
 
-
 ### Vision
-254's implementation depended upon an on-board android phone running a custom
-vision app and communicating state via a internet-over-usb connection hosted
-on the robot side by a port of adb (android debugger). They had a separate
-thread that launched and kept the adb connection alive.  They also had a separate
-vision control thread to receive data from adb and update robot target state.
+
+* What camera did 254 use? How were vision targets delivered to the robot
+  process?
+> 254's implementation depended upon an on-board android phone running a custom
+> vision app and communicating state via a internet-over-usb connection hosted
+> on the robot side by a port of adb (android debugger). They had a separate
+> thread that launched and kept the adb connection alive.  They also had a separate
+> vision control thread to receive data from adb and update robot target state.
+> We have the option of replacing the adb communication path with networktables.
+> Now, we can either employ their VisionProcessor thread to sample the
+> networktable values, or we can register a notification callback in the main
+> thread.
+
+* What threads are involved in delivering vision targets?
+> `VisionProcessor` implements Loop and VisionUpdateReceiver.  Its job is to
+> to deliver VisionUpdates (received via synchronized gotUpdate())
+> to RobotState.  `RobotStateEstimator` is also running in a separate thread
+> and computes/delivers updates to the RobotState based on the `Drive` sensors.
+> Note that VisionProcessor sends data directly to RobotState in a manner
+> analogous to the RobotStateEstimator.  In that sense, the VisionProcessor
+> can be thought of as a `GoalStateEstimator`.
+
+* What is the processing required to act upon vision target acquisition?
+> Remember that the goal is captured in the coordinate frame of the camera
+> and must be converted through the coordinate frame of the robot
+> _at the time of capture_ (ie in the past) to the field coordinate frame,
+> then back to the _current_ robot coordinate frame in order to inform robot
+> motion planning.
+
+* Why is `TargetInfo`'s X coordinate always zero?
+> Here's their comment justifying the reassigment of the camera's x to the
+> target Y and the camera's Y to target Z.
+> Also of note is the sign conversion.
+```
+// Convert to a homogeneous 3d vector with x = 1
+double y = -(target.centroidX - kCenterCol) / getFocalLengthPixels();
+double z = (target.centroidY - kCenterRow) / getFocalLengthPixels();
+```
+> Presumably, this is done in order to convert to a robot coordinate
+> system?  As for focal length, it can be optained as follows:
+```
+double focal_length_pix = (size.width * 0.5) / tan(horizontalAngleView * 0.5 * PI/180);
+```
+
+### RobotStateEstimator
+
+* What is the job of `RobotStateEstimator`?
+> The job of RobotStateEstimator is to update the RobotState with a computation
+> of distance traveled by each side of the robot.
+```
+final Twist2d odometryV = mRobotState_.generateOdometryFromSensors()
+        sensorLeft - lastSensorLeft, sensorRight - lastSensorRight, gyroAngle);
+final Twist2d predictedV = Kinematics.forwardKinematics(mDrive.getLeftVelocityInchesPerSec(),
+                                        mDrive.getRightVelocityInchesPerSec());
+mRobotState_.addObservations(timestamp, odometryV, predictedV);
+```
+> Note that `mRobotState.generateOdometryFromSensors()` converts deltaLeft,
+> deltaRight and gyroAngle, into a `Twist2d` representing the current velocity
+> vector.
+
+### RobotState
+
+* What is the purpose of `RobotState`?
+> RobotState keeps track of the poses of various coordinate frames throughout
+> the match. A coordinate frame is simply a point and direction in space that
+> defines an (x,y) coordinate system. Transforms (or poses) keep track of the
+> spatial relationship between different frames.
+
+* What are its frames of interest?
+> * `Field frame`: origin is where the robot is turned on
+> * `Vehicle frame`: origin is the center of the robot wheelbase, facing
+>    forwards. This frame is relative to the field frame.
+> * `Camera frame`: origin is the center of the camera imager relative
+>  to the robot frame.
+> * `Goal frame`: origin is the center of the target (note that orientation in
+> this frame is arbitrary). Also note that there can be multiple target frames.
+
+* What is a `kinematic chain`?
+> A linked series of transformations from one frame to another is known as
+> a kinematic chain. In the "forward" direction we can start with a position
+> on the field to compute, for example, the position of a goal.  If we're
+> given a position in the field frame, we can compute, for example, its coordinates
+> in the camera frame by performing coordinate conversion in the _forward_
+> direction.  If we're given a position in the camera frame, we convert that
+> to the goal frame by performing coordinate conversion in the _inverse_
+> direction. Ours is a kinematic chain with 4 frames, and so there are 3
+> transforms of interest:
+> 1. Field-to-vehicle: This is tracked over time by integrating encoder and
+> gyro measurements. It will inevitably drift, but is usually accurate over
+> short time periods.
+> 2. Vehicle-to-camera: This is a constant.
+> 3. Camera-to-goal: This is a pure translation, and is measured by the vision
+>   system.
+
+* How do we convert coordinates between frames of interest?
+> `RigidTransform2d` is the class responsible for transforming points
+> from one coordinate frame to another. It is composed of a Translation2d
+> and a Rotation2d.  Rotation2d is represented as an angle (which is decomposed
+> into cos_theta and sin_theta, presumably for performance).  Another geometric
+> type is Twist2d which is used to represent movement along an arc of constant
+> curvature at a constant velocity. We can apply a Twist2d to a RigidTransform2d
+> to produce a new RigidTransform2d and this represents a form of incremental
+> (turning) motion.
+
+* How is it we can look up the position of the robot at any point in the past?
+> `RobotState` maintains a sorted list of robot positions:
+```
+private InterpolatingTreeMap<InterpolatingDouble, RigidTransform2d> mFieldToVehicle;
+```
+> where the key to this map is the timestamp associated with the robot's
+> position on the field (again, relative to its starting location and
+> orientation). Each timeslice, RobotStateEstimator issues a call to
+> `addObservation` to append a new sample to this map.
+
+* Why do we care about past robot position and orientation?
+> Because of fundamental latencies in our vision sampling and processing
+> targets are actually found relative to a past position.  In order to
+> understand the target location in terms of current robot position,
+> we must compute the target position in field coordinates, then convert
+> them to the _current_ robot frame.
+
+### Paths
+* what is the output format of the cheesypath webapp?  	
+> The cheesypath webapp outputs a class that implements PathContainer, and
+> has an ArrayList of waypoints which it builds a bath from.
+
+* How are these paths brought into the robot code?
+> Paths are represented by `PathContainer` objects which merely collects
+> a `Path` object with an initial field position. `TestPath` is an implementation
+> of `PathContainer` that builds a Path from an array of `WayPoint`s. This
+> chunk of java construction code can be obtained from the cheesypath webapp.
+> Alternately a more generic file-reader could be developed to construct a
+> Path from an external json, csv (or like) file.
+
 
 ### References
 
