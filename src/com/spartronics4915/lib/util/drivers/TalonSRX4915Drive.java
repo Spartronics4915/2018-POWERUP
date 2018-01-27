@@ -288,7 +288,7 @@ public class TalonSRX4915Drive
     {
         String result;
         result = "LeftPID " + slotIdx + "\n" + mLeftMaster.dumpPIDState(slotIdx) +
-                 "\nRightPID" + slotIdx + "\n" + mRightMaster.dumpPIDState(slotIdx);
+                "\nRightPID" + slotIdx + "\n" + mRightMaster.dumpPIDState(slotIdx);
         return result;
     }
 
@@ -401,20 +401,20 @@ public class TalonSRX4915Drive
         mLeftSlave.setControlMode(ControlMode.Follower);
         mLeftSlave.set(mLeftMaster.getId());
 
-        logNotice("RPM FWD L/R: " + rpmFwdL + "/" + rpmFwdR);
-        logNotice("IPS FWD L/R: " + rpmToInchesPerSecond(rpmFwdL) + "/" +
-                rpmToInchesPerSecond(rpmFwdR));
+        logNotice("All Motor Results (fwd RPMs should be positive) ===========");
+        logNotice("RPM FWD Left:" + rpmFwdL + " Right:" + rpmFwdR + 
+                    " with: " + rpmFwdL + " rpm == " + rpmToInchesPerSecond(rpmFwdL) + " in/sec");
+        logNotice("RPM REV Left: " + rpmRevL + " Right" + rpmRevR);
 
-        logNotice("RPM REV L/R: " + rpmRevL + "/" + rpmRevR);
-        logNotice("IPS REV L/R: " + rpmToInchesPerSecond(rpmRevL) + "/" +
-                rpmToInchesPerSecond(rpmRevR));
-
-        logNotice("Right Master Current: " + currentRightMaster + " Drive Right Slave Current: "
-                + currentRightSlave);
-        logNotice("Left Master Current: " + currentLeftMaster + " Drive Left Slave Current: "
-                + currentLeftSlave);
-        logNotice("RPM RMaster: " + rpmRightMaster + " RSlave: " + rpmRightSlave + " LMaster: "
-                + rpmLeftMaster + " LSlave: " + rpmLeftSlave);
+        logNotice("Single Motor Results (all RPMs and currents should be similar) ===========");
+        logNotice("RPM RightMaster: " + rpmRightMaster +
+                " RightSlave: " + rpmRightSlave);
+        logNotice("RPM LeftMaster: " + rpmLeftMaster +
+                " LeftSlave: " + rpmLeftSlave);
+        logNotice("Amps RightMaster: " + currentRightMaster +
+                " RightSlave: " + currentRightSlave);
+        logNotice("Amps LeftMaster: " + currentLeftMaster +
+                " LeftSlave: " + currentLeftSlave);
 
         boolean failure = false;
 

@@ -712,25 +712,24 @@ public class Drive extends Subsystem
     // fill our two slots with gains...
     public synchronized void reloadGains()
     {
-        if (!isInitialized())
-            return;
-
-        mMotorGroup.reloadGains(kPositionControlSlot,
-                Constants.kDrivePositionKp, Constants.kDrivePositionKi,
-                Constants.kDrivePositionKd, Constants.kDrivePositionKf,
-                Constants.kDrivePositionIZone, Constants.kDrivePositionRampRate);
-
-        mMotorGroup.reloadGains(kVelocityControlSlot,
-                Constants.kDriveVelocityKp, Constants.kDriveVelocityKi,
-                Constants.kDriveVelocityKd, Constants.kDriveVelocityKf,
-                Constants.kDriveVelocityIZone, Constants.kDriveVelocityRampRate);
-
-
-        logNotice("reloaded position gains:" + mMotorGroup.dumpPIDState(kLowGearPositionControlSlot));
-        logNotice("reloaded velocity gains:" + mMotorGroup.dumpPIDState(kHighGearVelocityControlSlot));
-        // nb: motionMagic velocity and accel aren't slot-based, so should be established
-        //   when we enter the control mode.
-
+        if (mMotorGroup.isInitialized())
+        {
+            mMotorGroup.reloadGains(kPositionControlSlot,
+                    Constants.kDrivePositionKp, Constants.kDrivePositionKi,
+                    Constants.kDrivePositionKd, Constants.kDrivePositionKf,
+                    Constants.kDrivePositionIZone, Constants.kDrivePositionRampRate);
+    
+            mMotorGroup.reloadGains(kVelocityControlSlot,
+                    Constants.kDriveVelocityKp, Constants.kDriveVelocityKi,
+                    Constants.kDriveVelocityKd, Constants.kDriveVelocityKf,
+                    Constants.kDriveVelocityIZone, Constants.kDriveVelocityRampRate);
+    
+            logNotice("reloaded PID gains");
+            logDebug("reloaded position gains:" + mMotorGroup.dumpPIDState(kPositionControlSlot));
+            logDebug("reloaded velocity gains:" + mMotorGroup.dumpPIDState(kVelocityControlSlot));
+            // nb: motionMagic velocity and accel aren't slot-based, so should be established
+            //   when we enter the control mode.
+        }
     }
 
     @Override
