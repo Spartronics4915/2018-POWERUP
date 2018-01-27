@@ -2,6 +2,7 @@ package com.spartronics4915.lib.util.drivers;
 
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.spartronics4915.lib.util.CANProbe;
+import com.spartronics4915.lib.util.Logger;
 import com.ctre.phoenix.ParamEnum;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.Faults;

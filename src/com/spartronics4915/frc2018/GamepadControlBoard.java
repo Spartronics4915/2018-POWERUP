@@ -1,6 +1,7 @@
 package com.spartronics4915.frc2018;
 
-import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.GenericHID;
+import edu.wpi.first.wpilibj.XboxController;
 
 /**
  * Contains the button mappings for the Gamepad control board. Like the drive
@@ -14,50 +15,46 @@ import edu.wpi.first.wpilibj.Joystick;
 public class GamepadControlBoard implements ControlBoardInterface
 {
 
-    private final Joystick mGamepad;
+    private final XboxController mController;
 
     protected GamepadControlBoard()
     {
-        mGamepad = new Joystick(0);
+        mController = new XboxController(0);
     }
 
     @Override
     public double getThrottle()
     {
-        return mGamepad.getRawAxis(1);
+        return mController.getY(GenericHID.Hand.kLeft);
     }
 
     @Override
     public double getTurn()
     {
-        return mGamepad.getRawAxis(4);
+        return mController.getX(GenericHID.Hand.kRight);
     }
 
     @Override
     public boolean getQuickTurn()
     {
-        // R1
-        return mGamepad.getRawButton(6);
+        return mController.getAButton();
     }
 
     @Override
     public boolean getLowGear()
     {
-        // L1
-        return mGamepad.getRawButton(5);
-
+        return mController.getBButton();
     }
 
     @Override
     public boolean getBlinkLEDButton()
     {
-        return false;
+        return mController.getXButton();
     }
 
     @Override
     public boolean getIntakeButton()
     {
-        // See XboxControlBoard
-        return false;
+        return mController.getYButton();
     }
 }
