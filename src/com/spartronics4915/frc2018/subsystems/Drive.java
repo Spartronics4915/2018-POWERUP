@@ -28,7 +28,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  * velocity control, and position control. The Drive subsystem also has
  * several methods that handle automatic aiming, autonomous path driving, and
  * manual control.
- * 
+ *
  * @see Subsystem.java
  */
 public class Drive extends Subsystem
@@ -199,7 +199,7 @@ public class Drive extends Subsystem
         }
         mMotorGroup.driveOpenLoop(signal.getLeft(), signal.getRight());
     }
-    
+
     public void enableBraking(boolean s)
     {
         mMotorGroup.enableBraking(s);
@@ -248,14 +248,14 @@ public class Drive extends Subsystem
             return;
         mMotorGroup.resetEncoders(true/*resetYaw*/);
     }
-    
+
     public synchronized Rotation2d getGyroAngle()
     {
         if(!this.isInitialized()) return new Rotation2d();
-        return Rotation2d.fromDegrees(mMotorGroup.getGyroAngle()); 
+        return Rotation2d.fromDegrees(mMotorGroup.getGyroAngle());
         // Rotation2d normalizes between -180 and 180 automatically
     }
-    
+
     public synchronized void setGyroAngle(Rotation2d rot)
     {
         if(!this.isInitialized())
@@ -265,7 +265,7 @@ public class Drive extends Subsystem
 
     /**
      * Start up velocity mode. This sets the drive train in high gear as well.
-     * 
+     *
      * @param leftInchesPerSec
      * @param rightInchesPerSec
      */
@@ -278,22 +278,22 @@ public class Drive extends Subsystem
         mDriveControlState = DriveControlState.VELOCITY_SETPOINT;
         updateVelocitySetpoint(leftInchesPerSec, rightInchesPerSec);
     }
-    
+
     public double getLeftDistanceInches()
     {
         return mMotorGroup.getLeftDistanceInches();
     }
-    
+
     public double getRightDistanceInches()
     {
         return mMotorGroup.getRightDistanceInches();
     }
-    
+
     public double getLeftVelocityInchesPerSec()
     {
         return mMotorGroup.getLeftVelocityInchesPerSec();
     }
-    
+
     public double getRightVelocityInchesPerSec()
     {
         return mMotorGroup.getRightVelocityInchesPerSec();
@@ -352,7 +352,7 @@ public class Drive extends Subsystem
 
     /**
      * Adjust Velocity setpoint (if already in velocity mode)
-     * 
+     *
      * @param left_inches_per_sec
      * @param right_inches_per_sec
      */
@@ -379,7 +379,7 @@ public class Drive extends Subsystem
 
     /**
      * Adjust position setpoint (if already in position mode)
-     * 
+     *
      * @param left_inches_per_sec
      * @param right_inches_per_sec
      */
@@ -401,7 +401,7 @@ public class Drive extends Subsystem
 
     /**
      * Update the heading at which the robot thinks the boiler is.
-     * 
+     *
      * Is called periodically when the robot is auto-aiming towards the boiler.
      */
     private void updateGoalHeading(double timestamp)
@@ -415,9 +415,9 @@ public class Drive extends Subsystem
 
     /**
      * Turn the robot to a target heading.
-     * 
+     *
      * Is called periodically when the robot is auto-aiming towards the boiler.
-     * 
+     *
      * This actually doesn't use the IMU... Only the wheel encoders and
      * kinematics.
      */
@@ -624,7 +624,7 @@ public class Drive extends Subsystem
 
     /**
      * Configures the drivebase to drive a path. Used for autonomous driving
-     * 
+     *
      * @see Path
      */
     public synchronized void setWantDrivePath(Path path, boolean reversed)
@@ -726,6 +726,9 @@ public class Drive extends Subsystem
                 Constants.kDriveHighGearVelocityKd, Constants.kDriveHighGearVelocityKf,
                 Constants.kDriveHighGearVelocityIZone, Constants.kDriveHighGearVelocityRampRate);
 
+
+        logNotice("reloaded position gains:" + mMotorGroup.dumpPIDState(kLowGearPositionControlSlot));
+        logNotice("reloaded velocity gains:" + mMotorGroup.dumpPIDState(kHighGearVelocityControlSlot));
         // nb: motionMagic velocity and accel aren't slot-based, so should be established
         //   when we enter the control mode.
 
