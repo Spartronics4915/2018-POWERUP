@@ -284,11 +284,19 @@ public class TalonSRX4915Drive
         mRightMaster.configPID(slotIdx, kp, ki, kd, kf, izone, rampRate);
     }
 
+    public String dumpPIDState(int slotIdx)
+    {
+        String result;
+        result = "LeftPID " + slotIdx + "\n" + mLeftMaster.dumpPIDState(slotIdx) +
+                "\nRightPID" + slotIdx + "\n" + mRightMaster.dumpPIDState(slotIdx);
+        return result;
+    }
+
     public void outputToSmartDashboard(boolean usesVelocityControl)
     {
         final double left_speed = getLeftVelocityInchesPerSec();
         final double right_speed = getRightVelocityInchesPerSec();
-        
+
         SmartDashboard.putNumber("Drive/left voltage (V)", mLeftMaster.getOutputVoltage());
         SmartDashboard.putNumber("Drive/right voltage (V)", mRightMaster.getOutputVoltage());
         SmartDashboard.putNumber("Drive/left speed (ips)", left_speed);
@@ -318,16 +326,16 @@ public class TalonSRX4915Drive
         logNotice("checkSystem() ---------------------------------");
         final double kCurrentThres = 9;
         final double kRpmThres = 85;
-        
+
         // first validate open-loop driving of all motors...
         this.beginOpenLoop(.5, 0.0, 1.0); // ramp, nominal, peak
         this.enableBraking(true);
-        
+
         logNotice("rightMaster:\n" + mRightMaster.dumpState());
         logNotice("leftMaster:\n" + mLeftMaster.dumpState());
         logNotice("rightSlave:\n" + mRightSlave.dumpState());
         logNotice("leftSlave:\n" + mLeftSlave.dumpState());
-        
+
         logNotice("Forward half power, 3 sec");
         this.driveOpenLoop(.5, .5); // <---------------
         Timer.delay(3.0);
@@ -336,7 +344,7 @@ public class TalonSRX4915Drive
         this.driveOpenLoop(0, 0);
         this.resetEncoders(false);
         Timer.delay(2.0);
-        
+
         logNotice("Reverse half power, 3 sec");
         this.driveOpenLoop(-.5, -.5); // <--------------
         Timer.delay(3.0);
@@ -392,21 +400,21 @@ public class TalonSRX4915Drive
         mRightSlave.set(mRightMaster.getId());
         mLeftSlave.setControlMode(ControlMode.Follower);
         mLeftSlave.set(mLeftMaster.getId());
-        
-        logNotice("RPM FWD L/R: " + rpmFwdL + "/" + rpmFwdR);
-        logNotice("IPS FWD L/R: " + rpmToInchesPerSecond(rpmFwdL) + "/" +
-                rpmToInchesPerSecond(rpmFwdR));
-        
-        logNotice("RPM REV L/R: " + rpmRevL + "/" + rpmRevR);
-        logNotice("IPS REV L/R: " + rpmToInchesPerSecond(rpmRevL) + "/" +
-                rpmToInchesPerSecond(rpmRevR));
 
-        logNotice("Right Master Current: " + currentRightMaster + " Drive Right Slave Current: "
-                + currentRightSlave);
-        logNotice("Left Master Current: " + currentLeftMaster + " Drive Left Slave Current: "
-                + currentLeftSlave);
-        logNotice("RPM RMaster: " + rpmRightMaster + " RSlave: " + rpmRightSlave + " LMaster: "
-                + rpmLeftMaster + " LSlave: " + rpmLeftSlave);
+        logNotice("All Motor Results (fwd RPMs should be positive) ===========");
+        logNotice("RPM FWD Left:" + rpmFwdL + " Right:" + rpmFwdR + 
+                    " with: " + rpmFwdL + " rpm == " + rpmToInchesPerSecond(rpmFwdL) + " in/sec");
+        logNotice("RPM REV Left: " + rpmRevL + " Right" + rpmRevR);
+
+        logNotice("Single Motor Results (all RPMs and currents should be similar) ===========");
+        logNotice("RPM RightMaster: " + rpmRightMaster +
+                " RightSlave: " + rpmRightSlave);
+        logNotice("RPM LeftMaster: " + rpmLeftMaster +
+                " LeftSlave: " + rpmLeftSlave);
+        logNotice("Amps RightMaster: " + currentRightMaster +
+                " RightSlave: " + currentRightSlave);
+        logNotice("Amps LeftMaster: " + currentLeftMaster +
+                " LeftSlave: " + currentLeftSlave);
 
         boolean failure = false;
 
