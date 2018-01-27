@@ -199,29 +199,21 @@ public class TalonSRX4915Drive
     /* distance and speed conversions ----------------------------------- */
     public double getLeftDistanceInches()
     {
-        if (!isInitialized())
-            return 0.0;
         return rotationsToInches(mLeftMaster.getSensorPositionRotations());
     }
 
     public double getRightDistanceInches()
     {
-        if (!isInitialized())
-            return 0.0;
         return rotationsToInches(mRightMaster.getSensorPositionRotations());
     }
 
     public double getLeftVelocityInchesPerSec()
     {
-        if (!isInitialized())
-            return 0.0;
         return rpmToInchesPerSecond(mLeftMaster.getSensorVelocityRPM());
     }
 
     public double getRightVelocityInchesPerSec()
     {
-        if (!isInitialized())
-            return 0.0;
         return rpmToInchesPerSecond(mRightMaster.getSensorVelocityRPM());
     }
 
@@ -321,9 +313,9 @@ public class TalonSRX4915Drive
             SmartDashboard.putNumber("Drive/left speed error (ips)", 0.0);
             SmartDashboard.putNumber("Drive/right speed error (ips)", 0.0);
         }
-        SmartDashboard.putNumber("Drive/left position (rotations)",
+        SmartDashboard.putNumber("Drive/left position setpoint (rotations)",
                 mLeftMaster.getSetpointRotations());
-        SmartDashboard.putNumber("Drive/right position (rotations)",
+        SmartDashboard.putNumber("Drive/right position setpoint (rotations)",
                 mRightMaster.getSetpointRotations());
         // following names relied upon by dashboard.
         SmartDashboard.putNumber("Drivetrain_IMU_Heading", getGyroAngle());
@@ -502,7 +494,7 @@ public class TalonSRX4915Drive
 
     private void logNotice(String msg)
     {
-        Logger.warning("CANTalonDrive " + msg);
+        Logger.notice("CANTalonDrive " + msg);
     }
 
     private void logWarning(String msg)

@@ -15,22 +15,22 @@ import com.spartronics4915.lib.util.math.Twist2d;
 public class RobotStateEstimator implements Loop
 {
 
-    static RobotStateEstimator instance_ = null;
+    static RobotStateEstimator mInstance = null;
 
     public static RobotStateEstimator getInstance()
     {
-        if(instance_ == null)
+        if(mInstance == null)
         {
-            instance_ = new RobotStateEstimator();
+            mInstance = new RobotStateEstimator();
         }
-        return instance_;
+        return mInstance;
     }
 
     RobotStateEstimator()
     {
     }
 
-    RobotState mRobotState_ = RobotState.getInstance();
+    RobotState mRobotState = RobotState.getInstance();
     Drive mDrive = Drive.getInstance();
     double mLeftEncoderPrevDist = 0;
     double mRightEncoderPrevDist = 0;
@@ -48,11 +48,11 @@ public class RobotStateEstimator implements Loop
         final double left_distance = mDrive.getLeftDistanceInches();
         final double right_distance = mDrive.getRightDistanceInches();
         final Rotation2d gyro_angle = mDrive.getGyroAngle();
-        final Twist2d odometry_velocity = mRobotState_.generateOdometryFromSensors(
+        final Twist2d odometry_velocity = mRobotState.generateOdometryFromSensors(
                 left_distance - mLeftEncoderPrevDist, right_distance - mRightEncoderPrevDist, gyro_angle);
         final Twist2d predicted_velocity = Kinematics.forwardKinematics(mDrive.getLeftVelocityInchesPerSec(),
-                mDrive.getRightVelocityInchesPerSec()); // DEBUG: Try using the overloaded function that takes gyro delta v
-        mRobotState_.addObservations(timestamp, odometry_velocity, predicted_velocity);
+                mDrive.getRightVelocityInchesPerSec());
+        mRobotState.addObservations(timestamp, odometry_velocity, predicted_velocity);
         mLeftEncoderPrevDist = left_distance;
         mRightEncoderPrevDist = right_distance;
     }

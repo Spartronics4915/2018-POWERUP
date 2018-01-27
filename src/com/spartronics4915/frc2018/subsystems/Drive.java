@@ -36,11 +36,11 @@ public class Drive extends Subsystem
 
     private static Drive mInstance = null;
 
-    private static final int kLowGearPositionControlSlot = 0;
-    private static final int kHighGearVelocityControlSlot = 1;
+    private static final int kPositionControlSlot = 0;
+    private static final int kVelocityControlSlot = 1;
     private static final double kOpenLoopRampRate = .5;
     private static final double kOpenLoopNominalOutput = 0.0; // fwd & rev
-    private static final double kOpenLoopPeakOutput = .5; // fwd: .5, rev: -.5
+    private static final double kOpenLoopPeakOutput = 1; // fwd: 1, rev: -1
 
     public static Drive getInstance()
     {
@@ -158,14 +158,13 @@ public class Drive extends Subsystem
 
         if (mMotorGroup.isInitialized())
         {
-            reloadGains();
             mMotorGroup.beginOpenLoop(kOpenLoopRampRate,
                     kOpenLoopNominalOutput, kOpenLoopPeakOutput);
-            // Path Following stuff
             if (!mMotorGroup.hasIMU())
                 logError("Could not detect the IMU. Is it plugged in?");
             mMotorGroup.enableBraking(true);
             logInitialized(true);
+            reloadGains();
         }
         else
         {
@@ -320,7 +319,7 @@ public class Drive extends Subsystem
         {
             // We entered a velocity control state.
             logNotice("beginSpeedControl");
-            mMotorGroup.beginClosedLoopVelocity(kHighGearVelocityControlSlot,
+            mMotorGroup.beginClosedLoopVelocity(kVelocityControlSlot,
                     Constants.kDriveHighGearNominalOutput);
             mMotorGroup.enableBraking(true);
         }
@@ -337,7 +336,7 @@ public class Drive extends Subsystem
         {
             // We entered a position control state.
             logNotice("beginPositionControl");
-            mMotorGroup.beginClosedLoopPosition(kLowGearPositionControlSlot,
+            mMotorGroup.beginClosedLoopPosition(kPositionControlSlot,
                     Constants.kDriveLowGearNominalOutput,
                     Constants.kDriveLowGearMaxVelocity,
                     Constants.kDriveLowGearMaxAccel);
@@ -716,15 +715,15 @@ public class Drive extends Subsystem
         if (!isInitialized())
             return;
 
-        mMotorGroup.reloadGains(kLowGearPositionControlSlot,
-                Constants.kDriveLowGearPositionKp, Constants.kDriveLowGearPositionKi,
-                Constants.kDriveLowGearPositionKd, Constants.kDriveLowGearPositionKf,
-                Constants.kDriveLowGearPositionIZone, Constants.kDriveLowGearPositionRampRate);
+        mMotorGroup.reloadGains(kPositionControlSlot,
+                Constants.kDrivePositionKp, Constants.kDrivePositionKi,
+                Constants.kDrivePositionKd, Constants.kDrivePositionKf,
+                Constants.kDrivePositionIZone, Constants.kDrivePositionRampRate);
 
-        mMotorGroup.reloadGains(kHighGearVelocityControlSlot,
-                Constants.kDriveHighGearVelocityKp, Constants.kDriveHighGearVelocityKi,
-                Constants.kDriveHighGearVelocityKd, Constants.kDriveHighGearVelocityKf,
-                Constants.kDriveHighGearVelocityIZone, Constants.kDriveHighGearVelocityRampRate);
+        mMotorGroup.reloadGains(kVelocityControlSlot,
+                Constants.kDriveVelocityKp, Constants.kDriveVelocityKi,
+                Constants.kDriveVelocityKd, Constants.kDriveVelocityKf,
+                Constants.kDriveVelocityIZone, Constants.kDriveVelocityRampRate);
 
 
         logNotice("reloaded position gains:" + mMotorGroup.dumpPIDState(kLowGearPositionControlSlot));
