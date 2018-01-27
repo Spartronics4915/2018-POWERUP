@@ -16,7 +16,7 @@ public class ControlBoard implements ControlBoardInterface
 
     private static ControlBoardInterface mInstance = null;
 
-    private static final boolean kUseGamepad = false;
+    private static final boolean kUseGamepad = true;
 
     public static ControlBoardInterface getInstance()
     {

@@ -305,9 +305,9 @@ public class TalonSRX4915Drive
             SmartDashboard.putNumber("Drive/left speed error (ips)", 0.0);
             SmartDashboard.putNumber("Drive/right speed error (ips)", 0.0);
         }
-        SmartDashboard.putNumber("Drive/left position (rotations)",
+        SmartDashboard.putNumber("Drive/left position setpoint (rotations)",
                 mLeftMaster.getSetpointRotations());
-        SmartDashboard.putNumber("Drive/right position (rotations)",
+        SmartDashboard.putNumber("Drive/right position setpoint (rotations)",
                 mRightMaster.getSetpointRotations());
         // following names relied upon by dashboard.
         SmartDashboard.putNumber("Drivetrain_IMU_Heading", getGyroAngle());
