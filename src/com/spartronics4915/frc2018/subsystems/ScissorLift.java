@@ -4,19 +4,19 @@ import com.spartronics4915.frc2018.loops.Loop;
 import com.spartronics4915.frc2018.loops.Looper;
 
 /**
- * The harvester is a set of two collapsible rollers that pull in and hold
- * a cube. This cube is then in a position where it can be picked up by the
- * articulated grabber.
+ * The scissor lift is controlled by pnuematics. It has multiple set positions and variable height.
+ * The key thing here is that its system state is the highly variable position of the lifter.
+ * This is why the state machine looks different.
  */
-public class Lifter extends Subsystem
+public class ScissorLift extends Subsystem
 {
-    private static Lifter sInstance = null;
+    private static ScissorLift sInstance = null;
 
-    public static Lifter getInstance()
+    public static ScissorLift getInstance()
     {
         if (sInstance == null)
         {
-            sInstance = new Lifter();
+            sInstance = new ScissorLift();
         }
         return sInstance;
     }
@@ -49,7 +49,7 @@ public class Lifter extends Subsystem
     
     // Actuators and sensors should be initialized as private members with a value of null here
     
-    private Lifter()
+    private ScissorLift()
     {
         boolean success = true;
 
@@ -64,7 +64,7 @@ public class Lifter extends Subsystem
         @Override
         public void onStart(double timestamp)
         {
-            synchronized(Lifter.this)
+            synchronized(ScissorLift.this)
             {
                 mSystemState = SystemState.LOW;
             }
@@ -73,7 +73,7 @@ public class Lifter extends Subsystem
         @Override
         public void onLoop(double timestamp)
         {
-            synchronized(Lifter.this)
+            synchronized(ScissorLift.this)
             {
                 switch (mSystemState)
                 {
@@ -84,7 +84,7 @@ public class Lifter extends Subsystem
         @Override
         public void onStop(double timestamp)
         {
-            synchronized(Lifter.this)
+            synchronized(ScissorLift.this)
             {
                 stop();
             }

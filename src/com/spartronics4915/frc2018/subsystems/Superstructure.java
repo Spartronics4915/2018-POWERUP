@@ -44,7 +44,7 @@ public class Superstructure extends Subsystem
     private final ArticulatedGrabber mGrabber = ArticulatedGrabber.getInstance();
     private final Climber mClimber = Climber.getInstance();
     private final Harvester mHarvester = Harvester.getInstance();
-    private final Lifter mLifter = Lifter.getInstance();
+    private final ScissorLift mLifter = ScissorLift.getInstance();
 
     // Superstructure doesn't own the drive, but needs to access it
     private final Drive mDrive = Drive.getInstance();
