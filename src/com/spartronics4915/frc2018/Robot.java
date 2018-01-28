@@ -13,12 +13,14 @@ import com.spartronics4915.frc2018.loops.Looper;
 import com.spartronics4915.frc2018.loops.RobotStateEstimator;
 import com.spartronics4915.frc2018.loops.VisionProcessor;
 import com.spartronics4915.frc2018.paths.profiles.PathAdapter;
+import com.spartronics4915.frc2018.subsystems.ArticulatedGrabber;
+import com.spartronics4915.frc2018.subsystems.Climber;
 import com.spartronics4915.frc2018.subsystems.ConnectionMonitor;
 import com.spartronics4915.frc2018.subsystems.Drive;
-import com.spartronics4915.frc2018.subsystems.Testbed;
+import com.spartronics4915.frc2018.subsystems.Harvester;
 import com.spartronics4915.frc2018.subsystems.LED;
+import com.spartronics4915.frc2018.subsystems.ScissorLift;
 import com.spartronics4915.frc2018.subsystems.Superstructure;
-import com.spartronics4915.frc2018.subsystems.Testbed.WantedState;
 import com.spartronics4915.lib.util.CANProbe;
 import com.spartronics4915.lib.util.CheesyDriveHelper;
 import com.spartronics4915.lib.util.Logger;
@@ -61,7 +63,10 @@ public class Robot extends IterativeRobot
     private Drive mDrive = null;
     private Superstructure mSuperstructure = null;
     private LED mLED = null;
-    private Testbed mTestbed = null;
+    private ArticulatedGrabber mGrabber = null;
+    private Climber mClimber = null;
+    private Harvester mHarvester = null;
+    private ScissorLift mLifter = null;
     private RobotState mRobotState = null;
     private AutoModeExecuter mAutoModeExecuter = null;
     private ConnectionMonitor mConnectionMonitor = null;
@@ -137,16 +142,21 @@ public class Robot extends IterativeRobot
                     canReport.size() == Constants.kNumCANDevices ? "OK"
                             : ("" + canReport.size() + "/" + Constants.kNumCANDevices));
 
+            // Subsystem instances
             mDrive = Drive.getInstance();
             mSuperstructure = Superstructure.getInstance();
             mLED = LED.getInstance();
-            mTestbed = Testbed.getInstance();
+            mGrabber = ArticulatedGrabber.getInstance();
+            mClimber = Climber.getInstance();
+            mHarvester = Harvester.getInstance();
+            mLifter = ScissorLift.getInstance();
+            
             mRobotState = RobotState.getInstance();
             mAutoModeExecuter = null;
             mConnectionMonitor = ConnectionMonitor.getInstance();
             mSubsystemManager = new SubsystemManager(
                     Arrays.asList(mDrive, mSuperstructure,
-                            mConnectionMonitor, mLED, mTestbed));
+                            mConnectionMonitor, mLED, mGrabber, mClimber, mHarvester, mLifter));
 
             // Initialize other helper objects
             mCheesyDriveHelper = new CheesyDriveHelper();
@@ -273,20 +283,10 @@ public class Robot extends IterativeRobot
             mDrive.setOpenLoop(
                     mCheesyDriveHelper.cheesyDrive(throttle, turn, mControlBoard.getQuickTurn(),
                             !mControlBoard.getLowGear()));
-            boolean wantLowGear = mControlBoard.getLowGear();
-
+            
             if (mControlBoard.getBlinkLEDButton())
             {
                 mLED.setWantedState(LED.WantedState.BLINK);
-            }
-
-            if (mControlBoard.getIntakeButton())
-            {
-                mTestbed.setWantedState(WantedState.FORWARD_INTAKE);
-            }
-            else
-            {
-                mTestbed.setWantedState(WantedState.IDLE);
             }
 
             allButTestPeriodic();

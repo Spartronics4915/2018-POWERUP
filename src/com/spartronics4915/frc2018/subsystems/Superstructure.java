@@ -8,9 +8,10 @@ import edu.wpi.first.wpilibj.Timer;
 
 /**
  * The superstructure subsystem is the overarching superclass containing all
- * components of the superstructure: the
- * intake, hopper, feeder, shooter and LEDs. The superstructure subsystem also
- * contains some miscellaneous hardware that
+ * components of the superstructure: climber, harvester, and articulated grabber,
+ * and lifter.
+ * 
+ * The superstructure subsystem also contains some miscellaneous hardware that
  * is located in the superstructure but isn't part of any other subsystems like
  * the compressor, pressure sensor, and
  * hopper wall pistons.
@@ -40,6 +41,10 @@ public class Superstructure extends Subsystem
     }
 
     private final LED mLED = LED.getInstance();
+    private final ArticulatedGrabber mGrabber = ArticulatedGrabber.getInstance();
+    private final Climber mClimber = Climber.getInstance();
+    private final Harvester mHarvester = Harvester.getInstance();
+    private final ScissorLift mLifter = ScissorLift.getInstance();
 
     // Superstructure doesn't own the drive, but needs to access it
     private final Drive mDrive = Drive.getInstance();

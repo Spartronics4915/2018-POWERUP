@@ -40,7 +40,6 @@ public class AutoModeSelector
             new AutoModeCreator("Test Path Mode", () -> new TestPathMode()),
             new AutoModeCreator("Test Turning Mode", () -> new TestTurnMode()),
             new AutoModeCreator("Test Open Loop", () -> new TestOpenLoopMode()),
-            new AutoModeCreator("Intake Forward Mode", () -> new IntakeForwardMode()),
             new AutoModeCreator("Stress Test Motor Mode", () -> new StressMotorsMode())
             // e.g. new AutoModeCreator("Boiler Gear then 10 Ball Shoot Red", () -> new BoilerGearThenShootModeRed()),
     };
