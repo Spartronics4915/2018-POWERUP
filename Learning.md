@@ -457,17 +457,127 @@ private InterpolatingTreeMap<InterpolatingDouble, RigidTransform2d> mFieldToVehi
 > them to the _current_ robot frame.
 
 ### Paths
-* what is the output format of the cheesypath webapp?  	
-> The cheesypath webapp outputs a class that implements PathContainer, and
-> has an ArrayList of waypoints which it builds a bath from.
+* what is the output format of the cheesy_path webapp?  	
+> The cheesypath webapp outputs java code suitable for inclusion in a robot
+> project.  The code takes the form of a custom class that implements PathContainer,
+> with an `ArrayList<WayPoint>` representing the results of user interaction.
 
 * How are these paths brought into the robot code?
-> Paths are represented by `PathContainer` objects which merely collects
-> a `Path` object with an initial field position. `TestPath` is an implementation
-> of `PathContainer` that builds a Path from an array of `WayPoint`s. This
-> chunk of java construction code can be obtained from the cheesypath webapp.
-> Alternately a more generic file-reader could be developed to construct a
-> Path from an external json, csv (or like) file.
+> The results of cheesy_path are included in robot code by adding the
+> custom class java file directly to the repository.  By convention, custom
+> PathContainers are placed in a game-specific area: `frc2018/paths`.  
+> Next an instance of this class can be created as a component of an
+> autonomous mode.  The file, `frc2018/auto/modes/TestPathMode` is an
+> example that instantiates the class TestPath and instantiates an instance
+> of `DrivePathAction`, parameterized by the TestPath instance.
+
+* How are these paths used to affect the drive trajectory?
+> `DrivePathAction` starts off the path follower by issuing
+> `mDrive.setWantDrivePath(mPath, mPathContainer.isReversed())`.
+> Drive then configures its motors into VelocityControlMode, constructs
+> an instance of PathFollower and enters the control state, `PATH_FOLLOWING`.
+> Now the drive's looper periodically invokes the drive's `updatePathFollower()`.
+> Here, we consult `RobotState` for an estimate of our current field
+> position. This _robot pose_ is passed to the PathFollower's `update` method
+> whose job it is to produce a `Twist2d` that represents target velocities
+> required to update the left and right velocity targets for the motors.
+> Note that the single value for Twist2d represents the path for the robot center.
+> This must converted to left and right robot velocities via
+> `Kinematics.inverseKinematics()` which _knows_ the geometry of the robot and
+> implements the conversion on the assumption of differential drive kinematics.
+
+* What is PathFollower and how does it work?
+> PathFollow is the centeral class that implements path following. Drive
+> creates an instance of this class when it enters PATH_FOLLOWING control mode.
+> Instantiation parameters are numerous and can be found in `Constants.java`.
+> Important path following constants include max values for the look-ahead and
+> speed as well as PID values for the closed loop controller.
+> Here's the introduction comment from the code:
+```
+ /**
+ * A PathFollower follows a predefined path using a combination of feedforward
+ * and feedback control. It uses an AdaptivePurePursuitController to choose a
+ * reference pose and generate a steering command (curvature), and then a
+ * ProfileFollower to generate a profile (displacement and velocity) command.
+ */
+```
+> PathFollower has a number of important member variables:
+> * AdaptivePurePursuitController mSteeringController;
+> * ProfileFollower mVelocityController;
+>
+> The heart of PathFollower is its `update()` method. Its parameter are:
+> * t: the current timestamp
+> * pose:  the current robot pose (a RigidTransform2d)
+> * distance: the distance along the path the robot has already traveled
+> * velocity: the current speed of the robot (directionless)
+
+* What is an AdaptivePurePursuitController?
+> from the code comments:
+```
+ /**
+ * Implements an adaptive pure pursuit controller. See:
+ * https://www.ri.cmu.edu/pub_files/pub1/kelly_alonzo_1994_4/kelly_alonzo_1994_4
+ * .pdf
+ *
+ * Basically, we find a spot on the path we'd like to follow and calculate the
+ * arc necessary to make us land on that spot. The target spot is a specified
+ * distance ahead of us, and we look further ahead the greater our tracking error.
+ * We also return the maximum speed we'd like to be going when we reach the
+ * target spot.
+ */
+```
+
+* What is a Path?
+> A Path is a List<PathSegment>.  The current segment represents a part of
+> the entire path that we are currently following. When we arrive at the end
+> of the current segment, it is removed from the list and we adopt a new
+> current segment.  The current segment is always at index 0 of our list and
+> we know we've reached our target when the PathSegment list is empty. Presumably,
+> a Path has geometric continuity at segment boundaries. This constraint must
+> be enforced by the Path authoring system.
+
+* What is a PathSegment?
+> A PathSegment is a component of a larger path that represents either a
+> linear or circular arc with target speeds at each endpoint. In addition
+> to the geometric descriptors, a PathSegment also has-a `MotionProfile`
+> named `speedController`. Central to the functionality of PathSegment are
+> these methods:
+> * `getClosestPoint()`
+> * `getPointByDistance()`
+> * `getSpeedByClosestPoint()`
+> * `getSpeedByDistance()`
+
+* What is a MotionProfile?
+> from code comments:
+```
+ /**
+ * A motion profile specifies a 1D time-parameterized trajectory. The trajectory
+ * is composed of successively coincident MotionSegments from which the desired
+ * state of motion at any given distance or time can be calculated.
+ */
+```
+
+* What is a MotionSegment?
+> from code comments:
+```
+ /**
+ * A MotionSegment is a movement from a start MotionState to an end MotionState
+ * with a constant acceleration.
+ */
+```
+
+* What is a MotionState?
+> from code comments:
+```
+ /**
+ * A MotionState is a completely specified state of 1D motion through time.
+ */
+```
+> member variables:
+> * double t;
+> * double pos;
+> * double vel;
+> * double acc;
 
 
 ### References
