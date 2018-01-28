@@ -19,7 +19,7 @@ import com.spartronics4915.frc2018.subsystems.ConnectionMonitor;
 import com.spartronics4915.frc2018.subsystems.Drive;
 import com.spartronics4915.frc2018.subsystems.Harvester;
 import com.spartronics4915.frc2018.subsystems.LED;
-import com.spartronics4915.frc2018.subsystems.Lifter;
+import com.spartronics4915.frc2018.subsystems.ScissorLift;
 import com.spartronics4915.frc2018.subsystems.Superstructure;
 import com.spartronics4915.lib.util.CANProbe;
 import com.spartronics4915.lib.util.CheesyDriveHelper;
@@ -66,7 +66,7 @@ public class Robot extends IterativeRobot
     private ArticulatedGrabber mGrabber = null;
     private Climber mClimber = null;
     private Harvester mHarvester = null;
-    private Lifter mLifter = null;
+    private ScissorLift mLifter = null;
     private RobotState mRobotState = null;
     private AutoModeExecuter mAutoModeExecuter = null;
     private ConnectionMonitor mConnectionMonitor = null;
@@ -149,7 +149,7 @@ public class Robot extends IterativeRobot
             mGrabber = ArticulatedGrabber.getInstance();
             mClimber = Climber.getInstance();
             mHarvester = Harvester.getInstance();
-            mLifter = Lifter.getInstance();
+            mLifter = ScissorLift.getInstance();
             
             mRobotState = RobotState.getInstance();
             mAutoModeExecuter = null;
