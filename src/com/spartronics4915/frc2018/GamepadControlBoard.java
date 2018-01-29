@@ -14,7 +14,6 @@ import edu.wpi.first.wpilibj.XboxController;
  */
 public class GamepadControlBoard implements ControlBoardInterface
 {
-
     private final XboxController mController;
 
     protected GamepadControlBoard()
@@ -44,17 +43,5 @@ public class GamepadControlBoard implements ControlBoardInterface
     public boolean getLowGear()
     {
         return mController.getBButton();
-    }
-
-    @Override
-    public boolean getBlinkLEDButton()
-    {
-        return mController.getXButton();
-    }
-
-    @Override
-    public boolean getIntakeButton()
-    {
-        return mController.getYButton();
     }
 }

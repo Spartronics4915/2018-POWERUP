@@ -36,17 +36,4 @@ public class XboxControlBoard implements ControlBoardInterface
     {
         return mController.getBButton();
     }
-
-    @Override
-    public boolean getBlinkLEDButton()
-    {
-        return mController.getXButton();
-    }
-
-    @Override
-    public boolean getIntakeButton()
-    {
-        return mController.getYButton();
-    }
-
 }

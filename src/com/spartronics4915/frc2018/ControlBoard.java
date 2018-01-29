@@ -69,17 +69,4 @@ public class ControlBoard implements ControlBoardInterface
     {
         return mThrottleStick.getRawButton(2);
     }
-
-    @Override
-    public boolean getBlinkLEDButton()
-    {
-        return mButtonBoard.getRawButton(9);
-    }
-
-    @Override
-    public boolean getIntakeButton()
-    {
-        // See XboxControlBoard
-        return false;
-    }
 }
