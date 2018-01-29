@@ -162,9 +162,9 @@ public class Drive extends Subsystem
                     kOpenLoopNominalOutput, kOpenLoopPeakOutput);
             if (!mMotorGroup.hasIMU())
                 logError("Could not detect the IMU. Is it plugged in?");
+            reloadGains();
             mMotorGroup.enableBraking(true);
             logInitialized(true);
-            reloadGains();
         }
         else
         {
