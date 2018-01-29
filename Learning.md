@@ -8,8 +8,8 @@
 > creates a file named `FRCUserProgram.jar`. This file and associated
 > runtime libraries are copied down to the robot (to /home/lvuser and
 > to /usr/local/frc/lib).
-> Another file, `robotCommand` (or `robotDebugCommand`) is also copied.  
-> This file is *NOT* a shell script but rather a command file that is parsed by
+> Another file, `robotCommand` (or `robotDebugCommand`) is also copied. This
+> file is **NOT** a shell script but rather a command file that is parsed by
 > `/usr/local/frc/bin/frcRunRobot.sh` and ultimately passed to
 > `/sbin/start-stop-daemon` whose job is to 'watch over'
 > the robot process - to restart it if it crashes, to start it on robot
@@ -180,8 +180,8 @@
 > it easy to see what state the robot is endeavoring to achieve.
 > This is in contrast to classic WPILib, where the it is extremely difficult
 > to determine the robot's state at any given time. Again, multiple states are
-> coordinated by Superstructure, and most of the rob code sets the wanted state
-> of superstructure. Less frequently, robot code sets wanted state of a subsystem
+> coordinated by Superstructure, and usually the Robot sets the wanted state
+> of superstructure. Less frequently, Robot sets wanted state of a subsystem
 > directly.
 
 ### Subsystem
@@ -233,16 +233,65 @@ best place to start if you're trying to understand Subsystem design.
 > job is coordination and not direct control of actuators.
 
 #### Drive
-* how many internal states does the Drive subsystem have?
-> The 254-2017 Drive subsystem had 7 internal states.
+* How many drive motors? What is a follower motor?
+> There are 4 motors in this standard drive train.  Each Robot side has two
+> motors driving a gear box and so each side's motors must therefore output
+> the same RPMs to its drive shaft.  Rather than send two independent signals
+> to two motors on the same side, we use TalonSRX's _follower_ control mode. A
+> follower motor is initialized with the id of its _master_ and while running
+> in the follower control mode, it will mimic all of its master's actions. This
+> means that in order to control four motors we only need to emit two control
+> signals, one to each master motor controller.
 
-* how many actuators, how many sensors?
-> The 254-2017 Drive subsystem had 5 actuators and 3 sensors.
+* How many internal states does the Drive subsystem have? What do they do?
+> Drive currently has seven states:
+> * **OPEN_LOOP** - basic manual drive mode in which Percent Output is the
+>   control signal. Encoder values are not consulted in this mode, only driver
+>   control-board (ie joystick) values affect it.
+> * **VELOCITY_SETPOINT** - this closed-loop control mode can be employed in
+>   teleop, where the driver control-board specifies velocities for left and
+>   right. In autonomous settings, the target velocities must be computed
+>   according to some strategy.  To support multiple velocity control strategies
+>   we utilize the notion of internal state to characterize each combination.
+> * **PATH_FOLLOWING** - employs close-loop velocity control to follow a
+>   requested path.  Based on the curvature and target path velocity
+>   this mode computes the target velocities for each motor.
+> * **AIM_TO_GOAL** - After identifying a goal, we transition to the
+>   TURN_TO_HEADING state.
+> * **TURN_TO_HEADING** - employs closed-loop position control to cause the robot
+>   to turn in place to face the specified goal. This approach only uses encoders
+>   to measure rotation, and not the gyro. The robot is said to have achieved
+>   the target heading when the heading *and* velocity are within a specified
+>   tolerance.  Note that in this mode we use the Kinematics module to convert
+>   a rotation angle to delta positions for left and right wheels. These are
+>   added to the current encoder positions to obtain a new setpoint.  Also
+>   note that the target is specified in field position, so we obtain the
+>   robot orientation in field position in order to determine a heading error.
+> * **DRIVE_TOWARDS_GOAL_COARSE_ALIGN** - employs closed-loop position control
+>   to first perform a course direction-alignment which, when reached,
+>   state-transitions to DRIVE_TOWARDS_GOAL_APPROACH.
+> * **DRIVE_TOWARDS_GOAL_APPROACH** - employs closed-loop position control to
+>   cause the robot to move straight forward or reverse in order to achieve
+>   an optimal shooting distance from the goal.  Upon reaching the target
+>   distance we state-transition the drive to AIM_TO_GOAL state.
 
-* how many follower-mode motors are there?
-> The 254-2017 Drive subsystem had 2 masters, 2 followers
+* Do any internal states lead automatically to other internal states?
+> Yes, in fact, most of them do and this shows how high-level state requests
+> can result in multiple lower-level state transitions.
 
-* are MotorSafety settings in play?  If so, how do we prevent
+* What is CheesyDrive?  How does it operate?
+> from the code:
+```
+ /**
+ * "Cheesy Drive" simply means that the "turning" stick controls the curvature
+ * of the robot's path rather than its rate of heading change. This helps make
+ * the robot more controllable at high speeds. Also handles the robot's quick
+ * turn functionality - "quick turn" overrides constant-curvature turning for
+ * turn-in-place maneuvers.
+ */
+```
+
+* Are MotorSafety settings in play?  If so, how do we prevent
 	“Output not updated enough...” messages?
 > Because CANTalon implements WPI's MotorSafety interface, they are in
 > play unless we specifically disable them via `setSafetyEnabled(false)`.
@@ -362,7 +411,21 @@ best place to start if you're trying to understand Subsystem design.
 > and must be converted through the coordinate frame of the robot
 > _at the time of capture_ (ie in the past) to the field coordinate frame,
 > then back to the _current_ robot coordinate frame in order to inform robot
-> motion planning.
+> motion planning. In addition, we must prevent against instability
+> in our tracking algorithm.  In a field with multiple cubes, a
+> random selection between multiple contenders would make for a
+> random robot dance and reduce the change of a cube capture
+> significantly. RobotState has a `GoalTracker` class to help
+> prioritize incoming targets according to a series of heuristics
+> embodied by the class `TrackReportComparitor`. If we wish to
+> support multiple live targets, then we need a list of active
+> targets.  An indivdual target is embodied via `GoalTrack` Which
+> maintains a list of observed positions and their associated
+> timestamps. In our cube-tracking implementation we might simplify
+> the problem by accepting only a single cube and, moreover adopting
+> a single nearest-one-wins heuristic. In that setting it might be
+> best to implement the target selection and tracking code on the
+> vision processor and not in robot code.
 
 * Why is `TargetInfo`'s X coordinate always zero?
 > Here's their comment justifying the reassigment of the camera's x to the
