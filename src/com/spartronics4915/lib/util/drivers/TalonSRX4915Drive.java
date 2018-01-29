@@ -92,8 +92,8 @@ public class TalonSRX4915Drive
         if (pigeonHostId == rightSlaveId)
             pigeonTalon = mRightSlave;
 
-        if (mLeftMaster != null && mLeftSlave != null &&
-                mRightMaster != null && mRightSlave != null)
+        if (mLeftMaster.isValid() && mLeftSlave.isValid() &&
+                mRightMaster.isValid() && mRightSlave.isValid())
         {
             mInitialized = true;
             if (pigeonTalon != null)
