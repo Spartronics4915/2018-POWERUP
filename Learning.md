@@ -243,6 +243,35 @@ best place to start if you're trying to understand Subsystem design.
 > means that in order to control four motors we only need to emit two control
 > signals, one to each master motor controller.
 
+* How are encoders handled?  How are encoder ticks converted to user-units?
+> There are a number of Drive constants in Constants.java. There are
+> also a number of Drive methods that convert between the various Speed
+> and distance measures (rpm, inches/sec, etc).
+
+* What is CheesyDrive?  How does it operate?
+> from the code:
+```
+ /**
+ * "Cheesy Drive" simply means that the "turning" stick controls the curvature
+ * of the robot's path rather than its rate of heading change. This helps make
+ * the robot more controllable at high speeds. Also handles the robot's quick
+ * turn functionality - "quick turn" overrides constant-curvature turning for
+ * turn-in-place maneuvers.
+ */
+```
+
+* In teleop, are we operating in setVelocity or in PercentOutput mode?
+> it runs open-loop (PercentOutput mode).
+
+* When do they use positionControlMode?
+> AIM_TO_GOAL, DRIVE_TOWARDS_GOAL, and TURN_TO_HEADING (in the last case to
+> make sure that the encoders are really where they say they are, I think.
+> They do this with they gyro in other cases too, and I'm not completely
+> sure I understand the rationale. (TBD)
+
+* What units do they use in velocity control mode?
+> inches per second
+
 * How many internal states does the Drive subsystem have? What do they do?
 > Drive currently has seven states:
 > * **OPEN_LOOP** - basic manual drive mode in which Percent Output is the
@@ -279,18 +308,6 @@ best place to start if you're trying to understand Subsystem design.
 > Yes, in fact, most of them do and this shows how high-level state requests
 > can result in multiple lower-level state transitions.
 
-* What is CheesyDrive?  How does it operate?
-> from the code:
-```
- /**
- * "Cheesy Drive" simply means that the "turning" stick controls the curvature
- * of the robot's path rather than its rate of heading change. This helps make
- * the robot more controllable at high speeds. Also handles the robot's quick
- * turn functionality - "quick turn" overrides constant-curvature turning for
- * turn-in-place maneuvers.
- */
-```
-
 * Are MotorSafety settings in play?  If so, how do we prevent
 	“Output not updated enough...” messages?
 > Because CANTalon implements WPI's MotorSafety interface, they are in
@@ -302,37 +319,15 @@ best place to start if you're trying to understand Subsystem design.
 > call to `onLoop()`. The `stop()` method of the subsystem should either
 > disable safety or repeatedly invoke stop.
 
-* how are encoders handled?  how are encoder ticks converted to user-units?
-> There are a number of Drive constants in Constants.java. There are
-> also a number of Drive methods that convert between the various Speed
-> and distance measures (rpm, inches/sec, etc).
-
 * what’s the relationship between Drive and RobotStateEstimator?
 > RobotStateEstimator gets a bunch of info from Drive and feeds it into
 > Kinematics, whose output it finally feeds into RobotState to be stored
 > as a transform that represents an estimate of the Robot's position
 > and orientation on the field.
 
-* in teleop, are we operating in setVelocity or in PercentOutput mode?
-> it runs open-loop (PercentOutput mode).
-
-* when do they use positionControlMode?
-> AIM_TO_GOAL, DRIVE_TOWARDS_GOAL, and TURN_TO_HEADING (in the last case to
-> make sure that the encoders are really where they say they are, I think.
-> They do this with they gyro in other cases too, and I'm not completely
-> sure I understand the rationale. (TBD)
-
-* what units do they use in velocity control mode?
-> inches per second
-
 * does their OI allow driver to enter auto-like modes during teleop?
-> Yes, it does allow them to enter autonomous like modes > See
+> Yes, it does allow them to enter autonomous like modes.  See
 > `Drive.setWantAimToGoal()` and the like.
-
-* what’s the difference between aimToGoal and driveTowardsGoal?
-> aimToGoal just turns the robot and goes into driveTowardsGoal if
-> it's too far away. driveTowardsGoal actually just drives forwards
-> until it gets within kShooterOptimalRange.
 
 ### OI
 * How do UI events trigger robot actions… are network tables involved?
@@ -467,28 +462,33 @@ mRobotState_.addObservations(timestamp, odometryV, predictedV);
 > spatial relationship between different frames.
 
 * What are its frames of interest?
-> * `Field frame`: origin is where the robot is turned on
+> * `Field frame`: origin is where the robot is turned on. By convention,
+>   the field represents the xy plane with the z direction pointing up.
+>   The x axis is the long axis of the field.
 > * `Vehicle frame`: origin is the center of the robot wheelbase, facing
->    forwards. This frame is relative to the field frame.
+>    forwards. This frame is relative to the field frame. A zero rotation and
+>    a zero translation would place the center of the robot at the "bottom left",
+>    of the field viewed from the top.
 > * `Camera frame`: origin is the center of the camera imager relative
->  to the robot frame.
+>   to the robot frame. A zero camera rotation places the viewing
+>   direction along increasing x.
 > * `Goal frame`: origin is the center of the target (note that orientation in
-> this frame is arbitrary). Also note that there can be multiple target frames.
+>   this frame is arbitrary). Also note that there can be multiple target frames.
+>   Each goal, then, is easily represented in field coordinates as well.
 
 * What is a `kinematic chain`?
 > A linked series of transformations from one frame to another is known as
-> a kinematic chain. In the "forward" direction we can start with a position
-> on the field to compute, for example, the position of a goal.  If we're
-> given a position in the field frame, we can compute, for example, its coordinates
-> in the camera frame by performing coordinate conversion in the _forward_
-> direction.  If we're given a position in the camera frame, we convert that
-> to the goal frame by performing coordinate conversion in the _inverse_
-> direction. Ours is a kinematic chain with 4 frames, and so there are 3
-> transforms of interest:
+> a kinematic chain. If we're given a position in the camera frame, we can
+> compute, for example, its coordinates in the field frame by performing
+> coordinate conversion in the _forward_ > direction.  If we're given a
+> position in the field frame, we convert that to the robot frame by
+> performing coordinate conversion in the _inverse_ direction. Ours is
+> a kinematic chain with 4 frames, and so there are 3 transforms of interest:
 > 1. Field-to-vehicle: This is tracked over time by integrating encoder and
 > gyro measurements. It will inevitably drift, but is usually accurate over
 > short time periods.
-> 2. Vehicle-to-camera: This is a constant.
+> 2. Vehicle-to-camera: This is a constant unless the camera is mounted on a
+>   turret.
 > 3. Camera-to-goal: This is a pure translation, and is measured by the vision
 >   system.
 
@@ -512,7 +512,7 @@ private InterpolatingTreeMap<InterpolatingDouble, RigidTransform2d> mFieldToVehi
 > orientation). Each timeslice, RobotStateEstimator issues a call to
 > `addObservation` to append a new sample to this map.
 
-* Why do we care about past robot position and orientation?
+* Why do we care about _past_ robot position and orientation?
 > Because of fundamental latencies in our vision sampling and processing
 > targets are actually found relative to a past position.  In order to
 > understand the target location in terms of current robot position,
@@ -642,7 +642,9 @@ private InterpolatingTreeMap<InterpolatingDouble, RigidTransform2d> mFieldToVehi
 > * double vel;
 > * double acc;
 
-
 ### References
 
-DesignNotes.md
+[Design Notes](DesignNotes.md) |
+[Cheesy Notes](CheesyNotes.md) |
+[Porting Notes](PortingNotes.md) |
+[254 Github](https:/github.com/Team254)
