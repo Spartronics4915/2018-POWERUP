@@ -16,8 +16,6 @@ Repository with the Spartronics code for the FRC 2018-POWERUP game.
 [CANTalon Ref Guide](http://www.ctr-electronics.com/Talon%20SRX%20Software%20Reference%20Manual.pdf) |
 [Travis CI](https://travis-ci.com/Spartronics4915/2018-POWERUP)
 
-**Beware! The old Travis build page for when this repo was public still exists at travis-ci.org. You want travis-ci.com.**
-
 [Learning this Codebase](Learning.md) |
 [Spartronics Developer Handbook](https://binnur.gitbooks.io/spartronics-developers-handbook/content/) | 
 [Spartronics Intro Slides](https://docs.google.com/presentation/d/1ZiMBC9y3xrwFk1akdaiV_BMLLS6EyY6BSfiTRQo1KlM/edit#slide=id.g190898ba99_1_437)
