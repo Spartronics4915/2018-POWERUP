@@ -644,7 +644,7 @@ private InterpolatingTreeMap<InterpolatingDouble, RigidTransform2d> mFieldToVehi
 
 ### References
 
-[Design Notes](DesignNotes.md) |
-[Cheesy Notes](CheesyNotes.md) |
+[Coding Notes](DesignNotes.md) |
 [Porting Notes](PortingNotes.md) |
-[254 Github](https:/github.com/Team254)
+[Cheesy Notes](CheesyNotes.md) |
+[254 Github](https://github.com/Team254)
