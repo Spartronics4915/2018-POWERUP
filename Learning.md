@@ -17,9 +17,9 @@
 	- [how does the autonomous mode control subsystems? What’s the difference](#how-does-the-autonomous-mode-control-subsystems-whats-the-difference)
 	- [what is the frequency of the scheduler loops, where is this embodied?](#what-is-the-frequency-of-the-scheduler-loops-where-is-this-embodied)
 	- [how many threads are running at the same time in auto and tele?](#how-many-threads-are-running-at-the-same-time-in-auto-and-tele)
-	- [what is a “wantedState” as specified in Robot::teleopPeriodic? What is the](#what-is-a-wantedstate-as-specified-in-robotteleopperiodic-what-is-the)
+	- [what is a “wantedState” as specified in Robot::teleopPeriodic?](#what-is-a-wantedstate-as-specified-in-robotteleopperiodic)
 - [Subsystem](#subsystem)
-	- [how many subsystems are there? Is there a base class that establishes](#how-many-subsystems-are-there-is-there-a-base-class-that-establishes)
+	- [how many subsystems are there? Do they share a base class?](#how-many-subsystems-are-there-do-they-share-a-base-class)
 	- [is there a single database of motor identifiers, gpio pins, etc?](#is-there-a-single-database-of-motor-identifiers-gpio-pins-etc)
 	- [can subsystems modify the state of other subsystems?](#can-subsystems-modify-the-state-of-other-subsystems)
 	- [what is the purpose of `SubsystemManager`?](#what-is-the-purpose-of-subsystemmanager)
@@ -245,9 +245,7 @@
  Stopping com.spartronics4915.frc2018.loops.RobotStateEstimator@71cca7
 ```
 
-#### what is a “wantedState” as specified in Robot::teleopPeriodic? What is the
-  difference between WantedState and SystemState? How are the
-   multiple states of each subsystem coordinated?
+#### what is a “wantedState” as specified in Robot::teleopPeriodic?
 > a wanted state is conveyed by autonomous or teleop to a subsystem.
 > The subsystem is expected to respond to this by transitioning from its
 > current, or measured, state to the wantedState.  In the case of the
@@ -262,8 +260,7 @@
 > directly.
 
 ### Subsystem
-#### how many subsystems are there? Is there a base class that establishes
-  all the interface conventions for subsystems?
+#### how many subsystems are there? Do they share a base class?
 > There are 10 subsystems in the original 2017 code. The `Subsystem` class
 > is the abstract definition of the required behavior and methods of a subsystem.
 > It also offers shared behavior for logging messages.
