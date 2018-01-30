@@ -11,10 +11,10 @@ Repository with the Spartronics code for the FRC 2018-POWERUP game.
 
 [WPILib](http://wpilib.screenstepslive.com/s/4485) | 
 [WPILib Java Ref](http://first.wpi.edu/FRC/roborio/release/docs/java) |
-[Learning this Codebase](Learning.md)
+[Learning this Codebase](Learning.md) |
 [CTRE Java Ref](http://www.ctr-electronics.com/downloads/api/java/html/index.html) | 
 [CANTalon User's Guide](http://www.ctr-electronics.com/Talon%20SRX%20User's%20Guide.pdf) | 
-[CANTalon Ref Guide](http://www.ctr-electronics.com/Talon%20SRX%20Software%20Reference%20Manual.pdf)
+[CANTalon Ref Guide](http://www.ctr-electronics.com/Talon%20SRX%20Software%20Reference%20Manual.pdf) |
 [Travis CI](https://travis-ci.com/Spartronics4915/2018-POWERUP)
 
 **Beware! The old Travis build page for when this repo was public still exists at travis-ci.org. You want travis-ci.com.**
