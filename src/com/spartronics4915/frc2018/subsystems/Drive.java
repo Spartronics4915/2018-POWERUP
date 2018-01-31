@@ -233,19 +233,19 @@ public class Drive extends Subsystem
         mMotorGroup.outputToSmartDashboard(usesTalonVelocityControl(mDriveControlState));
         synchronized (this)
         {
-            SmartDashboard.putString("Drive/state", mDriveControlState.toString());
+            broadcastState(mDriveControlState.toString());
             if (mDriveControlState == DriveControlState.PATH_FOLLOWING && mPathFollower != null)
             {
-                SmartDashboard.putNumber("Drive/CTE", mPathFollower.getCrossTrackError());
-                SmartDashboard.putNumber("Drive/ATE", mPathFollower.getAlongTrackError());
+                broadcastNumber("CTE", mPathFollower.getCrossTrackError());
+                broadcastNumber("ATE", mPathFollower.getAlongTrackError());
             }
             else
             {
-                SmartDashboard.putNumber("Drive/CTE", 0.0);
-                SmartDashboard.putNumber("Drive/ATE", 0.0);
+                broadcastNumber("CTE", 0.0);
+                broadcastNumber("ATE", 0.0);
             }
         }
-        SmartDashboard.putBoolean("Drive/on target", isOnTarget());
+        broadcastBoolean("on target", isOnTarget());
     }
 
     public synchronized void resetEncoders()

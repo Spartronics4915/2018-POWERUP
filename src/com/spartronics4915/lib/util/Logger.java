@@ -3,6 +3,8 @@ package com.spartronics4915.lib.util;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.UUID;
 
@@ -15,6 +17,7 @@ public class Logger
 
     private static final UUID RUN_INSTANCE_UUID = UUID.randomUUID();
     public static int sVerbosity = 0; // 0: notices and above,  1: info and above, 2: all
+    private static final DateFormat s_dateFormat = new SimpleDateFormat("hh:mm:ss"); 
 
     public static void logRobotStartup()
     {
@@ -48,29 +51,29 @@ public class Logger
 
     public static void logThrowableCrash(Throwable throwable)
     {
-        logMarker("Exception", throwable);
+        logMarker(getTimeStamp() + "Exception", throwable);
     }
 
     public static void error(String m)
     {
-        logMarker("ERROR   " + m);
+        logMarker(getTimeStamp() + "ERROR   " + m);
     }
 
     public static void warning(String m)
     {
-        logMarker("WARNING " + m);
+        logMarker(getTimeStamp() + "WARNING " + m);
     }
 
     public static void notice(String m)
     {
-        logMarker("NOTICE  " + m);
+        logMarker(getTimeStamp() + "NOTICE  " + m);
     }
 
     public static void info(String m)
     {
         if (sVerbosity > 0)
         {
-            printMarker("INFO    " + m);
+            printMarker(getTimeStamp() + "INFO    " + m);
         }
     }
 
@@ -78,8 +81,15 @@ public class Logger
     {
         if (sVerbosity > 1)
         {
-            printMarker("DEBUG    " + m);
+            printMarker(getTimeStamp() + "DEBUG    " + m);
         }
+    }
+    
+    private static String getTimeStamp()
+    {
+        Date now = new Date();
+        String nowstr = s_dateFormat.format(now);
+        return nowstr;
     }
 
     private static void logMarker(String mark)
@@ -100,15 +110,11 @@ public class Logger
             writer.print(RUN_INSTANCE_UUID.toString());
             writer.print(", ");
             writer.print(mark);
-            writer.print(", ");
-            writer.print(new Date().toString());
-
             if (nullableException != null)
             {
                 writer.print(", ");
                 nullableException.printStackTrace(writer);
             }
-
             writer.println();
         }
         catch (IOException e)
