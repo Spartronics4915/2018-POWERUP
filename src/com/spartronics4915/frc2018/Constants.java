@@ -154,13 +154,14 @@ public class Constants extends ConstantsBase
 
     // Pose of the camera frame w.r.t. the robot frame
     // TODO: Update for 2018
+    public static final String kVisionTableName = "Vision"; // name in networktables below root
+    public static final String kVisionTargetAngleName = "ax"; // "clock", "ay" are also available
     public static final double kCameraXOffset = -3.3211;
     public static final double kCameraYOffset = 0.0;
     public static final double kCameraZOffset = 20.9;
     public static final double kCameraPitchAngleDegrees = 29.56; // Measured on 4/26
     public static final double kCameraYawAngleDegrees = 0.0;
     public static final double kCameraDeadband = 0.0;
-
 
     public static final double kShooterOptimalRange = 100.0;
     public static final double kShooterOptimalRangeFloor = 95.0;
