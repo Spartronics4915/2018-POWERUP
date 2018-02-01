@@ -160,7 +160,7 @@ public class Robot extends IterativeRobot
 
             // Initialize other helper objects
             mCheesyDriveHelper = new CheesyDriveHelper();
-            mControlBoard = new XboxControlBoard();
+            mControlBoard = new ControlBoard();
 
             mEnabledLooper = new Looper();
             mCheckLightButton = new AnalogInput(Constants.kLEDOnId);
@@ -283,11 +283,6 @@ public class Robot extends IterativeRobot
             mDrive.setOpenLoop(
                     mCheesyDriveHelper.cheesyDrive(throttle, turn, mControlBoard.getQuickTurn(),
                             !mControlBoard.getLowGear()));
-            
-            if (mControlBoard.getBlinkLEDButton())
-            {
-                mLED.setWantedState(LED.WantedState.BLINK);
-            }
 
             allButTestPeriodic();
         }
