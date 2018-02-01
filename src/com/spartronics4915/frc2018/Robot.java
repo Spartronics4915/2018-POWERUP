@@ -83,6 +83,8 @@ public class Robot extends IterativeRobot
     private AnalogInput mCheckLightButton = null;
     private DelayedBoolean mDelayedAimButton;
 
+    private static final String kRobotVerbosity = "Robot/Verbosity"; // smartdashboard key
+    
     public Robot()
     {
         Logger.logRobotConstruction();
@@ -108,6 +110,7 @@ public class Robot extends IterativeRobot
                     "  on: " + attributes.getValue("Built-At") +
                     "  (" + attributes.getValue("Code-Version") + ")";
             SmartDashboard.putString("Build", buildStr);
+            SmartDashboard.putString(kRobotVerbosity, "NOTICE"); // competition verbosity
 
             Logger.notice("=================================================");
             Logger.notice(Instant.now().toString());
@@ -202,6 +205,7 @@ public class Robot extends IterativeRobot
     {
         try
         {
+            Logger.setVerbosity(SmartDashboard.getString(kRobotVerbosity, "NOTICE"));
             Logger.logAutoInit();
             Logger.notice("Auto start timestamp: " + Timer.getFPGATimestamp());
 
@@ -247,6 +251,7 @@ public class Robot extends IterativeRobot
     {
         try
         {
+            Logger.setVerbosity(SmartDashboard.getString(kRobotVerbosity, "NOTICE"));
             Logger.logTeleopInit();
 
             // Start loopers
@@ -298,6 +303,7 @@ public class Robot extends IterativeRobot
     {
         try
         {
+            Logger.setVerbosity(SmartDashboard.getString(kRobotVerbosity, "NOTICE"));
             Logger.logDisabledInit();
 
             if (mAutoModeExecuter != null)
@@ -342,6 +348,7 @@ public class Robot extends IterativeRobot
     @Override
     public void testInit()
     {
+        Logger.setVerbosity(SmartDashboard.getString(kRobotVerbosity, "NOTICE"));
         Timer.delay(0.5);
 
         boolean results = mDrive.checkSystem();
