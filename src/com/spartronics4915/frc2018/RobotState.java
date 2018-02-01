@@ -257,29 +257,30 @@ public class RobotState
     public void outputToSmartDashboard()
     {
         RigidTransform2d odometry = getLatestFieldToVehicle().getValue();
-        SmartDashboard.putNumber("robot_pose_x", odometry.getTranslation().x());
-        SmartDashboard.putNumber("robot_pose_y", odometry.getTranslation().y());
-        SmartDashboard.putNumber("robot_pose_theta", odometry.getRotation().getDegrees());
-        SmartDashboard.putNumber("robot velocity", mVehicleVelocityMeasured.dx);
-        SmartDashboard.putNumber("field_degrees", getLatestFieldToVehicle().getValue().getRotation().getDegrees());
+        SmartDashboard.putString("RobotState/pose",  
+                            "" + odometry.getTranslation().x() + 
+                            " " + odometry.getTranslation().y() +
+                            " " + odometry.getRotation().getDegrees());
+        SmartDashboard.putNumber("RobotState/velocity", mVehicleVelocityMeasured.dx);
+        SmartDashboard.putNumber("RobotState/field_degrees", getLatestFieldToVehicle().getValue().getRotation().getDegrees());
         List<RigidTransform2d> poses = getCaptureTimeFieldToGoal();
         for (RigidTransform2d pose : poses)
         {
             // Only output first goal
-            SmartDashboard.putNumber("goal_pose_x", pose.getTranslation().x());
-            SmartDashboard.putNumber("goal_pose_y", pose.getTranslation().y());
+            SmartDashboard.putNumber("RobotState/goal_pose_x", pose.getTranslation().x());
+            SmartDashboard.putNumber("RobotState/goal_pose_y", pose.getTranslation().y());
             break;
         }
         Optional<ShooterAimingParameters> aiming_params = getCachedAimingParameters();
         if (aiming_params.isPresent())
         {
-            SmartDashboard.putNumber("goal_range", aiming_params.get().getRange());
-            SmartDashboard.putNumber("goal_theta", aiming_params.get().getRobotToGoal().getDegrees());
+            SmartDashboard.putNumber("RobotState/goal_range", aiming_params.get().getRange());
+            SmartDashboard.putNumber("RobotState/goal_theta", aiming_params.get().getRobotToGoal().getDegrees());
         }
         else
         {
-            SmartDashboard.putNumber("goal_range", 0.0);
-            SmartDashboard.putNumber("goal_theta", 0.0);
+            SmartDashboard.putNumber("RobotState/goal_range", 0.0);
+            SmartDashboard.putNumber("RobotState/goal_theta", 0.0);
         }
     }
 }
