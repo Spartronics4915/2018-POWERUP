@@ -160,7 +160,7 @@ public class Robot extends IterativeRobot
 
             // Initialize other helper objects
             mCheesyDriveHelper = new CheesyDriveHelper();
-            mControlBoard = new AtlasControlBoard();
+            mControlBoard = new ControlBoard();
 
             mEnabledLooper = new Looper();
             mCheckLightButton = new AnalogInput(Constants.kLEDOnId);

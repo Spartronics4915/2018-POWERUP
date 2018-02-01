@@ -15,58 +15,46 @@ public class ControlBoard implements ControlBoardInterface
 {
 
     private static ControlBoardInterface mInstance = null;
-
-    private static final boolean kUseGamepad = true;
-
+    
     public static ControlBoardInterface getInstance()
     {
         if (mInstance == null)
         {
-            if (kUseGamepad)
-            {
-                mInstance = new GamepadControlBoard();
-            }
-            else
-            {
-                mInstance = new ControlBoard();
-            }
+            mInstance = new ControlBoard();
         }
         return mInstance;
     }
 
-    private final Joystick mThrottleStick;
-    private final Joystick mTurnStick;
-    private final Joystick mButtonBoard;
+    private final Joystick mDrivestick;
+    private final Joystick mButtonBoard; // Currently unused
 
     protected ControlBoard()
     {
-        mThrottleStick = new Joystick(0);
-        mTurnStick = new Joystick(1);
-        mButtonBoard = new Joystick(2);
+        mDrivestick = new Joystick(0);
+        mButtonBoard = null; // FIXME
     }
 
-    // DRIVER CONTROLS
     @Override
     public double getThrottle()
     {
-        return -mThrottleStick.getRawAxis(0);
+        return mDrivestick.getY();
     }
 
     @Override
     public double getTurn()
     {
-        return -mTurnStick.getY();
+        return mDrivestick.getX();
     }
 
     @Override
     public boolean getQuickTurn()
     {
-        return mTurnStick.getRawButton(1);
+        return mDrivestick.getRawButtonPressed(2);
     }
 
     @Override
     public boolean getLowGear()
     {
-        return mThrottleStick.getRawButton(2);
+        return mDrivestick.getTriggerPressed();
     }
 }
