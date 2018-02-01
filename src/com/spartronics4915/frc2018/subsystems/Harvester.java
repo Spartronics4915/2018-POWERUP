@@ -23,16 +23,24 @@ public class Harvester extends Subsystem
     
     public enum SystemState
     {
-        FIXMEING,
+        CLOSING,
+        OPENING,
+        HARVESTING,
+        EJECTING,
+        HUGGING,
     }
 
     public enum WantedState
     {
-        FIXME,
+        CLOSE,
+        OPEN,
+        HARVEST,
+        EJECT,
+        HUG,
     }
 
-    private SystemState mSystemState = SystemState.FIXMEING;
-    private WantedState mWantedState = WantedState.FIXME;
+    private SystemState mSystemState = SystemState.CLOSING;
+    private WantedState mWantedState = WantedState.CLOSE;
     
     // Actuators and sensors should be initialized as private members with a value of null here
     
@@ -53,7 +61,7 @@ public class Harvester extends Subsystem
         {
             synchronized(Harvester.this)
             {
-                mSystemState = SystemState.FIXMEING;
+                mSystemState = SystemState.CLOSING;
             }
         }
 
@@ -64,11 +72,23 @@ public class Harvester extends Subsystem
             {
                 SystemState newState;
                 switch (mSystemState) {
-                    case FIXMEING:
-                        newState = handleFixmeing();
+                    case CLOSING:
+                        newState = handleClosing();
                         break;
+                    case OPENING:
+                        newState = handleOpening();
+                        break;
+                    case HARVESTING:
+                        newState = handleHarvesting();
+                        break;
+                    case EJECTING:
+                        newState = handleEjecting();
+                        break;
+                    case HUGGING:
+                        newState = handleHugging();
+                        break;      
                     default:
-                        newState = SystemState.FIXMEING;
+                        newState = handleClosing();
                 }
                 if (newState != mSystemState) {
                     logInfo("Harvester state from " + mSystemState + "to" + newState);
@@ -88,9 +108,99 @@ public class Harvester extends Subsystem
         
     };
     
-    private SystemState handleFixmeing() {
+    private SystemState defaultStateTransfer()
+    {
+        switch (mWantedState)
+        {
+            case CLOSE:
+                return SystemState.CLOSING;
+            case OPEN:
+                return SystemState.OPENING;
+            case HARVEST:
+                return SystemState.HARVESTING;
+            case EJECT:
+                return SystemState.EJECTING;
+            case HUG:
+                return SystemState.HUGGING;
+            default:
+                return mSystemState;
+        }
+    }
+    
+    private SystemState handleClosing() {
+        //motors off and bars in
+        
         // You should probably be transferring state and controlling actuators in here
-        return SystemState.FIXMEING;
+        logInfo("Harvester is closing");
+        if (mWantedState == WantedState.OPEN) 
+        {
+            return defaultStateTransfer(); 
+        }
+        else
+            {
+            return SystemState.CLOSING;
+            }
+            
+    }
+    
+    private SystemState handleOpening() {
+        //motors off and bars out
+        
+        // You should probably be transferring state and controlling actuators in here
+        logInfo("Harvester is opening");
+        if (mWantedState == WantedState.HARVEST) 
+        {
+            return defaultStateTransfer(); 
+        }
+        else
+            {
+            return SystemState.OPENING;
+            }
+    }
+    
+    private SystemState handleHarvesting() {
+        //motors on forward and bars closing, hug when cube is gone
+        
+        // You should probably be transferring state and controlling actuators in here
+        logInfo("Harvester is harvesting");
+        if (mWantedState == WantedState.HUG || mWantedState == WantedState.EJECT) 
+        {
+            return defaultStateTransfer(); 
+        }
+        else
+            {
+            return SystemState.HUGGING;
+            }
+    }
+    
+    private SystemState handleEjecting() {
+        //motors in reverse and bars closing, close when cube is gone
+        
+        // You should probably be transferring state and controlling actuators in here
+        logInfo("Harvester is ejecting");
+        if (mWantedState == WantedState.OPEN || mWantedState == WantedState.CLOSE) 
+        {
+            return defaultStateTransfer(); 
+        }
+        else
+            {
+            return SystemState.EJECTING;
+            }
+    }
+   
+    private SystemState handleHugging() {
+        //motors off and bars closing go to closed when cube is gone
+        
+        // You should probably be transferring state and controlling actuators in here
+        logInfo("Harvester is hugging");
+        if (mWantedState == WantedState.HARVEST || mWantedState == WantedState.EJECT || mWantedState == WantedState.OPEN) 
+        {
+            return defaultStateTransfer(); 
+        }
+        else
+            {
+            return SystemState.HUGGING;
+            }
     }
     
     public void setWantedState(WantedState wantedState)
