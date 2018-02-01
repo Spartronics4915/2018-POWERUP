@@ -259,7 +259,7 @@ public class RobotState
         RigidTransform2d odometry = getLatestFieldToVehicle().getValue();
         SmartDashboard.putString("RobotState/pose",  
                             "" + odometry.getTranslation().x() + 
-                            " " + odometry.getTranslation().x() +
+                            " " + odometry.getTranslation().y() +
                             " " + odometry.getRotation().getDegrees());
         SmartDashboard.putNumber("RobotState/velocity", mVehicleVelocityMeasured.dx);
         SmartDashboard.putNumber("RobotState/field_degrees", getLatestFieldToVehicle().getValue().getRotation().getDegrees());
