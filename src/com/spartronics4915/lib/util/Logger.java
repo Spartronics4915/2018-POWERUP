@@ -51,29 +51,29 @@ public class Logger
 
     public static void logThrowableCrash(Throwable throwable)
     {
-        logMarker(getTimeStamp() + "Exception", throwable);
+        logMarker("Exception", throwable);
     }
 
     public static void error(String m)
     {
-        logMarker(getTimeStamp() + "ERROR   " + m);
+        logMarker("ERROR   " + m);
     }
 
     public static void warning(String m)
     {
-        logMarker(getTimeStamp() + "WARNING " + m);
+        logMarker("WARNING " + m);
     }
 
     public static void notice(String m)
     {
-        logMarker(getTimeStamp() + "NOTICE  " + m);
+        logMarker("NOTICE  " + m);
     }
 
     public static void info(String m)
     {
         if (sVerbosity > 0)
         {
-            printMarker(getTimeStamp() + "INFO    " + m);
+            printMarker("INFO    " + m);
         }
     }
 
@@ -81,14 +81,14 @@ public class Logger
     {
         if (sVerbosity > 1)
         {
-            printMarker(getTimeStamp() + "DEBUG    " + m);
+            printMarker("DEBUG    " + m);
         }
     }
     
     private static String getTimeStamp()
     {
         Date now = new Date();
-        String nowstr = s_dateFormat.format(now);
+        String nowstr = s_dateFormat.format(now) + " ";
         return nowstr;
     }
 
@@ -104,7 +104,7 @@ public class Logger
 
     private static void logMarker(String mark, Throwable nullableException)
     {
-        System.out.println(mark);
+        printMarker(mark);
         try (PrintWriter writer = new PrintWriter(new FileWriter("/home/lvuser/crash_tracking.txt", true)))
         {
             writer.print(RUN_INSTANCE_UUID.toString());

@@ -257,9 +257,10 @@ public class RobotState
     public void outputToSmartDashboard()
     {
         RigidTransform2d odometry = getLatestFieldToVehicle().getValue();
-        SmartDashboard.putNumber("RobotState/pose_x", odometry.getTranslation().x());
-        SmartDashboard.putNumber("RobotState/pose_y", odometry.getTranslation().y());
-        SmartDashboard.putNumber("RobotState/pose_theta", odometry.getRotation().getDegrees());
+        SmartDashboard.putString("RobotState/pose",  
+                            "" + odometry.getTranslation().x() + 
+                            " " + odometry.getTranslation().x() +
+                            " " + odometry.getRotation().getDegrees());
         SmartDashboard.putNumber("RobotState/velocity", mVehicleVelocityMeasured.dx);
         SmartDashboard.putNumber("RobotState/field_degrees", getLatestFieldToVehicle().getValue().getRotation().getDegrees());
         List<RigidTransform2d> poses = getCaptureTimeFieldToGoal();
