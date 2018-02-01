@@ -317,8 +317,9 @@ public class TalonSRX4915Drive
                 mLeftMaster.getSetpointRotations());
         SmartDashboard.putNumber("Drive/right position setpoint (rotations)",
                 mRightMaster.getSetpointRotations());
+
         // following names relied upon by dashboard.
-        SmartDashboard.putNumber("Drivetrain_IMU_Heading", getGyroAngle());
+        SmartDashboard.putNumber("Drive/IMU_Heading", getGyroAngle());
     }
 
     public boolean checkSystem()

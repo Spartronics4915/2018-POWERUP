@@ -63,10 +63,31 @@ public abstract class Subsystem
             this.logNotice("init SUCCEEDED");
         else
             this.logWarning("init FAILED");
-        
-        SmartDashboard.putString(mName+"_SubsystemStatus", mInitialized ? "OK" : "ERROR");
+        SmartDashboard.putString(mName+"/Status", mInitialized ? "OK" : "ERROR");
+    }
+    
+    // broadcast methods are for smartdashboard with conventionalized keys
+    public void broadcastState(String state)
+    {
+        SmartDashboard.putString(mName+"/State", state);
+    }
+    
+    public void broadcastString(String nm, String value)
+    {
+        SmartDashboard.putString(mName+"/" + nm, value);
+    }
+    
+    public void broadcastNumber(String nm, Number value)
+    {
+        SmartDashboard.putNumber(mName+"/"+nm, value.doubleValue());
+    }
+    
+    public void broadcastBoolean(String nm, Boolean value)
+    {
+        SmartDashboard.putBoolean(mName+"/"+nm, value);
     }
 
+    // log methods are for conventionalizing format across subsystems 
     public void logError(String msg)
     {
         Logger.error(this.getName() + " " + msg); 
