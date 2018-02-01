@@ -89,12 +89,6 @@ public class Robot extends IterativeRobot
         // please defer initialization of objects until robotInit
     }
 
-    public void zeroAllSensors()
-    {
-        mSubsystemManager.zeroSensors();
-        mRobotState.reset(Timer.getFPGATimestamp(), new RigidTransform2d());
-    }
-
     /**
      * This function is run when the robot is first started up and should be
      * used for any initialization code.
@@ -188,6 +182,12 @@ public class Robot extends IterativeRobot
             // don't throw here, leads to "Robots should not quit..." // throw t;
         }
         Logger.notice("robotInit complete, success:" + success);
+    }
+    
+    public void zeroAllSensors()
+    {
+        mSubsystemManager.zeroSensors();
+        mRobotState.reset(Timer.getFPGATimestamp(), new RigidTransform2d());
     }
 
     /**
