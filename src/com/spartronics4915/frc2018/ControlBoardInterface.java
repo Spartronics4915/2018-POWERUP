@@ -14,4 +14,11 @@ public interface ControlBoardInterface
     boolean getQuickTurn();
     
     boolean getLowGear();
+    
+    // Debug buttons, remove me
+    boolean getDebugPrimary();
+    
+    boolean getDebugSecondary();
+    
+    boolean getDebugTertiary();
 }

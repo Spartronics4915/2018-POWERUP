@@ -15,7 +15,7 @@ public class ControlBoard implements ControlBoardInterface
 {
 
     private static ControlBoardInterface mInstance = null;
-    
+
     public static ControlBoardInterface getInstance()
     {
         if (mInstance == null)
@@ -56,5 +56,23 @@ public class ControlBoard implements ControlBoardInterface
     public boolean getLowGear()
     {
         return mDrivestick.getTriggerPressed();
+    }
+    
+    @Override
+    public boolean getDebugPrimary()
+    {
+        return mDrivestick.getRawButton(3);
+    }
+    
+    @Override
+    public boolean getDebugSecondary()
+    {
+        return mDrivestick.getRawButton(4);
+    }
+    
+    @Override
+    public boolean getDebugTertiary()
+    {
+        return mDrivestick.getRawButton(5);
     }
 }
