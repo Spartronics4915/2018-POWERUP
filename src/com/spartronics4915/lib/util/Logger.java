@@ -21,13 +21,13 @@ public class Logger
 
     public static void setVerbosity(String nm)
     {
-        if(nm == "NOTICE")
+        if(nm.equals("NOTICE"))
             sVerbosity = 0;
         else
-        if(nm == "INFO")
+        if(nm.equals("INFO"))
             sVerbosity = 1;
         else
-        if(nm == "DEBUG")
+        if(nm.equals("DEBUG"))
             sVerbosity = 2;
         else
             error("Logger: unknown verbosity level:" + nm);
