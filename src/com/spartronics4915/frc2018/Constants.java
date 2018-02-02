@@ -45,7 +45,10 @@ public class Constants extends ConstantsBase
     public static final int kShifterSolenoidId = 0; // PCM 0, Solenoid 0
     public static final int kIntakeDeploySolenoidId = 1; // PCM 0, Solenoid 1
     public static final int kHopperSolenoidId = 2; // PCM 0, Solenoid 2
-    public static final int kGearWristSolenoid = 7; // PCM 0, Solenoid 7    
+    public static final int kGearWristSolenoid = 7; // PCM 0, Solenoid 7
+    public static final int kScissorLifterSolenoidId = 1; // PCM 1, Solenoid 1
+    public static final int kScissorLowerSolenoidId = 2; //PCM 2, Solenoid 2
+    public static final int kScissorBrakeSolenoidId = 3; //PCM 3, Solenoid 3
 
     // PWM (Servo) Pins ----------------------------
     public static final int kTestbedServoId = 0;

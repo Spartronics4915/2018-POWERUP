@@ -330,8 +330,8 @@ public class Robot extends IterativeRobot
     @Override
     public void disabledPeriodic()
     {
-        final double kVoltageThreshold = 0.15;
-        if (mCheckLightButton.getAverageVoltage() < kVoltageThreshold)
+  /*    final double kVoltageThreshold = 0.15;
+       if (mCheckLightButton.getAverageVoltage() < kVoltageThreshold)
         {
             mLED.setLEDOn();
         }
@@ -339,7 +339,7 @@ public class Robot extends IterativeRobot
         {
             mLED.setLEDOff();
         }
-
+   */
         // don't zero sensors during disabledPeriodic... zeroAllSensors();
         allButTestPeriodic();
     }
@@ -372,11 +372,12 @@ public class Robot extends IterativeRobot
      */
     private void allButTestPeriodic()
     {
-        mRobotState.outputToSmartDashboard();
+  /*      mRobotState.outputToSmartDashboard();
         mSubsystemManager.outputToSmartDashboard();
         mSubsystemManager.writeToLog();
         mEnabledLooper.outputToSmartDashboard();
         mConnectionMonitor.setLastPacketTime(Timer.getFPGATimestamp());
+  */
     }
 
     /**

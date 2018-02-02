@@ -3,6 +3,8 @@ package com.spartronics4915.frc2018.subsystems;
 import com.spartronics4915.frc2018.loops.Loop;
 import com.spartronics4915.frc2018.loops.Looper;
 
+import edu.wpi.first.wpilibj.Solenoid;
+import com.spartronics4915.frc2018.Constants;
 /**
  * The scissor lift is controlled by pnuematics. It has multiple set positions and variable height.
  * The key thing here is that its system state is the highly variable position of the lifter.
@@ -21,12 +23,12 @@ public class ScissorLift extends Subsystem
         return sInstance;
     }
 
-    public enum SystemState
+    public enum WantedState
     {
-        LOW(0), MIDDLE(64), HIGH(128); // You should probably change these names and values
+        RETRACTED(0), SWITCH(64), SCALE(128);
         
         int mPosition;
-        private SystemState(int pos)
+        private WantedState(int pos)
         {
             mPosition = pos;
         }
@@ -35,17 +37,19 @@ public class ScissorLift extends Subsystem
         {
             mPosition = pos;
         }
+        
+        public int getPosition() {
+            return mPosition;
+        }
     }
 
-    public enum WantedState
-    {
-        LOW,
-        MIDDLE,
-        HIGH,
-    }
-
-    private SystemState mSystemState = SystemState.LOW;
-    private WantedState mWantedState = WantedState.LOW;
+    private static final int kPotentiometerAllowedError = 10;
+    private Solenoid mScissorLifterSolenoid;
+    private Solenoid mScissorLowerSolenoid; 
+    private Solenoid mScissorBrakeSolenoid;
+    
+    private int mSystemState = 0;
+    private WantedState mWantedState = WantedState.RETRACTED;
     
     // Actuators and sensors should be initialized as private members with a value of null here
     
@@ -55,7 +59,10 @@ public class ScissorLift extends Subsystem
 
         // Instantiate your actuator and sensor objects here
         // If !mMyMotor.isValid() then success should be set to false
-
+        mScissorLifterSolenoid = new Solenoid(Constants.kScissorLifterSolenoidId);
+        mScissorLowerSolenoid = new Solenoid(Constants.kScissorLowerSolenoidId);
+        mScissorBrakeSolenoid = new Solenoid(Constants.kScissorBrakeSolenoidId);
+        this. mInitialized = true;
         logInitialized(success);
     }
     
@@ -66,7 +73,7 @@ public class ScissorLift extends Subsystem
         {
             synchronized(ScissorLift.this)
             {
-                mSystemState = SystemState.LOW;
+                mSystemState = 0;
             }
         }
 
@@ -75,11 +82,26 @@ public class ScissorLift extends Subsystem
         {
             synchronized(ScissorLift.this)
             {
-                switch (mSystemState)
-                {
+                  if (mWantedState.getPosition() < mSystemState - kPotentiometerAllowedError || mWantedState.getPosition() > mSystemState + kPotentiometerAllowedError)
+                    {
+                         // increase
+                         logNotice ("Starting to Raise");
+                         mScissorLowerSolenoid(false);
+                         mScissorLifterSolenoid(true);
+                    }
+                  else if (mWantedState.getPosition() > mSystemState - kPotentiometerAllowedError || mWantedState.getPosition() < mSystemState + kPotentiometerAllowedError)
+                    {
+                         // decrease
+                         logNotice ("Starting to Lower");
+                         mScissorLifterSolenoid(false);
+                         mScissorLowerSolenoid(true);
+                         
+                         
+                    }
+ 
                 }
             }
-        }
+    
 
         @Override
         public void onStop(double timestamp)
@@ -89,9 +111,7 @@ public class ScissorLift extends Subsystem
                 stop();
             }
         }
-        
     };
-    
     public void setWantedState(WantedState wantedState)
     {
         mWantedState = wantedState;
@@ -100,6 +120,7 @@ public class ScissorLift extends Subsystem
     @Override
     public void outputToSmartDashboard()
     {
+        
     }
 
     @Override
@@ -115,6 +136,18 @@ public class ScissorLift extends Subsystem
     @Override
     public void registerEnabledLoops(Looper enabledLooper)
     {
-        enabledLooper.register(mLoop);
+      //  enabledLooper.register(mLoop);
+    }
+    // Called to check if we've reached our desired state
+    // Eventually we will want it to check for the tolerance; may be a switch statement or multiple methods checking for different goals
+    public synchronized boolean isDone()
+    {
+        {
+            
+              if (mSystemState == mWantedState)
+                        return true;
+            }
+                return false;
+        }
     }
 }
