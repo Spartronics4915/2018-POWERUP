@@ -15,9 +15,12 @@ public class TestPath implements PathContainer
     public Path buildPath()
     {
         ArrayList<Waypoint> sWaypoints = new ArrayList<Waypoint>();
-        sWaypoints.add(new Waypoint(50, 50, 0, 0));
-        sWaypoints.add(new Waypoint(90, 50, 30, 50));
-        sWaypoints.add(new Waypoint(90, 90, 0, 50));
+        sWaypoints.add(new Waypoint(0, 0, 0, 0));
+        sWaypoints.add(new Waypoint(90, 0, 0, 60));
+        sWaypoints.add(new Waypoint(102, 0, 0, 15));
+        sWaypoints.add(new Waypoint(135, 0, 0, 15));
+        sWaypoints.add(new Waypoint(155, 0, 0, 60));
+        sWaypoints.add(new Waypoint(165, 0, 0, 0));
 
         return PathBuilder.buildPathFromWaypoints(sWaypoints);
     }
@@ -25,7 +28,7 @@ public class TestPath implements PathContainer
     @Override
     public RigidTransform2d getStartPose()
     {
-        return new RigidTransform2d(new Translation2d(50, 50), Rotation2d.fromDegrees(90.0)); // XXX: I have no idea why this needs to be 90 instead of 180, but if it isn't things get reversed
+        return new RigidTransform2d(new Translation2d(0, 0), Rotation2d.fromDegrees(90.0)); // XXX: I have no idea why this needs to be 90 instead of 180, but if it isn't things get reversed
     }
 
     @Override
