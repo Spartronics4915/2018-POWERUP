@@ -37,7 +37,7 @@ public class Constants extends ConstantsBase
  
     public static final int kNumTalons = 4; // total talon count on robot (not testbed)
     
-    public static final int kNumPDPs = 0; // CANProbe doesn't probe for this device
+    public static final int kNumPDPs = 1; //
     public static final int kNumPCMs = 1; // Pressure control module (pneumatics)
     public static final int kNumCANDevices = kNumTalons + kNumPCMs + kNumPDPs;
     
@@ -154,13 +154,14 @@ public class Constants extends ConstantsBase
 
     // Pose of the camera frame w.r.t. the robot frame
     // TODO: Update for 2018
+    public static final String kVisionTableName = "Vision"; // name in networktables below root
+    public static final String kVisionTargetAngleName = "ax"; // "clock", "ay" are also available
     public static final double kCameraXOffset = -3.3211;
     public static final double kCameraYOffset = 0.0;
     public static final double kCameraZOffset = 20.9;
     public static final double kCameraPitchAngleDegrees = 29.56; // Measured on 4/26
     public static final double kCameraYawAngleDegrees = 0.0;
     public static final double kCameraDeadband = 0.0;
-
 
     public static final double kShooterOptimalRange = 100.0;
     public static final double kShooterOptimalRangeFloor = 95.0;

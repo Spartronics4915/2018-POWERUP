@@ -83,16 +83,12 @@ public class Robot extends IterativeRobot
     private AnalogInput mCheckLightButton = null;
     private DelayedBoolean mDelayedAimButton;
 
+    private static final String kRobotVerbosity = "Robot/Verbosity"; // smartdashboard key
+    
     public Robot()
     {
         Logger.logRobotConstruction();
         // please defer initialization of objects until robotInit
-    }
-
-    public void zeroAllSensors()
-    {
-        mSubsystemManager.zeroSensors();
-        mRobotState.reset(Timer.getFPGATimestamp(), new RigidTransform2d());
     }
 
     /**
@@ -114,6 +110,7 @@ public class Robot extends IterativeRobot
                     "  on: " + attributes.getValue("Built-At") +
                     "  (" + attributes.getValue("Code-Version") + ")";
             SmartDashboard.putString("Build", buildStr);
+            SmartDashboard.putString(kRobotVerbosity, "NOTICE"); // competition verbosity
 
             Logger.notice("=================================================");
             Logger.notice(Instant.now().toString());
@@ -160,7 +157,7 @@ public class Robot extends IterativeRobot
 
             // Initialize other helper objects
             mCheesyDriveHelper = new CheesyDriveHelper();
-            mControlBoard = new XboxControlBoard();
+            mControlBoard = new ControlBoard();
 
             mEnabledLooper = new Looper();
             mCheckLightButton = new AnalogInput(Constants.kLEDOnId);
@@ -189,6 +186,12 @@ public class Robot extends IterativeRobot
         }
         Logger.notice("robotInit complete, success:" + success);
     }
+    
+    public void zeroAllSensors()
+    {
+        mSubsystemManager.zeroSensors();
+        mRobotState.reset(Timer.getFPGATimestamp(), new RigidTransform2d());
+    }
 
     /**
      * Initializes the robot for the beginning of autonomous mode (set
@@ -202,6 +205,7 @@ public class Robot extends IterativeRobot
     {
         try
         {
+            Logger.setVerbosity(SmartDashboard.getString(kRobotVerbosity, "NOTICE"));
             Logger.logAutoInit();
             Logger.notice("Auto start timestamp: " + Timer.getFPGATimestamp());
 
@@ -247,6 +251,7 @@ public class Robot extends IterativeRobot
     {
         try
         {
+            Logger.setVerbosity(SmartDashboard.getString(kRobotVerbosity, "NOTICE"));
             Logger.logTeleopInit();
 
             // Start loopers
@@ -283,11 +288,6 @@ public class Robot extends IterativeRobot
             mDrive.setOpenLoop(
                     mCheesyDriveHelper.cheesyDrive(throttle, turn, mControlBoard.getQuickTurn(),
                             !mControlBoard.getLowGear()));
-            
-            if (mControlBoard.getBlinkLEDButton())
-            {
-                mLED.setWantedState(LED.WantedState.BLINK);
-            }
 
             allButTestPeriodic();
         }
@@ -303,6 +303,7 @@ public class Robot extends IterativeRobot
     {
         try
         {
+            Logger.setVerbosity(SmartDashboard.getString(kRobotVerbosity, "NOTICE"));
             Logger.logDisabledInit();
 
             if (mAutoModeExecuter != null)
@@ -347,6 +348,7 @@ public class Robot extends IterativeRobot
     @Override
     public void testInit()
     {
+        Logger.setVerbosity(SmartDashboard.getString(kRobotVerbosity, "NOTICE"));
         Timer.delay(0.5);
 
         boolean results = mDrive.checkSystem();

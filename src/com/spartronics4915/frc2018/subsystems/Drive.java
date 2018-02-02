@@ -19,6 +19,9 @@ import com.spartronics4915.lib.util.math.RigidTransform2d;
 import com.spartronics4915.lib.util.math.Rotation2d;
 import com.spartronics4915.lib.util.math.Twist2d;
 
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
@@ -57,10 +60,11 @@ public class Drive extends Subsystem
         OPEN_LOOP, // open loop voltage control
         VELOCITY_SETPOINT, // velocity PID control
         PATH_FOLLOWING, // used for autonomous driving
-        AIM_TO_GOAL, // turn to face the boiler
+        AIM_TO_GOAL, // Goal is a target expressed in field coordinates
+        AIM_TO_ROBOTANGLE, // distinct from AIM_TO_GOAL, operates in robot-relative coords
         TURN_TO_HEADING, // turn in place
         DRIVE_TOWARDS_GOAL_COARSE_ALIGN, // turn to face the boiler, then DRIVE_TOWARDS_GOAL_COARSE_ALIGN
-        DRIVE_TOWARDS_GOAL_APPROACH // drive forwards until we are at optimal shooting distance
+        DRIVE_TOWARDS_GOAL_APPROACH, // drive forwards until we are at optimal shooting distance
     }
 
     // Control states
@@ -73,6 +77,7 @@ public class Drive extends Subsystem
     private PathFollower mPathFollower;
     private Rotation2d mTargetHeading = new Rotation2d();
     private Path mCurrentPath = null;
+    private NetworkTableEntry mVisionTargetAngleEntry = null;
     private boolean mIsOnTarget = false;
     private boolean mIsApproaching = false;
 
@@ -82,6 +87,7 @@ public class Drive extends Subsystem
     // mLoop not registered when we're not initialized
     private final Loop mLoop = new Loop()
     {
+
         @Override
         public void onStart(double timestamp)
         {
@@ -121,7 +127,7 @@ public class Drive extends Subsystem
                         }
                         return;
                     case TURN_TO_HEADING:
-                        updateTurnToHeading(timestamp);
+                        updateTurnToFieldHeading(timestamp);
                         return;
                     case DRIVE_TOWARDS_GOAL_COARSE_ALIGN:
                         updateDriveTowardsGoalCoarseAlign(timestamp);
@@ -129,6 +135,9 @@ public class Drive extends Subsystem
                     case DRIVE_TOWARDS_GOAL_APPROACH:
                         updateDriveTowardsGoalApproach(timestamp);
                         return;
+                    case AIM_TO_ROBOTANGLE:
+                        updateTurnToRobotHeading(timestamp);
+                        break;
                     default:
                         logError("Unexpected drive control state: " + mDriveControlState);
                         break;
@@ -146,6 +155,11 @@ public class Drive extends Subsystem
 
     private Drive()
     {
+        final NetworkTable table =
+                NetworkTableInstance.getDefault().getTable(Constants.kVisionTableName);
+        mVisionTargetAngleEntry = table.getEntry(Constants.kVisionTargetAngleName);
+        mVisionTargetAngleEntry.forceSetNumber(0);
+
         // encoder phase must match output sense or PID will spiral out of control
         mMotorGroup = new TalonSRX4915Drive(Constants.kDriveWheelDiameterInches,
                 Constants.kEncoderCodesPerRev,
@@ -158,6 +172,7 @@ public class Drive extends Subsystem
 
         if (mMotorGroup.isInitialized())
         {
+
             mMotorGroup.beginOpenLoop(kOpenLoopRampRate,
                     kOpenLoopNominalOutput, kOpenLoopPeakOutput);
             if (!mMotorGroup.hasIMU())
@@ -218,26 +233,26 @@ public class Drive extends Subsystem
         mMotorGroup.outputToSmartDashboard(usesTalonVelocityControl(mDriveControlState));
         synchronized (this)
         {
-            SmartDashboard.putString("Drive/state", mDriveControlState.toString());
+            broadcastState(mDriveControlState.toString());
             if (mDriveControlState == DriveControlState.PATH_FOLLOWING && mPathFollower != null)
             {
-                SmartDashboard.putNumber("Drive/CTE", mPathFollower.getCrossTrackError());
-                SmartDashboard.putNumber("Drive/ATE", mPathFollower.getAlongTrackError());
+                broadcastNumber("CTE", mPathFollower.getCrossTrackError());
+                broadcastNumber("ATE", mPathFollower.getAlongTrackError());
             }
             else
             {
-                SmartDashboard.putNumber("Drive/CTE", 0.0);
-                SmartDashboard.putNumber("Drive/ATE", 0.0);
+                broadcastNumber("CTE", 0.0);
+                broadcastNumber("ATE", 0.0);
             }
         }
-        SmartDashboard.putBoolean("Drive/on target", isOnTarget());
+        broadcastBoolean("on target", isOnTarget());
     }
 
     public synchronized void resetEncoders()
     {
         if (!this.isInitialized())
             return;
-        mMotorGroup.resetEncoders(false/*resetYaw*/);
+        mMotorGroup.resetEncoders(false/* resetYaw */);
     }
 
     @Override
@@ -245,19 +260,20 @@ public class Drive extends Subsystem
     {
         if (!this.isInitialized())
             return;
-        mMotorGroup.resetEncoders(true/*resetYaw*/);
+        mMotorGroup.resetEncoders(true/* resetYaw */);
     }
 
     public synchronized Rotation2d getGyroAngle()
     {
-        if(!this.isInitialized()) return new Rotation2d();
+        if (!this.isInitialized())
+            return new Rotation2d();
         return Rotation2d.fromDegrees(mMotorGroup.getGyroAngle());
         // Rotation2d normalizes between -180 and 180 automatically
     }
 
     public synchronized void setGyroAngle(Rotation2d rot)
     {
-        if(!this.isInitialized())
+        if (!this.isInitialized())
             return;
         mMotorGroup.setGyroAngle(rot.getDegrees());
     }
@@ -415,37 +431,57 @@ public class Drive extends Subsystem
     /**
      * Turn the robot to a target heading.
      *
-     * Is called periodically when the robot is auto-aiming towards the boiler.
-     *
-     * This actually doesn't use the IMU... Only the wheel encoders and
-     * kinematics.
+     * Is called periodically when the robot is auto-aiming towards a target.
      */
-    private void updateTurnToHeading(double timestamp)
+    private void updateTurnToFieldHeading(double timestamp)
     {
         if (!this.isInitialized())
             return;
-        final Rotation2d field_to_robot =
-                mRobotState.getLatestFieldToVehicle().getValue().getRotation(); // We need the field frame because this is specified in field coordinates, not robot ones
+        // We need the field frame because mTargetHeading is specified in field coordinates, not robot ones
+        final Rotation2d fieldToRobot =
+                mRobotState.getLatestFieldToVehicle().getValue().getRotation();
         // Figure out the rotation necessary to turn to face the goal.
-        final Rotation2d robot_to_target = field_to_robot.inverse().rotateBy(mTargetHeading);
+        final Rotation2d robotToTarget = fieldToRobot.inverse().rotateBy(mTargetHeading);
 
+        performClosedLoopTurn(robotToTarget);
+    }
+
+    private void updateTurnToRobotHeading(double timestamp)
+    {
+        if (!this.isInitialized())
+            return;
+        final double dx = mVisionTargetAngleEntry.getNumber(0).doubleValue();
+        final Rotation2d robotToTarget = Rotation2d.fromDegrees(dx);
+        performClosedLoopTurn(robotToTarget);
+    }
+
+    /*
+     * Trigger updates to closed-loop position based on a rotation expressed
+     * relative to the robot's current heading.
+     * This actually doesn't use the IMU... Only the wheel encoders and
+     * kinematics.
+     */
+    private void performClosedLoopTurn(Rotation2d robotToTarget)
+    {
         // Check if we are on target
         final double kGoalPosTolerance = 0.75; // degrees
         final double kGoalVelTolerance = 5.0; // inches per second
-        if (Math.abs(robot_to_target.getDegrees()) < kGoalPosTolerance
+        if (Math.abs(robotToTarget.getDegrees()) < kGoalPosTolerance
                 && Math.abs(mMotorGroup.getLeftVelocityInchesPerSec()) < kGoalVelTolerance
                 && Math.abs(mMotorGroup.getRightVelocityInchesPerSec()) < kGoalVelTolerance)
         {
             // Use the current setpoint and base lock.
             mIsOnTarget = true;
-            updatePositionSetpoint(mMotorGroup.getLeftDistanceInches(), mMotorGroup.getRightDistanceInches());
-            return;
+            updatePositionSetpoint(mMotorGroup.getLeftDistanceInches(),
+                    mMotorGroup.getRightDistanceInches());
         }
-
-        Kinematics.DriveVelocity wheel_delta = Kinematics
-                .inverseKinematics(new Twist2d(0, 0, robot_to_target.getRadians()));
-        updatePositionSetpoint(wheel_delta.left + mMotorGroup.getLeftDistanceInches(),
-                wheel_delta.right + mMotorGroup.getRightDistanceInches());
+        else
+        {
+            Kinematics.DriveVelocity wheel_delta = Kinematics
+                    .inverseKinematics(new Twist2d(0, 0, robotToTarget.getRadians()));
+            updatePositionSetpoint(wheel_delta.left + mMotorGroup.getLeftDistanceInches(),
+                    wheel_delta.right + mMotorGroup.getRightDistanceInches());
+        }
     }
 
     /**
@@ -458,7 +494,7 @@ public class Drive extends Subsystem
         if (!this.isInitialized())
             return;
         updateGoalHeading(timestamp);
-        updateTurnToHeading(timestamp);
+        updateTurnToFieldHeading(timestamp);
         mIsApproaching = true;
         if (mIsOnTarget)
         {
@@ -489,8 +525,8 @@ public class Drive extends Subsystem
 
     /**
      * Drives the robot straight forwards until it is at an optimal shooting
-     * distance. Then sends the robot into the
-     * AIM_TO_GOAL state for one final alignment
+     * distance. Then sends the robot into the AIM_TO_GOAL state for one final
+     * alignment
      */
     private void updateDriveTowardsGoalApproach(double timestamp)
     {
@@ -582,7 +618,21 @@ public class Drive extends Subsystem
                     mMotorGroup.getRightDistanceInches());
             mTargetHeading = Rotation2d.fromDegrees(mMotorGroup.getGyroAngle());
         }
-     }
+    }
+
+    public synchronized void setWantAimToVisionTarget()
+    {
+        if (mDriveControlState != DriveControlState.AIM_TO_ROBOTANGLE)
+        {
+            mIsOnTarget = false;
+            configureTalonsForPositionControl();
+            mDriveControlState = DriveControlState.AIM_TO_ROBOTANGLE;
+            // no target received yet, start at current heading
+            updatePositionSetpoint(mMotorGroup.getLeftDistanceInches(),
+                    mMotorGroup.getRightDistanceInches());
+            mTargetHeading = Rotation2d.fromDegrees(mMotorGroup.getGyroAngle());
+        }
+    }
 
     /**
      * Configures the drivebase for auto driving
@@ -600,7 +650,7 @@ public class Drive extends Subsystem
                     mMotorGroup.getRightDistanceInches());
             mTargetHeading = Rotation2d.fromDegrees(mMotorGroup.getGyroAngle());
         }
-     }
+    }
 
     /**
      * Configures the drivebase to turn to a desired heading
@@ -619,7 +669,7 @@ public class Drive extends Subsystem
             mTargetHeading = heading;
             mIsOnTarget = false;
         }
-     }
+    }
 
     /**
      * Configures the drivebase to drive a path. Used for autonomous driving
@@ -718,12 +768,12 @@ public class Drive extends Subsystem
                     Constants.kDrivePositionKp, Constants.kDrivePositionKi,
                     Constants.kDrivePositionKd, Constants.kDrivePositionKf,
                     Constants.kDrivePositionIZone, Constants.kDrivePositionRampRate);
-    
+
             mMotorGroup.reloadGains(kVelocityControlSlot,
                     Constants.kDriveVelocityKp, Constants.kDriveVelocityKi,
                     Constants.kDriveVelocityKd, Constants.kDriveVelocityKf,
                     Constants.kDriveVelocityIZone, Constants.kDriveVelocityRampRate);
-    
+
             logNotice("reloaded PID gains");
             logDebug("reloaded position gains:" + mMotorGroup.dumpPIDState(kPositionControlSlot));
             logDebug("reloaded velocity gains:" + mMotorGroup.dumpPIDState(kVelocityControlSlot));
