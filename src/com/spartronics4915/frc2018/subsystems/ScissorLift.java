@@ -54,7 +54,8 @@ public class ScissorLift extends Subsystem
     private Solenoid mScissorLowerSolenoid;
     private Solenoid mScissorBrakeSolenoid;
 
-    private int mSystemState = 0;
+    private int mSystemState = 0; // Potentiometer Value
+    private int mLastSystemState = mSystemState;
     private WantedState mWantedState = WantedState.RETRACTED;
 
     // Actuators and sensors should be initialized as private members with a value of null here
@@ -65,6 +66,7 @@ public class ScissorLift extends Subsystem
 
         // Instantiate your actuator and sensor objects here
         // If !mMyMotor.isValid() then success should be set to false
+        // TODO - Add something to tell if the Solenoids are present
         mScissorLifterSolenoid = new Solenoid(Constants.kScissorUpSolenoidId);
         mScissorLowerSolenoid = new Solenoid(Constants.kScissorDownSolenoidId);
         mScissorBrakeSolenoid = new Solenoid(Constants.kScissorBrakeSolenoidId);
@@ -79,7 +81,7 @@ public class ScissorLift extends Subsystem
         {
             synchronized (ScissorLift.this)
             {
-                mSystemState = 0;
+                mSystemState = 0; // TODO - Read Potentiometer and sub value
             }
         }
 
@@ -88,23 +90,46 @@ public class ScissorLift extends Subsystem
         {
             synchronized (ScissorLift.this)
             {
-                if (mWantedState.getPosition() < mSystemState - kPotentiometerAllowedError
-                        || mWantedState.getPosition() > mSystemState + kPotentiometerAllowedError)
+                if (mWantedState.getPosition() < (mSystemState - kPotentiometerAllowedError)
+                        || mWantedState.getPosition() > (mSystemState + kPotentiometerAllowedError))
                 {
                     // increase
-                    logNotice("Starting to Raise");
-                    mScissorLowerSolenoid.set(false);
-                    mScissorLifterSolenoid.set(true);
+                    if (mScissorLowerSolenoid.get())
+                    {
+                        broadcastState("Starting to Raise");
+                        mScissorLowerSolenoid.set(false);
+                        mScissorLifterSolenoid.set(true);
+                    }
                 }
-                else if (mWantedState.getPosition() > mSystemState - kPotentiometerAllowedError
-                        || mWantedState.getPosition() < mSystemState + kPotentiometerAllowedError)
+                else if (mWantedState.getPosition() > (mSystemState - kPotentiometerAllowedError)
+                        || mWantedState.getPosition() < (mSystemState + kPotentiometerAllowedError))
                 {
                     // decrease
-                    logNotice("Starting to Lower");
-                    mScissorLifterSolenoid.set(false);
-                    mScissorLowerSolenoid.set(true);
-
+                    if (mScissorLifterSolenoid.get())
+                    {
+                        broadcastState("Starting to Lower");
+                        mScissorLifterSolenoid.set(false);
+                        mScissorLowerSolenoid.set(true);
+                    }
                 }
+                else if (mLastSystemState != mSystemState)
+                {
+                    // holding
+                    boolean report = false;
+                    if (!mScissorLowerSolenoid.get())
+                    {
+                        mScissorLowerSolenoid.set(true);
+                        report = true;
+                    }
+                    if (!mScissorLifterSolenoid.get())
+                    {
+                        mScissorLifterSolenoid.set(true);
+                        report = true;
+                    }
+                    if(report)
+                        broadcastState("Holding");
+                }
+                mLastSystemState = mSystemState;
 
             }
         }
@@ -143,7 +168,7 @@ public class ScissorLift extends Subsystem
     @Override
     public void registerEnabledLoops(Looper enabledLooper)
     {
-        //  enabledLooper.register(mLoop);
+        enabledLooper.register(mLoop);
     }
 
     // Called to check if we've reached our desired state
