@@ -72,6 +72,11 @@ public abstract class Subsystem
         SmartDashboard.putString(mName+"/State", state);
     }
     
+    public void broadcastWantedState(String state)
+    {
+        SmartDashboard.putString(mName+"/WantedState", state);
+    }
+   
     public void broadcastString(String nm, String value)
     {
         SmartDashboard.putString(mName+"/" + nm, value);

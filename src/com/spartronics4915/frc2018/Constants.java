@@ -37,7 +37,7 @@ public class Constants extends ConstantsBase
  
     public static final int kNumTalons = 4; // total talon count on robot (not testbed)
     
-    public static final int kNumPDPs = 0; // CANProbe doesn't probe for this device
+    public static final int kNumPDPs = 1; //
     public static final int kNumPCMs = 1; // Pressure control module (pneumatics)
     public static final int kNumCANDevices = kNumTalons + kNumPCMs + kNumPDPs;
     
