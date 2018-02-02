@@ -14,4 +14,10 @@ public interface ControlBoardInterface
     boolean getQuickTurn();
     
     boolean getLowGear();
+    
+    boolean getHarvesterIntake();
+    
+    boolean getHarvesterEject();
+    
+    boolean getHarvesterOpen();
 }

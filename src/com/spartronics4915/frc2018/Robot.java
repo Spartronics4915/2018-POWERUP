@@ -18,6 +18,7 @@ import com.spartronics4915.frc2018.subsystems.Climber;
 import com.spartronics4915.frc2018.subsystems.ConnectionMonitor;
 import com.spartronics4915.frc2018.subsystems.Drive;
 import com.spartronics4915.frc2018.subsystems.Harvester;
+import com.spartronics4915.frc2018.subsystems.Harvester.WantedState;
 import com.spartronics4915.frc2018.subsystems.LED;
 import com.spartronics4915.frc2018.subsystems.ScissorLift;
 import com.spartronics4915.frc2018.subsystems.Superstructure;
@@ -283,6 +284,21 @@ public class Robot extends IterativeRobot
             mDrive.setOpenLoop(
                     mCheesyDriveHelper.cheesyDrive(throttle, turn, mControlBoard.getQuickTurn(),
                             !mControlBoard.getLowGear()));
+            
+            if(mControlBoard.getHarvesterIntake())
+            {
+                mHarvester.setWantedState(WantedState.HARVEST);
+            }
+            
+            if(mControlBoard.getHarvesterEject())
+            {
+                mHarvester.setWantedState(WantedState.EJECT);
+            }
+            
+            if(mControlBoard.getHarvesterOpen())
+            {
+                mHarvester.setWantedState(WantedState.OPEN);
+            }
 
             allButTestPeriodic();
         }

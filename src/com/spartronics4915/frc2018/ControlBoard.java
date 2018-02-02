@@ -57,4 +57,22 @@ public class ControlBoard implements ControlBoardInterface
     {
         return mDrivestick.getTriggerPressed();
     }
+    
+    @Override
+    public boolean getHarvesterIntake()
+    {
+        return mDrivestick.getRawButtonReleased(7); 
+    }
+    
+    @Override
+    public boolean getHarvesterEject()
+    {
+        return mDrivestick.getRawButtonReleased(9); 
+    }
+    
+    @Override
+    public boolean getHarvesterOpen()
+    {
+        return mDrivestick.getRawButtonReleased(11); 
+    }
 }

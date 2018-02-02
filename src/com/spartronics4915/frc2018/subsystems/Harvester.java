@@ -2,6 +2,7 @@ package com.spartronics4915.frc2018.subsystems;
 
 import com.spartronics4915.frc2018.loops.Loop;
 import com.spartronics4915.frc2018.loops.Looper;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
  * The harvester is a set of two collapsible rollers that pull in and hold
@@ -62,6 +63,7 @@ public class Harvester extends Subsystem
             synchronized(Harvester.this)
             {
                 mSystemState = SystemState.CLOSING;
+
             }
         }
 
@@ -110,6 +112,7 @@ public class Harvester extends Subsystem
     
     private SystemState defaultStateTransfer()
     {
+
         switch (mWantedState)
         {
             case CLOSE:
@@ -131,15 +134,14 @@ public class Harvester extends Subsystem
         //motors off and bars in
         
         // You should probably be transferring state and controlling actuators in here
-        logInfo("Harvester is closing");
         if (mWantedState == WantedState.OPEN) 
         {
             return defaultStateTransfer(); 
         }
         else
-            {
+        {
             return SystemState.CLOSING;
-            }
+        }
             
     }
     
@@ -147,7 +149,6 @@ public class Harvester extends Subsystem
         //motors off and bars out
         
         // You should probably be transferring state and controlling actuators in here
-        logInfo("Harvester is opening");
         if (mWantedState == WantedState.HARVEST) 
         {
             return defaultStateTransfer(); 
@@ -162,55 +163,54 @@ public class Harvester extends Subsystem
         //motors on forward and bars closing, hug when cube is gone
         
         // You should probably be transferring state and controlling actuators in here
-        logInfo("Harvester is harvesting");
-        if (mWantedState == WantedState.HUG || mWantedState == WantedState.EJECT) 
+        if (mWantedState == WantedState.HUG || mWantedState == WantedState.EJECT || mWantedState == WantedState.OPEN) 
         {
             return defaultStateTransfer(); 
         }
         else
-            {
-            return SystemState.HUGGING;
-            }
+        {
+            return SystemState.HARVESTING;
+        }
     }
     
     private SystemState handleEjecting() {
         //motors in reverse and bars closing, close when cube is gone
         
         // You should probably be transferring state and controlling actuators in here
-        logInfo("Harvester is ejecting");
-        if (mWantedState == WantedState.OPEN || mWantedState == WantedState.CLOSE) 
+               if (mWantedState == WantedState.OPEN || mWantedState == WantedState.CLOSE) 
         {
             return defaultStateTransfer(); 
         }
         else
-            {
+        {
             return SystemState.EJECTING;
-            }
+        }
     }
    
     private SystemState handleHugging() {
         //motors off and bars closing go to closed when cube is gone
         
         // You should probably be transferring state and controlling actuators in here
-        logInfo("Harvester is hugging");
-        if (mWantedState == WantedState.HARVEST || mWantedState == WantedState.EJECT || mWantedState == WantedState.OPEN) 
+                if (mWantedState == WantedState.HARVEST || mWantedState == WantedState.EJECT || mWantedState == WantedState.OPEN) 
         {
             return defaultStateTransfer(); 
         }
         else
-            {
+        {
             return SystemState.HUGGING;
-            }
+        }
     }
     
     public void setWantedState(WantedState wantedState)
     {
         mWantedState = wantedState;
     }
-
+    
     @Override
     public void outputToSmartDashboard()
     {
+        SmartDashboard.putString(this.getName()+"/SystemState", this.mSystemState + "");
+        SmartDashboard.putString(this.getName()+"/WantedState", this.mWantedState + "");
     }
 
     @Override
