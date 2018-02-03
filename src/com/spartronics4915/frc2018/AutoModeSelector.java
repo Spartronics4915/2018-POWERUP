@@ -40,7 +40,8 @@ public class AutoModeSelector
             new AutoModeCreator("Test Path Mode", () -> new TestPathMode()),
             new AutoModeCreator("Test Turning Mode", () -> new TestTurnMode()),
             new AutoModeCreator("Test Open Loop", () -> new TestOpenLoopMode()),
-            new AutoModeCreator("Stress Test Motor Mode", () -> new StressMotorsMode())
+            new AutoModeCreator("Stress Test Motor Mode", () -> new StressMotorsMode()),
+            new AutoModeCreator("Turn to Cube Mode", () -> new TurnToCubeMode())
             // e.g. new AutoModeCreator("Boiler Gear then 10 Ball Shoot Red", () -> new BoilerGearThenShootModeRed()),
     };
 
