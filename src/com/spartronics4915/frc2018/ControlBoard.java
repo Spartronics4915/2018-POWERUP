@@ -15,7 +15,7 @@ public class ControlBoard implements ControlBoardInterface
 {
 
     private static ControlBoardInterface mInstance = null;
-    
+
     public static ControlBoardInterface getInstance()
     {
         if (mInstance == null)
@@ -73,6 +73,23 @@ public class ControlBoard implements ControlBoardInterface
     @Override
     public boolean getHarvesterOpen()
     {
-        return mDrivestick.getRawButtonReleased(11); 
+        return mDrivestick.getRawButtonReleased(11);
+    }
+    
+    public boolean getDebugPrimary()
+    {
+        return mDrivestick.getRawButton(3);
+    }
+    
+    @Override
+    public boolean getDebugSecondary()
+    {
+        return mDrivestick.getRawButton(4);
+    }
+    
+    @Override
+    public boolean getDebugTertiary()
+    {
+        return mDrivestick.getRawButton(5);
     }
 }

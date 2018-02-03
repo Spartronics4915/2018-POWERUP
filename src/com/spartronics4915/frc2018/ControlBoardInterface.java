@@ -20,4 +20,11 @@ public interface ControlBoardInterface
     boolean getHarvesterEject();
     
     boolean getHarvesterOpen();
+    
+    // Debug buttons, remove me
+    boolean getDebugPrimary();
+    
+    boolean getDebugSecondary();
+    
+    boolean getDebugTertiary();
 }
