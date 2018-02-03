@@ -28,7 +28,7 @@ public class TurnToCubeAction implements Action
     public void start()
     {
         mDrive = Drive.getInstance();
-        mDrive.setWantAimToGoal();
+        mDrive.setWantAimToVisionTarget();
     }
 
 }
