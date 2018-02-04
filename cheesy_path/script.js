@@ -445,7 +445,7 @@ ${pathInit}
     
     @Override
     public RigidTransform2d getStartPose() {
-        return new RigidTransform2d(${startPoint}, Rotation2d.fromDegrees(180.0)); 
+        return new RigidTransform2d(${startPoint}, Rotation2d.fromDegrees(90.0)); 
     }
 
     @Override
