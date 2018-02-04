@@ -41,7 +41,8 @@ public class AutoModeSelector
             new AutoModeCreator("Test Turning Mode", () -> new TestTurnMode()),
             new AutoModeCreator("Test Open Loop", () -> new TestOpenLoopMode()),
             new AutoModeCreator("Stress Test Motor Mode", () -> new StressMotorsMode()),
-            new AutoModeCreator("Turn to Cube Mode", () -> new TurnToCubeMode())
+            new AutoModeCreator("Turn to Cube Mode", () -> new TurnToCubeMode()),
+            new AutoModeCreator("Position 3 Drive to Scale", () -> new DriveToScaleMode()),
             // e.g. new AutoModeCreator("Boiler Gear then 10 Ball Shoot Red", () -> new BoilerGearThenShootModeRed()),
     };
 
