@@ -85,7 +85,7 @@ public class Robot extends IterativeRobot
     private DelayedBoolean mDelayedAimButton;
 
     private static final String kRobotVerbosity = "Robot/Verbosity"; // smartdashboard key
-    
+
     public Robot()
     {
         Logger.logRobotConstruction();
@@ -148,7 +148,7 @@ public class Robot extends IterativeRobot
             mClimber = Climber.getInstance();
             mHarvester = Harvester.getInstance();
             mLifter = ScissorLift.getInstance();
-            
+
             mRobotState = RobotState.getInstance();
             mAutoModeExecuter = null;
             mConnectionMonitor = ConnectionMonitor.getInstance();
@@ -187,7 +187,7 @@ public class Robot extends IterativeRobot
         }
         Logger.notice("robotInit complete, success:" + success);
     }
-    
+
     public void zeroAllSensors()
     {
         mSubsystemManager.zeroSensors();
@@ -289,23 +289,23 @@ public class Robot extends IterativeRobot
             mDrive.setOpenLoop(
                     mCheesyDriveHelper.cheesyDrive(throttle, turn, mControlBoard.getQuickTurn(),
                             !mControlBoard.getLowGear()));
-            
-            if(mControlBoard.getDebugPrimary())
+
+            if (mControlBoard.getDebugPrimary())
             {
                 Logger.debug("Setting Lifter to RETRACTED");
                 mLifter.setWantedState(WantedState.RETRACTED);
             }
-            else if(mControlBoard.getDebugSecondary())
+            else if (mControlBoard.getDebugSecondary())
             {
                 Logger.debug("Setting Lifter to SCALE");
                 mLifter.setWantedState(WantedState.SCALE);
             }
-            else if(mControlBoard.getDebugTertiary())
+            else if (mControlBoard.getDebugTertiary())
             {
                 Logger.debug("Setting Lifter to SWITCH");
                 mLifter.setWantedState(WantedState.SWITCH);
             }
-            
+
             allButTestPeriodic();
         }
         catch (Throwable t)
@@ -348,16 +348,17 @@ public class Robot extends IterativeRobot
     @Override
     public void disabledPeriodic()
     {
-  /*    final double kVoltageThreshold = 0.15;
-       if (mCheckLightButton.getAverageVoltage() < kVoltageThreshold)
-        {
-            mLED.setLEDOn();
-        }
-        else
-        {
-            mLED.setLEDOff();
-        }
-   */
+        /*
+         * final double kVoltageThreshold = 0.15;
+         * if (mCheckLightButton.getAverageVoltage() < kVoltageThreshold)
+         * {
+         * mLED.setLEDOn();
+         * }
+         * else
+         * {
+         * mLED.setLEDOff();
+         * }
+         */
         // don't zero sensors during disabledPeriodic... zeroAllSensors();
         allButTestPeriodic();
     }
@@ -391,12 +392,11 @@ public class Robot extends IterativeRobot
      */
     private void allButTestPeriodic()
     {
-  /*      mRobotState.outputToSmartDashboard();
+        mRobotState.outputToSmartDashboard();
         mSubsystemManager.outputToSmartDashboard();
         mSubsystemManager.writeToLog();
         mEnabledLooper.outputToSmartDashboard();
         mConnectionMonitor.setLastPacketTime(Timer.getFPGATimestamp());
-  */
     }
 
     /**

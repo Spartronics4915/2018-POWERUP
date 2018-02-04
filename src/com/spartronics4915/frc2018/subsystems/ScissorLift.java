@@ -2,8 +2,14 @@ package com.spartronics4915.frc2018.subsystems;
 
 import com.spartronics4915.frc2018.loops.Loop;
 import com.spartronics4915.frc2018.loops.Looper;
+import com.spartronics4915.lib.util.Logger;
 
+import edu.wpi.first.wpilibj.AnalogInput;
+import edu.wpi.first.wpilibj.AnalogPotentiometer;
 import edu.wpi.first.wpilibj.Solenoid;
+import edu.wpi.first.wpilibj.interfaces.Potentiometer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
 import com.spartronics4915.frc2018.Constants;
 
 /**
@@ -27,37 +33,24 @@ public class ScissorLift extends Subsystem
         return sInstance;
     }
 
-    public enum WantedState
-    {
-        RETRACTED(0), SWITCH(64), SCALE(128);
-
-        int mPosition;
-
-        private WantedState(int pos)
-        {
-            mPosition = pos;
-        }
-
-        public void setPosition(int pos)
-        {
-            mPosition = pos;
-        }
-
-        public int getPosition()
-        {
-            return mPosition;
-        }
-    }
-
+    
     private static final int kPotentiometerAllowedError = 10;
     private Solenoid mScissorLifterSolenoid;
     private Solenoid mScissorLowerSolenoid;
     private Solenoid mScissorBrakeSolenoid;
+    
+  //potentiometer and associated analog input
+    private Potentiometer mPotentiometer;
+    private AnalogInput mAnalogInput;
 
-    private int mSystemState = 0; // Potentiometer Value
-    private int mLastSystemState = mSystemState;
-    private WantedState mWantedState = WantedState.RETRACTED;
+    private double mRetracted = 0;
+    private double mSwitch = 60;
+    private double mScale = 120;
+    private double mClimb = 180;
 
+    private double mSystemState = 0; // Potentiometer Value
+    private double mLastSystemState = mSystemState;
+    private double mWantedState = mRetracted;
     // Actuators and sensors should be initialized as private members with a value of null here
 
     private ScissorLift()
@@ -70,8 +63,41 @@ public class ScissorLift extends Subsystem
         mScissorLifterSolenoid = new Solenoid(Constants.kScissorUpSolenoidId);
         mScissorLowerSolenoid = new Solenoid(Constants.kScissorDownSolenoidId);
         mScissorBrakeSolenoid = new Solenoid(Constants.kScissorBrakeSolenoidId);
+        mRetracted = SmartDashboard.getNumber("ScissorLift/Target1", 0); // Default values are arbitrary
+        mSwitch = SmartDashboard.getNumber("ScissorLift/Target2", 60);
+        mScale = SmartDashboard.getNumber("ScissorLift/Target3", 120);
+        mClimb = SmartDashboard.getNumber("ScissorLift/Target4", 180);
+     // initialization for solenoid
+        mAnalogInput = new AnalogInput(0);
+        mPotentiometer = new AnalogPotentiometer(mAnalogInput, 360, mRetracted);
         logInitialized(success);
     }
+    
+    // Convert the users logical ideas of these heights into the calibrated values
+    
+    public enum WantedState
+    {
+        RETRACTED(0), SWITCH(1), SCALE(2), CLIMB(3);
+
+        int mPosition;
+
+        private WantedState(int pos)
+        {
+            mPosition = pos;
+        }
+
+        public void setPosition(int pos)
+        {
+            mPosition = pos;  
+        }
+
+        public int getPosition()
+        {
+            return mPosition;
+        }
+            
+    }
+    
 
     private Loop mLoop = new Loop()
     {
@@ -81,7 +107,7 @@ public class ScissorLift extends Subsystem
         {
             synchronized (ScissorLift.this)
             {
-                mSystemState = 0; // TODO - Read Potentiometer and sub value
+                mSystemState = mPotentiometer.get(); 
             }
         }
 
@@ -90,8 +116,9 @@ public class ScissorLift extends Subsystem
         {
             synchronized (ScissorLift.this)
             {
-                if (mWantedState.getPosition() < (mSystemState - kPotentiometerAllowedError)
-                        || mWantedState.getPosition() > (mSystemState + kPotentiometerAllowedError))
+                mSystemState = mPotentiometer.get();
+                if (mWantedState < (mSystemState - kPotentiometerAllowedError)
+                        || mWantedState > (mSystemState + kPotentiometerAllowedError))
                 {
                     // increase
                     if (mScissorLowerSolenoid.get())
@@ -101,8 +128,8 @@ public class ScissorLift extends Subsystem
                         mScissorLifterSolenoid.set(true);
                     }
                 }
-                else if (mWantedState.getPosition() > (mSystemState - kPotentiometerAllowedError)
-                        || mWantedState.getPosition() < (mSystemState + kPotentiometerAllowedError))
+                else if (mWantedState > (mSystemState - kPotentiometerAllowedError)
+                        || mWantedState < (mSystemState + kPotentiometerAllowedError))
                 {
                     // decrease
                     if (mScissorLifterSolenoid.get())
@@ -126,7 +153,7 @@ public class ScissorLift extends Subsystem
                         mScissorLifterSolenoid.set(true);
                         report = true;
                     }
-                    if(report)
+                    if (report)
                         broadcastState("Holding");
                 }
                 mLastSystemState = mSystemState;
@@ -146,7 +173,27 @@ public class ScissorLift extends Subsystem
 
     public void setWantedState(WantedState wantedState)
     {
-        mWantedState = wantedState;
+        if (wantedState == WantedState.RETRACTED)
+        {
+            mSystemState = mRetracted;
+        }
+        else if (wantedState == WantedState.SWITCH)
+        {
+            mSystemState = mSwitch;
+        }
+        else if (wantedState == WantedState.SCALE)
+        {
+            mSystemState = mScale;
+        }
+        else if (wantedState == WantedState.CLIMB)
+        {
+            mSystemState = mClimb;
+        }
+        else
+        {
+            Logger.error("Trying to set an UNKNOWN STATE");
+        }
+        
     }
 
     @Override
@@ -177,7 +224,7 @@ public class ScissorLift extends Subsystem
     {
         {
 
-            if (mSystemState == mWantedState.getPosition())
+            if (mSystemState == mWantedState)
                 return true;
             return false;
         }
