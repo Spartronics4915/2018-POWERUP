@@ -63,8 +63,9 @@ public class ConnectionMonitor extends Subsystem
                     boolean has_connection = true;
                     if (timestamp - mLastPacketTime > kConnectionTimeoutSec)
                     {
-                        Logger.warning("ConnectionMonitor: connection lost or timed out.");
-                        mLED.setWantedState(LED.WantedState.BLINK);
+                        String msg = "ConnectionMonitor: connection lost or timed out.";
+                        Logger.warning(msg);
+                        mLED.warnDriver(msg);
                         has_connection = false;
                     }
 
