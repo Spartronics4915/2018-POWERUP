@@ -1,4 +1,21 @@
-## Best Practices for Spartronics4915 Robot Developers
+# Best Practices for Spartronics4915 Robot Developers
+<!-- TOC depthFrom:3 depthTo:6 withLinks:1 updateOnSave:1 orderedList:0 -->
+
+- [Coding Conventions](#coding-conventions)
+- [Logging](#logging)
+- [SmartDashboard](#smartdashboard)
+- [Subsystem conventions](#subsystem-conventions)
+- [Motor conventions](#motor-conventions)
+- [Utility functions](#utility-functions)
+	- [Fuzzy equality: `boolean Util.epsilonEquals(double a, double b, double epsilon)`](#fuzzy-equality-boolean-utilepsilonequalsdouble-a-double-b-double-epsilon)
+	- [Value clamping: `double Util.limit(double val, double min, double max)`](#value-clamping-double-utillimitdouble-val-double-min-double-max)
+
+<!-- /TOC -->
+### Coding Conventions
+* Member variables: `mVariableName`
+* Static member variables: `sVariableName`
+* Final static variables: `kVariableName`
+* Code must be formatted with built-in eclipse formatter (4 spaces indent, hanging braces)
 
 ### Logging
 Logging is a very helpful way to diagnose the behavior of your system.  Since some of our
@@ -11,7 +28,7 @@ these guidelines.
 * If you are developing a subsystem, use the Subsystem methods for logging  since it prepends
  your subsystem's name on all logging messages.  `logDebug()` is generally the most valuable
  for debugging. During competition, the messages will not be generated and won't impact performance.  
- logNotice(), logWarning() and logError() should be used in all cases where we want drivers 
+ logNotice(), logWarning() and logError() should be used in all cases where we want drivers
  (and programmers) aware of malfunction.  
 
 * Since you'll be using the standard log message, you don't need to include your subsystem name.
@@ -28,12 +45,11 @@ these guidelines.
   concerns.  Please use logNotice for all such events.  For example, we log the transition
   into and out of auto and teleop.
 
-
 ### SmartDashboard
 SmartDashboard is a simple and powerful tool to communicate bidirectionally between driver station,
-roborio and coprocessors like jetson and raspi.  As with logging, SmartDashboard traffic consumes 
-bandwidth and when overused can negatively impact robot performance.  Some bandwidth-heavy dashboard 
-state is deemed valuable enough to remain active during competition.  IMU Heading and Drive Odometry 
+roborio and coprocessors like jetson and raspi.  As with logging, SmartDashboard traffic consumes
+bandwidth and when overused can negatively impact robot performance.  Some bandwidth-heavy dashboard
+state is deemed valuable enough to remain active during competition.  IMU Heading and Drive Odometry
 may fall into this category.  Since SmartDashboard entries aren't guaranteed to be visible to driver
 station, we must remain vigilant and ensure that only the desired traffic is generated.
 
@@ -41,9 +57,9 @@ station, we must remain vigilant and ensure that only the desired traffic is gen
   `broadcastNumber()` and `broadcastBoolean()` since they prepend the subsytem name following
   a convenient convention.  
 
-* If your are developing outside a Subsystem, please follow its field-naming convention. Prepend field 
-  names with a prefix that signifies the message origin.  Our convention is that the prefix follows 
-  path-like syntax, `MyPrefix/`.  This makes it easy to go to our Dashboard's NetworkTables page an 
+* If your are developing outside a Subsystem, please follow its field-naming convention. Prepend field
+  names with a prefix that signifies the message origin.  Our convention is that the prefix follows
+  path-like syntax, `MyPrefix/`.  This makes it easy to go to our Dashboard's NetworkTables page an
   enter the prefix string into the filter field.
 
 * SmartDashboard fields become first-class entities when we build a specific presentation for
@@ -51,7 +67,6 @@ station, we must remain vigilant and ensure that only the desired traffic is gen
   you must coordinate the change in both robot and dashboard code.
 
 ### Subsystem conventions
-
 * use `logInitialized()` to report the state of initialization.
 * use `broadcastState()` to update the the current subsystem state to the SmartDashboard.
   This method should be invoked during state transitions only, not repeatedly.
@@ -59,9 +74,27 @@ station, we must remain vigilant and ensure that only the desired traffic is gen
 
 
 ### Motor conventions
-Motors are the largest consumers of power on our robot. We must carefully tune them to ensure
 that the power isn't wasted and is also delivered in a measurable, consistent fashion.  Motors
 are usually driven by the TalonSRX motor controllers.  These are very powerful devices but
 also have a large number of mysterious configuration options.  For this reason we employ a
 shared _factory_ class, `TalonSRX4915Factory` to construct instances of `TalonSRX4915`.
 
+
+### Utility functions
+There are a number of useful utility functions to help make code more readable and
+consistent.  Here are a few samples:
+
+#### Fuzzy equality: `boolean Util.epsilonEquals(double a, double b, double epsilon)`
+To compare a target value to a current value with a tolerance for small inaccuracies:
+```
+    if(Util.epislonEquals(myPotentiometer.get(), targetValue, .1))
+    {
+        // we're close enough
+    }
+```
+
+#### Value clamping: `double Util.limit(double val, double min, double max)`
+To constrain an input value to a legal range of values:
+```
+    double x = Util.limit(myPotentiometer.get(), .1, .4);
+```

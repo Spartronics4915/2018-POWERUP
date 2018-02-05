@@ -60,8 +60,8 @@ public class Drive extends Subsystem
         OPEN_LOOP, // open loop voltage control
         VELOCITY_SETPOINT, // velocity PID control
         PATH_FOLLOWING, // used for autonomous driving
-        AIM_TO_GOAL, // Goal is a target expressed in field coordinates
-        AIM_TO_ROBOTANGLE, // distinct from AIM_TO_GOAL, operates in robot-relative coords
+        AIM_TO_GOAL, // TransitoryState - Goal is a target expressed in field coordinates
+        TURN_TO_ROBOTANGLE, // TURN_TO_HEADING, but operates in robot-relative coords
         TURN_TO_HEADING, // turn in place
         DRIVE_TOWARDS_GOAL_COARSE_ALIGN, // turn to face the boiler, then DRIVE_TOWARDS_GOAL_COARSE_ALIGN
         DRIVE_TOWARDS_GOAL_APPROACH, // drive forwards until we are at optimal shooting distance
@@ -129,15 +129,15 @@ public class Drive extends Subsystem
                     case TURN_TO_HEADING:
                         updateTurnToFieldHeading(timestamp);
                         return;
+                    case TURN_TO_ROBOTANGLE:
+                        updateTurnToRobotHeading(timestamp);
+                        break;
                     case DRIVE_TOWARDS_GOAL_COARSE_ALIGN:
                         updateDriveTowardsGoalCoarseAlign(timestamp);
                         return;
                     case DRIVE_TOWARDS_GOAL_APPROACH:
                         updateDriveTowardsGoalApproach(timestamp);
                         return;
-                    case AIM_TO_ROBOTANGLE:
-                        updateTurnToRobotHeading(timestamp);
-                        break;
                     default:
                         logError("Unexpected drive control state: " + mDriveControlState);
                         break;
@@ -451,7 +451,8 @@ public class Drive extends Subsystem
         if (!this.isInitialized())
             return;
         final double dx = mVisionTargetAngleEntry.getNumber(0).doubleValue();
-        final Rotation2d robotToTarget = Rotation2d.fromDegrees(dx);
+        final Rotation2d robotToTarget = Rotation2d.fromDegrees(-dx); 
+        // angle reversed to correct for raspi coordsys
         performClosedLoopTurn(robotToTarget);
     }
 
@@ -622,11 +623,11 @@ public class Drive extends Subsystem
 
     public synchronized void setWantAimToVisionTarget()
     {
-        if (mDriveControlState != DriveControlState.AIM_TO_ROBOTANGLE)
+        if (mDriveControlState != DriveControlState.TURN_TO_ROBOTANGLE)
         {
             mIsOnTarget = false;
             configureTalonsForPositionControl();
-            mDriveControlState = DriveControlState.AIM_TO_ROBOTANGLE;
+            mDriveControlState = DriveControlState.TURN_TO_ROBOTANGLE;
             // no target received yet, start at current heading
             updatePositionSetpoint(mMotorGroup.getLeftDistanceInches(),
                     mMotorGroup.getRightDistanceInches());
@@ -807,6 +808,7 @@ public class Drive extends Subsystem
     protected static boolean usesTalonPositionControl(DriveControlState state)
     {
         if (state == DriveControlState.AIM_TO_GOAL ||
+                state == DriveControlState.TURN_TO_ROBOTANGLE || 
                 state == DriveControlState.TURN_TO_HEADING ||
                 state == DriveControlState.DRIVE_TOWARDS_GOAL_COARSE_ALIGN ||
                 state == DriveControlState.DRIVE_TOWARDS_GOAL_APPROACH)

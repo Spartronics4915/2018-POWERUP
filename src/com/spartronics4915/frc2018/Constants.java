@@ -55,8 +55,8 @@ public class Constants extends ConstantsBase
     
     // DIO Pins --------------------------------------
     public static final int kTestbedLimitSwitchId = 0;
-    public static final int kRangeLEDId = 8;
-    public static final int kGreenLEDId = 9;
+    public static final int kLEDVisionLampId = 8;
+    public static final int kLEDDriverLEDId = 9;
     
     // Analog In Pins ---------------------------------
     public static final int kTestbedPotentiometerId = 0;
