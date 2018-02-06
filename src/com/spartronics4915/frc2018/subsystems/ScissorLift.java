@@ -141,6 +141,8 @@ public class ScissorLift extends Subsystem
         int targetValue = mWantedStateMap[mWantedState.ordinal()];
         if (Util.epsilonLessThan(mPotValue, targetValue, kPotentiometerAllowedError))
         {
+            if (mHoldSolenoid.get())
+                mHoldSolenoid.set(false);;
             if (mLowerSolenoid.get())
                 mLowerSolenoid.set(false);
             if (!mRaiseSolenoid.get())
@@ -149,7 +151,9 @@ public class ScissorLift extends Subsystem
         }
         else if (Util.epsilonGreaterThan(mPotValue, targetValue, kPotentiometerAllowedError))
         {
-            if (!mLowerSolenoid.get())
+            if (mHoldSolenoid.get())
+                mHoldSolenoid.set(false);;
+             if (!mLowerSolenoid.get())
                 mLowerSolenoid.set(true);
             if (mRaiseSolenoid.get())
                 mRaiseSolenoid.set(false);
@@ -161,6 +165,8 @@ public class ScissorLift extends Subsystem
                 mLowerSolenoid.set(true);
             if (!mRaiseSolenoid.get())
                 mRaiseSolenoid.set(true);
+            if (mHoldSolenoid.get())
+                mHoldSolenoid.set(true);;
             return SystemState.HOLDING;
         }
     }
