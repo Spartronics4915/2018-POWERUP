@@ -31,7 +31,7 @@ public class DriveToFarSwitchFromCPath implements PathContainer {
     public boolean isReversed() {
         return false; 
     }
-    // WAYPOINT_DATA: [{"position":{"x":18,"y":45},"speed":0,"radius":0,"comment":""},{"position":{"x":228,"y":45},"speed":60,"radius":51,"comment":""},{"position":{"x":228,"y":260},"speed":60,"radius":10,"comment":""},{"position":{"x":178,"y":290},"speed":60,"radius":30,"comment":""},{"position":{"x":178,"y":255},"speed":0,"radius":40,"comment":"Intentional overshoot"}]
+    // WAYPOINT_DATA: [{"position":{"x":18,"y":45},"speed":0,"radius":0,"comment":""},{"position":{"x":228,"y":45},"speed":60,"radius":51,"comment":""},{"position":{"x":228,"y":260},"speed":60,"radius":10,"comment":""},{"position":{"x":178,"y":290},"speed":60,"radius":30,"comment":""},{"position":{"x":178,"y":255},"speed":40,"radius":0,"comment":"Intentional overshoot"}]
     // IS_REVERSED: false
     // FILE_NAME: DriveToFarSwitchFromCPath
 }
