@@ -10,14 +10,18 @@ import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.Solenoid;
 
 /**
- * The scissor lift is controlled by pnuematics. It has multiple set positions and variable height.
- * The key thing here is that its system state is the highly variable position of the lifter.
+ * The scissor lift is controlled by pnuematics. It has multiple set positions
+ * and variable height.
+ * The key thing here is that its system state is the highly variable position
+ * of the lifter.
  * This is why the state machine looks different.
  */
 public class ScissorLift extends Subsystem
 {
+
     // we're a singleton
     private static ScissorLift sInstance = null;
+
     public static ScissorLift getInstance()
     {
         if (sInstance == null)
@@ -26,7 +30,7 @@ public class ScissorLift extends Subsystem
         }
         return sInstance;
     }
-   
+
     // Default values for potentiometer target positions
     // Since we anticipate "drift", we obtain actual values 
     // from dashboard during zeroSensors.  That said, we lose those
@@ -37,7 +41,7 @@ public class ScissorLift extends Subsystem
     private static final int kDefaultHighValue = 2040;
     private static final int kPotentiometerAllowedError = 32;
 
-     public enum SystemState
+    public enum SystemState
     {
         OFF,
         RAISING,
@@ -61,9 +65,9 @@ public class ScissorLift extends Subsystem
     private Solenoid mRaiseSolenoid;
     private Solenoid mLowerSolenoid;
     private Solenoid mHoldSolenoid;
-    
+
     // Actuators and sensors should be initialized as private members with a value of null here
-    
+
     private ScissorLift()
     {
         boolean success = true;
@@ -72,26 +76,27 @@ public class ScissorLift extends Subsystem
         mRaiseSolenoid = new Solenoid(Constants.kScissorUpSolenoidId);
         mLowerSolenoid = new Solenoid(Constants.kScissorDownSolenoidId);
         mHoldSolenoid = new Solenoid(Constants.kScissorBrakeSolenoidId);
-        
+
         success = Util.validateSolenoid(mRaiseSolenoid) &&
-                  Util.validateSolenoid(mLowerSolenoid) &&
-                  Util.validateSolenoid(mHoldSolenoid);
-        
+                Util.validateSolenoid(mLowerSolenoid) &&
+                Util.validateSolenoid(mHoldSolenoid);
+
         // TODO: check potentiomenter value to see if its connected.
         //  this would be valid if we can count on the lift being
         //  in a reasonable state (ie lowered).  We can't detect
         //  wiring mishaps, since reading the analog pin will always
         //  return a value.
-        
+
         logInitialized(success);
     }
-    
-     private Loop mLoop = new Loop() {
+
+    private Loop mLoop = new Loop()
+    {
 
         @Override
         public void onStart(double timestamp)
         {
-            synchronized(ScissorLift.this)
+            synchronized (ScissorLift.this)
             {
                 mSystemState = SystemState.OFF;
             }
@@ -100,62 +105,61 @@ public class ScissorLift extends Subsystem
         @Override
         public void onLoop(double timestamp)
         {
-            synchronized(ScissorLift.this)
+            synchronized (ScissorLift.this)
             {
                 SystemState newState = updateState();
                 if (newState != mSystemState)
                 {
                     dashboardPutState(mSystemState.toString());
                     mSystemState = newState;
-               }
+                }
             }
         }
 
         @Override
         public void onStop(double timestamp)
         {
-            synchronized(ScissorLift.this)
+            synchronized (ScissorLift.this)
             {
                 stop();
             }
         }
-        
+
     };
-    
+
     public synchronized void setWantedState(WantedState wantedState)
     {
         mWantedState = wantedState;
         dashboardPutWantedState(wantedState.toString());
     }
-    
+
     // based on the combination of wanted state, current state and the current potentiometer value,
     // transfer the current system state to another state.
     private SystemState updateState()
     {
         mPotValue = mPotentiometer.getAverageValue();
         int targetValue = mWantedStateMap[mWantedState.ordinal()];
-        if(Util.epsilonLessThan(mPotValue, targetValue, kPotentiometerAllowedError))
+        if (Util.epsilonLessThan(mPotValue, targetValue, kPotentiometerAllowedError))
         {
-            if(mLowerSolenoid.get())
+            if (mLowerSolenoid.get())
                 mLowerSolenoid.set(false);
-            if(!mRaiseSolenoid.get())
+            if (!mRaiseSolenoid.get())
                 mRaiseSolenoid.set(true);
             return SystemState.RAISING;
         }
-        else
-        if(Util.epsilonGreaterThan(mPotValue, targetValue, kPotentiometerAllowedError))
+        else if (Util.epsilonGreaterThan(mPotValue, targetValue, kPotentiometerAllowedError))
         {
-            if(!mLowerSolenoid.get())
+            if (!mLowerSolenoid.get())
                 mLowerSolenoid.set(true);
-            if(mRaiseSolenoid.get())
+            if (mRaiseSolenoid.get())
                 mRaiseSolenoid.set(false);
             return SystemState.LOWERING;
         }
         else
         {
-            if(!mLowerSolenoid.get())
+            if (!mLowerSolenoid.get())
                 mLowerSolenoid.set(true);
-            if(!mRaiseSolenoid.get())
+            if (!mRaiseSolenoid.get())
                 mRaiseSolenoid.set(true);
             return SystemState.HOLDING;
         }
