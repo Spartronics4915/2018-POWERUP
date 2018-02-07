@@ -62,7 +62,7 @@ public class ScissorLift extends Subsystem
 
     public enum SystemState
     {
-        OFF,
+        OFF, // == 0
         RAISING,
         LOWERING,
         HOLDING
@@ -70,7 +70,7 @@ public class ScissorLift extends Subsystem
 
     public enum WantedState
     {
-        OFF, // is off different from low?
+        OFF, // == 0,  is off different from low?
         LOW,
         MIDDLE,
         HIGH,
@@ -118,6 +118,7 @@ public class ScissorLift extends Subsystem
             synchronized (ScissorLift.this)
             {
                 mSystemState = SystemState.OFF;
+                zeroSensors(); // make sure mWantedStateMap is initialized
             }
         }
 
@@ -180,6 +181,7 @@ public class ScissorLift extends Subsystem
         }
         else
         {
+            // we're on target
             if(mSystemState != SystemState.HOLDING)
             {
                 mLowerSolenoid.set(false);
@@ -206,10 +208,11 @@ public class ScissorLift extends Subsystem
     public void zeroSensors()
     {
         // we update our value map here based on smart dashboard values.
-        mWantedStateMap[0] = dashboardGetNumber("Target1", kDefaultLowValue).intValue();
-        mWantedStateMap[1] = dashboardGetNumber("Target1", kDefaultLowValue).intValue();
-        mWantedStateMap[2] = dashboardGetNumber("Target2", kDefaultMidValue).intValue();
-        mWantedStateMap[3] = dashboardGetNumber("Target3", kDefaultHighValue).intValue();
+        // we could also auto-calibrate our 'zero" here if we're in a known position.
+        mWantedStateMap[WantedState.OFF.ordinal()] = dashboardGetNumber("Target1", kDefaultLowValue).intValue();
+        mWantedStateMap[WantedState.LOW.ordinal()] = dashboardGetNumber("Target1", kDefaultLowValue).intValue();
+        mWantedStateMap[WantedState.MIDDLE.ordinal()] = dashboardGetNumber("Target2", kDefaultMidValue).intValue();
+        mWantedStateMap[WantedState.HIGH.ordinal()] = dashboardGetNumber("Target3", kDefaultHighValue).intValue();
     }
 
     @Override
