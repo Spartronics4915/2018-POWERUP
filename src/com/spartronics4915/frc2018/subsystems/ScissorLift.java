@@ -8,6 +8,7 @@ import com.spartronics4915.lib.util.Util;
 
 import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.Solenoid;
+import edu.wpi.first.wpilibj.Timer;
 
 /*
  * Notes on solenoid controls (from Riyadth)
@@ -59,13 +60,17 @@ public class ScissorLift extends Subsystem
     private static final int kDefaultMidValue = 1000;
     private static final int kDefaultHighValue = 2040;
     private static final int kPotentiometerAllowedError = 32;
+    private static final double kBrakeTimePeriod = .1;
+    private static final double kUnbrakeTimePeriod = .1;
 
     public enum SystemState
     {
         OFF, // == 0
         RAISING,
         LOWERING,
-        HOLDING
+        HOLDING,
+        BRAKING,
+        UNBRAKING,
     }
 
     public enum WantedState
@@ -74,16 +79,18 @@ public class ScissorLift extends Subsystem
         LOW,
         MIDDLE,
         HIGH,
+        // might add HOOK/CLIMB
     }
 
     private SystemState mSystemState = SystemState.OFF;
     private WantedState mWantedState = WantedState.LOW;
     private int[] mWantedStateMap = new int[4]; // set in zeroSensors()
     private AnalogInput mPotentiometer;
-    private int mPotValue; // [0,4095]
+    private int mMeasuredValue; // [0,4095]
     private Solenoid mRaiseSolenoid;
     private Solenoid mLowerSolenoid;
     private Solenoid mHoldSolenoid;
+    private Timer mTimer;
 
     // Actuators and sensors should be initialized as private members with a value of null here
 
@@ -100,7 +107,7 @@ public class ScissorLift extends Subsystem
                 Util.validateSolenoid(mLowerSolenoid) &&
                 Util.validateSolenoid(mHoldSolenoid);
 
-        // TODO: check potentiomenter value to see if its connected.
+        // TODO: check potentiometer value to see if its connected.
         //  this would be valid if we can count on the lift being
         //  in a reasonable state (ie lowered).  We can't detect
         //  wiring mishaps, since reading the analog pin will always
@@ -157,45 +164,81 @@ public class ScissorLift extends Subsystem
     // transfer the current system state to another state.
     private SystemState updateState()
     {
-        mPotValue = mPotentiometer.getAverageValue();
         int targetValue = mWantedStateMap[mWantedState.ordinal()];
-        if (Util.epsilonLessThan(mPotValue, targetValue, kPotentiometerAllowedError))
+        SystemState nextState = mSystemState;
+        mMeasuredValue = mPotentiometer.getAverageValue();
+        if (Util.epsilonLessThan(mMeasuredValue, targetValue, kPotentiometerAllowedError))
         {
-            if(mSystemState != SystemState.RAISING)
+            if (mSystemState != SystemState.RAISING)
             {
-                mHoldSolenoid.set(false);
-                mLowerSolenoid.set(false);
-                mRaiseSolenoid.set(true);
+                if (mSystemState != SystemState.UNBRAKING)
+                {
+                    mTimer.reset();
+                    mTimer.start();
+                    mHoldSolenoid.set(false);
+                    nextState = SystemState.UNBRAKING;
+                }
+                else if (mTimer.hasPeriodPassed(kUnbrakeTimePeriod))
+                {
+                    mLowerSolenoid.set(false);
+                    mRaiseSolenoid.set(true);
+                    nextState = SystemState.RAISING;
+                }
+                // else nextState = SystemState.UNBRAKING // (which was current state);
+
             }
-            return SystemState.RAISING;
+            // else nextState = SystemState.RAISING // (which was current state);
         }
-        else if (Util.epsilonGreaterThan(mPotValue, targetValue, kPotentiometerAllowedError))
+        else if (Util.epsilonGreaterThan(mMeasuredValue, targetValue, kPotentiometerAllowedError))
         {
-            if(mSystemState != SystemState.LOWERING)
+            if (mSystemState != SystemState.LOWERING)
             {
-                mHoldSolenoid.set(false);
-                mLowerSolenoid.set(true);
-                mRaiseSolenoid.set(false);
+                if (mSystemState != SystemState.UNBRAKING)
+                {
+                    mTimer.reset();
+                    mTimer.start();
+                    mHoldSolenoid.set(false);
+                    nextState = SystemState.UNBRAKING;
+                }
+                else if (mTimer.hasPeriodPassed(kUnbrakeTimePeriod))
+                {
+                    mLowerSolenoid.set(true);
+                    mRaiseSolenoid.set(false);
+                    nextState = SystemState.LOWERING;
+                }
+                // else nextState = SystemState.UNBRAKING // (which was current state);
             }
-            return SystemState.LOWERING;
+            // else nextState = SystemState.LOWERING // (which was current state);
         }
         else
         {
             // we're on target
-            if(mSystemState != SystemState.HOLDING)
+            if (mSystemState != SystemState.HOLDING)
             {
-                mLowerSolenoid.set(false);
-                mRaiseSolenoid.set(false);
-                mHoldSolenoid.set(true);
+                if (mSystemState != SystemState.BRAKING)
+                {
+                    mTimer.reset();
+                    mTimer.start();
+                    mHoldSolenoid.set(true);
+                    nextState = SystemState.BRAKING;
+                }
+                else if (mTimer.hasPeriodPassed(kBrakeTimePeriod))
+                {
+                    mLowerSolenoid.set(false);
+                    mRaiseSolenoid.set(false);
+                    nextState = SystemState.HOLDING;
+                }
+                // else nextState = SystemState.BRAKING // (which was current state);
             }
-            return SystemState.HOLDING;
+            // else nextState = SystemState.HOLDING // (which was current state);
         }
+        return nextState;
     }
 
     @Override
     public void outputToSmartDashboard()
     {
-        dashboardPutNumber("Potentiometer", mPotValue);
+        dashboardPutNumber("Potentiometer", mMeasuredValue);
     }
 
     @Override
@@ -209,10 +252,14 @@ public class ScissorLift extends Subsystem
     {
         // we update our value map here based on smart dashboard values.
         // we could also auto-calibrate our 'zero" here if we're in a known position.
-        mWantedStateMap[WantedState.OFF.ordinal()] = dashboardGetNumber("Target1", kDefaultLowValue).intValue();
-        mWantedStateMap[WantedState.LOW.ordinal()] = dashboardGetNumber("Target1", kDefaultLowValue).intValue();
-        mWantedStateMap[WantedState.MIDDLE.ordinal()] = dashboardGetNumber("Target2", kDefaultMidValue).intValue();
-        mWantedStateMap[WantedState.HIGH.ordinal()] = dashboardGetNumber("Target3", kDefaultHighValue).intValue();
+        mWantedStateMap[WantedState.OFF.ordinal()] =
+                dashboardGetNumber("Target1", kDefaultLowValue).intValue();
+        mWantedStateMap[WantedState.LOW.ordinal()] =
+                dashboardGetNumber("Target1", kDefaultLowValue).intValue();
+        mWantedStateMap[WantedState.MIDDLE.ordinal()] =
+                dashboardGetNumber("Target2", kDefaultMidValue).intValue();
+        mWantedStateMap[WantedState.HIGH.ordinal()] =
+                dashboardGetNumber("Target3", kDefaultHighValue).intValue();
     }
 
     @Override
