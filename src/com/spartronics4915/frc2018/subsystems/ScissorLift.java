@@ -150,7 +150,11 @@ public class ScissorLift extends Subsystem
     @Override
     public synchronized void stop()
     {
-        setWantedState(WantedState.OFF);
+        mWantedState = WantedState.OFF;
+        mSystemState = SystemState.OFF;
+        mLowerSolenoid.set(false);
+        mRaiseSolenoid.set(false);
+        mHoldSolenoid.set(false);
     }
 
     @Override
@@ -177,22 +181,23 @@ public class ScissorLift extends Subsystem
     // based on the combination of wanted state, current state and the current potentiometer value,
     // transfer the current system state to another state.
     /*
-     * Notes on solenoid controls (from Riyadth)
-     * 
-     * To clarify the brake solenoid: As the scissor lift rises to the point where the 
-     * software wants to stop it, the software should first engage the brake solenoid, 
-     * which will hold the scissor lift in place. The software may want to continue to 
-     * allow air in the lift solenoid for a period of time afterwards, so that the 
-     * scissor lift is pressurized firmly. If we turn off the lift solenoid too soon 
-     * there is a chance that the lift will be "bouncy", and could go down a bit while 
-     * positioning. The brake only keeps the scissor from rising higher, and does not 
-     * prevent it from going lower.
-     * After applying the brake, in order to move the scissor lift again, the brake must 
-     * be released, and then the scissor lift must be lowered a small amount, even if 
-     * the desire is to raise it up higher. This is because there is a mechanical cam 
-     * that is under tension, holding the lift from going higher, until the lift is 
-     * lowered slightly. Of course, if the lift needs to be lowered anyway, it will be 
-     * free to do so after the brake is released (ie, no small motion required first).
+     * Notes on solenoid controls (from Riyadth):
+     * To clarify the brake solenoid: As the scissor lift rises to the point
+     * where the software wants to stop it, the software should first engage
+     * the brake solenoid, which will hold the scissor lift in place. The
+     * software may want to continue to allow air in the lift solenoid for a
+     * period of time afterwards, so that the scissor lift is pressurized
+     * firmly. If we turn off the lift solenoid too soon there is a chance
+     * that the lift will be "bouncy", and could go down a bit while
+     * positioning. The brake only keeps the scissor from rising higher, and
+     * does not prevent it from going lower.
+     * After applying the brake, in order to move the scissor lift again, the
+     * brake must be released, and then the scissor lift must be lowered a small
+     * amount, even if the desire is to raise it up higher. This is because
+     * there is a mechanical cam that is under tension, holding the lift from
+     * going higher, until the lift is lowered slightly. Of course, if the lift
+     * needs to be lowered anyway, it will be free to do so after the brake is
+     * released (ie, no small motion required first).
      */
     private SystemState updateState()
     {
@@ -223,7 +228,7 @@ public class ScissorLift extends Subsystem
                 }
                 else if (mSystemState == SystemState.UNBRAKING)
                 {
-                    if(mTimer.hasPeriodPassed(kUnbrakeTimePeriod))
+                    if (mTimer.hasPeriodPassed(kUnbrakeTimePeriod))
                     {
                         mLowerSolenoid.set(false);
                         mRaiseSolenoid.set(true);
@@ -245,16 +250,16 @@ public class ScissorLift extends Subsystem
                 {
                     mHoldSolenoid.set(false); // brake release
                     mLowerSolenoid.set(true); // we're going down, proceed immediately to LOWERING
-                    mRaiseSolenoid.set(false);                 
+                    mRaiseSolenoid.set(false);
                     nextState = SystemState.LOWERING;
                 }
                 else
                 {
                     logWarning("Lowering, unexpected system state:" + mSystemState.toString());
                     mLowerSolenoid.set(true); // we're going down, proceed immediately to LOWERING
-                    mRaiseSolenoid.set(false);                 
+                    mRaiseSolenoid.set(false);
                     nextState = SystemState.LOWERING;
-               }
+                }
             }
             // else nextState = SystemState.LOWERING // (which was current state);
         }
