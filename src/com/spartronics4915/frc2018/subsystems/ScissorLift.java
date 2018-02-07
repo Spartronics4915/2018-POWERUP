@@ -9,6 +9,25 @@ import com.spartronics4915.lib.util.Util;
 import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.Solenoid;
 
+/*
+ * Notes on solenoid controls (from Riyadth)
+ * 
+ * To clarify the brake solenoid: As the scissor lift rises to the point where the 
+ * software wants to stop it, the software should first engage the brake solenoid, 
+ * which will hold the scissor lift in place. The software may want to continue to 
+ * allow air in the lift solenoid for a period of time afterwards, so that the 
+ * scissor lift is pressurized firmly. If we turn off the lift solenoid too soon 
+ * there is a chance that the lift will be "bouncy", and could go down a bit while 
+ * positioning. The brake only keeps the scissor from rising higher, and does not 
+ * prevent it from going lower.
+ * After applying the brake, in order to move the scissor lift again, the brake must 
+ * be released, and then the scissor lift must be lowered a small amount, even if 
+ * the desire is to raise it up higher. This is because there is a mechanical cam 
+ * that is under tension, holding the lift from going higher, until the lift is 
+ * lowered slightly. Of course, if the lift needs to be lowered anyway, it will be 
+ * free to do so after the brake is released (ie, no small motion required first).
+ */
+
 /**
  * The scissor lift is controlled by pnuematics. It has multiple set positions
  * and variable height.
