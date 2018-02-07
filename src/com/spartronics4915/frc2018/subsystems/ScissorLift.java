@@ -30,11 +30,9 @@ import edu.wpi.first.wpilibj.Timer;
  */
 
 /**
- * The scissor lift is controlled by pnuematics. It has multiple set positions
- * and variable height.
- * The key thing here is that its system state is the highly variable position
- * of the lifter.
- * This is why the state machine looks different.
+ * The scissor lift is controlled by pneumatics. It has multiple set positions
+ * and variable height. The key thing here is that its system state relates to
+ * the highly variable position of the lifter.
  */
 public class ScissorLift extends Subsystem
 {
@@ -80,11 +78,13 @@ public class ScissorLift extends Subsystem
         MIDDLE,
         HIGH,
         // might add HOOK/CLIMB
+        MANUALUP,
+        MANUALDOWN,
     }
 
     private SystemState mSystemState = SystemState.OFF;
     private WantedState mWantedState = WantedState.LOW;
-    private int[] mWantedStateMap = new int[4]; // set in zeroSensors()
+    private int[] mWantedStateMap = new int[WantedState.values().length]; // set in zeroSensors()
     private AnalogInput mPotentiometer;
     private int mMeasuredValue; // [0,4095]
     private Solenoid mRaiseSolenoid;
@@ -160,6 +160,39 @@ public class ScissorLift extends Subsystem
         dashboardPutWantedState(wantedState.toString());
     }
 
+    @Override
+    public void outputToSmartDashboard()
+    {
+        dashboardPutNumber("Potentiometer", mMeasuredValue);
+    }
+
+    @Override
+    public synchronized void stop()
+    {
+        setWantedState(WantedState.OFF);
+    }
+
+    @Override
+    public void zeroSensors()
+    {
+        // we update our value map here based on smart dashboard values.
+        // we could also auto-calibrate our 'zero" here if we're in a known position.
+        mWantedStateMap[WantedState.OFF.ordinal()] =
+                dashboardGetNumber("Target1", kDefaultLowValue).intValue();
+        mWantedStateMap[WantedState.LOW.ordinal()] =
+                dashboardGetNumber("Target1", kDefaultLowValue).intValue();
+        mWantedStateMap[WantedState.MIDDLE.ordinal()] =
+                dashboardGetNumber("Target2", kDefaultMidValue).intValue();
+        mWantedStateMap[WantedState.HIGH.ordinal()] =
+                dashboardGetNumber("Target3", kDefaultHighValue).intValue();
+    }
+
+    @Override
+    public void registerEnabledLoops(Looper enabledLooper)
+    {
+        enabledLooper.register(mLoop);
+    }
+
     // based on the combination of wanted state, current state and the current potentiometer value,
     // transfer the current system state to another state.
     private SystemState updateState()
@@ -167,8 +200,17 @@ public class ScissorLift extends Subsystem
         int targetValue = mWantedStateMap[mWantedState.ordinal()];
         SystemState nextState = mSystemState;
         mMeasuredValue = mPotentiometer.getAverageValue();
-        if (Util.epsilonLessThan(mMeasuredValue, targetValue, kPotentiometerAllowedError))
+        if (mWantedState == WantedState.MANUALUP)
         {
+            // TODO
+        }
+        else if (mWantedState == WantedState.MANUALDOWN)
+        {
+            // TODO            
+        }
+        else if (Util.epsilonLessThan(mMeasuredValue, targetValue, kPotentiometerAllowedError))
+        {
+            // we're below target position, let's raise
             if (mSystemState != SystemState.RAISING)
             {
                 if (mSystemState != SystemState.UNBRAKING)
@@ -191,6 +233,7 @@ public class ScissorLift extends Subsystem
         }
         else if (Util.epsilonGreaterThan(mMeasuredValue, targetValue, kPotentiometerAllowedError))
         {
+            // we're above target position, let's lower
             if (mSystemState != SystemState.LOWERING)
             {
                 if (mSystemState != SystemState.UNBRAKING)
@@ -235,36 +278,4 @@ public class ScissorLift extends Subsystem
         return nextState;
     }
 
-    @Override
-    public void outputToSmartDashboard()
-    {
-        dashboardPutNumber("Potentiometer", mMeasuredValue);
-    }
-
-    @Override
-    public synchronized void stop()
-    {
-        setWantedState(WantedState.OFF);
-    }
-
-    @Override
-    public void zeroSensors()
-    {
-        // we update our value map here based on smart dashboard values.
-        // we could also auto-calibrate our 'zero" here if we're in a known position.
-        mWantedStateMap[WantedState.OFF.ordinal()] =
-                dashboardGetNumber("Target1", kDefaultLowValue).intValue();
-        mWantedStateMap[WantedState.LOW.ordinal()] =
-                dashboardGetNumber("Target1", kDefaultLowValue).intValue();
-        mWantedStateMap[WantedState.MIDDLE.ordinal()] =
-                dashboardGetNumber("Target2", kDefaultMidValue).intValue();
-        mWantedStateMap[WantedState.HIGH.ordinal()] =
-                dashboardGetNumber("Target3", kDefaultHighValue).intValue();
-    }
-
-    @Override
-    public void registerEnabledLoops(Looper enabledLooper)
-    {
-        enabledLooper.register(mLoop);
-    }
 }
