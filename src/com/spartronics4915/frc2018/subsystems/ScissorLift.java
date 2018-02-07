@@ -10,25 +10,6 @@ import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Timer;
 
-/*
- * Notes on solenoid controls (from Riyadth)
- * 
- * To clarify the brake solenoid: As the scissor lift rises to the point where the 
- * software wants to stop it, the software should first engage the brake solenoid, 
- * which will hold the scissor lift in place. The software may want to continue to 
- * allow air in the lift solenoid for a period of time afterwards, so that the 
- * scissor lift is pressurized firmly. If we turn off the lift solenoid too soon 
- * there is a chance that the lift will be "bouncy", and could go down a bit while 
- * positioning. The brake only keeps the scissor from rising higher, and does not 
- * prevent it from going lower.
- * After applying the brake, in order to move the scissor lift again, the brake must 
- * be released, and then the scissor lift must be lowered a small amount, even if 
- * the desire is to raise it up higher. This is because there is a mechanical cam 
- * that is under tension, holding the lift from going higher, until the lift is 
- * lowered slightly. Of course, if the lift needs to be lowered anyway, it will be 
- * free to do so after the brake is released (ie, no small motion required first).
- */
-
 /**
  * The scissor lift is controlled by pneumatics. It has multiple set positions
  * and variable height. The key thing here is that its system state relates to
@@ -195,6 +176,24 @@ public class ScissorLift extends Subsystem
 
     // based on the combination of wanted state, current state and the current potentiometer value,
     // transfer the current system state to another state.
+    /*
+     * Notes on solenoid controls (from Riyadth)
+     * 
+     * To clarify the brake solenoid: As the scissor lift rises to the point where the 
+     * software wants to stop it, the software should first engage the brake solenoid, 
+     * which will hold the scissor lift in place. The software may want to continue to 
+     * allow air in the lift solenoid for a period of time afterwards, so that the 
+     * scissor lift is pressurized firmly. If we turn off the lift solenoid too soon 
+     * there is a chance that the lift will be "bouncy", and could go down a bit while 
+     * positioning. The brake only keeps the scissor from rising higher, and does not 
+     * prevent it from going lower.
+     * After applying the brake, in order to move the scissor lift again, the brake must 
+     * be released, and then the scissor lift must be lowered a small amount, even if 
+     * the desire is to raise it up higher. This is because there is a mechanical cam 
+     * that is under tension, holding the lift from going higher, until the lift is 
+     * lowered slightly. Of course, if the lift needs to be lowered anyway, it will be 
+     * free to do so after the brake is released (ie, no small motion required first).
+     */
     private SystemState updateState()
     {
         int targetValue = mWantedStateMap[mWantedState.ordinal()];
@@ -213,21 +212,27 @@ public class ScissorLift extends Subsystem
             // we're below target position, let's raise
             if (mSystemState != SystemState.RAISING)
             {
-                if (mSystemState != SystemState.UNBRAKING)
+                if (mSystemState == SystemState.HOLDING)
                 {
                     mTimer.reset();
                     mTimer.start();
                     mHoldSolenoid.set(false);
+                    mLowerSolenoid.set(true); // brake released, must go down a bit before up
+                    mRaiseSolenoid.set(false);
                     nextState = SystemState.UNBRAKING;
                 }
-                else if (mTimer.hasPeriodPassed(kUnbrakeTimePeriod))
+                else if (mSystemState == SystemState.UNBRAKING)
                 {
-                    mLowerSolenoid.set(false);
-                    mRaiseSolenoid.set(true);
-                    nextState = SystemState.RAISING;
+                    if(mTimer.hasPeriodPassed(kUnbrakeTimePeriod))
+                    {
+                        mLowerSolenoid.set(false);
+                        mRaiseSolenoid.set(true);
+                        nextState = SystemState.RAISING;
+                    }
+                    // else stay in UNBRAKING state
                 }
-                // else nextState = SystemState.UNBRAKING // (which was current state);
-
+                else
+                    logWarning("Raising, unexpected system state:" + mSystemState.toString());
             }
             // else nextState = SystemState.RAISING // (which was current state);
         }
@@ -236,20 +241,20 @@ public class ScissorLift extends Subsystem
             // we're above target position, let's lower
             if (mSystemState != SystemState.LOWERING)
             {
-                if (mSystemState != SystemState.UNBRAKING)
+                if (mSystemState == SystemState.HOLDING)
                 {
-                    mTimer.reset();
-                    mTimer.start();
-                    mHoldSolenoid.set(false);
-                    nextState = SystemState.UNBRAKING;
-                }
-                else if (mTimer.hasPeriodPassed(kUnbrakeTimePeriod))
-                {
-                    mLowerSolenoid.set(true);
-                    mRaiseSolenoid.set(false);
+                    mHoldSolenoid.set(false); // brake release
+                    mLowerSolenoid.set(true); // we're going down, proceed immediately to LOWERING
+                    mRaiseSolenoid.set(false);                 
                     nextState = SystemState.LOWERING;
                 }
-                // else nextState = SystemState.UNBRAKING // (which was current state);
+                else
+                {
+                    logWarning("Lowering, unexpected system state:" + mSystemState.toString());
+                    mLowerSolenoid.set(true); // we're going down, proceed immediately to LOWERING
+                    mRaiseSolenoid.set(false);                 
+                    nextState = SystemState.LOWERING;
+               }
             }
             // else nextState = SystemState.LOWERING // (which was current state);
         }
@@ -262,7 +267,7 @@ public class ScissorLift extends Subsystem
                 {
                     mTimer.reset();
                     mTimer.start();
-                    mHoldSolenoid.set(true);
+                    mHoldSolenoid.set(true); // brake set, allow system to "settle" before HOLDING
                     nextState = SystemState.BRAKING;
                 }
                 else if (mTimer.hasPeriodPassed(kBrakeTimePeriod))
