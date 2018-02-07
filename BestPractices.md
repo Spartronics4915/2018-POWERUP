@@ -53,8 +53,8 @@ state is deemed valuable enough to remain active during competition.  IMU Headin
 may fall into this category.  Since SmartDashboard entries aren't guaranteed to be visible to driver
 station, we must remain vigilant and ensure that only the desired traffic is generated.
 
-* If you are developing a subsystem, please use these methods: `broadcastState()`, `broadcastString()`,
-  `broadcastNumber()` and `broadcastBoolean()` since they prepend the subsytem name following
+* If you are developing a subsystem, please use these methods: `dashboardPutState()`, `dashboardPutString()`,
+  `dashboardPutNumber()` and `dashboardPutBoolean()` since they prepend the subsytem name following
   a convenient convention.  
 
 * If your are developing outside a Subsystem, please follow its field-naming convention. Prepend field
@@ -68,9 +68,9 @@ station, we must remain vigilant and ensure that only the desired traffic is gen
 
 ### Subsystem conventions
 * use `logInitialized()` to report the state of initialization.
-* use `broadcastState()` to update the the current subsystem state to the SmartDashboard.
+* use `dashboardPutState()` to update the the current subsystem state to the SmartDashboard.
   This method should be invoked during state transitions only, not repeatedly.
-* use `broadcastWantedState()` when the wanted state changes.
+* use `dashboardPutWantedState()` when the wanted state changes.
 
 
 ### Motor conventions
@@ -87,7 +87,7 @@ consistent.  Here are a few samples:
 #### Fuzzy equality: `boolean Util.epsilonEquals(double a, double b, double epsilon)`
 To compare a target value to a current value with a tolerance for small inaccuracies:
 ```
-    if(Util.epislonEquals(myPotentiometer.get(), targetValue, .1))
+    if(Util.epsilonEquals(myPotentiometer.get(), targetValue, .1))
     {
         // we're close enough
     }

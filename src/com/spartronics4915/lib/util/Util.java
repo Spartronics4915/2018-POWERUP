@@ -2,6 +2,8 @@ package com.spartronics4915.lib.util;
 
 import java.util.List;
 
+import edu.wpi.first.wpilibj.Solenoid;
+
 /**
  * Contains basic functions that are used often.
  */
@@ -40,9 +42,22 @@ public class Util
         return sb.toString();
     }
 
+    // check if a ~= b
     public static boolean epsilonEquals(double a, double b, double epsilon)
     {
         return (a - epsilon <= b) && (a + epsilon >= b);
+    }
+    
+    // check if a < b
+    public static boolean epsilonLessThan(double a, double b, double epsilon)
+    {
+        return (a + epsilon) < b;
+    }
+    
+    // check if a > b
+    public static boolean epsilonGreaterThan(double a, double b, double epsilon)
+    {
+        return (a - epsilon) > b;
     }
 
     public static boolean allCloseTo(List<Double> list, double value, double epsilon)
@@ -53,5 +68,14 @@ public class Util
             result &= epsilonEquals(value_in, value, epsilon);
         }
         return result;
+    }
+    
+    public static boolean validateSolenoid(Solenoid s)
+    {
+        boolean valid = false;
+        if(!s.isBlackListed() && 
+           !s.getPCMSolenoidVoltageFault())
+            valid = true;
+        return valid;
     }
 }

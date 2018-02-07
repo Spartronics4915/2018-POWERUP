@@ -350,12 +350,9 @@ public class Robot extends IterativeRobot
         final double kVoltageThreshold = 0.15;
         if (mCheckLightButton.getAverageVoltage() < kVoltageThreshold)
         {
-            mLED.setLEDOn();
+            mLED.warnDriver("Battery Warning");
         }
-        else
-        {
-            mLED.setLEDOff();
-        }
+        // no need to turn off the Driver warning, since it times out.
 
         // don't zero sensors during disabledPeriodic... zeroAllSensors();
         allButTestPeriodic();
