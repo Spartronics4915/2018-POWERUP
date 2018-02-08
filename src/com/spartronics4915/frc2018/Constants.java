@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj.Solenoid;
  */
 public class Constants extends ConstantsBase
 {
+    public static final boolean kUseTestbedConstants = true;
     // Hardware configuration constants --------------------------------------------------------
     
     // CAN Bus --------------------------- 
@@ -35,8 +36,8 @@ public class Constants extends ConstantsBase
     public static final int kGrabberFlipperMotorId = 5;
     public static final int kClimberWinchPrimaryMotorId = 6;
     public static final int kClimberWinchSecondaryMotorId = 7;
-    public static final int kHarvesterLeftMotorId = 8;
-    public static final int kHarvesterRightMotorId = 9;
+    public static final int kHarvesterLeftMotorId = kUseTestbedConstants ? 18 : 8;
+    public static final int kHarvesterRightMotorId = kUseTestbedConstants ? 16 : 9;
  
     public static final int kNumTalons = 9; // total talon count on robot (not testbed)
     
