@@ -80,7 +80,6 @@ public class Robot extends IterativeRobot
 
     private Looper mEnabledLooper = null;
     //    private VisionServer mVisionServer = null;
-    private AnalogInput mCheckLightButton = null;
     private DelayedBoolean mDelayedAimButton;
 
     private static final String kRobotVerbosity = "Robot/Verbosity"; // smartdashboard key
@@ -160,7 +159,6 @@ public class Robot extends IterativeRobot
             mControlBoard = new ControlBoard();
 
             mEnabledLooper = new Looper();
-            mCheckLightButton = new AnalogInput(Constants.kLEDOnId);
 
             mSubsystemManager.registerEnabledLoops(mEnabledLooper);
             mEnabledLooper.register(VisionProcessor.getInstance());
@@ -335,13 +333,6 @@ public class Robot extends IterativeRobot
     @Override
     public void disabledPeriodic()
     {
-        final double kVoltageThreshold = 0.15;
-        if (mCheckLightButton.getAverageVoltage() < kVoltageThreshold)
-        {
-            mLED.warnDriver("Battery Warning");
-        }
-        // no need to turn off the Driver warning, since it times out.
-
         // don't zero sensors during disabledPeriodic... zeroAllSensors();
         allButTestPeriodic();
     }

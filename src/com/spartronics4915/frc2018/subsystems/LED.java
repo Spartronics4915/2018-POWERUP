@@ -233,8 +233,8 @@ public class LED extends Subsystem
     public synchronized void setWantedState(WantedState state)
     {
         mWantedState = state;
-        broadcastState(state.toString());
-        broadcastString("Message", "");
+        dashboardPutState(state.toString());
+        dashboardPutString("Message", "");
         switch (mWantedState)
         {
             case OFF:
@@ -256,14 +256,14 @@ public class LED extends Subsystem
     public synchronized void warnDriver(String msg)
     {
         setWantedState(WantedState.WARN);
-        broadcastString("Message", msg);
+        dashboardPutString("Message", msg);
     }
 
     public synchronized void setDriverLEDOn()
     {
         if (!mIsLEDOn)
         {
-            broadcastBoolean("DriverLED", true);
+            dashboardPutBoolean("DriverLED", true);
             mIsLEDOn = true;
             mDriverLED.set(true);
         }
@@ -273,7 +273,7 @@ public class LED extends Subsystem
     {
         if (mIsLEDOn)
         {
-            broadcastBoolean("DriverLED", false);
+            dashboardPutBoolean("DriverLED", false);
             mIsLEDOn = false;
             mDriverLED.set(false);
         }
@@ -289,7 +289,7 @@ public class LED extends Subsystem
         if (!mIsLampOn)
         {
             mIsLampOn = true;
-            broadcastBoolean("VisionLamp", mIsLampOn);
+            dashboardPutBoolean("VisionLamp", mIsLampOn);
             mVisionLamp.set(mIsLampOn);
         }
     }
@@ -299,7 +299,7 @@ public class LED extends Subsystem
         if (mIsLampOn)
         {
             mIsLampOn = false;
-            broadcastBoolean("VisionLamp", mIsLampOn);
+            dashboardPutBoolean("VisionLamp", mIsLampOn);
             mVisionLamp.set(mIsLampOn);
         }
     }
