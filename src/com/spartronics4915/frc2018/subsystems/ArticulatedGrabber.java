@@ -6,6 +6,7 @@ import com.spartronics4915.frc2018.loops.Looper;
 import com.spartronics4915.lib.util.drivers.TalonSRX4915;
 import com.spartronics4915.lib.util.drivers.TalonSRX4915Factory;
 
+import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.AnalogPotentiometer;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Solenoid;
@@ -26,7 +27,7 @@ public class ArticulatedGrabber extends Subsystem//the class
     private TalonSRX4915 mPositionMotor = null;
     private Solenoid mGrabber1 = null;
     private Solenoid mGrabber2 = null;
-    private AnalogPotentiometer mPotentiometer = null;
+    private AnalogInput mPotentiometer = null;
     private DigitalInput mLimitSwitch = null;
     
         
