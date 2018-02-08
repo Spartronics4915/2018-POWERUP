@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj.Solenoid;
  */
 public class Constants extends ConstantsBase
 {
+    public static final boolean kUseTestbedConstants = true;
     // Hardware configuration constants --------------------------------------------------------
     
     // CAN Bus --------------------------- 
@@ -32,38 +33,47 @@ public class Constants extends ConstantsBase
     public static final int kRightDriveSlaveId = 4;
     public static final int kDriveIMUTalonId = kRightDriveSlaveId; // must be a slave
     
-    public static final int kTestbedMotor1Id = 16;
-    public static final int kTestbedMotor2Id = 18;
+    public static final int kGrabberFlipperMotorId = 5;
+    public static final int kClimberWinchPrimaryMotorId = 6;
+    public static final int kClimberWinchSecondaryMotorId = 7;
+    public static final int kHarvesterLeftMotorId = kUseTestbedConstants ? 18 : 8;
+    public static final int kHarvesterRightMotorId = kUseTestbedConstants ? 16 : 9;
  
-    public static final int kNumTalons = 4; // total talon count on robot (not testbed)
+    public static final int kNumTalons = 9; // total talon count on robot (not testbed)
     
-    public static final int kNumPDPs = 1; //
+    public static final int kNumPDPs = 1;
     public static final int kNumPCMs = 1; // Pressure control module (pneumatics)
     public static final int kNumCANDevices = kNumTalons + kNumPCMs + kNumPDPs;
     
-    // -- Pressure Control Module (PCM) Channels ----
-    public static final int kScissorUpSolenoidId = 0; // PCM 1, Solenoid 0
-    public static final int kScissorDownSolenoidId = 1; // PCM 1, Solenoid 1
-    public static final int kScissorBrakeSolenoidId = 2; // PCM 1, Solenoid 2  
+    // -- Pressure Control Module (PCM) Channels ----   
+    public static final int kScissorUpSolenoidId = 0; //PCM 0
+    public static final int kScissorDownSolenoidId = 1; //PCM 0
+    public static final int kScissorBrakeSolenoidId = 2; //PCM 0
+    public static final int kGrabberSolenoidId = 3; //PCM 0
+    public static final int kGrabberSetupSolenoidId = 4; //PCM 0
+    public static final int kHarvesterSolenoidId = 5; //PCM 0
+    public static final int kClimberStabilizationSolenoidId1 = 6; //PCM 0
+    public static final int kClimberStabilizationSolenoidId2 = 7; //PCM 0
 
     // PWM (Servo) Pins ----------------------------
-    public static final int kTestbedServoId = 0;
     
     // Relay Pins -----------------------------------
-    public static final int kTestbedLightSwitchId = 0;
+    public static final int kLEDVisionLampId = 0;
+    public static final int kLEDDriverLEDId = 1;
     
     // DIO Pins --------------------------------------
-    public static final int kTestbedLimitSwitchId = 0;
-    public static final int kScissorPotentiometer = 1;
-    public static final int kLEDVisionLampId = 8;
-    public static final int kLEDDriverLEDId = 9;
+    public static final int kScissorHomeLimitSwitchId = 0;
+    public static final int kFlipperHomeLimitSwitchId = 1;
+    public static final int kHarvesterCubeHeldLimitSwitchId = 2;
+    public static final int kHarvesterEmergencyLimitSwitchId = 3;
     
     // Analog In Pins ---------------------------------
-    public static final int kTestbedPotentiometerId = 0;
-    public static final int kLEDOnId = 2;
+    public static final int kScissorHeightPotentiometerId = 0;
+    public static final int kGrabberAnglePotentiometerId = 1;
+    public static final int kGrabberCubeDistanceRangeFinderId = 2;
+
     
     // Software configuration constants ----------------------------------------------------------
-
     public static final double kLooperDt = 0.005;
     
     // Vision
