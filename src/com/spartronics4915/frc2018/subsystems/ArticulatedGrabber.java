@@ -2,6 +2,7 @@ package com.spartronics4915.frc2018.subsystems;
 
 import com.spartronics4915.frc2018.loops.Loop;
 import com.spartronics4915.frc2018.loops.Looper;
+import com.spartronics4915.lib.util.Util;
 import com.spartronics4915.lib.util.drivers.TalonSRX4915;
 import com.spartronics4915.lib.util.drivers.TalonSRX4915Factory;
 
@@ -86,6 +87,18 @@ public class ArticulatedGrabber extends Subsystem//the class
         @Override
         public void onStart(double timestamp)//calibration
         {
+            if(!Util.validateSolenoid(mGrabber1)) 
+            {
+                logWarning("Grabber1 Invalid");
+            }
+            if(!Util.validateSolenoid(mGrabber2)) 
+            {
+                logWarning("Grabber2 Invalid");
+            }
+            if(!mPositionMotor.isValid()) 
+            {
+                logWarning("PositionMotor Invalid");
+            }
             mGrabber2.set(true); 
             synchronized(ArticulatedGrabber.this)
             {
