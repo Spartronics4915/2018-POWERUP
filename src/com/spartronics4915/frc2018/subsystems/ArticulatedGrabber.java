@@ -205,7 +205,7 @@ public class ArticulatedGrabber extends Subsystem//the class
                 
             case RELEASE_CUBE:
                 //logNotice("handleGrabberState.RELEASE_CUBE running");
-                if ((mSystemState.articulatorPosition > scalePosition - acceptablePositionError) && (mSystemState.articulatorPosition < scalePosition + acceptablePositionError))//???
+                if (Util.epsilonEquals(mSystemState.articulatorPosition, scalePosition, acceptablePositionError))
                 {
                     mGrabber1.set(true);
                     return true;
@@ -253,8 +253,7 @@ public class ArticulatedGrabber extends Subsystem//the class
             
             case PREPARE_DROP:
                 //logNotice("handleGrabberPosition.PREPARE_DROP running");
-
-                if ((mSystemState.articulatorPosition > scalePosition - acceptablePositionError) && (mSystemState.articulatorPosition < scalePosition + acceptablePositionError))
+                if (Util.epsilonEquals(mSystemState.articulatorPosition, scalePosition, acceptablePositionError))
                 {
                     mPositionMotor.set(0);
                     return mPotentiometer.getVoltage();
@@ -277,7 +276,7 @@ public class ArticulatedGrabber extends Subsystem//the class
             case GRAB_CUBE:
                 //logNotice("handleGrabberPosition.GRAB_CUBE running");
 
-                if ((mSystemState.articulatorPosition > intakePosition - acceptablePositionError) && (mSystemState.articulatorPosition < intakePosition + acceptablePositionError))
+                if (Util.epsilonEquals(mSystemState.articulatorPosition, intakePosition, acceptablePositionError))
                 {
                     mPositionMotor.set(0);
                     return mPotentiometer.getVoltage();
@@ -314,7 +313,7 @@ public class ArticulatedGrabber extends Subsystem//the class
             case RELEASE_CUBE:
                 //logNotice("handleGrabberPosition.RELEASE_CUBE running");
 
-                if ((mSystemState.articulatorPosition > scalePosition - acceptablePositionError) && (mSystemState.articulatorPosition < scalePosition + acceptablePositionError))
+                if (Util.epsilonEquals(mSystemState.articulatorPosition, scalePosition, acceptablePositionError))
                 {
                     mPositionMotor.set(0);
                     return mPotentiometer.getVoltage();
@@ -336,7 +335,7 @@ public class ArticulatedGrabber extends Subsystem//the class
                 
             case PREPARE_INTAKE:
                 //logNotice("handleGrabberPosition.PREPARE_INTAKE running");
-                if ((mSystemState.articulatorPosition < intakePosition - acceptablePositionError) && (mSystemState.articulatorPosition > intakePosition + acceptablePositionError))
+                if (Util.epsilonEquals(mSystemState.articulatorPosition, intakePosition, acceptablePositionError))
                 {
                     mPositionMotor.set(0);
                     return mPotentiometer.getVoltage();
