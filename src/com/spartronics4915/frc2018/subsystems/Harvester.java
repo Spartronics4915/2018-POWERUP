@@ -70,10 +70,9 @@ public class Harvester extends Subsystem
         mSolenoid = new Solenoid(Constants.kHarvesterSolenoidId); // Changes value of Solenoid
         mMotorRight = TalonSRX4915Factory.createDefaultMotor(Constants.kHarvesterRightMotorId); // change value of motor
         mMotorLeft = TalonSRX4915Factory.createDefaultMotor(Constants.kHarvesterLeftMotorId); // change value of motor
-        Util.validateSolenoid(mSolenoid);
-        mMotorRight.isValid();
-        mMotorLeft.isValid();
-
+        mMotorRight.configOutputPower(true, 0.5, 0, 0.3, 0, -0.3);
+        mMotorLeft.configOutputPower(true, 0.5, 0, 0.3, 0, -0.3);
+        
         if (!mMotorRight.isValid())
         {
             logError("Right Motor is invalid");
@@ -197,8 +196,8 @@ public class Harvester extends Subsystem
     {
         //motors off and bars out
         mSolenoid.set(true);
-        mMotorLeft.set(0.0);
-        mMotorRight.set(0.0);
+        mMotorLeft.set(1.0);
+        mMotorRight.set(1.0);
 
         // You should probably be transferring state and controlling actuators in here
         if (mWantedState == WantedState.HARVEST)
