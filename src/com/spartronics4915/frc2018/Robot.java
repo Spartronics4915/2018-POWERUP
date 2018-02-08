@@ -348,6 +348,7 @@ public class Robot extends IterativeRobot
     @Override
     public void disabledPeriodic()
     {
+<<<<<<< HEAD
         /*
          * final double kVoltageThreshold = 0.15;
          * if (mCheckLightButton.getAverageVoltage() < kVoltageThreshold)
@@ -359,6 +360,15 @@ public class Robot extends IterativeRobot
          * mLED.setLEDOff();
          * }
          */
+=======
+        final double kVoltageThreshold = 0.15;
+        if (mCheckLightButton.getAverageVoltage() < kVoltageThreshold)
+        {
+            mLED.warnDriver("Battery Warning");
+        }
+        // no need to turn off the Driver warning, since it times out.
+
+>>>>>>> 8efb8eb46bb1e7771708d67d7be3e25fd29a2d10
         // don't zero sensors during disabledPeriodic... zeroAllSensors();
         allButTestPeriodic();
     }

@@ -42,10 +42,16 @@ public class Constants extends ConstantsBase
     public static final int kNumCANDevices = kNumTalons + kNumPCMs + kNumPDPs;
     
     // -- Pressure Control Module (PCM) Channels ----
+<<<<<<< HEAD
     
     public static final int kScissorUpSolenoidId = 0; // PCM 1, Solenoid 0
     public static final int kScissorDownSolenoidId = 1; // PCM 1, Solenoid 1
     public static final int kScissorBrakeSolenoidId = 2; // PCM 1, Solenoid 2
+=======
+    public static final int kScissorUpSolenoidId = 0; // PCM 1, Solenoid 0
+    public static final int kScissorDownSolenoidId = 1; // PCM 1, Solenoid 1
+    public static final int kScissorBrakeSolenoidId = 2; // PCM 1, Solenoid 2  
+>>>>>>> 8efb8eb46bb1e7771708d67d7be3e25fd29a2d10
 
     // PWM (Servo) Pins ----------------------------
     public static final int kTestbedServoId = 0;
@@ -55,8 +61,9 @@ public class Constants extends ConstantsBase
     
     // DIO Pins --------------------------------------
     public static final int kTestbedLimitSwitchId = 0;
-    public static final int kRangeLEDId = 8;
-    public static final int kGreenLEDId = 9;
+    public static final int kScissorPotentiometer = 1;
+    public static final int kLEDVisionLampId = 8;
+    public static final int kLEDDriverLEDId = 9;
     
     // Analog In Pins ---------------------------------
     public static final int kTestbedPotentiometerId = 0;

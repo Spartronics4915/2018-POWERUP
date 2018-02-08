@@ -67,29 +67,44 @@ public abstract class Subsystem
     }
     
     // broadcast methods are for smartdashboard with conventionalized keys
-    public void broadcastState(String state)
+    public void dashboardPutState(String state)
     {
         SmartDashboard.putString(mName+"/State", state);
     }
     
-    public void broadcastWantedState(String state)
+    public void dashboardPutWantedState(String state)
     {
         SmartDashboard.putString(mName+"/WantedState", state);
     }
    
-    public void broadcastString(String nm, String value)
+    public void dashboardPutString(String nm, String value)
     {
         SmartDashboard.putString(mName+"/" + nm, value);
     }
     
-    public void broadcastNumber(String nm, Number value)
+    public String dashboardGetString(String nm, String defValue)
+    {
+        return SmartDashboard.getString(mName+"/" + nm, defValue);
+    }
+    
+    public void dashboardPutNumber(String nm, Number value)
     {
         SmartDashboard.putNumber(mName+"/"+nm, value.doubleValue());
     }
     
-    public void broadcastBoolean(String nm, Boolean value)
+    public Number dashboardGetNumber(String nm, Number defaultValue)
+    {
+        return SmartDashboard.getNumber(mName+"/"+nm, defaultValue.doubleValue());
+    }
+    
+    public void dashboardPutBoolean(String nm, Boolean value)
     {
         SmartDashboard.putBoolean(mName+"/"+nm, value);
+    }
+
+    public boolean dashboardGetBoolean(String nm, Boolean defValue)
+    {
+        return SmartDashboard.getBoolean(mName+"/"+nm, defValue);
     }
 
     // log methods are for conventionalizing format across subsystems 
