@@ -2,12 +2,10 @@ package com.spartronics4915.frc2018.subsystems;
 
 import com.spartronics4915.frc2018.loops.Loop;
 import com.spartronics4915.frc2018.loops.Looper;
-//import com.spartronics4915.frc2018.subsystems.Climber.SystemState;
 import com.spartronics4915.lib.util.drivers.TalonSRX4915;
 import com.spartronics4915.lib.util.drivers.TalonSRX4915Factory;
 
 import edu.wpi.first.wpilibj.AnalogInput;
-import edu.wpi.first.wpilibj.AnalogPotentiometer;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Solenoid;
 
@@ -72,7 +70,7 @@ public class ArticulatedGrabber extends Subsystem//the class
         mPositionMotor = TalonSRX4915Factory.createDefaultMotor(5);
         mGrabber1 = new Solenoid(3);
         mGrabber2 = new Solenoid(4);
-        mPotentiometer = new AnalogPotentiometer(1);
+        mPotentiometer = new AnalogInput(1);
         mLimitSwitch = new DigitalInput(1);
         
         boolean success = true;
@@ -108,7 +106,7 @@ public class ArticulatedGrabber extends Subsystem//the class
                 newState.grabberOpen = handleGrabberState();
                 dashboardPutWantedState(""+mWantedState+"");
                 dashboardPutState("position: " + mSystemState.articulatorPosition+ "");
-                dashboardPutNumber("potentiometer value: ", mPotentiometer.get());
+                dashboardPutNumber("potentiometer value: ", mPotentiometer.getVoltage());
                 dashboardPutBoolean("limit switch pressed: ", !mLimitSwitch.get());
                 /* 
                 if (mSystemState.grabberOpen == false && mSystemState.articulatorPosition == 0)//holding flat
@@ -231,13 +229,13 @@ public class ArticulatedGrabber extends Subsystem//the class
                 if (!mLimitSwitch.get())
                 {
                     mPositionMotor.set(0);
-                    potentiometerError = mPotentiometer.get();
+                    potentiometerError = mPotentiometer.getVoltage();
                     return 0;
                 }
                 else
                 {
                     mPositionMotor.set(-1.0);//change later
-                    return mPotentiometer.get();
+                    return mPotentiometer.getVoltage();
                 }
             
             case PREPARE_DROP:
@@ -246,21 +244,21 @@ public class ArticulatedGrabber extends Subsystem//the class
                 if ((mSystemState.articulatorPosition > scalePosition - acceptablePositionError) && (mSystemState.articulatorPosition < scalePosition + acceptablePositionError))
                 {
                     mPositionMotor.set(0);
-                    return mPotentiometer.get();
+                    return mPotentiometer.getVoltage();
                 }
                 if (mSystemState.articulatorPosition > scalePosition)
                 {
                     mPositionMotor.set(-1.0);
-                    return mPotentiometer.get();
+                    return mPotentiometer.getVoltage();
                 }
                 if (mSystemState.articulatorPosition < scalePosition)
                 {
                     mPositionMotor.set(1.0);
-                    return mPotentiometer.get();
+                    return mPotentiometer.getVoltage();
                 }
                 else
                 {
-                    return mPotentiometer.get();
+                    return mPotentiometer.getVoltage();
                 }
                                 
             case GRAB_CUBE:
@@ -269,21 +267,21 @@ public class ArticulatedGrabber extends Subsystem//the class
                 if ((mSystemState.articulatorPosition > intakePosition - acceptablePositionError) && (mSystemState.articulatorPosition < intakePosition + acceptablePositionError))
                 {
                     mPositionMotor.set(0);
-                    return mPotentiometer.get();
+                    return mPotentiometer.getVoltage();
                 }
                 if (mSystemState.articulatorPosition > intakePosition)
                 {
                     mPositionMotor.set(-1.0);
-                    return mPotentiometer.get();
+                    return mPotentiometer.getVoltage();
                 }
                 if (mSystemState.articulatorPosition < intakePosition)
                 {
                     mPositionMotor.set(1.0);
-                    return mPotentiometer.get();
+                    return mPotentiometer.getVoltage();
                 }
                 else
                 {
-                    return mPotentiometer.get();
+                    return mPotentiometer.getVoltage();
                 }
                 
             case PREPARE_EXCHANGE:
@@ -292,12 +290,12 @@ public class ArticulatedGrabber extends Subsystem//the class
                 if (!mLimitSwitch.get())
                 {
                     mPositionMotor.set(0);
-                    return mPotentiometer.get();
+                    return mPotentiometer.getVoltage();
                 }
                 else
                 {
                     mPositionMotor.set(-1.0);
-                    return mPotentiometer.get();
+                    return mPotentiometer.getVoltage();
                 }
                 
             case RELEASE_CUBE:
@@ -306,21 +304,21 @@ public class ArticulatedGrabber extends Subsystem//the class
                 if ((mSystemState.articulatorPosition > scalePosition - acceptablePositionError) && (mSystemState.articulatorPosition < scalePosition + acceptablePositionError))
                 {
                     mPositionMotor.set(0);
-                    return mPotentiometer.get();
+                    return mPotentiometer.getVoltage();
                 }
                 if (mSystemState.articulatorPosition > scalePosition)
                 {
                     mPositionMotor.set(-1.0);
-                    return mPotentiometer.get();
+                    return mPotentiometer.getVoltage();
                 }
                 if (mSystemState.articulatorPosition < scalePosition)
                 {
                     mPositionMotor.set(1.0);
-                    return mPotentiometer.get();
+                    return mPotentiometer.getVoltage();
                 }
                 else
                 {
-                    return mPotentiometer.get();
+                    return mPotentiometer.getVoltage();
                 }
                 
             case PREPARE_INTAKE:
@@ -328,26 +326,26 @@ public class ArticulatedGrabber extends Subsystem//the class
                 if ((mSystemState.articulatorPosition < intakePosition - acceptablePositionError) && (mSystemState.articulatorPosition > intakePosition + acceptablePositionError))
                 {
                     mPositionMotor.set(0);
-                    return mPotentiometer.get();
+                    return mPotentiometer.getVoltage();
                 }
                 if (mSystemState.articulatorPosition > intakePosition)
                 {
                     mPositionMotor.set(-1.0);
-                    return mPotentiometer.get();
+                    return mPotentiometer.getVoltage();
                 }
                 if (mSystemState.articulatorPosition < intakePosition)
                 {
                     mPositionMotor.set(1.0);
-                    return mPotentiometer.get();
+                    return mPotentiometer.getVoltage();
                 }
                 else
                 {
-                    return mPotentiometer.get();
+                    return mPotentiometer.getVoltage();
                 }
                 
             default:
                 //logNotice("handleGrabberPosition.default running");
-                return mPotentiometer.get();
+                return mPotentiometer.getVoltage();
 
         }
     }
