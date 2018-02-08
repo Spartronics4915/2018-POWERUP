@@ -1,5 +1,6 @@
 package com.spartronics4915.frc2018.subsystems;
 
+import com.spartronics4915.frc2018.Constants;
 import com.spartronics4915.frc2018.loops.Loop;
 import com.spartronics4915.frc2018.loops.Looper;
 import com.spartronics4915.lib.util.Util;
@@ -68,11 +69,11 @@ public class ArticulatedGrabber extends Subsystem//the class
     private ArticulatedGrabber()//initializes subsystem
     {
         //add ports
-        mPositionMotor = TalonSRX4915Factory.createDefaultMotor(5);
-        mGrabber1 = new Solenoid(3);
-        mGrabber2 = new Solenoid(4);
-        mPotentiometer = new AnalogInput(1);
-        mLimitSwitch = new DigitalInput(1);
+        mPositionMotor = TalonSRX4915Factory.createDefaultMotor(Constants.kGrabberFlipperMotorId);
+        mGrabber1 = new Solenoid(Constants.kGrabberSolenoidId);
+        mGrabber2 = new Solenoid(Constants.kGrabberSetupSolenoidId);
+        mPotentiometer = new AnalogInput(Constants.kGrabberAnglePotentiometerId);
+        mLimitSwitch = new DigitalInput(Constants.kFlipperHomeLimitSwitchId);
         
         boolean success = true;
 
