@@ -2,6 +2,7 @@ package com.spartronics4915.frc2018.subsystems;
 
 import com.spartronics4915.frc2018.loops.Loop;
 import com.spartronics4915.frc2018.loops.Looper;
+import com.spartronics4915.lib.util.Util;
 import com.spartronics4915.lib.util.drivers.TalonSRX4915;
 import com.spartronics4915.lib.util.drivers.TalonSRX4915Factory;
 
@@ -50,7 +51,7 @@ public class Harvester extends Subsystem
     private WantedState mWantedState = WantedState.CLOSE;
     private DigitalInput mLimitSwitchCubeHeld = null;
     private DigitalInput mLimitSwitchEmergency = null;
-    //private Solenoid mSolenoid = null;
+    private Solenoid mSolenoid = null;
     private TalonSRX4915 mMotorRight = null;
     private TalonSRX4915 mMotorLeft = null;
     private boolean virtualSolenoid = false;
@@ -66,10 +67,25 @@ public class Harvester extends Subsystem
         
         mLimitSwitchCubeHeld = new DigitalInput(1);// change value of Limit Switch
         mLimitSwitchEmergency = new DigitalInput(0); // changes value of Limit Switch
-        //mSolenoid = new Solenoid(5); // Changes value of Solenoid
+        mSolenoid = new Solenoid(5); // Changes value of Solenoid
         mMotorRight = TalonSRX4915Factory.createDefaultMotor(16); // change value of motor
         mMotorLeft = TalonSRX4915Factory.createDefaultMotor(18); // change value of motor
+        Util.validateSolenoid(mSolenoid);
+        mMotorRight.isValid();
+        mMotorLeft.isValid();
         
+        if (!mMotorRight.isValid())
+        {
+        logWarning("Right Motor is invalid");
+        }    
+        if (!mMotorLeft.isValid())
+        {    
+            logWarning("Left Motor is invalid");
+        }
+        if (!Util.validateSolenoid(mSolenoid))
+        {    
+            logInitialized(false);
+        }
         
         logInitialized(success);
     }
