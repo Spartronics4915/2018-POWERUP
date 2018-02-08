@@ -91,7 +91,7 @@ public class Harvester extends Subsystem
         {
             synchronized(Harvester.this)
             {
-                SystemState newState;
+                SystemState newState; // calls the wanted handle case for the given systemState
                 switch (mSystemState) {
                     case CLOSING:
                         newState = handleClosing();
@@ -129,7 +129,7 @@ public class Harvester extends Subsystem
         
     };
     
-    private SystemState defaultStateTransfer()
+    private SystemState defaultStateTransfer() // transitions the systemState given what the wantedState is
     {
 
         switch (mWantedState)
@@ -160,7 +160,7 @@ public class Harvester extends Subsystem
         // You should probably be transferring state and controlling actuators in here
         if (mWantedState == WantedState.OPEN) 
         {
-            return defaultStateTransfer(); 
+            return defaultStateTransfer(); // all defaultStateTransfers return the wanted state
         }
         else
         {
@@ -197,7 +197,7 @@ public class Harvester extends Subsystem
         if (!mLimitSwitchCubeHeld.get())
         {
             setWantedState(WantedState.HUG);
-            logError("mLimitSwitchCubeHeld.get() =" + mLimitSwitchCubeHeld.get());
+            logError("mLimitSwitchCubeHeld.get() =" + mLimitSwitchCubeHeld.get()); // checks if cube is in the robot and will transitions to hugging when the cube is fully in
         }
 
         
@@ -219,7 +219,7 @@ public class Harvester extends Subsystem
         mMotorLeft.set(-1.0);
         mMotorRight.set(-1.0);
 
-        if (mLimitSwitchEmergency.get())
+        if (mLimitSwitchEmergency.get()) //checks if we have reached an emergency state, and will transition to open when it reaches emergency
         {
             setWantedState(WantedState.OPEN);
         }
@@ -244,7 +244,7 @@ public class Harvester extends Subsystem
         // You should probably be transferring state and controlling actuators in here
         if (mWantedState == WantedState.HARVEST || mWantedState == WantedState.EJECT || mWantedState == WantedState.OPEN) 
         {
-            return defaultStateTransfer(); 
+            return defaultStateTransfer();
         }
         else
         {
