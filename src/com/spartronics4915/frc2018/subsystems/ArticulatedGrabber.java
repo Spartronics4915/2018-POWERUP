@@ -14,22 +14,23 @@ import edu.wpi.first.wpilibj.Solenoid;
 /**
  * The articulated grabber includes both a grabber and a flipper arm that work
  * in tandem to pick up cubes from the harvester and place them on the switch
- * or the scale. Climbing hooks may be attached to this subsystem at a later
- * time.
+ * or the scale. Climbing hooks may be attached to this subsystem at a later time.
+ * A potentiometer keeps track of the position of the arm and a limit switch
+ * allows for calibration on the fly. 
  */
 
-public class ArticulatedGrabber extends Subsystem//the class
+public class ArticulatedGrabber extends Subsystem
 {
 
-    private static ArticulatedGrabber sInstance = null;//creates a variable for the next function
+    private static ArticulatedGrabber sInstance = null;
     private TalonSRX4915 mPositionMotor = null;
-    private Solenoid mGrabber1 = null;
-    private Solenoid mGrabber2 = null;
+    private Solenoid mGrabber = null;
+    private Solenoid mSetupSolenoid = null;
     private AnalogInput mPotentiometer = null;
     private DigitalInput mLimitSwitch = null;
     
-        
-    public static ArticulatedGrabber getInstance()//command for other subsystems to start the subsystem
+    //command for other subsystems to start the subsystem
+    public static ArticulatedGrabber getInstance()
     {
         if (sInstance == null)
         {
@@ -37,43 +38,51 @@ public class ArticulatedGrabber extends Subsystem//the class
         }
         return sInstance;
     }
-
-    public class SystemState//the two system states. corresponds to WantedStates
+    
+    //SystemState corresponds to the two values being tracked
+    public class SystemState
     {
+        //Indicates the position of the flipper arm
         public double articulatorPosition;
-        public boolean grabberOpen;//two values- open or closed
+        //two values- open or closed
+        public boolean grabberOpen;
     }
 
     public enum WantedState
     {
-        TRANSPORT, //position: 0, open: false       //the cube is grabbed and flat against the lift
-        PREPARE_DROP, //position: 1, open: false    //the cube is grabbed and held over the switch/scale
-        GRAB_CUBE, //position: 2, open: false       //the cube is grabbed and on the ground
-        PREPARE_EXCHANGE, //position: 0, open: true //the cube is not grabbed and flat on the lift
-        RELEASE_CUBE, //position: 1, open: true     //the cube is just released over the switch/scale
-        PREPARE_INTAKE //position: 2, open: true    //the claw is over the cube on the ground but not grabbed
+                          //Corresponding Variables    //Interpretation of each wanted state
+                          //For WantedState            //In terms of what is actually happening
+        
+        TRANSPORT,        //position: 0, open: false   //the cube is grabbed and flat against the lift
+        PREPARE_DROP,     //position: 1, open: false   //the cube is grabbed and held over the switch/scale
+        GRAB_CUBE,        //position: 2, open: false   //the cube is grabbed and on the ground
+        PREPARE_EXCHANGE, //position: 0, open: true    //the cube is not grabbed and flat on the lift
+        RELEASE_CUBE,     //position: 1, open: true    //the cube is just released over the switch/scale
+        PREPARE_INTAKE    //position: 2, open: true    //the claw is over the cube on the ground but not grabbed
     }
     
     //Implement the positions 
+    //TODO: once testing begins add default positions for the potentiometer
     private int scalePosition = 0;
     private int intakePosition = 0;
     private int homePosition = 0;
     private double acceptablePositionError = 0.5;
     
+    //Maximum Motor Speed: used in the handlePosition method and the config for mPositionMotor
+    private double maxMotorSpeed = 0.3;
     
+    //States are created
     private SystemState mNextState = new SystemState();
     private SystemState mSystemState = new SystemState();//used for analyzing SystemState
     private WantedState mWantedState = WantedState.TRANSPORT; //double check this 
-
-    // Actuators and sensors should be initialized as private members with a value of null here
 
     private ArticulatedGrabber()//initializes subsystem
     {
         //add ports
         mPositionMotor = TalonSRX4915Factory.createDefaultMotor(Constants.kGrabberFlipperMotorId);
-        mPositionMotor.configOutputPower(true, .5, 0, .3, 0, .3);//may be negative in last number
-        mGrabber1 = new Solenoid(Constants.kGrabberSolenoidId);
-        mGrabber2 = new Solenoid(Constants.kGrabberSetupSolenoidId);
+        mPositionMotor.configOutputPower(true, .5, 0, maxMotorSpeed, 0, maxMotorSpeed);//may be negative in last number
+        mGrabber = new Solenoid(Constants.kGrabberSolenoidId);
+        mSetupSolenoid = new Solenoid(Constants.kGrabberSetupSolenoidId);
         mPotentiometer = new AnalogInput(Constants.kGrabberAnglePotentiometerId);
         mLimitSwitch = new DigitalInput(Constants.kFlipperHomeLimitSwitchId);
         
@@ -81,12 +90,12 @@ public class ArticulatedGrabber extends Subsystem//the class
 
         // Instantiate your actuator and sensor objects here
         // If !mMyMotor.isValid() then success should be set to false
-        if(!Util.validateSolenoid(mGrabber1)) 
+        if(!Util.validateSolenoid(mGrabber)) 
         {
             success = false;
             logWarning("Grabber1 Invalid");
         }
-        if(!Util.validateSolenoid(mGrabber2)) 
+        if(!Util.validateSolenoid(mSetupSolenoid)) 
         {
             success = false;
             logWarning("Grabber2 Invalid");
@@ -100,14 +109,15 @@ public class ArticulatedGrabber extends Subsystem//the class
         logInitialized(success);
     }
 
-    private Loop mLoop = new Loop() {//main loop in which everything is called  //goes through handling through again and again
+    //main loop in which everything is called especially the handling method
+    private Loop mLoop = new Loop() {
 
         @Override
         public void onStart(double timestamp)//calibration
         { 
             synchronized(ArticulatedGrabber.this)
             {
-              //This Method runs at the beginning of auto and teleop
+                //This Method runs at the beginning of auto and teleop
                 //mGrabber1.set(false);
                 //mGrabber2.set(true);
                 //mSystemState.articulatorPosition = 0;
@@ -127,13 +137,9 @@ public class ArticulatedGrabber extends Subsystem//the class
                 //Log change in state/position then assigns current state
                 if (mNextState.grabberOpen != mSystemState.grabberOpen) {
                     dashboardPutString("State change: ", "Articulated Grabber state from " + mSystemState.grabberOpen + "to" + mNextState.grabberOpen);
-                    logInfo("Articulated Grabber state from " + mSystemState.grabberOpen + "to" + mNextState.grabberOpen);
-                    mSystemState.grabberOpen = mNextState.grabberOpen;
                 }
                 if (mNextState.articulatorPosition != mSystemState.articulatorPosition) {
                     dashboardPutString("Position change: ", "Articulated Grabber position from " + mSystemState.articulatorPosition + "to" + mNextState.articulatorPosition);
-                    logInfo("Articulated Grabber position from " + mSystemState.articulatorPosition + "to" + mNextState.articulatorPosition);
-                    mSystemState.articulatorPosition = mNextState.articulatorPosition;
                 }
                 mSystemState = mNextState;
             }
@@ -150,49 +156,46 @@ public class ArticulatedGrabber extends Subsystem//the class
 
     };
 
-    private boolean handleGrabberState(int potValue)//same thing as positon but with bool
+    //Looks at the current state of the grabber mechanism
+    //compares it to the desired state the prescribes action
+    private boolean handleGrabberState(int potValue)
     {
         // You should probably be transferring state and controlling actuators in here
         switch (mWantedState) {
             case TRANSPORT:
-                //logNotice("handleGrabberState.TRANSPORT running");
-                if(mSystemState.grabberOpen) 
+                if(mNextState.grabberOpen) 
                 {
-                    mGrabber1.set(false);
+                    mGrabber.set(false);
                 }
                 return false;
                 
             case PREPARE_DROP:
-                //logNotice("handleGrabberState.PREPARE_DROP running");
-                if(mSystemState.grabberOpen) 
+                if(mNextState.grabberOpen) 
                 {
-                    mGrabber1.set(false);
+                    mGrabber.set(false);
                 }
                 return false;
                 
             case GRAB_CUBE:
-                //logNotice("handleGrabberState.GRAB_CUBE running");
-                if(mSystemState.grabberOpen) 
+                if(mNextState.grabberOpen) 
                 {
-                    mGrabber1.set(false);
+                    mGrabber.set(false);
                 }
                 return false;
                 
             case PREPARE_EXCHANGE:
-                //logNotice("handleGrabberState.PREPARE_EXCHANGE running");
-                if(!mSystemState.grabberOpen) 
+                if(!mNextState.grabberOpen) 
                 {
-                    mGrabber1.set(true);
+                    mGrabber.set(true);
                 }
                 return true;
                 
             case RELEASE_CUBE:
-                //logNotice("handleGrabberState.RELEASE_CUBE running");
                 if (Util.epsilonEquals(potValue, scalePosition, acceptablePositionError))
                 {
-                    if(!mSystemState.grabberOpen) 
+                    if(!mNextState.grabberOpen) 
                     {
-                        mGrabber1.set(true);
+                        mGrabber.set(true);
                     }
                     return true;
                 }
@@ -202,32 +205,29 @@ public class ArticulatedGrabber extends Subsystem//the class
                 }
                 
             case PREPARE_INTAKE:
-                //logNotice("handleGrabberState.PREPARE_INTAKE running");
 
-                if(!mSystemState.grabberOpen) 
+                if(!mNextState.grabberOpen) 
                 {
-                    mGrabber1.set(true);
+                    mGrabber.set(true);
                 }
                 return true;
                 
             default:
                 logWarning("Unexpected Case " + mWantedState.toString());
-                mGrabber1.set(false);
+                mGrabber.set(false);
                 return false;
         }
     }
     
-    private double handleGrabberPosition(int potValue)//code for grabber position   //compares current state to wanted state + prescribes an action to make wanted state equal to current state
+    //code for grabber position compares current state to wanted state
+    //then prescribes an action to make wanted state equal to current state
+    private double handleGrabberPosition(int potValue)
     {
-        // You should probably be transferring state and controlling actuators in here
+        //You should probably be transferring state and controlling actuators in here
         switch (mWantedState) {
             case TRANSPORT:
-                //logNotice("handleGrabberPosition.TRANSPORT running");
 
-              //ACTION HERE
-                
-                //or run until you hit the limit switch
-                //where is the reset function
+                //We may want to check the limit switch when looking at moving to position zero as a safety mechanism
                 if (Util.epsilonEquals(potValue, homePosition, acceptablePositionError))
                 {
                     mPositionMotor.set(0);
@@ -241,12 +241,12 @@ public class ArticulatedGrabber extends Subsystem//the class
                 }
                 if (potValue > homePosition)
                 {
-                    mPositionMotor.set(-1.0);
+                    mPositionMotor.set(-maxMotorSpeed);
                     return potValue;
                 }
                 if (potValue < homePosition)
                 {
-                    mPositionMotor.set(1.0);
+                    mPositionMotor.set(maxMotorSpeed);
                     return potValue;
                 }
                 else
@@ -255,7 +255,6 @@ public class ArticulatedGrabber extends Subsystem//the class
                 }
             
             case PREPARE_DROP:
-                //logNotice("handleGrabberPosition.PREPARE_DROP running");
                 if (Util.epsilonEquals(potValue, scalePosition, acceptablePositionError))
                 {
                     mPositionMotor.set(0);
@@ -263,12 +262,12 @@ public class ArticulatedGrabber extends Subsystem//the class
                 }
                 if (potValue > scalePosition)
                 {
-                    mPositionMotor.set(-1.0);
+                    mPositionMotor.set(-maxMotorSpeed);
                     return potValue;
                 }
                 if (potValue < scalePosition)
                 {
-                    mPositionMotor.set(1.0);
+                    mPositionMotor.set(maxMotorSpeed);
                     return potValue;
                 }
                 else
@@ -277,7 +276,6 @@ public class ArticulatedGrabber extends Subsystem//the class
                 }
                                 
             case GRAB_CUBE:
-                //logNotice("handleGrabberPosition.GRAB_CUBE running");
 
                 if (Util.epsilonEquals(potValue, intakePosition, acceptablePositionError))
                 {
@@ -286,12 +284,12 @@ public class ArticulatedGrabber extends Subsystem//the class
                 }
                 if (potValue > intakePosition)
                 {
-                    mPositionMotor.set(-1.0);
+                    mPositionMotor.set(-maxMotorSpeed);
                     return potValue;
                 }
                 if (potValue < intakePosition)
                 {
-                    mPositionMotor.set(1.0);
+                    mPositionMotor.set(maxMotorSpeed);
                     return potValue;
                 }
                 else
@@ -300,7 +298,7 @@ public class ArticulatedGrabber extends Subsystem//the class
                 }
                 
             case PREPARE_EXCHANGE:
-                //logNotice("handleGrabberPosition.PREPARE_EXCHANGE running");
+
                 if (Util.epsilonEquals(potValue, homePosition, acceptablePositionError))
                 {
                     mPositionMotor.set(0);
@@ -314,12 +312,12 @@ public class ArticulatedGrabber extends Subsystem//the class
                 }
                 if (potValue > homePosition)
                 {
-                    mPositionMotor.set(-1.0);
+                    mPositionMotor.set(-maxMotorSpeed);
                     return potValue;
                 }
                 if (potValue < homePosition)
                 {
-                    mPositionMotor.set(1.0);
+                    mPositionMotor.set(maxMotorSpeed);
                     return potValue;
                 }
                 else
@@ -328,7 +326,6 @@ public class ArticulatedGrabber extends Subsystem//the class
                 }
                 
             case RELEASE_CUBE:
-                //logNotice("handleGrabberPosition.RELEASE_CUBE running");
 
                 if (Util.epsilonEquals(potValue, scalePosition, acceptablePositionError))
                 {
@@ -337,12 +334,12 @@ public class ArticulatedGrabber extends Subsystem//the class
                 }
                 if (potValue > scalePosition)
                 {
-                    mPositionMotor.set(-1.0);
+                    mPositionMotor.set(-maxMotorSpeed);
                     return potValue;
                 }
                 if (potValue < scalePosition)
                 {
-                    mPositionMotor.set(1.0);
+                    mPositionMotor.set(maxMotorSpeed);
                     return potValue;
                 }
                 else
@@ -351,7 +348,7 @@ public class ArticulatedGrabber extends Subsystem//the class
                 }
                 
             case PREPARE_INTAKE:
-                //logNotice("handleGrabberPosition.PREPARE_INTAKE running");
+
                 if (Util.epsilonEquals(potValue, intakePosition, acceptablePositionError))
                 {
                     mPositionMotor.set(0);
@@ -359,12 +356,12 @@ public class ArticulatedGrabber extends Subsystem//the class
                 }
                 if (potValue > intakePosition)
                 {
-                    mPositionMotor.set(-1.0);
+                    mPositionMotor.set(-maxMotorSpeed);
                     return potValue;
                 }
                 if (potValue < intakePosition)
                 {
-                    mPositionMotor.set(1.0);
+                    mPositionMotor.set(maxMotorSpeed);
                     return potValue;
                 }
                 else
@@ -373,24 +370,25 @@ public class ArticulatedGrabber extends Subsystem//the class
                 }
                 
             default:
-                //logNotice("handleGrabberPosition.default running");
+                logWarning("Unexpected Case " + mWantedState.toString());
+                mPositionMotor.set(0.0);
                 return potValue;
 
         }
     }
     
     
-    public void setWantedState(WantedState wantedState)//will be called when the controller is used
+    public void setWantedState(WantedState wantedState)
     {
         mWantedState = wantedState;
     }
 
     @Override
-    public void outputToSmartDashboard()//code for outputting logs to the dashboard
+    public void outputToSmartDashboard()
     {
-      //Dashboard Logging
-        dashboardPutWantedState(""+mWantedState+"");
-        dashboardPutState("position: " + mSystemState.articulatorPosition+ "");
+        //Dashboard Logging
+        dashboardPutWantedState(mWantedState.toString());
+        dashboardPutState("position: " + mSystemState.articulatorPosition+ " grabber: " + mSystemState.grabberOpen);
         dashboardPutNumber("potentiometer value: ", mPotentiometer.getAverageValue());
         dashboardPutBoolean("limit switch pressed: ", !mLimitSwitch.get());
     }
@@ -399,11 +397,10 @@ public class ArticulatedGrabber extends Subsystem//the class
     public synchronized void stop()//stop function
     {
         mPositionMotor.set(0.0);
-        //stop motors and servos?
     }
 
     @Override
-    public void zeroSensors()//reset the sensors using the reset thing we had planned i.e. collapse the lift and the motors + set
+    public void zeroSensors()
     {
     }
 
