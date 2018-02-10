@@ -38,7 +38,7 @@ public class ScissorLift extends Subsystem
     private static final int kDefaultRetractedValue = 0;
     private static final int kDefaultSwitchValue = 1000;
     private static final int kDefaultScaleValue = 2040;
-    private static final int kPotentiometerAllowedError = 32;
+    private static final int kPotentiometerAllowedError = 200;
     private static final double kBrakeTimePeriod = .1;
     private static final double kUnbrakeTimePeriod = .1;
 
@@ -83,11 +83,15 @@ public class ScissorLift extends Subsystem
         mRaiseSolenoid = new Solenoid(Constants.kScissorUpSolenoidId);
         mLowerSolenoid = new Solenoid(Constants.kScissorDownSolenoidId);
         mHoldSolenoid = new Solenoid(Constants.kScissorBrakeSolenoidId);
+        
+        mTimer = new Timer();
 
         success = Util.validateSolenoid(mRaiseSolenoid) &&
                 Util.validateSolenoid(mLowerSolenoid) &&
                 Util.validateSolenoid(mHoldSolenoid);
-
+        
+        dashboardPutState(mSystemState.toString());
+        dashboardPutWantedState(mWantedState.toString());
         // TODO: check potentiometer value to see if its connected.
         //  this would be valid if we can count on the lift being
         //  in a reasonable state (ie lowered).  We can't detect
@@ -105,7 +109,10 @@ public class ScissorLift extends Subsystem
         {
             synchronized (ScissorLift.this)
             {
+                mWantedState = WantedState.OFF;
                 mSystemState = SystemState.OFF;
+                dashboardPutState(mSystemState.toString());
+                dashboardPutWantedState(mWantedState.toString());
                 zeroSensors(); // make sure mWantedStateMap is initialized
             }
         }
@@ -120,6 +127,7 @@ public class ScissorLift extends Subsystem
                 {
                     mSystemState = newState;
                     dashboardPutState(mSystemState.toString());
+                    logNotice(mSystemState.toString());
                 }
             }
         }
@@ -212,12 +220,11 @@ public class ScissorLift extends Subsystem
         {
 
         }
-        else if (mWantedState == WantedState.OFF)
+        else if (mWantedState == WantedState.OFF) // STOP 
         {
             mRaiseSolenoid.set(false);
             mLowerSolenoid.set(false);
             mHoldSolenoid.set(true);
-            logWarning("ScissorLift OFF");
             nextState = SystemState.OFF;
         }
         else if (Util.epsilonLessThan(mMeasuredValue, targetValue, kPotentiometerAllowedError))
@@ -243,17 +250,13 @@ public class ScissorLift extends Subsystem
                         nextState = SystemState.RAISING;
                     }
                 }
-                else if (mSystemState == SystemState.OFF)
+                else 
                 {
                     mLowerSolenoid.set(false);
                     mRaiseSolenoid.set(true);
                     nextState = SystemState.RAISING;
                 }
-                // else stay in UNBRAKING state
-                else
-                    logWarning("Raising, unexpected system state:" + mSystemState.toString());
             }
-            // else nextState = SystemState.RAISING // (which was current state);
         }
         else if (Util.epsilonGreaterThan(mMeasuredValue, targetValue, kPotentiometerAllowedError))
         {
