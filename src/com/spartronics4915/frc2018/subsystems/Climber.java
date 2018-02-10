@@ -7,6 +7,7 @@ import com.spartronics4915.lib.util.drivers.TalonSRX4915;
 import com.spartronics4915.lib.util.drivers.TalonSRX4915Factory;
 
 import edu.wpi.first.wpilibj.DoubleSolenoid;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
  * The climber is mostly a winch that pulls some ropes attached to the top of the scissor
@@ -29,29 +30,31 @@ public class Climber extends Subsystem
     {
         CLIMBING,
         HOLDING,
-        IDLING,
-        CLIMBING_WITH_FRIENDS
+        IDLING
     }
 
     public enum WantedState
     {
         CLIMB,
         HOLD,
-        IDLE,
-        CLIMB_WITH_FRIENDS
+        IDLE
     }
 
     private SystemState mSystemState = SystemState.IDLING;
     private WantedState mWantedState = WantedState.IDLE;
-    private TalonSRX4915 mWinchPrimary = TalonSRX4915Factory.createDefaultMotor(Constants.kClimberWinchPrimaryMotorId);
-    private TalonSRX4915 mWinchSecondary = TalonSRX4915Factory.createDefaultSlave(Constants.kClimberWinchSecondaryMotorId, Constants.kClimberWinchPrimaryMotorId, false);
-    private DoubleSolenoid mStablizierSolenoid = new DoubleSolenoid(Constants.kClimberStabilizationSolenoidId1, Constants.kClimberStabilizationSolenoidId2);
-    
+    private TalonSRX4915 mWinchPrimary = null;
+    private TalonSRX4915 mWinchSecondary = null;
+    private DoubleSolenoid mStablizierSolenoid = null;
     // Actuators and sensors should be initialized as private members with a value of null here
     
     private Climber()
     {
         boolean success = true;
+        mWinchPrimary = TalonSRX4915Factory.createDefaultMotor(Constants.kClimberWinchPrimaryMotorId);
+        mWinchSecondary = TalonSRX4915Factory.createDefaultSlave(Constants.kClimberWinchSecondaryMotorId, Constants.kClimberWinchPrimaryMotorId, false);
+        mStablizierSolenoid = new DoubleSolenoid(Constants.kClimberStabilizationSolenoidId1, Constants.kClimberStabilizationSolenoidId2);
+        //Set peak power output
+        //Set Voltage ramp rate
 
         // Instantiate your actuator and sensor objects here
         // If !mMyMotor.isValid() then success should be set to false
@@ -85,10 +88,10 @@ public class Climber extends Subsystem
                         break;
                     case CLIMBING:
                         newState = handleClimbing();
-       //           case CLIMBING_WITH_FRIENDS: 
-       //                 newState = handleClimbingWithFriends();
+                        break;
                     default:
-                        newState = SystemState.HOLDING;
+                        newState = handleIdling();
+                        break;
                         
                 }
                 if (newState != mSystemState) {
@@ -121,11 +124,10 @@ public class Climber extends Subsystem
    
    private SystemState handleClimbing()
     {
-        mWinchPrimary.set(1.0); //TODO Implement Smart Dashboard
-        mWinchSecondary.set(1.0); //TODO Implement Smart Dashboard
+       mWinchPrimary.set(1.0);
         if (mWantedState == WantedState.IDLE) 
         {
-            mStablizierSolenoid.set(DoubleSolenoid.Value.kReverse);   
+            mStablizierSolenoid.set(DoubleSolenoid.Value.kReverse);
             return SystemState.IDLING;
         }
         else if (mWantedState == WantedState.HOLD)
@@ -134,7 +136,7 @@ public class Climber extends Subsystem
         }
         else 
         {
-            return SystemState.CLIMBING;   
+            return SystemState.CLIMBING;
         }
         
     }
@@ -142,7 +144,6 @@ public class Climber extends Subsystem
     private SystemState handleIdling()
     {
         mWinchPrimary.set(0.0);
-        mWinchSecondary.set(0.0);
         if (mWantedState == WantedState.CLIMB) {
             mStablizierSolenoid.set(DoubleSolenoid.Value.kForward);
             return SystemState.CLIMBING;
@@ -156,13 +157,14 @@ public class Climber extends Subsystem
     private SystemState handleHolding()
     {
         mWinchPrimary.set(0.0);
-        mWinchSecondary.set(0.0);
         if (mWantedState == WantedState.CLIMB) 
         {
-            
             return SystemState.CLIMBING;
         }
+        else 
+        {
             return SystemState.HOLDING;
+        }
     }
 
     public void setWantedState(WantedState wantedState)
@@ -173,6 +175,8 @@ public class Climber extends Subsystem
     @Override
     public void outputToSmartDashboard()
     {
+        SmartDashboard.putString(this.getName() + "/SystemState", this.mSystemState + "");
+        SmartDashboard.putString(this.getName() + "/WantedState", this.mWantedState + "");
     }
 
     @Override

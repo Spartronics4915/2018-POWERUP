@@ -15,6 +15,7 @@ import com.spartronics4915.frc2018.loops.VisionProcessor;
 import com.spartronics4915.frc2018.paths.profiles.PathAdapter;
 import com.spartronics4915.frc2018.subsystems.ArticulatedGrabber;
 import com.spartronics4915.frc2018.subsystems.Climber;
+import com.spartronics4915.frc2018.subsystems.Climber.WantedState;
 import com.spartronics4915.frc2018.subsystems.ConnectionMonitor;
 import com.spartronics4915.frc2018.subsystems.Drive;
 import com.spartronics4915.frc2018.subsystems.Harvester;
@@ -276,6 +277,7 @@ public class Robot extends IterativeRobot
      * Each subsystem will constantly compare
      * its desired and actual states and act to bring the two closer.
      */
+    
     @Override
     public void teleopPeriodic()
     {
@@ -286,6 +288,21 @@ public class Robot extends IterativeRobot
             mDrive.setOpenLoop(
                     mCheesyDriveHelper.cheesyDrive(throttle, turn, mControlBoard.getQuickTurn(),
                             !mControlBoard.getLowGear()));
+            
+            if(mControlBoard.getClimberOn())
+            {
+                mClimber.setWantedState(WantedState.CLIMB);
+            }
+            
+            if(mControlBoard.getClimberOff())
+            {
+                mClimber.setWantedState(WantedState.IDLE);
+            }
+            
+            if(mControlBoard.getClimberHold())
+            {
+                mClimber.setWantedState(WantedState.HOLD);
+            }
 
             allButTestPeriodic();
         }

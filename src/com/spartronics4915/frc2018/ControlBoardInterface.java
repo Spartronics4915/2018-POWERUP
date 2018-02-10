@@ -15,10 +15,17 @@ public interface ControlBoardInterface
     
     boolean getLowGear();
     
+    boolean getClimberOn();
+    
+    boolean getClimberOff();
+    
+    boolean getClimberHold();
+    
     // Debug buttons, remove me
     boolean getDebugPrimary();
     
     boolean getDebugSecondary();
     
     boolean getDebugTertiary();
+    
 }
