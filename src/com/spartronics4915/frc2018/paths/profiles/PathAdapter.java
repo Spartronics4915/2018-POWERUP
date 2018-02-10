@@ -13,21 +13,22 @@ public class PathAdapter
     static final RobotProfile kRobotProfile = new CompBot();
     static final FieldProfile kFieldProfile = new PracticeField();
 
-    // Path Variables -- these will probably be common for many paths if you're only changing directions
-    static final double kLargeRadius = 45;
-    static final double kModerateRadius = 30;
-    static final double kNominalRadius = 20;
-    static final double kSmallRadius = 10;
-    static final double kSpeed = 80;
-
-    public static void calculatePaths()
-    {
-        // TODO: Put paths here
+    public static RobotProfile getRobotProfile() {
+        return kRobotProfile;
     }
-
+    
+    public static FieldProfile getFieldProfile() {
+        return kFieldProfile;
+    }
+    
     public static void main(String[] args)
     {
         // You can put print the path out here
+    }
+
+    public static void calculatePaths()
+    {
+        // TODO?
     }
 
 }
