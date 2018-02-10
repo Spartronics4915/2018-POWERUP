@@ -115,11 +115,11 @@ public class ScissorLift extends Subsystem
         {
             synchronized (ScissorLift.this)
             {
-                SystemState newState = updateState(); // TODO:This causes the dashboard to constantly be one system state behind. Fix.
+                SystemState newState = updateState();
                 if (newState != mSystemState)
                 {
-                    dashboardPutState(mSystemState.toString());
                     mSystemState = newState;
+                    dashboardPutState(mSystemState.toString());
                 }
             }
         }
