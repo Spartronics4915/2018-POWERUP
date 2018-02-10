@@ -286,7 +286,7 @@ public class Robot extends IterativeRobot
             mDrive.setOpenLoop(
                     mCheesyDriveHelper.cheesyDrive(throttle, turn, mControlBoard.getQuickTurn(),
                             !mControlBoard.getLowGear()));
-
+                
             allButTestPeriodic();
         }
         catch (Throwable t)

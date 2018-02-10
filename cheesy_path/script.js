@@ -1,11 +1,11 @@
 var waypoints = [];
 var ctx;
-var width = 1656; //pixels
-var height = 823; //pixels
-var fieldWidth = 652; // in inches
+var width = 1692; //pixels
+var height = 836; //pixels
+var fieldWidth = 648; // in inches
 var fieldHeight = 324; // in inches
-var robotWidth = 35.45; //inches
-var robotHeight = 33.325; //inches
+var robotWidth = 30.75;
+var robotHeight = 35.25;
 var pointRadius = 5;
 var turnRadius = 30;
 var kEpsilon = 1E-9;
@@ -445,7 +445,7 @@ ${pathInit}
     
     @Override
     public RigidTransform2d getStartPose() {
-        return new RigidTransform2d(${startPoint}, Rotation2d.fromDegrees(180.0)); 
+        return new RigidTransform2d(${startPoint}, Rotation2d.fromDegrees(90.0)); 
     }
 
     @Override

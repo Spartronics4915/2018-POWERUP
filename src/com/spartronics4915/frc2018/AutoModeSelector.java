@@ -37,10 +37,14 @@ public class AutoModeSelector
             "Do Nothing",
             () -> new StandStillMode());
     private static final AutoModeCreator[] mAllModes = {
-            new AutoModeCreator("Test Path Mode", () -> new TestPathMode()),
-            new AutoModeCreator("Test Turning Mode", () -> new TestTurnMode()),
-            new AutoModeCreator("Test Open Loop", () -> new TestOpenLoopMode()),
-            new AutoModeCreator("Stress Test Motor Mode", () -> new StressMotorsMode())
+            new AutoModeCreator("A: Place at Scale", () -> new PlaceScaleFromAMode()),
+            new AutoModeCreator("C: Place at Scale", () -> new PlaceScaleFromCMode()),
+            new AutoModeCreator("A: Place at Switch", () -> new PlaceSwitchFromAMode()),
+            new AutoModeCreator("B: Place at Switch", () -> new PlaceSwitchFromBMode()),
+            new AutoModeCreator("C: Place at Switch", () -> new PlaceSwitchFromCMode()),
+            new AutoModeCreator("Test: Stress Motor Mode", () -> new StressMotorsMode()),
+            new AutoModeCreator("Test: Turn to Cube Mode", () -> new TurnToCubeMode()),
+
             // e.g. new AutoModeCreator("Boiler Gear then 10 Ball Shoot Red", () -> new BoilerGearThenShootModeRed()),
     };
 
