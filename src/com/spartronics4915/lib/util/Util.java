@@ -70,6 +70,10 @@ public class Util
         return result;
     }
     
+    /**
+     * @deprecated
+     * FIXME, use the one in LazySolenoid
+     */
     public static boolean validateSolenoid(Solenoid s)
     {
         boolean valid = false;
