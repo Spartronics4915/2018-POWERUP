@@ -64,8 +64,8 @@ public class Constants extends ConstantsBase
     // DIO Pins --------------------------------------
     public static final int kScissorHomeLimitSwitchId = 0;
     public static final int kFlipperHomeLimitSwitchId = 1;
-    public static final int kHarvesterCubeHeldLimitSwitchId = 2;
-    public static final int kHarvesterEmergencyLimitSwitchId = 3;
+    public static final int kHarvesterCubeHeldLimitSwitchId = kUseTestbedConstants ? 0 : 2;
+    public static final int kHarvesterEmergencyLimitSwitchId = kUseTestbedConstants ? 1 : 3;
     
     // Analog In Pins ---------------------------------
     public static final int kScissorHeightPotentiometerId = 0;
