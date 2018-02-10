@@ -54,7 +54,7 @@ public class ScissorLift extends Subsystem
 
     public enum WantedState
     {
-        OFF, // == 0,  is off different from low?
+        OFF, // == 0,  is off different from retracted?
         RETRACTED,
         SWITCH,
         SCALE,
@@ -251,7 +251,7 @@ public class ScissorLift extends Subsystem
             // we're above target position, let's lower
             if (mSystemState != SystemState.LOWERING)
             {
-                if (mSystemState == SystemState.HOLDING)
+                if (mSystemState == SystemState.HOLDING || SystemState.OFF)
                 {
                     mHoldSolenoid.set(false); // brake release
                     mLowerSolenoid.set(true); // we're going down, proceed immediately to LOWERING
@@ -260,7 +260,7 @@ public class ScissorLift extends Subsystem
                 }
                 else
                 {
-                    logWarning("Lowering, unexpected system state:" + mSystemState.toString());
+                    logInfo("Lowering, unexpected system state:" + mSystemState.toString());
                     mLowerSolenoid.set(true); // we're going down, proceed immediately to LOWERING
                     mRaiseSolenoid.set(false);
                     nextState = SystemState.LOWERING;
