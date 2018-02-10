@@ -288,6 +288,7 @@ public class Robot extends IterativeRobot
             mDrive.setOpenLoop(
                     mCheesyDriveHelper.cheesyDrive(throttle, turn, mControlBoard.getQuickTurn(),
                             !mControlBoard.getLowGear()));
+<<<<<<< HEAD
             
             if(mControlBoard.getClimberOn())
             {
@@ -304,6 +305,9 @@ public class Robot extends IterativeRobot
                 mClimber.setWantedState(WantedState.HOLD);
             }
 
+=======
+                
+>>>>>>> 53dc54dacec67d75740a2c591b97076f9281d170
             allButTestPeriodic();
         }
         catch (Throwable t)

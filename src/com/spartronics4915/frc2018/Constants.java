@@ -64,8 +64,8 @@ public class Constants extends ConstantsBase
     // DIO Pins --------------------------------------
     public static final int kScissorHomeLimitSwitchId = 0;
     public static final int kFlipperHomeLimitSwitchId = 1;
-    public static final int kHarvesterCubeHeldLimitSwitchId = 2;
-    public static final int kHarvesterEmergencyLimitSwitchId = 3;
+    public static final int kHarvesterCubeHeldLimitSwitchId = kUseTestbedConstants ? 0 : 2;
+    public static final int kHarvesterEmergencyLimitSwitchId = kUseTestbedConstants ? 1 : 3;
     
     // Analog In Pins ---------------------------------
     public static final int kScissorHeightPotentiometerId = 0;
@@ -86,19 +86,19 @@ public class Constants extends ConstantsBase
     public static final double kTrackWidthInches = 23.75;
     public static final double kTrackScrubFactor = 0.624;
 
-    // Chassis Geometry
-    public static final double kCenterToFrontBumperDistance = 16.14;
+    // Chassis Geometry -- Currently unused
+    public static final double kCenterToFrontBumperDistance = 17.839285714;
     // public static final double kCenterToIntakeDistance = 20.9675;
-    public static final double kCenterToRearBumperDistance = 16.14;
-    public static final double kCenterToSideBumperDistance = 13.78;
+    public static final double kCenterToRearBumperDistance = kCenterToFrontBumperDistance;
+    public static final double kCenterToSideBumperDistance = 15.375;
 
     /* CONTROL LOOP GAINS ---------------------------------------------------------------- */
 
     // PID gains for drive velocity loop (HIGH GEAR)
     // Units: setpoint, error, and output are in inches per second.
-    public static final double kDriveVelocityKp = 1.2;
+    public static final double kDriveVelocityKp = 1.4;
     public static final double kDriveVelocityKi = 0.0;
-    public static final double kDriveVelocityKd = 6.0;
+    public static final double kDriveVelocityKd = 6.5;
     public static final double kDriveVelocityKf = .15;
     public static final int kDriveVelocityIZone = 0;
     public static final double kDriveVelocityRampRate = .05; // 240V/s -> 12V in .05s

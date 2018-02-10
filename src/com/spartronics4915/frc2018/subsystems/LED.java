@@ -5,7 +5,7 @@ import com.spartronics4915.frc2018.loops.Loop;
 import com.spartronics4915.frc2018.loops.Looper;
 import com.spartronics4915.lib.util.Logger;
 
-import edu.wpi.first.wpilibj.DigitalOutput;
+import edu.wpi.first.wpilibj.Relay;
 
 /**
  * The LED subsystem consists of:
@@ -61,8 +61,8 @@ public class LED extends Subsystem
     private WantedState mWantedState = WantedState.OFF;
 
     private boolean mIsLEDOn, mIsLampOn;
-    private DigitalOutput mDriverLED;
-    private DigitalOutput mVisionLamp;
+    private Relay mDriverLED;
+    private Relay mVisionLamp;
     private boolean mIsBlinking = false;
     private double mBlinkDuration;
     private int mBlinkCount;
@@ -70,10 +70,10 @@ public class LED extends Subsystem
 
     public LED()
     {
-        mDriverLED = new DigitalOutput(Constants.kLEDDriverLEDId);
+        mDriverLED = new Relay(Constants.kLEDDriverLEDId);
         setDriverLEDOff();
 
-        mVisionLamp = new DigitalOutput(Constants.kLEDVisionLampId);
+        mVisionLamp = new Relay(Constants.kLEDVisionLampId);
         setVisionLampOff();
 
         configureBlink(kDefaultBlinkCount, kDefaultBlinkDuration);
@@ -265,7 +265,7 @@ public class LED extends Subsystem
         {
             dashboardPutBoolean("DriverLED", true);
             mIsLEDOn = true;
-            mDriverLED.set(true);
+            mDriverLED.set(Relay.Value.kOn);
         }
     }
 
@@ -275,7 +275,7 @@ public class LED extends Subsystem
         {
             dashboardPutBoolean("DriverLED", false);
             mIsLEDOn = false;
-            mDriverLED.set(false);
+            mDriverLED.set(Relay.Value.kOff);
         }
     }
 
@@ -290,7 +290,7 @@ public class LED extends Subsystem
         {
             mIsLampOn = true;
             dashboardPutBoolean("VisionLamp", mIsLampOn);
-            mVisionLamp.set(mIsLampOn);
+            mVisionLamp.set(Relay.Value.kOn);
         }
     }
 
@@ -300,7 +300,7 @@ public class LED extends Subsystem
         {
             mIsLampOn = false;
             dashboardPutBoolean("VisionLamp", mIsLampOn);
-            mVisionLamp.set(mIsLampOn);
+            mVisionLamp.set(Relay.Value.kOff);
         }
     }
 
