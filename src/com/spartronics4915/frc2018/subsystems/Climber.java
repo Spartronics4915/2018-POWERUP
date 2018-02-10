@@ -29,21 +29,23 @@ public class Climber extends Subsystem
     {
         CLIMBING,
         HOLDING,
-        IDLING
+        IDLING,
+        CLIMBING_WITH_FRIENDS
     }
 
     public enum WantedState
     {
         CLIMB,
         HOLD,
-        IDLE
+        IDLE,
+        CLIMB_WITH_FRIENDS
     }
 
     private SystemState mSystemState = SystemState.IDLING;
     private WantedState mWantedState = WantedState.IDLE;
     private TalonSRX4915 mWinchPrimary = TalonSRX4915Factory.createDefaultMotor(Constants.kClimberWinchPrimaryMotorId);
     private TalonSRX4915 mWinchSecondary = TalonSRX4915Factory.createDefaultSlave(Constants.kClimberWinchSecondaryMotorId, Constants.kClimberWinchPrimaryMotorId, false);
-    private DoubleSolenoid mStablizerSoleniod = new DoubleSolenoid(Constants.kClimberStabilizationSolenoidId1, Constants.kClimberStabilizationSolenoidId2);
+    private DoubleSolenoid mStablizierSolenoid = new DoubleSolenoid(Constants.kClimberStabilizationSolenoidId1, Constants.kClimberStabilizationSolenoidId2);
     
     // Actuators and sensors should be initialized as private members with a value of null here
     
@@ -83,6 +85,8 @@ public class Climber extends Subsystem
                         break;
                     case CLIMBING:
                         newState = handleClimbing();
+       //           case CLIMBING_WITH_FRIENDS: 
+       //                 newState = handleClimbingWithFriends();
                     default:
                         newState = SystemState.HOLDING;
                         
@@ -94,7 +98,6 @@ public class Climber extends Subsystem
             }
         }
 
-        
         @Override
         public void onStop(double timestamp)
         {
@@ -108,16 +111,21 @@ public class Climber extends Subsystem
     
    private void setSolenoidReverse()
    {
-       mStablizerSoleniod.set(DoubleSolenoid.Value.kReverse);
+       mStablizierSolenoid.set(DoubleSolenoid.Value.kReverse);
    }
     
-    private SystemState handleClimbing()
+   /*private SystemState handleClimbingWithFriends()
     {
-        mWinchPrimary.set(1.0);
+     
+    } */
+   
+   private SystemState handleClimbing()
+    {
+        mWinchPrimary.set(1.0); //TODO Implement Smart Dashboard
         mWinchSecondary.set(1.0); //TODO Implement Smart Dashboard
         if (mWantedState == WantedState.IDLE) 
         {
-            mStablizerSoleniod.set(DoubleSolenoid.Value.kReverse);   
+            mStablizierSolenoid.set(DoubleSolenoid.Value.kReverse);   
             return SystemState.IDLING;
         }
         else if (mWantedState == WantedState.HOLD)
@@ -136,7 +144,7 @@ public class Climber extends Subsystem
         mWinchPrimary.set(0.0);
         mWinchSecondary.set(0.0);
         if (mWantedState == WantedState.CLIMB) {
-            mStablizerSoleniod.set(DoubleSolenoid.Value.kForward);
+            mStablizierSolenoid.set(DoubleSolenoid.Value.kForward);
             return SystemState.CLIMBING;
         }
         else 
