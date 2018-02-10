@@ -70,8 +70,8 @@ public class Harvester extends Subsystem
         mSolenoid = new Solenoid(Constants.kHarvesterSolenoidId); // Changes value of Solenoid
         mMotorRight = TalonSRX4915Factory.createDefaultMotor(Constants.kHarvesterRightMotorId); // change value of motor
         mMotorLeft = TalonSRX4915Factory.createDefaultMotor(Constants.kHarvesterLeftMotorId); // change value of motor
-        mMotorRight.configOutputPower(true, 0.5, 0, 0.3, 0, -0.3);
-        mMotorLeft.configOutputPower(true, 0.5, 0, 0.3, 0, -0.3);
+        //mMotorRight.configOutputPower(true, 0.5, 0, 0.3, 0, -0.3);
+        //mMotorLeft.configOutputPower(true, 0.5, 0, 0.3, 0, -0.3);
         
         if (!mMotorRight.isValid())
         {
@@ -225,12 +225,10 @@ public class Harvester extends Subsystem
         if (mWantedState == WantedState.HUG || mWantedState == WantedState.EJECT
                 || mWantedState == WantedState.OPEN)
         {
-            logError("Set WantedState to hug");
             return defaultStateTransfer();
         }
         else
         {
-            logError("Set WantedState to harvesting");
             return SystemState.HARVESTING;
         }
     }
