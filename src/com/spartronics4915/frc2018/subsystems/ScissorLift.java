@@ -79,7 +79,7 @@ public class ScissorLift extends Subsystem
     {
         boolean success = true;
 
-        mPotentiometer = new AnalogInput(Constants.kScissorPotentiometer);
+        mPotentiometer = new AnalogInput(Constants.kScissorHeightPotentiometerId);
         mRaiseSolenoid = new Solenoid(Constants.kScissorUpSolenoidId);
         mLowerSolenoid = new Solenoid(Constants.kScissorDownSolenoidId);
         mHoldSolenoid = new Solenoid(Constants.kScissorBrakeSolenoidId);
@@ -144,7 +144,7 @@ public class ScissorLift extends Subsystem
     @Override
     public void outputToSmartDashboard()
     {
-        dashboardPutNumber("Potentiometer", mMeasuredValue);
+        dashboardPutNumber("Potentiometer", mMeasuredValue); // N/A
     }
 
     @Override
