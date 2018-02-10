@@ -37,6 +37,8 @@ public class Harvester extends Subsystem
         HARVESTING,
         EJECTING,
         HUGGING,
+        PREHARVESTING,
+        DISABLING,
     }
 
     public enum WantedState
@@ -46,10 +48,12 @@ public class Harvester extends Subsystem
         HARVEST,
         EJECT,
         HUG,
+        PREHARVEST,
+        DISABLE,
     }
 
-    private SystemState mSystemState = SystemState.CLOSING;
-    private WantedState mWantedState = WantedState.CLOSE;
+    private SystemState mSystemState = SystemState.DISABLING;
+    private WantedState mWantedState = WantedState.DISABLE;
     private DigitalInput mLimitSwitchCubeHeld = null;
     private DigitalInput mLimitSwitchEmergency = null;
     private Solenoid mSolenoid = null;
@@ -70,6 +74,7 @@ public class Harvester extends Subsystem
         mSolenoid = new Solenoid(Constants.kHarvesterSolenoidId); // Changes value of Solenoid
         mMotorRight = TalonSRX4915Factory.createDefaultMotor(Constants.kHarvesterRightMotorId); // change value of motor
         mMotorLeft = TalonSRX4915Factory.createDefaultMotor(Constants.kHarvesterLeftMotorId); // change value of motor
+        mMotorLeft.setInvert();
         //mMotorRight.configOutputPower(true, 0.5, 0, 0.3, 0, -0.3);
         //mMotorLeft.configOutputPower(true, 0.5, 0, 0.3, 0, -0.3);
         
@@ -101,7 +106,9 @@ public class Harvester extends Subsystem
             synchronized (Harvester.this)
             {
                 mSystemState = SystemState.CLOSING;
-
+                
+                if (mSystemState == SystemState.DISABLING)
+                    mWantedState = WantedState.CLOSE;
             }
         }
 
@@ -128,6 +135,10 @@ public class Harvester extends Subsystem
                     case HUGGING:
                         newState = handleHugging();
                         break;
+                    case PREHARVESTING:
+                        newState = handlePreharvesting();
+                    case DISABLING:
+                        newState = handleClosing();
                     default:
                         newState = handleClosing();
                 }
@@ -166,6 +177,8 @@ public class Harvester extends Subsystem
                 return SystemState.EJECTING;
             case HUG:
                 return SystemState.HUGGING;
+            case PREHARVEST:
+                return SystemState.PREHARVESTING;
             default:
                 return mSystemState;
 
@@ -174,106 +187,88 @@ public class Harvester extends Subsystem
 
     private SystemState handleClosing()
     {
-
         //motors off and bars in
-        mSolenoid.set(false);
-        mMotorLeft.set(0.0);
-        mMotorRight.set(0.0);
-
         // You should probably be transferring state and controlling actuators in here
         if (mWantedState == WantedState.OPEN)
         {
+            mSolenoid.set(true);
+        }
+            mMotorLeft.set(0.0);
+            mMotorRight.set(0.0);
             return defaultStateTransfer(); // all defaultStateTransfers return the wanted state
-        }
-        else
-        {
-            return SystemState.CLOSING;
-        }
-
     }
 
     private SystemState handleOpening()
     {
         //motors off and bars out
-        mSolenoid.set(true);
-        mMotorLeft.set(1.0);
-        mMotorRight.set(1.0);
-
         // You should probably be transferring state and controlling actuators in here
         if (mWantedState == WantedState.HARVEST)
         {
+            mSolenoid.set(false);
+        }
+            mMotorLeft.set(0.0);
+            mMotorRight.set(0.0);
             return defaultStateTransfer();
-        }
-        else
-        {
-            return SystemState.OPENING;
-        }
     }
 
+    private SystemState handlePreharvesting()
+    {
+        //motors on and bars out
+        // You should probably be transferring state and controlling actuators in here
+        if (mWantedState == WantedState.HARVEST)
+        {
+            mSolenoid.set(true);
+        }
+            mMotorLeft.set(1.0);
+            mMotorRight.set(1.0);
+            return defaultStateTransfer();
+    }
     private SystemState handleHarvesting()
     {
         //motors on forward and bars closing, hug when cube is gone
-        mSolenoid.set(false);
-        mMotorLeft.set(1.0);
-        mMotorRight.set(1.0);
-
         // You should probably be transferring state and controlling actuators in here
-        if (!mLimitSwitchCubeHeld.get())
+        if (!mLimitSwitchCubeHeld.get()) //THIS WILL PROBABLY CHANGE TO SENSOR
         {
             setWantedState(WantedState.HUG); // checks if cube is in the robot and will transitions to hugging when the cube is fully in
         }
-        if (mWantedState == WantedState.HUG || mWantedState == WantedState.EJECT
-                || mWantedState == WantedState.OPEN)
+        if (mWantedState != WantedState.CLOSE)
         {
+            mSolenoid.set(false);
+        }
+            mMotorLeft.set(1.0);
+            mMotorRight.set(1.0);
             return defaultStateTransfer();
-        }
-        else
-        {
-            return SystemState.HARVESTING;
-        }
     }
 
     private SystemState handleEjecting()
     {
         //motors in reverse and bars closing, close when cube is gone
-        mSolenoid.set(false);
-        mMotorLeft.set(-1.0);
-        mMotorRight.set(-1.0);
-
         if (mLimitSwitchEmergency.get()) //checks if we have reached an emergency state, and will transition to open when it reaches emergency
         {
+            mSolenoid.set(false);
             setWantedState(WantedState.OPEN);
         }
-
         // You should probably be transferring state and controlling actuators in here
-        if (mWantedState == WantedState.OPEN || mWantedState == WantedState.CLOSE
-                || mWantedState == WantedState.HARVEST)
+        if (mWantedState != WantedState.HUG)
         {
+            mSolenoid.set(false);
+        }
+            mMotorLeft.set(-1.0);
+            mMotorRight.set(-1.0);
             return defaultStateTransfer();
-        }
-        else
-        {
-            return SystemState.EJECTING;
-        }
     }
 
     private SystemState handleHugging()
     {
         //motors off and bars closing go to closed when cube is gone
-        mSolenoid.set(false);
-        mMotorLeft.set(0.0);
-        mMotorRight.set(0.0);
-
         // You should probably be transferring state and controlling actuators in here
-        if (mWantedState == WantedState.HARVEST || mWantedState == WantedState.EJECT
-                || mWantedState == WantedState.OPEN)
+        if (mWantedState != WantedState.CLOSE)
         {
+            mSolenoid.set(false);
+        }
+            mMotorLeft.set(0.0);
+            mMotorRight.set(0.0);
             return defaultStateTransfer();
-        }
-        else
-        {
-            return SystemState.HUGGING;
-        }
     }
 
     public void setWantedState(WantedState wantedState)
@@ -285,20 +280,22 @@ public class Harvester extends Subsystem
     @Override
     public void outputToSmartDashboard()
     {
-        SmartDashboard.putString(this.getName() + "/SystemState", this.mSystemState + "");
-        SmartDashboard.putString(this.getName() + "/WantedState", this.mWantedState + "");
-        SmartDashboard.putString(this.getName() + "/mSolenoid", this.mSolenoid + "");
-        SmartDashboard.putString(this.getName() + "/LimitSwitchCubeHeld",
-                this.mLimitSwitchCubeHeld.get() + "");
-        SmartDashboard.putString(this.getName() + "/LimitSwitchEmergency",
-                this.mLimitSwitchEmergency.get() + "");
-        SmartDashboard.putString(this.getName() + "/MotorRight", this.mMotorRight.get() + "");
-        SmartDashboard.putString(this.getName() + "/MotorLeft", this.mMotorLeft.get() + "");
+        dashboardPutState(mSystemState + "/SystemState");
+        dashboardPutWantedState(mWantedState + "/WantedState");
+        dashboardPutBoolean("/mSolenoid", mSolenoid.get());
+        dashboardPutBoolean("/LimitSwitchCubeHeld", mLimitSwitchCubeHeld.get());
+        dashboardPutBoolean("/LimitSwitchEmergency", mLimitSwitchEmergency.get());
+        dashboardPutNumber("/MotorRight", mMotorRight.get());
+        dashboardPutNumber("/MotorLeft", mMotorLeft.get());
     }
 
     @Override
     public synchronized void stop()
     {
+        mSolenoid.set(false);
+        mMotorLeft.set(0.0);
+        mMotorRight.set(0.0);
+        mSystemState = SystemState.DISABLING;
     }
 
     @Override
