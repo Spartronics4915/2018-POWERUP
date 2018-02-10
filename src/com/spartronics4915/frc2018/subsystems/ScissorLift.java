@@ -115,7 +115,7 @@ public class ScissorLift extends Subsystem
         {
             synchronized (ScissorLift.this)
             {
-                SystemState newState = updateState();
+                SystemState newState = updateState(); // TODO:This causes the dashboard to constantly be one system state behind. Fix.
                 if (newState != mSystemState)
                 {
                     dashboardPutState(mSystemState.toString());
@@ -199,30 +199,33 @@ public class ScissorLift extends Subsystem
      * needs to be lowered anyway, it will be free to do so after the brake is
      * released (ie, no small motion required first).
      */
-    private SystemState updateState()  //TODO: Ask Decland how to implement buttons to achieve wanted states
+    private SystemState updateState()
     {
         int targetValue = mWantedStateMap[mWantedState.ordinal()];
         SystemState nextState = mSystemState;
         mMeasuredValue = mPotentiometer.getAverageValue();
-        if (mWantedState == WantedState.MANUALUP)
+        if (mWantedState == WantedState.MANUALUP) // TODO: Try to implement a jog function
         {
-            mHoldSolenoid.set(false);
             
         }
         else if (mWantedState == WantedState.MANUALDOWN)
         {
-                        
-        } 
+
+        }
         else if (mWantedState == WantedState.OFF)
         {
-            //Should we turn off motors/solenoids here?
+            mRaiseSolenoid.set(false);
+            mLowerSolenoid.set(false);
+            mHoldSolenoid.set(true);
+            logWarning("ScissorLift OFF");
+            nextState = SystemState.OFF;
         }
         else if (Util.epsilonLessThan(mMeasuredValue, targetValue, kPotentiometerAllowedError))
         {
             // we're below target position, let's raise
             if (mSystemState != SystemState.RAISING)
             {
-                if (mSystemState == SystemState.HOLDING)
+                if (mSystemState == SystemState.HOLDING || mSystemState == SystemState.BRAKING)
                 {
                     mTimer.reset();
                     mTimer.start();
@@ -239,8 +242,14 @@ public class ScissorLift extends Subsystem
                         mRaiseSolenoid.set(true);
                         nextState = SystemState.RAISING;
                     }
-                    // else stay in UNBRAKING state
                 }
+                else if (mSystemState == SystemState.OFF)
+                {
+                    mLowerSolenoid.set(false);
+                    mRaiseSolenoid.set(true);
+                    nextState = SystemState.RAISING;
+                }
+                // else stay in UNBRAKING state
                 else
                     logWarning("Raising, unexpected system state:" + mSystemState.toString());
             }
@@ -251,7 +260,7 @@ public class ScissorLift extends Subsystem
             // we're above target position, let's lower
             if (mSystemState != SystemState.LOWERING)
             {
-                if (mSystemState == SystemState.HOLDING || SystemState.OFF)
+                if (mSystemState == SystemState.HOLDING || mSystemState == SystemState.BRAKING)
                 {
                     mHoldSolenoid.set(false); // brake release
                     mLowerSolenoid.set(true); // we're going down, proceed immediately to LOWERING
@@ -260,7 +269,6 @@ public class ScissorLift extends Subsystem
                 }
                 else
                 {
-                    logInfo("Lowering, unexpected system state:" + mSystemState.toString());
                     mLowerSolenoid.set(true); // we're going down, proceed immediately to LOWERING
                     mRaiseSolenoid.set(false);
                     nextState = SystemState.LOWERING;

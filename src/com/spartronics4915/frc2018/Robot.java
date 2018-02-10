@@ -290,6 +290,36 @@ public class Robot extends IterativeRobot
                     mCheesyDriveHelper.cheesyDrive(throttle, turn, mControlBoard.getQuickTurn(),
                             !mControlBoard.getLowGear()));
 
+            if(mControlBoard.getScissorLiftRetracted())
+            {
+                mLifter.setWantedState(WantedState.RETRACTED);
+            }
+            
+            if(mControlBoard.getScissorLiftSwitch())
+            {
+                mLifter.setWantedState(WantedState.SWITCH);
+            }
+            
+            if(mControlBoard.getScissorLiftScale())
+            {
+                mLifter.setWantedState(WantedState.SCALE);
+            }
+            
+            if(mControlBoard.getScissorLiftManualUp())
+            {
+                mLifter.setWantedState(WantedState.MANUALUP);
+            }
+            
+            if(mControlBoard.getScissorLiftManualDown())
+            {
+                mLifter.setWantedState(WantedState.MANUALDOWN);
+            }
+            
+            if(mControlBoard.getScissorLiftOff())
+            {
+                mLifter.setWantedState(WantedState.OFF);
+            }
+            
             if (mControlBoard.getDebugPrimary())
             {
                 Logger.debug("Setting Lifter to RETRACTED");

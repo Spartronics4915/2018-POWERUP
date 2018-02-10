@@ -59,6 +59,42 @@ public class ControlBoard implements ControlBoardInterface
     }
     
     @Override
+    public boolean getScissorLiftOff()
+    {
+        return mDrivestick.getRawButtonReleased(7);
+    }
+    
+    @Override
+    public boolean getScissorLiftRetracted()
+    {
+        return mDrivestick.getRawButtonReleased(8); 
+    }
+    
+    @Override
+    public boolean getScissorLiftSwitch()
+    {
+        return mDrivestick.getRawButtonReleased(9); 
+    }
+    
+    @Override
+    public boolean getScissorLiftScale()
+    {
+        return mDrivestick.getRawButtonReleased(10);
+    }
+    
+    @Override
+    public boolean getScissorLiftManualUp()
+    {
+        return mDrivestick.getRawButtonReleased(11);
+    }
+    
+    @Override
+    public boolean getScissorLiftManualDown()
+    {
+        return mDrivestick.getRawButtonReleased(12);
+    }
+    
+    @Override
     public boolean getDebugPrimary()
     {
         return mDrivestick.getRawButton(3);
