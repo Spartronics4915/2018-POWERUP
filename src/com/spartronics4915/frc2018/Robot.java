@@ -281,16 +281,12 @@ public class Robot extends IterativeRobot
     {
         try
         {
-            if (mControlBoard.getDebugPrimary()) {
-                mDrive.setWantAimToVisionTarget();
-            } else {
-                double throttle = mControlBoard.getThrottle();
-                double turn = mControlBoard.getTurn();
-                mDrive.setOpenLoop(
-                        mCheesyDriveHelper.cheesyDrive(throttle, turn, mControlBoard.getQuickTurn(),
-                                !mControlBoard.getLowGear()));
-            }
-            
+            double throttle = mControlBoard.getThrottle();
+            double turn = mControlBoard.getTurn();
+            mDrive.setOpenLoop(
+                    mCheesyDriveHelper.cheesyDrive(throttle, turn, mControlBoard.getQuickTurn(),
+                            !mControlBoard.getLowGear()));
+                
             allButTestPeriodic();
         }
         catch (Throwable t)
