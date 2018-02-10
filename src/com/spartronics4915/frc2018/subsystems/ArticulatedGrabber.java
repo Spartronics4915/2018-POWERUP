@@ -78,7 +78,7 @@ public class ArticulatedGrabber extends Subsystem
     //States are created
     private SystemState mNextState = new SystemState();
     private SystemState mSystemState = new SystemState();//used for analyzing SystemState
-    private WantedState mWantedState = WantedState.TRANSPORT; //double check this 
+    private WantedState mWantedState = WantedState.PREPARE_EXCHANGE; //???
 
     private ArticulatedGrabber()//initializes subsystem
     {
