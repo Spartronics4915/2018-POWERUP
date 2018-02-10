@@ -20,6 +20,8 @@ public class Harvester extends Subsystem
 {
 
     private static Harvester sInstance = null;
+    private static final boolean kSolenoidOpen = false;
+    private static final boolean kSolenoidClose = true;
 
     public static Harvester getInstance()
     {
@@ -74,10 +76,10 @@ public class Harvester extends Subsystem
         mSolenoid = new Solenoid(Constants.kHarvesterSolenoidId); // Changes value of Solenoid
         mMotorRight = TalonSRX4915Factory.createDefaultMotor(Constants.kHarvesterRightMotorId); // change value of motor
         mMotorLeft = TalonSRX4915Factory.createDefaultMotor(Constants.kHarvesterLeftMotorId); // change value of motor
-        mMotorLeft.setInvert();
-        //mMotorRight.configOutputPower(true, 0.5, 0, 0.3, 0, -0.3);
-        //mMotorLeft.configOutputPower(true, 0.5, 0, 0.3, 0, -0.3);
-        
+        mMotorLeft.setInverted(true);
+        mMotorRight.configOutputPower(true, 0.5, 0, 0.3, 0, -0.3);
+        mMotorLeft.configOutputPower(true, 0.5, 0, 0.3, 0, -0.3);
+
         if (!mMotorRight.isValid())
         {
             logError("Right Motor is invalid");
@@ -105,8 +107,7 @@ public class Harvester extends Subsystem
         {
             synchronized (Harvester.this)
             {
-                mSystemState = SystemState.CLOSING;
-                
+
                 if (mSystemState == SystemState.DISABLING)
                     mWantedState = WantedState.CLOSE;
             }
@@ -189,26 +190,29 @@ public class Harvester extends Subsystem
     {
         //motors off and bars in
         // You should probably be transferring state and controlling actuators in here
-        if (mWantedState == WantedState.OPEN)
+        mSolenoid.set(kSolenoidClose);
+        if (mWantedState == WantedState.OPEN || mWantedState == WantedState.PREHARVEST)
         {
-            mSolenoid.set(true);
+            mSolenoid.set(kSolenoidOpen);
+            return defaultStateTransfer();
         }
-            mMotorLeft.set(0.0);
-            mMotorRight.set(0.0);
-            return defaultStateTransfer(); // all defaultStateTransfers return the wanted state
+        mMotorLeft.set(0.0);
+        mMotorRight.set(0.0);
+        return SystemState.CLOSING; // all defaultStateTransfers return the wanted state
     }
 
     private SystemState handleOpening()
     {
         //motors off and bars out
         // You should probably be transferring state and controlling actuators in here
-        if (mWantedState == WantedState.HARVEST)
+        if (mWantedState == WantedState.HARVEST || mWantedState == WantedState.PREHARVEST)
         {
-            mSolenoid.set(false);
-        }
-            mMotorLeft.set(0.0);
-            mMotorRight.set(0.0);
+            mSolenoid.set(kSolenoidClose);
             return defaultStateTransfer();
+        }
+        mMotorLeft.set(0.0);
+        mMotorRight.set(0.0);
+        return SystemState.OPENING;
     }
 
     private SystemState handlePreharvesting()
@@ -217,12 +221,14 @@ public class Harvester extends Subsystem
         // You should probably be transferring state and controlling actuators in here
         if (mWantedState == WantedState.HARVEST)
         {
-            mSolenoid.set(true);
-        }
-            mMotorLeft.set(1.0);
-            mMotorRight.set(1.0);
+            mSolenoid.set(kSolenoidClose);
             return defaultStateTransfer();
+        }
+        mMotorLeft.set(1.0);
+        mMotorRight.set(1.0);
+        return SystemState.PREHARVESTING;
     }
+
     private SystemState handleHarvesting()
     {
         //motors on forward and bars closing, hug when cube is gone
@@ -233,11 +239,12 @@ public class Harvester extends Subsystem
         }
         if (mWantedState != WantedState.CLOSE)
         {
-            mSolenoid.set(false);
-        }
-            mMotorLeft.set(1.0);
-            mMotorRight.set(1.0);
+            mSolenoid.set(kSolenoidClose);
             return defaultStateTransfer();
+        }
+        mMotorLeft.set(1.0);
+        mMotorRight.set(1.0);
+        return SystemState.HARVESTING;
     }
 
     private SystemState handleEjecting()
@@ -245,30 +252,37 @@ public class Harvester extends Subsystem
         //motors in reverse and bars closing, close when cube is gone
         if (mLimitSwitchEmergency.get()) //checks if we have reached an emergency state, and will transition to open when it reaches emergency
         {
-            mSolenoid.set(false);
+            mSolenoid.set(kSolenoidOpen);
             setWantedState(WantedState.OPEN);
+            mMotorLeft.set(0.0);
+            mMotorRight.set(0.0);
         }
+        else 
+        {
+            mMotorLeft.set(-1.0);
+            mMotorRight.set(-1.0);
+        } 
         // You should probably be transferring state and controlling actuators in here
         if (mWantedState != WantedState.HUG)
         {
-            mSolenoid.set(false);
-        }
-            mMotorLeft.set(-1.0);
-            mMotorRight.set(-1.0);
+            mSolenoid.set(kSolenoidClose);
             return defaultStateTransfer();
+        }
+        return SystemState.EJECTING;
     }
 
     private SystemState handleHugging()
     {
         //motors off and bars closing go to closed when cube is gone
         // You should probably be transferring state and controlling actuators in here
-        if (mWantedState != WantedState.CLOSE)
+        if (mWantedState == WantedState.HARVEST || mWantedState == WantedState.OPEN)
         {
-            mSolenoid.set(false);
-        }
-            mMotorLeft.set(0.0);
-            mMotorRight.set(0.0);
+            mSolenoid.set(kSolenoidClose);
             return defaultStateTransfer();
+        }
+        mMotorLeft.set(0.0);
+        mMotorRight.set(0.0);
+        return SystemState.HUGGING;
     }
 
     public void setWantedState(WantedState wantedState)
@@ -292,7 +306,7 @@ public class Harvester extends Subsystem
     @Override
     public synchronized void stop()
     {
-        mSolenoid.set(false);
+        mSolenoid.set(kSolenoidClose);
         mMotorLeft.set(0.0);
         mMotorRight.set(0.0);
         mSystemState = SystemState.DISABLING;
