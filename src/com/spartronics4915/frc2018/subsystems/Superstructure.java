@@ -39,7 +39,7 @@ public class Superstructure extends Subsystem
         }
         return mInstance;
     }
-
+    
     private final LED mLED = LED.getInstance();
     private final ArticulatedGrabber mGrabber = ArticulatedGrabber.getInstance();
     private final Climber mClimber = Climber.getInstance();
@@ -49,7 +49,7 @@ public class Superstructure extends Subsystem
     // Superstructure doesn't own the drive, but needs to access it
     private final Drive mDrive = Drive.getInstance();
 
-    // Intenal state of the system
+    // Internal state of the system
     public enum SystemState
     {
         IDLE

@@ -3,6 +3,7 @@ package com.spartronics4915.frc2018.subsystems;
 import com.spartronics4915.frc2018.Constants;
 import com.spartronics4915.frc2018.loops.Loop;
 import com.spartronics4915.frc2018.loops.Looper;
+import com.spartronics4915.lib.util.LazyDoubleSolenoid;
 import com.spartronics4915.lib.util.Util;
 import com.spartronics4915.lib.util.drivers.TalonSRX4915;
 import com.spartronics4915.lib.util.drivers.TalonSRX4915Factory;
@@ -54,7 +55,7 @@ public class Climber extends Subsystem
     private WantedState mWantedState = WantedState.IDLE;
     private TalonSRX4915 mWinchPrimary = null;
     private TalonSRX4915 mWinchSecondary = null;
-    private DoubleSolenoid mStabilizerSolenoid = null;
+    private LazyDoubleSolenoid mStabilizerSolenoid = null;
     // Actuators and sensors should be initialized as private members with a value of null here
 
     private Climber()
@@ -65,7 +66,7 @@ public class Climber extends Subsystem
         mWinchSecondary =
                 TalonSRX4915Factory.createDefaultSlave(Constants.kClimberWinchSecondaryMotorId,
                         Constants.kClimberWinchPrimaryMotorId, false);
-        mStabilizerSolenoid = new DoubleSolenoid(Constants.kClimberStabilizationSolenoidId1,
+        mStabilizerSolenoid = new LazyDoubleSolenoid(Constants.kClimberStabilizationSolenoidId1,
                 Constants.kClimberStabilizationSolenoidId2);
         mWinchPrimary.configOutputPower(true, 0.5, 0.0, 0.75, 0.0, -0.5);
         mWinchSecondary.configOutputPower(true, 0.5, 0.0, 0.75, 0.0, -0.5);
@@ -80,7 +81,7 @@ public class Climber extends Subsystem
             logWarning("Secondary Winch missing");
             success = false;
         }
-        if (!Util.validateSolenoid(mStabilizerSolenoid))
+        if (mStabilizerSolenoid.isValid())
         {
             logWarning("Stablizer Solenoid is missing");
             success = false;
