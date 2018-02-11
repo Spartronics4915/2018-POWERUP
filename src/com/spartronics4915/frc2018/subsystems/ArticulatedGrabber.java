@@ -5,6 +5,7 @@ import com.spartronics4915.frc2018.loops.Loop;
 import com.spartronics4915.frc2018.loops.Looper;
 import com.spartronics4915.lib.util.Logger;
 import com.spartronics4915.lib.util.Util;
+import com.spartronics4915.lib.util.drivers.LazySolenoid;
 import com.spartronics4915.lib.util.drivers.TalonSRX4915;
 import com.spartronics4915.lib.util.drivers.TalonSRX4915Factory;
 
@@ -26,8 +27,8 @@ public class ArticulatedGrabber extends Subsystem
 
     private static ArticulatedGrabber sInstance = null;
     private TalonSRX4915 mPositionMotor = null;
-    private Solenoid mGrabber = null;
-    private Solenoid mGrabberSetup = null;
+    private LazySolenoid mGrabber = null;
+    private LazySolenoid mGrabberSetup = null;
     private AnalogInput mPotentiometer = null;
     private DigitalInput mLimitSwitch = null;
 
@@ -89,8 +90,8 @@ public class ArticulatedGrabber extends Subsystem
         try {
             mPositionMotor = TalonSRX4915Factory.createDefaultMotor(Constants.kGrabberFlipperMotorId);
             mPositionMotor.configOutputPower(true, .5, 0, maxMotorSpeed, 0, -maxMotorSpeed);//may be negative in last number
-            mGrabber = new Solenoid(Constants.kGrabberSolenoidId);
-            mGrabberSetup = new Solenoid(Constants.kGrabberSetupSolenoidId);
+            mGrabber = new LazySolenoid(Constants.kGrabberSolenoidId);
+            mGrabberSetup = new LazySolenoid(Constants.kGrabberSetupSolenoidId);
             mPotentiometer = new AnalogInput(Constants.kGrabberAnglePotentiometerId);
             mLimitSwitch = new DigitalInput(Constants.kFlipperHomeLimitSwitchId);
         } catch (Exception e) {
@@ -101,12 +102,12 @@ public class ArticulatedGrabber extends Subsystem
 
         // Instantiate your actuator and sensor objects here
         // If !mMyMotor.isValid() then success should be set to false
-        if (!Util.validateSolenoid(mGrabber))
+        if (mGrabber.isValid())
         {
             success = false;
             logWarning("Grabber1 Invalid");
         }
-        if (!Util.validateSolenoid(mGrabberSetup))
+        if (mGrabberSetup.isValid())
         {
             success = false;
             logWarning("Grabber Setup Invalid");

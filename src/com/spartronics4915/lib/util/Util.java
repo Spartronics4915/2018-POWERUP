@@ -70,27 +70,4 @@ public class Util
         }
         return result;
     }
-
-    /**
-     * @deprecated
-     *             FIXME, use the one in LazySolenoid
-     */
-
-    public static boolean validateSolenoid(Solenoid s)
-    {
-        boolean valid = false;
-        if (!s.isBlackListed() &&
-                !s.getPCMSolenoidVoltageFault())
-            valid = true;
-        return valid;
-    }
-
-    public static boolean validateSolenoid(DoubleSolenoid s)
-    {
-        boolean valid = false;
-        if (!s.isFwdSolenoidBlackListed() && !s.isRevSolenoidBlackListed() &&
-                !s.getPCMSolenoidVoltageFault())
-            valid = true;
-        return valid;
-    }
 }

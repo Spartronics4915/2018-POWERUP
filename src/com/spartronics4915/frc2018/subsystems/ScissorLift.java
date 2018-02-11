@@ -5,6 +5,7 @@ import com.spartronics4915.frc2018.loops.Loop;
 import com.spartronics4915.frc2018.loops.Looper;
 import com.spartronics4915.frc2018.subsystems.LED.SystemState;
 import com.spartronics4915.lib.util.Util;
+import com.spartronics4915.lib.util.drivers.LazySolenoid;
 
 import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.Solenoid;
@@ -68,9 +69,9 @@ public class ScissorLift extends Subsystem
     private int[] mWantedStateMap = new int[WantedState.values().length]; // set in zeroSensors()
     private AnalogInput mPotentiometer;
     private int mMeasuredValue; // [0,4095]
-    private Solenoid mRaiseSolenoid;
-    private Solenoid mLowerSolenoid;
-    private Solenoid mHoldSolenoid;
+    private LazySolenoid mRaiseSolenoid;
+    private LazySolenoid mLowerSolenoid;
+    private LazySolenoid mHoldSolenoid;
     private Timer mTimer;
 
     // Actuators and sensors should be initialized as private members with a value of null here
@@ -80,15 +81,14 @@ public class ScissorLift extends Subsystem
         boolean success = true;
 
         mPotentiometer = new AnalogInput(Constants.kScissorHeightPotentiometerId);
-        mRaiseSolenoid = new Solenoid(Constants.kScissorUpSolenoidId);
-        mLowerSolenoid = new Solenoid(Constants.kScissorDownSolenoidId);
-        mHoldSolenoid = new Solenoid(Constants.kScissorBrakeSolenoidId);
+        mRaiseSolenoid = new LazySolenoid(Constants.kScissorUpSolenoidId);
+        mLowerSolenoid = new LazySolenoid(Constants.kScissorDownSolenoidId);
+        mHoldSolenoid = new LazySolenoid(Constants.kScissorBrakeSolenoidId);
         
         mTimer = new Timer();
 
-        success = Util.validateSolenoid(mRaiseSolenoid) &&
-                Util.validateSolenoid(mLowerSolenoid) &&
-                Util.validateSolenoid(mHoldSolenoid);
+        success = mRaiseSolenoid.isValid() && mLowerSolenoid.isValid() &&
+                mHoldSolenoid.isValid();
         
         dashboardPutState(mSystemState.toString());
         dashboardPutWantedState(mWantedState.toString());
