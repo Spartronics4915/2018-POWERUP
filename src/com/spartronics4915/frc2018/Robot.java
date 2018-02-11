@@ -15,6 +15,7 @@ import com.spartronics4915.frc2018.loops.VisionProcessor;
 import com.spartronics4915.frc2018.paths.profiles.PathAdapter;
 import com.spartronics4915.frc2018.subsystems.ArticulatedGrabber;
 import com.spartronics4915.frc2018.subsystems.Climber;
+import com.spartronics4915.frc2018.subsystems.Climber.WantedState;
 import com.spartronics4915.frc2018.subsystems.ConnectionMonitor;
 import com.spartronics4915.frc2018.subsystems.Drive;
 import com.spartronics4915.frc2018.subsystems.Harvester;
@@ -147,6 +148,7 @@ public class Robot extends IterativeRobot
             mHarvester = Harvester.getInstance();
             mLifter = ScissorLift.getInstance();
             mSuperstructure = Superstructure.getInstance();
+            
             mRobotState = RobotState.getInstance();
             mAutoModeExecuter = null;
             mConnectionMonitor = ConnectionMonitor.getInstance();
@@ -276,6 +278,7 @@ public class Robot extends IterativeRobot
      * Each subsystem will constantly compare
      * its desired and actual states and act to bring the two closer.
      */
+
     @Override
     public void teleopPeriodic()
     {
@@ -287,51 +290,73 @@ public class Robot extends IterativeRobot
                     mCheesyDriveHelper.cheesyDrive(throttle, turn, mControlBoard.getQuickTurn(),
                             !mControlBoard.getLowGear()));
 
+
+            if (mControlBoard.getClimberClimb())
+            {
+                mClimber.setWantedState(Climber.WantedState.CLIMB);
+            }
+
+            if (mControlBoard.getClimberIdle())
+            {
+                mClimber.setWantedState(Climber.WantedState.IDLE);
+            }
+
+            if (mControlBoard.getClimberHold())
+            {
+                mClimber.setWantedState(Climber.WantedState.HOLD);
+            }
+
+            if (mControlBoard.getClimberPrepare())
+            {
+                mClimber.setWantedState(Climber.WantedState.PREPARE);
+            }
+
             if(mControlBoard.getScissorLiftRetracted())
             {
-                mLifter.setWantedState(WantedState.RETRACTED);
+                mLifter.setWantedState(ScissorLift.WantedState.RETRACTED);
             }
             
             if(mControlBoard.getScissorLiftSwitch())
             {
-                mLifter.setWantedState(WantedState.SWITCH);
+                mLifter.setWantedState(ScissorLift.WantedState.SWITCH);
             }
             
             if(mControlBoard.getScissorLiftScale())
             {
-                mLifter.setWantedState(WantedState.SCALE);
+                mLifter.setWantedState(ScissorLift.WantedState.SCALE);
             }
             
             if(mControlBoard.getScissorLiftManualUp())
             {
-                mLifter.setWantedState(WantedState.MANUALUP);
+                mLifter.setWantedState(ScissorLift.WantedState.MANUALUP);
             }
             
             if(mControlBoard.getScissorLiftManualDown())
             {
-                mLifter.setWantedState(WantedState.MANUALDOWN);
+                mLifter.setWantedState(ScissorLift.WantedState.MANUALDOWN);
             }
             
             if(mControlBoard.getScissorLiftOff())
             {
-                mLifter.setWantedState(WantedState.OFF);
+                mLifter.setWantedState(ScissorLift.WantedState.OFF);
             }
             
             if (mControlBoard.getDebugPrimary())
             {
                 Logger.debug("Setting Lifter to RETRACTED");
-                mLifter.setWantedState(WantedState.RETRACTED);
+                mLifter.setWantedState(ScissorLift.WantedState.RETRACTED);
             }
             else if (mControlBoard.getDebugSecondary())
             {
                 Logger.debug("Setting Lifter to SCALE");
-                mLifter.setWantedState(WantedState.SCALE);
+                mLifter.setWantedState(ScissorLift.WantedState.SCALE);
             }
             else if (mControlBoard.getDebugTertiary())
             {
                 Logger.debug("Setting Lifter to SWITCH");
-                mLifter.setWantedState(WantedState.SWITCH);
+                mLifter.setWantedState(ScissorLift.WantedState.SWITCH);
             }
+
 
             allButTestPeriodic();
         }
