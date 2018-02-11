@@ -141,12 +141,12 @@ public class Robot extends IterativeRobot
 
             // Subsystem instances
             mDrive = Drive.getInstance();
-            mSuperstructure = Superstructure.getInstance();
             mLED = LED.getInstance();
             mGrabber = ArticulatedGrabber.getInstance();
             mClimber = Climber.getInstance();
             mHarvester = Harvester.getInstance();
             mLifter = ScissorLift.getInstance();
+            mSuperstructure = Superstructure.getInstance();
 
             mRobotState = RobotState.getInstance();
             mAutoModeExecuter = null;
@@ -303,7 +303,7 @@ public class Robot extends IterativeRobot
             {
                 mClimber.setWantedState(WantedState.HOLD);
             }
-            
+
             if (mControlBoard.getClimberPrepare())
             {
                 mClimber.setWantedState(WantedState.PREPARE);
