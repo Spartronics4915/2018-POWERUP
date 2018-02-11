@@ -9,6 +9,7 @@ import com.spartronics4915.lib.util.drivers.TalonSRX4915;
 import com.spartronics4915.lib.util.drivers.TalonSRX4915Factory;
 
 import edu.wpi.first.wpilibj.DoubleSolenoid;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
@@ -186,6 +187,10 @@ public class Climber extends Subsystem
         {
             return SystemState.CLIMBING;
         }
+        else if (mWantedState == WantedState.IDLE)
+        {
+            return SystemState.IDLING;
+        }
         else
         {
             return SystemState.HOLDING;
@@ -249,5 +254,39 @@ public class Climber extends Subsystem
     public void registerEnabledLoops(Looper enabledLooper)
     {
         enabledLooper.register(mLoop);
+    }
+
+    public boolean checkSystem()
+    {
+        if (!isInitialized())
+        {
+            logWarning("can't check un-intialized system");
+            return false;
+        }
+        else
+        {
+            logNotice("Climber check -----------------------------");
+
+            logNotice("WantedState = IDLE");
+            this.setWantedState(Climber.WantedState.IDLE);
+            Timer.delay(2.5);
+
+            logNotice("WantedState = PREPARE");
+            this.setWantedState(Climber.WantedState.PREPARE);
+            Timer.delay(2.5);
+
+            logNotice("WantedState = CLIMB");
+            this.setWantedState(Climber.WantedState.CLIMB);
+            Timer.delay(2.5);
+
+            logNotice("WantedState = HOLD");
+            this.setWantedState(Climber.WantedState.HOLD);
+            Timer.delay(2.5);
+
+            this.setWantedState(Climber.WantedState.IDLE);
+
+            return true;
+
+        }
     }
 }
