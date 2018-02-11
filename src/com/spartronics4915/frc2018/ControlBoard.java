@@ -59,21 +59,27 @@ public class ControlBoard implements ControlBoardInterface
     }
     
     @Override
-    public boolean getClimberOn()
+    public boolean getClimberClimb()
     {
         return mDrivestick.getRawButtonReleased(7);
     }
     
     @Override
-    public boolean getClimberOff()
+    public boolean getClimberIdle()
     {
-        return mDrivestick.getRawButtonReleased(9);
+        return mDrivestick.getRawButtonReleased(8);
     }
     
     @Override
     public boolean getClimberHold()
     {
-        return mDrivestick.getRawButtonReleased(11);
+        return mDrivestick.getRawButtonReleased(9);
+    }
+    
+    @Override
+    public boolean getClimberPrepare()
+    {
+        return mDrivestick.getRawButtonReleased(10);
     }
     
     @Override

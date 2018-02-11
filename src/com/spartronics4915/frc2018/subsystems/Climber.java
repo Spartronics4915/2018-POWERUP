@@ -3,6 +3,7 @@ package com.spartronics4915.frc2018.subsystems;
 import com.spartronics4915.frc2018.Constants;
 import com.spartronics4915.frc2018.loops.Loop;
 import com.spartronics4915.frc2018.loops.Looper;
+import com.spartronics4915.lib.util.Util;
 import com.spartronics4915.lib.util.drivers.TalonSRX4915;
 import com.spartronics4915.lib.util.drivers.TalonSRX4915Factory;
 
@@ -10,11 +11,16 @@ import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
- * The climber is mostly a winch that pulls some ropes attached to the top of the scissor
+ * The climber is mostly a winch that pulls some ropes attached to the top of
+ * the scissor
  * lift or the flipper.
  */
 public class Climber extends Subsystem
 {
+
+    private static final DoubleSolenoid.Value kStabilizing = DoubleSolenoid.Value.kForward;
+    private static final DoubleSolenoid.Value kTuckedAway = DoubleSolenoid.Value.kReverse;
+
     private static Climber sInstance = null;
 
     public static Climber getInstance()
@@ -25,61 +31,85 @@ public class Climber extends Subsystem
         }
         return sInstance;
     }
-    
+
     public enum SystemState
     {
+        DISABLED,
+        IDLING,
+        PREPARING,
         CLIMBING,
         HOLDING,
-        IDLING
+
     }
 
     public enum WantedState
     {
+        IDLE,
+        PREPARE,
         CLIMB,
         HOLD,
-        IDLE
     }
 
-    private SystemState mSystemState = SystemState.IDLING;
+    private SystemState mSystemState = SystemState.DISABLED;
     private WantedState mWantedState = WantedState.IDLE;
     private TalonSRX4915 mWinchPrimary = null;
     private TalonSRX4915 mWinchSecondary = null;
-    private DoubleSolenoid mStablizierSolenoid = null;
+    private DoubleSolenoid mStabilizerSolenoid = null;
     // Actuators and sensors should be initialized as private members with a value of null here
-    
+
     private Climber()
     {
         boolean success = true;
-        mWinchPrimary = TalonSRX4915Factory.createDefaultMotor(Constants.kClimberWinchPrimaryMotorId);
-        mWinchSecondary = TalonSRX4915Factory.createDefaultSlave(Constants.kClimberWinchSecondaryMotorId, Constants.kClimberWinchPrimaryMotorId, false);
-        mStablizierSolenoid = new DoubleSolenoid(Constants.kClimberStabilizationSolenoidId1, Constants.kClimberStabilizationSolenoidId2);
-        //Set peak power output
-        //Set Voltage ramp rate
+        mWinchPrimary =
+                TalonSRX4915Factory.createDefaultMotor(Constants.kClimberWinchPrimaryMotorId);
+        mWinchSecondary =
+                TalonSRX4915Factory.createDefaultSlave(Constants.kClimberWinchSecondaryMotorId,
+                        Constants.kClimberWinchPrimaryMotorId, false);
+        mStabilizerSolenoid = new DoubleSolenoid(Constants.kClimberStabilizationSolenoidId1,
+                Constants.kClimberStabilizationSolenoidId2);
+        mWinchPrimary.configOutputPower(true, 0.5, 0.0, 0.75, 0.0, -0.5);
+        mWinchSecondary.configOutputPower(true, 0.5, 0.0, 0.75, 0.0, -0.5);
 
-        // Instantiate your actuator and sensor objects here
-        // If !mMyMotor.isValid() then success should be set to false
+        if (!mWinchPrimary.isValid())
+        {
+            logWarning("Primary Winch missing");
+            success = false;
+        }
+        if (!mWinchSecondary.isValid())
+        {
+            logWarning("Secondary Winch missing");
+            success = false;
+        }
+        if (!Util.validateSolenoid(mStabilizerSolenoid))
+        {
+            logWarning("Stablizer Solenoid is missing");
+            success = false;
+        }
 
         logInitialized(success);
     }
-    
-    private Loop mLoop = new Loop() {
+
+    private Loop mLoop = new Loop()
+    {
 
         @Override
         public void onStart(double timestamp)
         {
-            synchronized(Climber.this)
+            synchronized (Climber.this)
             {
-               setSolenoidReverse();
+                mSystemState = SystemState.DISABLED;
+                mWantedState = WantedState.IDLE;
             }
         }
 
         @Override
         public void onLoop(double timestamp)
         {
-            synchronized(Climber.this)
+            synchronized (Climber.this)
             {
                 SystemState newState;
-                switch (mSystemState) {
+                switch (mSystemState)
+                {
                     case HOLDING:
                         newState = handleHolding();
                         break;
@@ -89,12 +119,19 @@ public class Climber extends Subsystem
                     case CLIMBING:
                         newState = handleClimbing();
                         break;
+                    case DISABLED:
+                        newState = handleDisabled();
+                        break;
+                    case PREPARING:
+                        newState = handlePreparing();
+                        break;
                     default:
                         newState = handleIdling();
                         break;
-                        
+
                 }
-                if (newState != mSystemState) {
+                if (newState != mSystemState)
+                {
                     logInfo("Climber state from " + mSystemState + "to " + newState);
                     mSystemState = newState;
                 }
@@ -104,66 +141,83 @@ public class Climber extends Subsystem
         @Override
         public void onStop(double timestamp)
         {
-            synchronized(Climber.this)
+            synchronized (Climber.this)
             {
                 stop();
             }
         }
-        
+
     };
-    
-   private void setSolenoidReverse()
-   {
-       mStablizierSolenoid.set(DoubleSolenoid.Value.kReverse);
-   }
-    
-   /*private SystemState handleClimbingWithFriends()
+
+    private SystemState handleClimbing()
     {
-     
-    } */
-   
-   private SystemState handleClimbing()
-    {
-       mWinchPrimary.set(1.0);
-        if (mWantedState == WantedState.IDLE) 
+        mWinchPrimary.set(1.0);
+        if (mWantedState == WantedState.HOLD)
         {
-            mStablizierSolenoid.set(DoubleSolenoid.Value.kReverse);
-            return SystemState.IDLING;
+            return SystemState.HOLDING;
         }
-        else if (mWantedState == WantedState.HOLD)
-        {
-            return SystemState.HOLDING;   
-        }
-        else 
+        else
         {
             return SystemState.CLIMBING;
         }
-        
+
     }
-    
+
     private SystemState handleIdling()
     {
         mWinchPrimary.set(0.0);
-        if (mWantedState == WantedState.CLIMB) {
-            mStablizierSolenoid.set(DoubleSolenoid.Value.kForward);
-            return SystemState.CLIMBING;
-        }
-        else 
+        if (mWantedState == WantedState.PREPARE)
         {
-            return SystemState.IDLING;   
+            mStabilizerSolenoid.set(kStabilizing);
+            return SystemState.PREPARING;
+        }
+        else
+        {
+
+            return SystemState.IDLING;
         }
     }
 
     private SystemState handleHolding()
     {
         mWinchPrimary.set(0.0);
-        if (mWantedState == WantedState.CLIMB) 
+        if (mWantedState == WantedState.CLIMB)
         {
             return SystemState.CLIMBING;
         }
-        else 
+        else
         {
             return SystemState.HOLDING;
+        }
+    }
+
+    private SystemState handleDisabled()
+    {
+        mWinchPrimary.set(0.0);
+        mStabilizerSolenoid.set(kTuckedAway);
+        if (mWantedState == WantedState.IDLE)
+        {
+            return SystemState.IDLING;
+        }
+        logWarning("Wanted State is not Idle at init.");
+        return SystemState.IDLING;
+    }
+
+    private SystemState handlePreparing()
+    {
+        mWinchPrimary.set(0.0);
+        if (mWantedState == WantedState.CLIMB)
+        {
+            return SystemState.CLIMBING;
+        }
+        else if (mWantedState == WantedState.IDLE)
+        {
+            mStabilizerSolenoid.set(kTuckedAway);
+            return SystemState.IDLING;
+        }
+        else
+        {
+            return SystemState.PREPARING;
         }
     }
 
@@ -175,8 +229,9 @@ public class Climber extends Subsystem
     @Override
     public void outputToSmartDashboard()
     {
-        SmartDashboard.putString(this.getName() + "/SystemState", this.mSystemState + "");
-        SmartDashboard.putString(this.getName() + "/WantedState", this.mWantedState + "");
+        //TODO: Put climber current on dashboard
+        dashboardPutState(this.mSystemState.toString());
+        dashboardPutWantedState(this.mWantedState.toString());
     }
 
     @Override

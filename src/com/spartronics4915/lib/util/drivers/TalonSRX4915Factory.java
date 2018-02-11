@@ -9,6 +9,7 @@ import com.ctre.phoenix.motorcontrol.ControlMode;
  */
 public class TalonSRX4915Factory
 {
+
     // Create a CANTalon with the default (out of the box) configuration.
     public static TalonSRX4915 createDefaultMotor(int id)
     {
@@ -16,21 +17,21 @@ public class TalonSRX4915Factory
         talon.setControlMode(ControlMode.PercentOutput);
         return talon;
     }
-    
+
     public static TalonSRX4915 createDefaultDrive(int id)
     {
         TalonSRX4915 talon = createTalon(id, TalonSRX4915.Config.kDriveMotor);
         talon.setControlMode(ControlMode.PercentOutput);
         return talon;
     }
-    
+
     public static TalonSRX4915 createDefaultSlave(int id, int masterId, boolean isInverted)
     {
         TalonSRX4915 talon = createTalon(id, TalonSRX4915.Config.kDriveFollowerMotor);
         talon.configFollower(masterId, isInverted);
         return talon;
     }
-    
+
     public static TalonSRX4915 createTalon(int id, TalonSRX4915.Config config)
     {
         TalonSRX4915 talon = new TalonSRX4915(id, config);
@@ -42,6 +43,6 @@ public class TalonSRX4915Factory
      */
     public static String getFullTalonInfo(TalonSRX4915 talon)
     {
-          return talon.dumpState();
+        return talon.dumpState();
     }
 }

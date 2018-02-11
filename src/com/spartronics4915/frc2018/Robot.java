@@ -84,7 +84,7 @@ public class Robot extends IterativeRobot
     private DelayedBoolean mDelayedAimButton;
 
     private static final String kRobotVerbosity = "Robot/Verbosity"; // smartdashboard key
-    
+
     public Robot()
     {
         Logger.logRobotConstruction();
@@ -147,7 +147,7 @@ public class Robot extends IterativeRobot
             mClimber = Climber.getInstance();
             mHarvester = Harvester.getInstance();
             mLifter = ScissorLift.getInstance();
-            
+
             mRobotState = RobotState.getInstance();
             mAutoModeExecuter = null;
             mConnectionMonitor = ConnectionMonitor.getInstance();
@@ -185,7 +185,7 @@ public class Robot extends IterativeRobot
         }
         Logger.notice("robotInit complete, success:" + success);
     }
-    
+
     public void zeroAllSensors()
     {
         mSubsystemManager.zeroSensors();
@@ -277,7 +277,7 @@ public class Robot extends IterativeRobot
      * Each subsystem will constantly compare
      * its desired and actual states and act to bring the two closer.
      */
-    
+
     @Override
     public void teleopPeriodic()
     {
@@ -288,26 +288,26 @@ public class Robot extends IterativeRobot
             mDrive.setOpenLoop(
                     mCheesyDriveHelper.cheesyDrive(throttle, turn, mControlBoard.getQuickTurn(),
                             !mControlBoard.getLowGear()));
-<<<<<<< HEAD
-            
-            if(mControlBoard.getClimberOn())
+
+            if (mControlBoard.getClimberClimb())
             {
                 mClimber.setWantedState(WantedState.CLIMB);
             }
-            
-            if(mControlBoard.getClimberOff())
+
+            if (mControlBoard.getClimberIdle())
             {
                 mClimber.setWantedState(WantedState.IDLE);
             }
-            
-            if(mControlBoard.getClimberHold())
+
+            if (mControlBoard.getClimberHold())
             {
                 mClimber.setWantedState(WantedState.HOLD);
             }
-
-=======
-                
->>>>>>> 53dc54dacec67d75740a2c591b97076f9281d170
+            
+            if (mControlBoard.getClimberPrepare())
+            {
+                mClimber.setWantedState(WantedState.PREPARE);
+            }
             allButTestPeriodic();
         }
         catch (Throwable t)

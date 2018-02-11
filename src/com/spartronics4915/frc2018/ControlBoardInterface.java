@@ -12,20 +12,22 @@ public interface ControlBoardInterface
     double getTurn();
 
     boolean getQuickTurn();
-    
+
     boolean getLowGear();
-    
-    boolean getClimberOn();
-    
-    boolean getClimberOff();
-    
+
+    boolean getClimberClimb();
+
+    boolean getClimberIdle();
+
     boolean getClimberHold();
     
+    boolean getClimberPrepare();
+
     // Debug buttons, remove me
     boolean getDebugPrimary();
-    
+
     boolean getDebugSecondary();
-    
+
     boolean getDebugTertiary();
-    
+
 }
