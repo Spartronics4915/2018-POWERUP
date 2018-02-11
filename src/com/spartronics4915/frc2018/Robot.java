@@ -20,6 +20,7 @@ import com.spartronics4915.frc2018.subsystems.Drive;
 import com.spartronics4915.frc2018.subsystems.Harvester;
 import com.spartronics4915.frc2018.subsystems.LED;
 import com.spartronics4915.frc2018.subsystems.ScissorLift;
+import com.spartronics4915.frc2018.subsystems.ScissorLift.WantedState;
 import com.spartronics4915.frc2018.subsystems.Superstructure;
 import com.spartronics4915.lib.util.CANProbe;
 import com.spartronics4915.lib.util.CheesyDriveHelper;
@@ -83,7 +84,7 @@ public class Robot extends IterativeRobot
     private DelayedBoolean mDelayedAimButton;
 
     private static final String kRobotVerbosity = "Robot/Verbosity"; // smartdashboard key
-    
+
     public Robot()
     {
         Logger.logRobotConstruction();
@@ -146,7 +147,6 @@ public class Robot extends IterativeRobot
             mHarvester = Harvester.getInstance();
             mLifter = ScissorLift.getInstance();
             mSuperstructure = Superstructure.getInstance();
-            
             mRobotState = RobotState.getInstance();
             mAutoModeExecuter = null;
             mConnectionMonitor = ConnectionMonitor.getInstance();
@@ -184,7 +184,7 @@ public class Robot extends IterativeRobot
         }
         Logger.notice("robotInit complete, success:" + success);
     }
-    
+
     public void zeroAllSensors()
     {
         mSubsystemManager.zeroSensors();
@@ -286,7 +286,53 @@ public class Robot extends IterativeRobot
             mDrive.setOpenLoop(
                     mCheesyDriveHelper.cheesyDrive(throttle, turn, mControlBoard.getQuickTurn(),
                             !mControlBoard.getLowGear()));
-                
+
+            if(mControlBoard.getScissorLiftRetracted())
+            {
+                mLifter.setWantedState(WantedState.RETRACTED);
+            }
+            
+            if(mControlBoard.getScissorLiftSwitch())
+            {
+                mLifter.setWantedState(WantedState.SWITCH);
+            }
+            
+            if(mControlBoard.getScissorLiftScale())
+            {
+                mLifter.setWantedState(WantedState.SCALE);
+            }
+            
+            if(mControlBoard.getScissorLiftManualUp())
+            {
+                mLifter.setWantedState(WantedState.MANUALUP);
+            }
+            
+            if(mControlBoard.getScissorLiftManualDown())
+            {
+                mLifter.setWantedState(WantedState.MANUALDOWN);
+            }
+            
+            if(mControlBoard.getScissorLiftOff())
+            {
+                mLifter.setWantedState(WantedState.OFF);
+            }
+            
+            if (mControlBoard.getDebugPrimary())
+            {
+                Logger.debug("Setting Lifter to RETRACTED");
+                mLifter.setWantedState(WantedState.RETRACTED);
+            }
+            else if (mControlBoard.getDebugSecondary())
+            {
+                Logger.debug("Setting Lifter to SCALE");
+                mLifter.setWantedState(WantedState.SCALE);
+            }
+            else if (mControlBoard.getDebugTertiary())
+            {
+                Logger.debug("Setting Lifter to SWITCH");
+                mLifter.setWantedState(WantedState.SWITCH);
+            }
+
             allButTestPeriodic();
         }
         catch (Throwable t)
