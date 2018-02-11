@@ -37,7 +37,6 @@ public class AutoModeSelector
             "Do Nothing",
             () -> new StandStillMode());
     private static final AutoModeCreator[] mAllModes = {
-
             new AutoModeCreator("A: Place at Scale", () -> new PlaceScaleFromAMode()),
             new AutoModeCreator("C: Place at Scale", () -> new PlaceScaleFromCMode()),
             new AutoModeCreator("A: Place at Switch", () -> new PlaceSwitchFromAMode()),
@@ -45,7 +44,6 @@ public class AutoModeSelector
             new AutoModeCreator("C: Place at Switch", () -> new PlaceSwitchFromCMode()),
             new AutoModeCreator("Test: Stress Motor Mode", () -> new StressMotorsMode()),
             new AutoModeCreator("Test: Turn to Cube Mode", () -> new TurnToCubeMode()),
-
 
             // e.g. new AutoModeCreator("Boiler Gear then 10 Ball Shoot Red", () -> new BoilerGearThenShootModeRed()),
     };
