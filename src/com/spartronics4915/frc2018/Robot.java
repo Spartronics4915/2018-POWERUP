@@ -21,7 +21,6 @@ import com.spartronics4915.frc2018.subsystems.Drive;
 import com.spartronics4915.frc2018.subsystems.Harvester;
 import com.spartronics4915.frc2018.subsystems.LED;
 import com.spartronics4915.frc2018.subsystems.ScissorLift;
-import com.spartronics4915.frc2018.subsystems.ScissorLift.WantedState;
 import com.spartronics4915.frc2018.subsystems.Superstructure;
 import com.spartronics4915.lib.util.CANProbe;
 import com.spartronics4915.lib.util.CheesyDriveHelper;
@@ -289,7 +288,21 @@ public class Robot extends IterativeRobot
             mDrive.setOpenLoop(
                     mCheesyDriveHelper.cheesyDrive(throttle, turn, mControlBoard.getQuickTurn(),
                             !mControlBoard.getLowGear()));
-
+ 
+            if(mControlBoard.getHarvesterIntake())
+            {
+                mHarvester.setWantedState(Harvester.WantedState.HARVEST);
+            }
+            
+            if(mControlBoard.getHarvesterEject())
+            {
+                mHarvester.setWantedState(Harvester.WantedState.EJECT);
+            }
+            
+            if(mControlBoard.getHarvesterOpen())
+            {
+                mHarvester.setWantedState(Harvester.WantedState.OPEN);
+            }
 
             if (mControlBoard.getClimberClimb())
             {
@@ -356,7 +369,6 @@ public class Robot extends IterativeRobot
                 Logger.debug("Setting Lifter to SWITCH");
                 mLifter.setWantedState(ScissorLift.WantedState.SWITCH);
             }
-
 
             allButTestPeriodic();
         }

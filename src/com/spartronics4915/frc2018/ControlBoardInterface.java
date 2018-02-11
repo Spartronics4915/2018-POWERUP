@@ -35,6 +35,12 @@ public interface ControlBoardInterface
     
     boolean getScissorLiftManualDown();
     
+    boolean getHarvesterIntake();
+    
+    boolean getHarvesterEject();
+    
+    boolean getHarvesterOpen();
+    
     // Debug buttons, remove me
     boolean getDebugPrimary();
 
