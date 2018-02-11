@@ -335,4 +335,14 @@ public class Harvester extends Subsystem
     {
         enabledLooper.register(mLoop);
     }
+    
+    public boolean checkSystem()
+    {
+        if (!isInitialized())
+        {
+            logWarning("can't check un-initialized system");
+            return false;
+        }
+        return checkSystem();
+    }
 }
