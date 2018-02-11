@@ -12,6 +12,7 @@ import com.spartronics4915.lib.util.drivers.TalonSRX4915Factory;
 import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Solenoid;
+import edu.wpi.first.wpilibj.Timer;
 
 /**
  * The articulated grabber includes both a grabber and a flipper arm that work
@@ -68,14 +69,14 @@ public class ArticulatedGrabber extends Subsystem
 
     //Implement the positions 
     //TODO: once testing begins add default positions for the potentiometer
-    private int scalePosition = 0;
-    private int intakePosition = 0;
+    private int scalePosition = 2;
+    private int intakePosition = 1;
     private int homePosition = 0;
     private int acceptablePositionError = 0;
     private int potValue;
 
     //Maximum Motor Speed: used in the handlePosition method and the config for mPositionMotor
-    private double maxMotorSpeed = 0.3;
+    private double maxMotorSpeed = 1.0;
 
     //States are created
     private SystemState mNextState = new SystemState();
@@ -89,7 +90,7 @@ public class ArticulatedGrabber extends Subsystem
         //add ports
         try {
             mPositionMotor = TalonSRX4915Factory.createDefaultMotor(Constants.kGrabberFlipperMotorId);
-            mPositionMotor.configOutputPower(true, .5, 0, maxMotorSpeed, 0, -maxMotorSpeed);//may be negative in last number
+            mPositionMotor.configOutputPower(true, .5, 0, 0.3, 0, -0.3);//may be negative in last number
             mGrabber = new LazySolenoid(Constants.kGrabberSolenoidId);
             mGrabberSetup = new LazySolenoid(Constants.kGrabberSetupSolenoidId);
             mPotentiometer = new AnalogInput(Constants.kGrabberAnglePotentiometerId);
@@ -102,12 +103,12 @@ public class ArticulatedGrabber extends Subsystem
 
         // Instantiate your actuator and sensor objects here
         // If !mMyMotor.isValid() then success should be set to false
-        if (mGrabber.isValid())
+        if (!mGrabber.isValid())
         {
             success = false;
             logWarning("Grabber1 Invalid");
         }
-        if (mGrabberSetup.isValid())
+        if (!mGrabberSetup.isValid())
         {
             success = false;
             logWarning("Grabber Setup Invalid");
@@ -426,6 +427,7 @@ public class ArticulatedGrabber extends Subsystem
                 + mSystemState.grabberOpen);
         dashboardPutNumber("potentiometer value: ", mPotentiometer.getAverageValue());
         dashboardPutBoolean("limit switch pressed: ", !mLimitSwitch.get());
+        dashboardPutNumber("position motor", mPositionMotor.getOutputVoltage());
     }
 
     @Override
@@ -453,5 +455,43 @@ public class ArticulatedGrabber extends Subsystem
     public void registerEnabledLoops(Looper enabledLooper)
     {
         enabledLooper.register(mLoop);
+    }
+    
+    public boolean checkSystem()
+    {
+        if (!isInitialized())
+        {
+            logWarning("can't check un-initialized system");
+            return false;
+        }else {
+            logNotice("mArticulatedGrabber: checkSystem() ---------------------------------");
+            
+            logNotice("WantedState: RELEASE_CUBE");
+            this.setWantedState(ArticulatedGrabber.WantedState.RELEASE_CUBE);
+            Timer.delay(3.0);
+            
+            logNotice("WantedState: GRAB_CUBE");
+            this.setWantedState(ArticulatedGrabber.WantedState.GRAB_CUBE);
+            Timer.delay(3.0);
+            
+            logNotice("WantedState: PREPARE_EXCHANGE");
+            this.setWantedState(ArticulatedGrabber.WantedState.PREPARE_EXCHANGE);
+            Timer.delay(3.0);
+            
+            logNotice("WantedState: RELEASE_CUBE");
+            this.setWantedState(ArticulatedGrabber.WantedState.RELEASE_CUBE);
+            Timer.delay(3.0);
+            
+            logNotice("WantedState: PREPARE_INTAKE");
+            this.setWantedState(ArticulatedGrabber.WantedState.PREPARE_INTAKE);
+            Timer.delay(3.0);
+            
+            logNotice("WantedState: TRANSPORT");
+            this.setWantedState(ArticulatedGrabber.WantedState.TRANSPORT);
+            Timer.delay(3.0);
+            
+            logNotice("mArticulatedGrabber: finished ---------------------------------");
+            return true;
+        }
     }
 }

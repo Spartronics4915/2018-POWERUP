@@ -421,6 +421,7 @@ public class Robot extends IterativeRobot
         Timer.delay(0.5);
 
         boolean results = mDrive.checkSystem();
+        results &= ArticulatedGrabber.getInstance().checkSystem();
         // e.g. results &= Intake.getInstance().checkSystem();
 
         if (!results)
