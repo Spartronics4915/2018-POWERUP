@@ -51,7 +51,7 @@ public class ScissorLift extends Subsystem
         HOLDING,
         BRAKING,
         UNBRAKING,
-        RELSEASING,
+        RELEASING,
     }
 
     public enum WantedState
@@ -63,7 +63,7 @@ public class ScissorLift extends Subsystem
         // might add HOOK/CLIMB
         MANUALUP,
         MANUALDOWN,
-        CLIMING_RELEASE,
+        CLIMBING_RELEASE,
     }
 
     private SystemState mSystemState = SystemState.OFF;
@@ -229,12 +229,12 @@ public class ScissorLift extends Subsystem
             mHoldSolenoid.set(true);
             nextState = SystemState.OFF;
         }
-        else if (mWantedState == WantedState.CLIMING_RELEASE)
+        else if (mWantedState == WantedState.CLIMBING_RELEASE)
         {
             mRaiseSolenoid.set(false);
             mLowerSolenoid.set(false);
             mHoldSolenoid.set(false);
-            nextState = SystemState.RELSEASING;
+            nextState = SystemState.RELEASING;
         }
         else if (Util.epsilonLessThan(mMeasuredValue, targetValue, kPotentiometerAllowedError))
         {
