@@ -45,7 +45,6 @@ public class Constants extends ConstantsBase
     public static final int kNumPCMs = 1; // Pressure control module (pneumatics)
     public static final int kNumCANDevices = kNumTalons + kNumPCMs + kNumPDPs;
     
-
     // -- Pressure Control Module (PCM) Channels ----   
     public static final int kScissorUpSolenoidId = 0; //PCM 0
     public static final int kScissorDownSolenoidId = 1; //PCM 0
