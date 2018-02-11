@@ -466,29 +466,43 @@ public class ArticulatedGrabber extends Subsystem
         }else {
             logNotice("mArticulatedGrabber: checkSystem() ---------------------------------");
             
+            logNotice("mPositionMotor:\n" + mPositionMotor.dumpState());
+            
             logNotice("WantedState: RELEASE_CUBE");
             this.setWantedState(ArticulatedGrabber.WantedState.RELEASE_CUBE);
-            Timer.delay(3.0);
+            Timer.delay(1.0);
+            logNotice("mPositionMotor: " + mPositionMotor.getOutputVoltage());
+            Timer.delay(2.0);
             
             logNotice("WantedState: GRAB_CUBE");
             this.setWantedState(ArticulatedGrabber.WantedState.GRAB_CUBE);
-            Timer.delay(3.0);
+            Timer.delay(1.0);
+            logNotice("mPositionMotor: " + mPositionMotor.getOutputVoltage());
+            Timer.delay(2.0);
             
             logNotice("WantedState: PREPARE_EXCHANGE");
             this.setWantedState(ArticulatedGrabber.WantedState.PREPARE_EXCHANGE);
-            Timer.delay(3.0);
+            Timer.delay(1.0);
+            logNotice("mPositionMotor: " + mPositionMotor.getOutputVoltage());
+            Timer.delay(2.0);
             
             logNotice("WantedState: RELEASE_CUBE");
             this.setWantedState(ArticulatedGrabber.WantedState.RELEASE_CUBE);
-            Timer.delay(3.0);
+            Timer.delay(1.0);
+            logNotice("mPositionMotor: " + mPositionMotor.getOutputVoltage());
+            Timer.delay(2.0);
             
             logNotice("WantedState: PREPARE_INTAKE");
             this.setWantedState(ArticulatedGrabber.WantedState.PREPARE_INTAKE);
-            Timer.delay(3.0);
+            Timer.delay(1.0);
+            logNotice("mPositionMotor: " + mPositionMotor.getOutputVoltage());
+            Timer.delay(2.0);
             
             logNotice("WantedState: TRANSPORT");
             this.setWantedState(ArticulatedGrabber.WantedState.TRANSPORT);
-            Timer.delay(3.0);
+            Timer.delay(1.0);
+            logNotice("mPositionMotor: " + mPositionMotor.getOutputVoltage());
+            Timer.delay(2.0);
             
             logNotice("mArticulatedGrabber: finished ---------------------------------");
             return true;
