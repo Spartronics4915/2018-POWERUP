@@ -83,13 +83,7 @@ public class Harvester extends Subsystem
         mMotorRight.configOutputPower(true, 0.5, 0, 0.5, 0, -0.5);
         mMotorLeft.configOutputPower(true, 0.5, 0, 0.5, 0, -0.5);
         mMotorLeft.setInverted(true);
-        }
-        catch (Exception e)
-        {
-            logError("Couldn't instantiate hardware objects");
-            Logger.logThrowableCrash(e);
-            success = false;
-        }
+        
         if (!mMotorRight.isValid())
         {
             logError("Right Motor is invalid");
@@ -103,6 +97,13 @@ public class Harvester extends Subsystem
         if (!mSolenoid.isValid())
         {
             logError("Solenoid is invalid");
+            success = false;
+        }
+        }
+        catch (Exception e)
+        {
+            logError("Couldn't instantiate hardware objects");
+            Logger.logThrowableCrash(e);
             success = false;
         }
 
