@@ -286,7 +286,21 @@ public class Robot extends IterativeRobot
             mDrive.setOpenLoop(
                     mCheesyDriveHelper.cheesyDrive(throttle, turn, mControlBoard.getQuickTurn(),
                             !mControlBoard.getLowGear()));
-
+ 
+            if(mControlBoard.getHarvesterIntake())
+            {
+                mHarvester.setWantedState(Harvester.WantedState.HARVEST);
+            }
+            
+            if(mControlBoard.getHarvesterEject())
+            {
+                mHarvester.setWantedState(Harvester.WantedState.EJECT);
+            }
+            
+            if(mControlBoard.getHarvesterOpen())
+            {
+                mHarvester.setWantedState(Harvester.WantedState.OPEN);
+            }
 
             if (mControlBoard.getClimberClimb())
             {
@@ -353,7 +367,6 @@ public class Robot extends IterativeRobot
                 Logger.debug("Setting Lifter to SWITCH");
                 mLifter.setWantedState(ScissorLift.WantedState.SWITCH);
             }
-
 
             allButTestPeriodic();
         }
