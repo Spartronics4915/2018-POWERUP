@@ -20,9 +20,21 @@ public interface ControlBoardInterface
     boolean getClimberIdle();
 
     boolean getClimberHold();
-    
+
     boolean getClimberPrepare();
 
+    boolean getScissorLiftOff();
+    
+    boolean getScissorLiftRetracted();
+    
+    boolean getScissorLiftSwitch();
+    
+    boolean getScissorLiftScale();
+    
+    boolean getScissorLiftManualUp();
+    
+    boolean getScissorLiftManualDown();
+    
     // Debug buttons, remove me
     boolean getDebugPrimary();
 
