@@ -327,27 +327,79 @@ public class ScissorLift extends Subsystem
             logWarning("can't check un-initialized system");
             return false;
         }
-        logNotice("checkSystem -------------------------");
-        
+        logNotice("checkSystem (" + variant + ") ------------------");
+       
         try 
         {
-            boolean r =  mRaiseSolenoid.get();    
-            logNotice("My Solenoid Shows "+ r);
-            
-            boolean l = mLowerSolenoid.get();
-            logNotice("My Solenoid Shows" + l);
-            
-            boolean h = mHoldSolenoid.get();
-            logNotice("My Solenoid Shows" + h);
-            
-            int p = mPotentiometer.getValue();
-            logNotice("My Potentiometer Shows" + p);
-        }
+            boolean allTests = variant.equalsIgnoreCase("all") || variant.equals("");
+            if(variant.equals("basic") || allTests)
+            {
+                logNotice("basic check ------");
+                logNotice("  raise solenoid state "+ mRaiseSolenoid.get());
+                logNotice("  lower solenoid state " + mLowerSolenoid.get());
+                logNotice("  hold solenoid state " + mHoldSolenoid.get());
+                logNotice("  potentiometer value " +mPotentiometer.getValue());
+            }
+            if(variant.equals("raise") || allTests)
+            {
+                logNotice("raise check -----");
+                logNotice("  raise: false (2sec)");
+                mRaiseSolenoid.set(false);
+                Timer.delay(2.0);
+                logNotice("  pot: " + mPotentiometer.getValue());
+
+                logNotice("  raise: true (.25 sec)");
+                mRaiseSolenoid.set(true);;
+                Timer.delay(.25);
+                logNotice("  pot: " + mPotentiometer.getValue());
+                
+                logNotice("  raise: false (.25 sec)");
+                mRaiseSolenoid.set(false);
+                Timer.delay(.25);
+                logNotice("  pot: " + mPotentiometer.getValue());
+            }
+            if(variant.equals("lower") || allTests)
+            {
+                logNotice("lower check -----");
+                logNotice("  lower: false (2sec)");
+                mLowerSolenoid.set(false);
+                Timer.delay(2.0);
+                logNotice("  pot: " + mPotentiometer.getValue());
+
+                logNotice("  lower: true (.25 sec)");
+                mLowerSolenoid.set(true);
+                Timer.delay(.25);
+                logNotice("  pot: " + mPotentiometer.getValue());
+                
+                logNotice("  lower: false (.25 sec)");
+                mLowerSolenoid.set(false);
+                Timer.delay(.25);
+                logNotice("  pot: " + mPotentiometer.getValue());
+            }
+            if(variant.equals("brake") || allTests)
+            {
+                logNotice("brake check -----");
+                logNotice("  brake: false (2sec)");
+                mHoldSolenoid.set(false);
+                Timer.delay(2.0);
+                logNotice("  pot: " + mPotentiometer.getValue());
+
+                logNotice("  brake: true (.25 sec)");
+                mHoldSolenoid.set(true);
+                Timer.delay(.25);
+                logNotice("  pot: " + mPotentiometer.getValue());
+                
+                logNotice("  brake: false (.25 sec)");
+                mHoldSolenoid.set(false);
+                Timer.delay(.25);
+                logNotice("  pot: " + mPotentiometer.getValue());
+            }
+       }
 
         catch(Exception e)
         {
             retval = false;
-            logWarning("Got exception while testing");
+            logWarning("Got exception while validating system");
         }
 
         return retval;
