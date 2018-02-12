@@ -4,6 +4,7 @@ import com.spartronics4915.frc2018.Constants;
 import com.spartronics4915.frc2018.loops.Loop;
 import com.spartronics4915.frc2018.loops.Looper;
 import com.spartronics4915.frc2018.subsystems.LED.SystemState;
+import com.spartronics4915.lib.util.Logger;
 import com.spartronics4915.lib.util.Util;
 import com.spartronics4915.lib.util.drivers.LazySolenoid;
 
@@ -82,23 +83,28 @@ public class ScissorLift extends Subsystem
     {
         boolean success = true;
 
-        mPotentiometer = new AnalogInput(Constants.kScissorHeightPotentiometerId);
-        mRaiseSolenoid = new LazySolenoid(Constants.kScissorUpSolenoidId);
-        mLowerSolenoid = new LazySolenoid(Constants.kScissorDownSolenoidId);
-        mHoldSolenoid = new LazySolenoid(Constants.kScissorBrakeSolenoidId);
-
-        mTimer = new Timer();
-
-        success = mRaiseSolenoid.isValid() && mLowerSolenoid.isValid() &&
-                mHoldSolenoid.isValid();
-
-        dashboardPutState(mSystemState.toString());
-        dashboardPutWantedState(mWantedState.toString());
-        // TODO: check potentiometer value to see if its connected.
-        //  this would be valid if we can count on the lift being
-        //  in a reasonable state (ie lowered).  We can't detect
-        //  wiring mishaps, since reading the analog pin will always
-        //  return a value.
+        try {
+            mPotentiometer = new AnalogInput(Constants.kScissorHeightPotentiometerId);
+            mRaiseSolenoid = new LazySolenoid(Constants.kScissorUpSolenoidId);
+            mLowerSolenoid = new LazySolenoid(Constants.kScissorDownSolenoidId);
+            mHoldSolenoid = new LazySolenoid(Constants.kScissorBrakeSolenoidId);
+            
+            mTimer = new Timer();
+    
+            success = mRaiseSolenoid.isValid() && mLowerSolenoid.isValid() &&
+                    mHoldSolenoid.isValid();
+            
+            dashboardPutState(mSystemState.toString());
+            dashboardPutWantedState(mWantedState.toString());
+            // TODO: check potentiometer value to see if its connected.
+            //  this would be valid if we can count on the lift being
+            //  in a reasonable state (ie lowered).  We can't detect
+            //  wiring mishaps, since reading the analog pin will always
+            //  return a value.
+        } catch (Exception e) {
+            logError("Couldn't instantiate hardware objects.");
+            Logger.logThrowableCrash(e);
+        }
 
         logInitialized(success);
     }

@@ -52,13 +52,24 @@ public class Superstructure extends Subsystem
     // Internal state of the system
     public enum SystemState
     {
-        IDLE
+        IDLE,
+        RETRACTING_FLIPPER, // Retract from dunk
+        RETRACTING_SCISSOR,
+        PREPARING_ARTICULATED_GRABBER, // Transfer cube from harvester to scissor
+        GRABBING_ARTICULATED_GRABBER,
+        OPENING_HARVESTER,
+        TRANSPORTING_ARTICULATED_GRABBER,
+        RELEASING_SCISSOR, // Climb
+        CLIMBING,
     };
 
     // Desired function from user
     public enum WantedState
     {
-        IDLE
+        IDLE,
+        RETRACT_FROM_DUNK,
+        TRANSFER_CUBE_TO_GRABBER,
+        CLIMB,
     }
 
     private SystemState mSystemState = SystemState.IDLE;
@@ -105,6 +116,31 @@ public class Superstructure extends Subsystem
                     case IDLE:
                         newState = handleIdle(mStateChanged);
                         break;
+                    case RETRACTING_FLIPPER: // Retract from dunk
+                        if (mStateChanged)
+                            mGrabber.setWantedState(ArticulatedGrabber.WantedState.TRANSPORT);
+                        break;
+//                    case RETRACTING_SCISSOR:
+//                        newState = handleDunkRetract(mStateChanged);
+//                        break;
+//                    case PREPARING_ARTICULATED_GRABBER:  // Transfer cube from harvester to scissor
+//                        newState = handleTransferCube(mStateChanged);
+//                        break;
+//                    case GRABBING_ARTICULATED_GRABBER:
+//                        newState = handleTransferCube(mStateChanged);
+//                        break;
+//                    case OPENING_HARVESTER:
+//                        newState = handleTransferCube(mStateChanged);
+//                        break;
+//                    case TRANSPORTING_ARTICULATED_GRABBER:
+//                        newState = handleTransferCube(mStateChanged);
+//                        break;
+//                    case RELEASING_SCISSOR: // Climb
+//                        newState = handleClimb(mStateChanged);
+//                        break;
+//                    case CLIMBING:
+//                        newState = handleClimb(mStateChanged);
+//                        break;
                     default:
                         newState = SystemState.IDLE;
                 }
@@ -146,7 +182,7 @@ public class Superstructure extends Subsystem
                 return SystemState.IDLE;
         }
     }
-
+    
     public synchronized void setWantedState(WantedState wantedState)
     {
         mWantedState = wantedState;
