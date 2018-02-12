@@ -321,7 +321,7 @@ public class ScissorLift extends Subsystem
 
     public boolean checkSystem(String variant)
     {
-        boolean retval = false;
+        boolean retval = true;
         if (!isInitialized())
         {
             logWarning("can't check un-initialized system");
@@ -329,6 +329,27 @@ public class ScissorLift extends Subsystem
         }
         logNotice("checkSystem -------------------------");
         
+        try 
+        {
+            boolean r =  mRaiseSolenoid.get();    
+            logNotice("My Solenoid Shows "+ r);
+            
+            boolean l = mLowerSolenoid.get();
+            logNotice("My Solenoid Shows" + l);
+            
+            boolean h = mHoldSolenoid.get();
+            logNotice("My Solenoid Shows" + h);
+            
+            int p = mPotentiometer.getValue();
+            logNotice("My Potentiometer Shows" + p);
+        }
+
+        catch(Exception e)
+        {
+            retval = false;
+            logWarning("Got exception while testing");
+        }
+
         return retval;
     }
 }
