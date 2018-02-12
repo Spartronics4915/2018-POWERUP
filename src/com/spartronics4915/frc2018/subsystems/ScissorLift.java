@@ -52,6 +52,7 @@ public class ScissorLift extends Subsystem
         HOLDING,
         BRAKING,
         UNBRAKING,
+        RELEASING,
     }
 
     public enum WantedState
@@ -63,6 +64,7 @@ public class ScissorLift extends Subsystem
         // might add HOOK/CLIMB
         MANUALUP,
         MANUALDOWN,
+        CLIMBING_RELEASE,
     }
 
     private SystemState mSystemState = SystemState.OFF;
@@ -80,6 +82,7 @@ public class ScissorLift extends Subsystem
     private ScissorLift()
     {
         boolean success = true;
+
         try {
             mPotentiometer = new AnalogInput(Constants.kScissorHeightPotentiometerId);
             mRaiseSolenoid = new LazySolenoid(Constants.kScissorUpSolenoidId);
@@ -102,7 +105,7 @@ public class ScissorLift extends Subsystem
             logError("Couldn't instantiate hardware objects.");
             Logger.logThrowableCrash(e);
         }
-        
+
         logInitialized(success);
     }
 
@@ -219,7 +222,7 @@ public class ScissorLift extends Subsystem
         mMeasuredValue = mPotentiometer.getAverageValue();
         if (mWantedState == WantedState.MANUALUP) // TODO: Try to implement a jog function
         {
-            
+
         }
         else if (mWantedState == WantedState.MANUALDOWN)
         {
@@ -231,6 +234,13 @@ public class ScissorLift extends Subsystem
             mLowerSolenoid.set(false);
             mHoldSolenoid.set(true);
             nextState = SystemState.OFF;
+        }
+        else if (mWantedState == WantedState.CLIMBING_RELEASE)
+        {
+            mRaiseSolenoid.set(false);
+            mLowerSolenoid.set(false);
+            mHoldSolenoid.set(false);
+            nextState = SystemState.RELEASING;
         }
         else if (Util.epsilonLessThan(mMeasuredValue, targetValue, kPotentiometerAllowedError))
         {
@@ -255,7 +265,7 @@ public class ScissorLift extends Subsystem
                         nextState = SystemState.RAISING;
                     }
                 }
-                else 
+                else
                 {
                     mLowerSolenoid.set(false);
                     mRaiseSolenoid.set(true);
@@ -309,4 +319,19 @@ public class ScissorLift extends Subsystem
         return nextState;
     }
 
+    public boolean checkSystem()
+    {
+        boolean retval = false;
+        if (!isInitialized())
+        {
+            logWarning("can't check un-initialized system");
+            return false;
+        }
+        //     mRaiseSolenoid.
+        return retval;
+    }
+
+    {
+
+    }
 }
