@@ -4,7 +4,6 @@ import com.spartronics4915.frc2018.Constants;
 import com.spartronics4915.frc2018.loops.Loop;
 import com.spartronics4915.frc2018.loops.Looper;
 import com.spartronics4915.lib.util.LazyDoubleSolenoid;
-import com.spartronics4915.lib.util.Logger;
 import com.spartronics4915.lib.util.Util;
 import com.spartronics4915.lib.util.drivers.TalonSRX4915;
 import com.spartronics4915.lib.util.drivers.TalonSRX4915Factory;
@@ -63,35 +62,30 @@ public class Climber extends Subsystem
     private Climber()
     {
         boolean success = true;
-        try {
-            mWinchPrimary =
-                    TalonSRX4915Factory.createDefaultMotor(Constants.kClimberWinchPrimaryMotorId);
-            mWinchSecondary =
-                    TalonSRX4915Factory.createDefaultSlave(Constants.kClimberWinchSecondaryMotorId,
-                            Constants.kClimberWinchPrimaryMotorId, false);
-            mStabilizerSolenoid = new LazyDoubleSolenoid(Constants.kClimberStabilizationSolenoidId1,
-                    Constants.kClimberStabilizationSolenoidId2);
-            mWinchPrimary.configOutputPower(true, 0.5, 0.0, 0.75, 0.0, -0.5);
-            mWinchSecondary.configOutputPower(true, 0.5, 0.0, 0.75, 0.0, -0.5);
-    
-            if (!mWinchPrimary.isValid())
-            {
-                logWarning("Primary Winch missing");
-                success = false;
-            }
-            if (!mWinchSecondary.isValid())
-            {
-                logWarning("Secondary Winch missing");
-                success = false;
-            }
-            if (mStabilizerSolenoid.isValid())
-            {
-                logWarning("Stablizer Solenoid is missing");
-                success = false;
-            }
-        } catch (Exception e) {
-            logError("Couldn't instantiate hardware objects.");
-            Logger.logThrowableCrash(e);
+        mWinchPrimary =
+                TalonSRX4915Factory.createDefaultMotor(Constants.kClimberWinchPrimaryMotorId);
+        mWinchSecondary =
+                TalonSRX4915Factory.createDefaultSlave(Constants.kClimberWinchSecondaryMotorId,
+                        Constants.kClimberWinchPrimaryMotorId, false);
+        mStabilizerSolenoid = new LazyDoubleSolenoid(Constants.kClimberStabilizationSolenoidId1,
+                Constants.kClimberStabilizationSolenoidId2);
+        mWinchPrimary.configOutputPower(true, 0.5, 0.0, 0.75, 0.0, -0.5);
+        mWinchSecondary.configOutputPower(true, 0.5, 0.0, 0.75, 0.0, -0.5);
+
+        if (!mWinchPrimary.isValid())
+        {
+            logWarning("Primary Winch missing");
+            success = false;
+        }
+        if (!mWinchSecondary.isValid())
+        {
+            logWarning("Secondary Winch missing");
+            success = false;
+        }
+        if (mStabilizerSolenoid.isValid())
+        {
+            logWarning("Stablizer Solenoid is missing");
+            success = false;
         }
 
         logInitialized(success);
@@ -288,6 +282,9 @@ public class Climber extends Subsystem
             logNotice("WantedState = HOLD");
             this.setWantedState(Climber.WantedState.HOLD);
             Timer.delay(2.5);
+            
+            logNotice("Primary winch output = " + mWinchPrimary.getOutputVoltage());
+            logNotice("Secondary winch output = " + mWinchSecondary.getOutputVoltage());
 
             this.setWantedState(Climber.WantedState.IDLE);
 
