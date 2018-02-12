@@ -59,14 +59,12 @@ public class ControlBoard implements ControlBoardInterface
     }
 
     @Override
-
     public boolean getClimberClimb()
     {
         return mDrivestick.getRawButtonReleased(17);
     }
 
     @Override
-
     public boolean getClimberIdle()
     {
         return mDrivestick.getRawButtonReleased(18);
@@ -87,7 +85,7 @@ public class ControlBoard implements ControlBoardInterface
 
     public boolean getScissorLiftOff()
     {
-        return mDrivestick.getRawButtonReleased(7);
+        return mDrivestick.getRawButtonReleased(27);
     }
 
     public boolean getScissorLiftRetracted()
@@ -98,7 +96,7 @@ public class ControlBoard implements ControlBoardInterface
     @Override
     public boolean getScissorLiftSwitch()
     {
-        return mDrivestick.getRawButtonReleased(9);
+        return mDrivestick.getRawButtonReleased(28);
     }
 
     @Override
@@ -111,7 +109,7 @@ public class ControlBoard implements ControlBoardInterface
     @Override
     public boolean getScissorLiftManualUp()
     {
-        return mDrivestick.getRawButtonReleased(11);
+        return mDrivestick.getRawButtonReleased(29);
     }
 
     @Override

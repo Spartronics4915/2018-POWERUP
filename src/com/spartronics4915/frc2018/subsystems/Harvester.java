@@ -75,18 +75,18 @@ public class Harvester extends Subsystem
 
         try
         {
-        mLimitSwitchCubeHeld = new DigitalInput(Constants.kHarvesterCubeHeldLimitSwitchId);// change value of Limit Switch
-        mLimitSwitchEmergency = new DigitalInput(Constants.kHarvesterEmergencyLimitSwitchId); // changes value of Limit Switch
-        mSolenoid = new LazySolenoid(Constants.kHarvesterSolenoidId); // Changes value of Solenoid
-        mMotorRight = TalonSRX4915Factory.createDefaultMotor(Constants.kHarvesterRightMotorId); // change value of motor
-        mMotorLeft = TalonSRX4915Factory.createDefaultMotor(Constants.kHarvesterLeftMotorId); // change value of motor
-        mMotorRight.configOutputPower(true, 0.5, 0, 0.5, 0, -0.5);
-        mMotorLeft.configOutputPower(true, 0.5, 0, 0.5, 0, -0.5);
-        mMotorLeft.setInverted(true);
+            mLimitSwitchCubeHeld = new DigitalInput(Constants.kHarvesterCubeHeldLimitSwitchId);// change value of Limit Switch
+            mLimitSwitchEmergency = new DigitalInput(Constants.kHarvesterEmergencyLimitSwitchId); // changes value of Limit Switch
+            mSolenoid = new LazySolenoid(Constants.kHarvesterSolenoidId); // Changes value of Solenoid
+            mMotorRight = TalonSRX4915Factory.createDefaultMotor(Constants.kHarvesterRightMotorId); // change value of motor
+            mMotorLeft = TalonSRX4915Factory.createDefaultMotor(Constants.kHarvesterLeftMotorId); // change value of motor
+            mMotorRight.configOutputPower(true, 0.5, 0, 0.5, 0, -0.5);
+            mMotorLeft.configOutputPower(true, 0.5, 0, 0.5, 0, -0.5);
+            mMotorLeft.setInverted(true);
         }
         catch (Exception e)
         {
-            logError("Couldn't instantiate hardware objects");
+            logError("Couldn't instantiate hardware objects " + e.getMessage());
             Logger.logThrowableCrash(e);
             success = false;
         }
@@ -136,7 +136,7 @@ public class Harvester extends Subsystem
                         break;
                     case OPENING:
                         newState = handleOpening();
-                        break;                    
+                        break;
                     case PREHARVESTING:
                         newState = handlePreharvesting();
                         break;
@@ -307,13 +307,13 @@ public class Harvester extends Subsystem
     @Override
     public void outputToSmartDashboard()
     {
-        dashboardPutState(mSystemState + "/SystemState");
-        dashboardPutWantedState(mWantedState + "/WantedState");
-        dashboardPutBoolean("/mSolenoid", mSolenoid.get());
-        dashboardPutBoolean("/LimitSwitchCubeHeld", mLimitSwitchCubeHeld.get());
-        dashboardPutBoolean("/LimitSwitchEmergency", mLimitSwitchEmergency.get());
-        dashboardPutNumber("/MotorRight", mMotorRight.get());
-        dashboardPutNumber("/MotorLeft", mMotorLeft.get());
+        dashboardPutState(mSystemState + " /SystemState");
+        dashboardPutWantedState(mWantedState + " /WantedState");
+        dashboardPutBoolean("/mSolenoid ", mSolenoid.get());
+        dashboardPutBoolean("/LimitSwitchCubeHeld ", mLimitSwitchCubeHeld.get());
+        dashboardPutBoolean("/LimitSwitchEmergency ", mLimitSwitchEmergency.get());
+        dashboardPutNumber("/MotorRight ", mMotorRight.get());
+        dashboardPutNumber("/MotorLeft ", mMotorLeft.get());
     }
 
     @Override
@@ -335,14 +335,37 @@ public class Harvester extends Subsystem
     {
         enabledLooper.register(mLoop);
     }
-    
+
     public boolean checkSystem()
     {
+        boolean retVal = true;
         if (!isInitialized())
         {
             logWarning("can't check un-initialized system");
-            return false;
+            return retVal = false;
         }
-        return checkSystem();
+        try
+        {
+            //check both motors are working
+            mMotorRight.configOutputPower(true, 0.5, 0, 0.5, 0, -0.5);
+            mMotorLeft.configOutputPower(true, 0.5, 0, 0.5, 0, -0.5);
+            mMotorLeft.setInverted(true);
+            mMotorRight.set(1.0);
+            mMotorLeft.set(1.0);
+            logNotice("Right Motor:\n " + mMotorRight.dumpState());
+            logNotice("Left Motor:\n " + mMotorLeft.dumpState());
+            //check solenoid is working
+            mSolenoid.set(kSolenoidOpen);
+            logNotice("Solenoid:\n " + mSolenoid.get());
+            //check limit switches are working
+            logNotice("LimitSwitchCubeHeld:\n " + mLimitSwitchCubeHeld.get());
+            logNotice("LimitSwitchEmergency:\n " + mLimitSwitchEmergency.get());
+        }
+        catch (Exception e)
+        {
+            retVal = false;
+            logWarning("Caught exception in checkSystem " + e.getMessage());
+        }
+        return retVal;
     }
 }
