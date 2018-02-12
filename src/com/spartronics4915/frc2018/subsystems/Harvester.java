@@ -75,30 +75,30 @@ public class Harvester extends Subsystem
 
         try
         {
-        mLimitSwitchCubeHeld = new DigitalInput(Constants.kHarvesterCubeHeldLimitSwitchId);// change value of Limit Switch
-        mLimitSwitchEmergency = new DigitalInput(Constants.kHarvesterEmergencyLimitSwitchId); // changes value of Limit Switch
-        mSolenoid = new LazySolenoid(Constants.kHarvesterSolenoidId); // Changes value of Solenoid
-        mMotorRight = TalonSRX4915Factory.createDefaultMotor(Constants.kHarvesterRightMotorId); // change value of motor
-        mMotorLeft = TalonSRX4915Factory.createDefaultMotor(Constants.kHarvesterLeftMotorId); // change value of motor
-        mMotorRight.configOutputPower(true, 0.5, 0, 0.5, 0, -0.5);
-        mMotorLeft.configOutputPower(true, 0.5, 0, 0.5, 0, -0.5);
-        mMotorLeft.setInverted(true);
-        
-        if (!mMotorRight.isValid())
-        {
-            logError("Right Motor is invalid");
-            success = false;
-        }
-        if (!mMotorLeft.isValid())
-        {
-            logError("Left Motor is invalid");
-            success = false;
-        }
-        if (!mSolenoid.isValid())
-        {
-            logError("Solenoid is invalid");
-            success = false;
-        }
+            mLimitSwitchCubeHeld = new DigitalInput(Constants.kHarvesterCubeHeldLimitSwitchId);// change value of Limit Switch
+            mLimitSwitchEmergency = new DigitalInput(Constants.kHarvesterEmergencyLimitSwitchId); // changes value of Limit Switch
+            mSolenoid = new LazySolenoid(Constants.kHarvesterSolenoidId); // Changes value of Solenoid
+            mMotorRight = TalonSRX4915Factory.createDefaultMotor(Constants.kHarvesterRightMotorId); // change value of motor
+            mMotorLeft = TalonSRX4915Factory.createDefaultMotor(Constants.kHarvesterLeftMotorId); // change value of motor
+            mMotorRight.configOutputPower(true, 0.5, 0, 0.5, 0, -0.5);
+            mMotorLeft.configOutputPower(true, 0.5, 0, 0.5, 0, -0.5);
+            mMotorLeft.setInverted(true);
+
+            if (!mMotorRight.isValid())
+            {
+                logError("Right Motor is invalid");
+                success = false;
+            }
+            if (!mMotorLeft.isValid())
+            {
+                logError("Left Motor is invalid");
+                success = false;
+            }
+            if (!mSolenoid.isValid())
+            {
+                logError("Solenoid is invalid");
+                success = false;
+            }
         }
         catch (Exception e)
         {
@@ -137,7 +137,7 @@ public class Harvester extends Subsystem
                         break;
                     case OPENING:
                         newState = handleOpening();
-                        break;                    
+                        break;
                     case PREHARVESTING:
                         newState = handlePreharvesting();
                         break;
@@ -335,5 +335,12 @@ public class Harvester extends Subsystem
     public void registerEnabledLoops(Looper enabledLooper)
     {
         enabledLooper.register(mLoop);
+    }
+
+    @Override
+    public boolean checkSystem(String variant)
+    {
+        logNotice("checkSystem ---------------");
+        return true;
     }
 }

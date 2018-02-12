@@ -146,4 +146,6 @@ public abstract class Subsystem
 
     public abstract void registerEnabledLoops(Looper enabledLooper);
     
+    public abstract boolean checkSystem(String variant);
+    
 }
