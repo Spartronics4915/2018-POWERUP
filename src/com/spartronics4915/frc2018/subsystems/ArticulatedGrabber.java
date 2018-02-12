@@ -90,7 +90,7 @@ public class ArticulatedGrabber extends Subsystem
         //add ports
         try {
             mPositionMotor = TalonSRX4915Factory.createDefaultMotor(Constants.kGrabberFlipperMotorId);
-            mPositionMotor.configOutputPower(true, .5, 0, 0.3, 0, -0.3);//may be negative in last number
+            mPositionMotor.configOutputPower(true, .5, 0, 0.1, 0, -0.1);//may be negative in last number
             mGrabber = new LazySolenoid(Constants.kGrabberSolenoidId);
             mGrabberSetup = new LazySolenoid(Constants.kGrabberSetupSolenoidId);
             mPotentiometer = new AnalogInput(Constants.kGrabberAnglePotentiometerId);
