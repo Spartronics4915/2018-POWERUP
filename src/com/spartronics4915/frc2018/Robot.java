@@ -81,9 +81,9 @@ public class Robot extends IterativeRobot
 
     // smartdashboard keys
     private static final String kRobotVerbosity = "Robot/Verbosity";
-    private static final String kRobotTestModeSelector = "Robot/TestModeSelector";
-    private static final String kRobotTestMode = "Robot/TestMode";
-    private static final String kRobotTestVariant = "Robot/TestVariant";
+    private static final String kRobotTestModeOptions = "TestModeOptions";
+    private static final String kRobotTestMode = "TestMode";
+    private static final String kRobotTestVariant = "TestVariant";
 
     public Robot()
     {
@@ -166,7 +166,7 @@ public class Robot extends IterativeRobot
             mEnabledLooper.register(RobotStateEstimator.getInstance());
 
             AutoModeSelector.initAutoModeSelector();
-            SmartDashboard.putString(kRobotTestModeSelector,
+            SmartDashboard.putString(kRobotTestModeOptions,
                     "None,ArticulatedGrabber,Climber,Drive,Harvester,LED,ScissorLift,All");
             SmartDashboard.putString(kRobotTestMode, "None");
             SmartDashboard.putString(kRobotTestVariant, "");
