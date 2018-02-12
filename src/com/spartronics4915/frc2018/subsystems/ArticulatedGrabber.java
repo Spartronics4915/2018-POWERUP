@@ -1,7 +1,7 @@
 /* current known bugs, remove this when fixed
- * bug with wantedstates not transitioning ish- should work on robot
- * also, if there is time, add a manual control for the articulator
- * set our wantedstates to use 1 button for the grabber, 2-3 for articulator
+ * bug with WantedStates not transitioning ish- should work on actual robot
+ * also, if there is time, add an analog control for the articulator
+ * set our WantedStates to use 1 button for the grabber, 2-3 for articulator
  */
 
 package com.spartronics4915.frc2018.subsystems;
@@ -61,6 +61,10 @@ public class ArticulatedGrabber extends Subsystem
         PREPARE_EXCHANGE, //not grabbing and flat against lift  //position: 0, open: true
         RELEASE_CUBE,     //not grabbing over the switch/scale  //position: 1, open: true
         PREPARE_INTAKE    //not grabbing over the ground        //position: 2, open: true
+        /* public int wantedArticulatorPosition;
+         * public boolean wantedGrabberOpen;
+         * public boolean wantedGrabberSetup;  //might not need
+         */
     }
 
     //Implement the positions 
@@ -76,6 +80,7 @@ public class ArticulatedGrabber extends Subsystem
     private SystemState mNextState = new SystemState();
     private SystemState mSystemState = new SystemState();
     private WantedState mWantedState = WantedState.PREPARE_EXCHANGE;
+    //private WantedState mWantedState = new WantedState();
 
     private ArticulatedGrabber()  //sets up everything
     {
@@ -124,6 +129,10 @@ public class ArticulatedGrabber extends Subsystem
                 mSystemState.articulatorPosition = mPotentiometer.getAverageValue();
                 mSystemState.grabberOpen = mGrabber.get();
                 mSystemState.grabberSetup = mGrabberSetup.get();
+                /* mWantedState.wantedArticulatorPosition = mSystemState.articulatorPosition
+                 * mWantedState.wantedGrabberOpen = mSystemState.grabberOpen
+                 * mWantedState.wantedGrabberSetup = mSystemState.grabberSetup
+                 */
             }
         }
 
@@ -233,6 +242,26 @@ public class ArticulatedGrabber extends Subsystem
                 logWarning("Unexpected Case " + mWantedState.toString());
                 mGrabber.set(false);
                 return false;
+            /*
+             * case mWantedState.wantedGrabberOpen
+             *      if (mNextState.grabberOpen)
+             *      {
+             *          mGrabber.set(false)
+             *      }
+             *      return false;
+             *
+             * case !mWantedState.wantedGrabberOpen
+             *      if (!mNextState.grabberOpen)
+             *      {
+             *          mGrabber.set(true)
+             *      }
+             *      return true;
+             *
+             * default:
+             *      logWarning("Unexpected Case " + mWantedState.toString());
+             *      mGrabber.set(false)
+             *      return false;
+             */
         }
     }
 
@@ -391,6 +420,29 @@ public class ArticulatedGrabber extends Subsystem
                 logWarning("Unexpected Case " + mWantedState.toString());
                 mPositionMotor.set(0.0);
                 return potValue;
+            
+            /* case mWantedState.wantedArticulatorPosition
+             *      if (Util.epsilonEquals(potValue, mWantedState.wantedArticulatorPosition, acceptablePositionError))
+             *      {
+             *          mPositionMotor.set(0);
+             *          return potValue;
+             *      }
+             *      else if (potValue < mWantedState.wantedArticulatorPosition)
+             *      {
+             *          mPositionMotor.set(maxMotorSpeed);
+             *          return potValue;
+             *      }
+             *      else if (potValue > mWantedState.wantedArticulatorPosition)
+             *      {
+             *          mPositionMotor.set(-maxMotorSpeed);
+             *          return potValue;
+             *      }
+             * default
+             *      logWarning("Unexpected Case " + mWantedState.toString());
+             *      mPositionMoter.set(0.0)
+             *      return potValue;
+             * 
+             */
 
         }
     }
@@ -402,7 +454,7 @@ public class ArticulatedGrabber extends Subsystem
     }
 
     @Override
-    public void outputToSmartDashboard()  //Dashboard Logging
+    public void outputToSmartDashboard()  //dashboard logging
     {
         dashboardPutState("position: " + mSystemState.articulatorPosition + " grabber: "
                 + mSystemState.grabberOpen);
@@ -413,11 +465,11 @@ public class ArticulatedGrabber extends Subsystem
     @Override
     public synchronized void stop()  //stops
     {
-        mPositionMotor.set(0.0);
+        mPositionMotor.set(0);
         mGrabber.set(false);
         mGrabberSetup.set(false);
         mSystemState.grabberSetup = false;
-        mSystemState.grabberOpen = false;
+        mSystemState.grabberOpen = false;  //TODO maybe add something to stop WantedStates from retriggering
     }
 
     @Override
