@@ -430,6 +430,7 @@ public class Robot extends IterativeRobot
         {
             Logger.notice("Robot: running test mode " + testMode +
                     " variant:" + testVariant + " -------------------------");
+            mEnabledLooper.stop();
         }
         Timer.delay(0.5);
 

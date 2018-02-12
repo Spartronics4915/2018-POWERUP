@@ -216,5 +216,6 @@ public class Superstructure extends Subsystem
     public boolean checkSystem(String variant)
     {
         logNotice("checkSystem not implemented");
+        return false;
     }
 }
