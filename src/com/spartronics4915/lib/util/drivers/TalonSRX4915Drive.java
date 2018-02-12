@@ -322,9 +322,8 @@ public class TalonSRX4915Drive
         SmartDashboard.putNumber("Drive/IMU_Heading", getGyroAngle());
     }
 
-    public boolean checkSystem()
+    public boolean checkSystem(String variant)
     {
-        logNotice("checkSystem() ---------------------------------");
         final double kCurrentThres = 9;
         final double kRpmThres = 85;
 

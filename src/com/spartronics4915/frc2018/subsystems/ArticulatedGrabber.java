@@ -12,6 +12,7 @@ import com.spartronics4915.lib.util.drivers.TalonSRX4915Factory;
 import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Solenoid;
+import edu.wpi.first.wpilibj.Timer;
 
 /**
  * The articulated grabber includes both a grabber and a flipper arm that work
@@ -85,16 +86,18 @@ public class ArticulatedGrabber extends Subsystem
     private ArticulatedGrabber()//initializes subsystem
     {
         boolean success = true;
-        
+
         //add ports
-        try {
-            mPositionMotor = TalonSRX4915Factory.createDefaultMotor(Constants.kGrabberFlipperMotorId);
+        try
+        {
+            mPositionMotor =
+                    TalonSRX4915Factory.createDefaultMotor(Constants.kGrabberFlipperMotorId);
             mPositionMotor.configOutputPower(true, .5, 0, maxMotorSpeed, 0, -maxMotorSpeed);//may be negative in last number
             mGrabber = new LazySolenoid(Constants.kGrabberSolenoidId);
             mGrabberSetup = new LazySolenoid(Constants.kGrabberSetupSolenoidId);
             mPotentiometer = new AnalogInput(Constants.kGrabberAnglePotentiometerId);
             mLimitSwitch = new DigitalInput(Constants.kFlipperHomeLimitSwitchId);
-            
+
             if (mGrabber.isValid())
             {
                 success = false;
@@ -110,7 +113,9 @@ public class ArticulatedGrabber extends Subsystem
                 success = false;
                 logWarning("PositionMotor Invalid");
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e)
+        {
             logError("Failed to instantiate hardware objects.");
             Logger.logThrowableCrash(e);
             success = false;
@@ -120,70 +125,28 @@ public class ArticulatedGrabber extends Subsystem
     }
 
     //main loop in which everything is called especially the handling method
-    private Loop mLoop = new Loop()
-    {
+    private Loop mLoop=new Loop(){
 
-        @Override
-        public void onStart(double timestamp)//calibration
-        {
-            synchronized (ArticulatedGrabber.this)
-            {
-                mSystemState.articulatorPosition = mPotentiometer.getAverageValue();
-                mSystemState.grabberOpen = mGrabber.get();
-                mSystemState.grabberSetup = mGrabberSetup.get();
-                //This Method runs at the beginning of auto and teleop
-                //mGrabber1.set(false);
-                //mGrabber2.set(true);
-                //mSystemState.articulatorPosition = 0;
-                //mSystemState.grabberOpen = false;
-            }
-        }
+    @Override public void onStart(double timestamp)//calibration
+    {synchronized(ArticulatedGrabber.this){mSystemState.articulatorPosition=mPotentiometer.getAverageValue();mSystemState.grabberOpen=mGrabber.get();mSystemState.grabberSetup=mGrabberSetup.get();
+    //This Method runs at the beginning of auto and teleop
+    //mGrabber1.set(false);
+    //mGrabber2.set(true);
+    //mSystemState.articulatorPosition = 0;
+    //mSystemState.grabberOpen = false;
+    }}
 
-        @Override
-        public void onLoop(double timestamp)
-        {
-            synchronized (ArticulatedGrabber.this)
-            {
-                if (!mSystemState.grabberSetup)
-                {
-                    mGrabberSetup.set(true);
-                    mSystemState.grabberSetup = true;
-                }
+    @Override public void onLoop(double timestamp){synchronized(ArticulatedGrabber.this){if(!mSystemState.grabberSetup){mGrabberSetup.set(true);mSystemState.grabberSetup=true;}
 
-                potValue = mPotentiometer.getAverageValue();
-                //Handle calls
-                mNextState.articulatorPosition = handleGrabberPosition(potValue);
-                mNextState.grabberOpen = handleGrabberState(potValue);
+    potValue=mPotentiometer.getAverageValue();
+    //Handle calls
+    mNextState.articulatorPosition=handleGrabberPosition(potValue);mNextState.grabberOpen=handleGrabberState(potValue);
 
-                //Log change in state/position then assigns current state
-                if (mNextState.grabberOpen != mSystemState.grabberOpen)
-                {
-                    dashboardPutString("State change: ", "Articulated Grabber state from "
-                            + mSystemState.grabberOpen + "to" + mNextState.grabberOpen);
-                    logInfo("State change: Articulated Grabber state from "
-                            + mSystemState.grabberOpen + "to" + mNextState.grabberOpen);
-                }
-                if (mNextState.articulatorPosition != mSystemState.articulatorPosition)
-                {
-                    dashboardPutString("Position change: ",
-                            "Articulated Grabber position from " + mSystemState.articulatorPosition
-                                    + "to" + mNextState.articulatorPosition);
-                    logInfo("Position change: Articulated Grabber position from "
-                            + mSystemState.articulatorPosition + "to"
-                            + mNextState.articulatorPosition);
-                }
-                mSystemState = mNextState;
-            }
-        }
+    //Log change in state/position then assigns current state
+    if(mNextState.grabberOpen!=mSystemState.grabberOpen){dashboardPutString("State change: ","Articulated Grabber state from "+mSystemState.grabberOpen+"to"+mNextState.grabberOpen);logInfo("State change: Articulated Grabber state from "+mSystemState.grabberOpen+"to"+mNextState.grabberOpen);}if(mNextState.articulatorPosition!=mSystemState.articulatorPosition){dashboardPutString("Position change: ","Articulated Grabber position from "+mSystemState.articulatorPosition+"to"+mNextState.articulatorPosition);logInfo("Position change: Articulated Grabber position from "+mSystemState.articulatorPosition+"to"+mNextState.articulatorPosition);}mSystemState=mNextState;}}
 
-        @Override
-        public void onStop(double timestamp)//stop
-        {
-            synchronized (ArticulatedGrabber.this)
-            {
-                stop();
-            }
-        }
+    @Override public void onStop(double timestamp)//stop
+    {synchronized(ArticulatedGrabber.this){stop();}}
 
     };
 
@@ -331,7 +294,7 @@ public class ArticulatedGrabber extends Subsystem
                 }
 
             case PREPARE_EXCHANGE:
-                
+
                 if (!mLimitSwitch.get())
                 {
                     scalePosition += potValue;
@@ -451,5 +414,12 @@ public class ArticulatedGrabber extends Subsystem
     public void registerEnabledLoops(Looper enabledLooper)
     {
         enabledLooper.register(mLoop);
+    }
+
+    @Override
+    public boolean checkSystem(String variant)
+    {
+        logNotice("checkSystem ---------------");
+        return true;
     }
 }

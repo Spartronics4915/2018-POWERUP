@@ -211,4 +211,10 @@ public class Superstructure extends Subsystem
     {
         enabledLooper.register(mLoop);
     }
+    
+    @Override
+    public boolean checkSystem(String variant)
+    {
+        logNotice("checkSystem not implemented");
+    }
 }

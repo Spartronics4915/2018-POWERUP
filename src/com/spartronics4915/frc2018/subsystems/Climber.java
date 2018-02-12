@@ -62,7 +62,8 @@ public class Climber extends Subsystem
     private Climber()
     {
         boolean success = true;
-        try {
+        try
+        {
             mWinchPrimary =
                     TalonSRX4915Factory.createDefaultMotor(Constants.kClimberWinchPrimaryMotorId);
             mWinchSecondary =
@@ -72,7 +73,7 @@ public class Climber extends Subsystem
                     Constants.kClimberStabilizationSolenoidId2);
             mWinchPrimary.configOutputPower(true, 0.5, 0.0, 0.75, 0.0, -0.5);
             mWinchSecondary.configOutputPower(true, 0.5, 0.0, 0.75, 0.0, -0.5);
-    
+
             if (!mWinchPrimary.isValid())
             {
                 logWarning("Primary Winch missing");
@@ -88,7 +89,9 @@ public class Climber extends Subsystem
                 logWarning("Stablizer Solenoid is missing");
                 success = false;
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e)
+        {
             logError("Couldn't instantiate hardware objects.");
             Logger.logThrowableCrash(e);
         }
@@ -255,5 +258,12 @@ public class Climber extends Subsystem
     public void registerEnabledLoops(Looper enabledLooper)
     {
         enabledLooper.register(mLoop);
+    }
+
+    @Override
+    public boolean checkSystem(String variant)
+    {
+        logNotice("checkSystem ---------------");
+        return true;
     }
 }

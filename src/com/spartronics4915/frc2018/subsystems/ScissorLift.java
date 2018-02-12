@@ -319,7 +319,7 @@ public class ScissorLift extends Subsystem
         return nextState;
     }
 
-    public boolean checkSystem()
+    public boolean checkSystem(String variant)
     {
         boolean retval = false;
         if (!isInitialized())
@@ -327,11 +327,8 @@ public class ScissorLift extends Subsystem
             logWarning("can't check un-initialized system");
             return false;
         }
-        //     mRaiseSolenoid.
+        logNotice("checkSystem -------------------------");
+        
         return retval;
-    }
-
-    {
-
     }
 }
