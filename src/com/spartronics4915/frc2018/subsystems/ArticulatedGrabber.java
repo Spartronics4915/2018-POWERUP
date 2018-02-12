@@ -93,28 +93,26 @@ public class ArticulatedGrabber extends Subsystem
             mGrabberSetup = new LazySolenoid(Constants.kGrabberSetupSolenoidId);
             mPotentiometer = new AnalogInput(Constants.kGrabberAnglePotentiometerId);
             mLimitSwitch = new DigitalInput(Constants.kFlipperHomeLimitSwitchId);
+            if (!mGrabber.isValid())  //instantiate your actuator and sensor objects here
+            {
+                success = false;
+                logWarning("GrabberOpen Invalid");
+            }
+            if (!mGrabberSetup.isValid())
+            {
+                success = false;
+                logWarning("GrabberSetup Invalid");
+            }
+            if (!mPositionMotor.isValid())
+            {
+                success = false;
+                logWarning("PositionMotor Invalid");
+            }
         } catch (Exception e) {  //catches the failure to contain it to subsystem
             logError("Failed to instantiate hardware objects.");
             Logger.logThrowableCrash(e);
             success = false;
         }
-
-        if (!mGrabber.isValid())  //instantiate your actuator and sensor objects here
-        {
-            success = false;
-            logWarning("Grabber1 Invalid");
-        }
-        if (!mGrabberSetup.isValid())
-        {
-            success = false;
-            logWarning("Grabber Setup Invalid");
-        }
-        if (!mPositionMotor.isValid())
-        {
-            success = false;
-            logWarning("PositionMotor Invalid");
-        }
-
         logInitialized(success);
     }
 
