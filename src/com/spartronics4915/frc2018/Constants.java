@@ -14,7 +14,7 @@ import edu.wpi.first.wpilibj.Solenoid;
  */
 public class Constants extends ConstantsBase
 {
-    public static final boolean kUseTestbedConstants = true;
+    public static final boolean kUseTestbedConstants = false;
     // Hardware configuration constants --------------------------------------------------------
     
     // CAN Bus --------------------------- 
@@ -179,6 +179,10 @@ public class Constants extends ConstantsBase
 
     public static final double kShooterAbsoluteRangeFloor = 90.0;
     public static final double kShooterAbsoluteRangeCeiling = 130.0;
+    
+    // Field constants
+    public static final double kFieldWidth = 648;
+    public static final double kFieldHeight = 324;
     
     /**
      * Make an {@link Solenoid} instance for the single-number ID of the

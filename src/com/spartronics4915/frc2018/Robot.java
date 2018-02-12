@@ -443,14 +443,6 @@ public class Robot extends IterativeRobot
      */
     private void allButTestPeriodic()
     {
-        if (mRobotState == null)
-        {
-            Logger.error("Robot State is null");
-        }
-        else
-        {
-            Logger.error("Root State is not null");
-        }
         mRobotState.outputToSmartDashboard();
         mSubsystemManager.outputToSmartDashboard();
         mSubsystemManager.writeToLog();

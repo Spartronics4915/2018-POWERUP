@@ -75,6 +75,7 @@ public class Harvester extends Subsystem
 
         try
         {
+<<<<<<< HEAD
             mLimitSwitchCubeHeld = new DigitalInput(Constants.kHarvesterCubeHeldLimitSwitchId);// change value of Limit Switch
             mLimitSwitchEmergency = new DigitalInput(Constants.kHarvesterEmergencyLimitSwitchId); // changes value of Limit Switch
             mSolenoid = new LazySolenoid(Constants.kHarvesterSolenoidId); // Changes value of Solenoid
@@ -90,6 +91,17 @@ public class Harvester extends Subsystem
             Logger.logThrowableCrash(e);
             success = false;
         }
+=======
+        mLimitSwitchCubeHeld = new DigitalInput(Constants.kHarvesterCubeHeldLimitSwitchId);// change value of Limit Switch
+        mLimitSwitchEmergency = new DigitalInput(Constants.kHarvesterEmergencyLimitSwitchId); // changes value of Limit Switch
+        mSolenoid = new LazySolenoid(Constants.kHarvesterSolenoidId); // Changes value of Solenoid
+        mMotorRight = TalonSRX4915Factory.createDefaultMotor(Constants.kHarvesterRightMotorId); // change value of motor
+        mMotorLeft = TalonSRX4915Factory.createDefaultMotor(Constants.kHarvesterLeftMotorId); // change value of motor
+        mMotorRight.configOutputPower(true, 0.5, 0, 0.5, 0, -0.5);
+        mMotorLeft.configOutputPower(true, 0.5, 0, 0.5, 0, -0.5);
+        mMotorLeft.setInverted(true);
+        
+>>>>>>> c115cce8c9b5ec6f2e3c05aeac80608025eb91da
         if (!mMotorRight.isValid())
         {
             logError("Right Motor is invalid");
@@ -103,6 +115,13 @@ public class Harvester extends Subsystem
         if (!mSolenoid.isValid())
         {
             logError("Solenoid is invalid");
+            success = false;
+        }
+        }
+        catch (Exception e)
+        {
+            logError("Couldn't instantiate hardware objects");
+            Logger.logThrowableCrash(e);
             success = false;
         }
 
