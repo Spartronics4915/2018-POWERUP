@@ -108,6 +108,11 @@ public abstract class Subsystem
     }
 
     // log methods are for conventionalizing format across subsystems 
+    public void logException(String msg, Throwable e)
+    {
+        Logger.logThrowableCrash(this.getName() + " " + msg, e);
+    }
+    
     public void logError(String msg)
     {
         Logger.error(this.getName() + " " + msg); 
@@ -145,5 +150,7 @@ public abstract class Subsystem
     public abstract void zeroSensors();
 
     public abstract void registerEnabledLoops(Looper enabledLooper);
+    
+    public abstract boolean checkSystem(String variant);
     
 }

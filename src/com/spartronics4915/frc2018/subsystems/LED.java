@@ -6,6 +6,7 @@ import com.spartronics4915.frc2018.loops.Looper;
 import com.spartronics4915.lib.util.Logger;
 
 import edu.wpi.first.wpilibj.Relay;
+import edu.wpi.first.wpilibj.Timer;
 
 /**
  * The LED subsystem consists of:
@@ -309,5 +310,17 @@ public class LED extends Subsystem
         mBlinkDuration = blinkDuration;
         mBlinkCount = blinkCount;
         mTotalBlinkDuration = mBlinkCount * mBlinkDuration;
+    }
+    
+    @Override
+    public boolean checkSystem(String variant)
+    {
+        logNotice("checkSystem ---------------");
+        logNotice("VisionLamp On");
+        setVisionLampOn();
+        Timer.delay(2.0);
+        logNotice("VisionLamp Off");
+        setVisionLampOff();
+        return true;
     }
 }

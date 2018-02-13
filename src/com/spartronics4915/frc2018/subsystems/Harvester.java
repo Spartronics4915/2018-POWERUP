@@ -11,6 +11,7 @@ import com.spartronics4915.lib.util.drivers.TalonSRX4915Factory;
 
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Solenoid;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
@@ -337,36 +338,79 @@ public class Harvester extends Subsystem
         enabledLooper.register(mLoop);
     }
 
-    public boolean checkSystem()
+    @Override
+    public boolean checkSystem(String variant)
     {
-        boolean retVal = true;
+        boolean success = true;
         if (!isInitialized())
         {
             logWarning("can't check un-initialized system");
-            return retVal = false;
+            return false;
         }
+        logNotice("checkSystem (" + variant + ") ------------------");
+
         try
         {
-            //check both motors are working
-            mMotorRight.configOutputPower(true, 0.5, 0, 0.5, 0, -0.5);
-            mMotorLeft.configOutputPower(true, 0.5, 0, 0.5, 0, -0.5);
-            mMotorLeft.setInverted(true);
-            mMotorRight.set(1.0);
-            mMotorLeft.set(1.0);
-            logNotice("Right Motor:\n " + mMotorRight.dumpState());
-            logNotice("Left Motor:\n " + mMotorLeft.dumpState());
-            //check solenoid is working
-            mSolenoid.set(kSolenoidOpen);
-            logNotice("Solenoid:\n " + mSolenoid.get());
-            //check limit switches are working
-            logNotice("LimitSwitchCubeHeld:\n " + mLimitSwitchCubeHeld.get());
-            logNotice("LimitSwitchEmergency:\n " + mLimitSwitchEmergency.get());
+            boolean allTests = variant.equalsIgnoreCase("all") || variant.equals("");
+            if (variant.equals("basic") || allTests)
+            {
+                logNotice("basic check ------");
+                logNotice("  mMotorRight:\n" + mMotorRight.dumpState());
+                logNotice("  mMotorLeft:\n" + mMotorLeft.dumpState());
+                logNotice("  mSolenoid: " + mSolenoid.get());
+                logNotice("  mLimitSwitchCubeHeld: " + mLimitSwitchCubeHeld.get());
+                logNotice("  mLimitSwitchEmergency: " + mLimitSwitchEmergency.get());
+            }
+            if (variant.equals("solenoid") || allTests)
+            {
+                logNotice("solenoid check ------");
+                logNotice("on 4s");
+                mSolenoid.set(true);
+                Timer.delay(4.0);
+                logNotice("  mLimitSwitchCubeHeld: " + mLimitSwitchCubeHeld.get());
+                logNotice("  mLimitSwitchEmergency: " + mLimitSwitchEmergency.get());
+                logNotice("off");
+                mSolenoid.set(false);
+            }
+            if (variant.equals("motors") || allTests)
+            {
+                logNotice("motors check ------");
+                logNotice("open arms (2s)");
+                mSolenoid.set(true);
+                Timer.delay(2.0);
+
+                logNotice("left motor fwd .5 (4s)");
+                mMotorLeft.set(.5);
+                Timer.delay(4.0);
+                logNotice("  current: " + mMotorLeft.getOutputCurrent());
+                mMotorLeft.set(0);
+
+                logNotice("right motor fwd .5 (4s)");
+                mMotorRight.set(.5);
+                Timer.delay(4.0);
+                logNotice("  current: " + mMotorRight.getOutputCurrent());
+                mMotorRight.set(0);
+
+                logNotice("both motors rev .5 (4s)");
+                mMotorLeft.set(-.5);
+                mMotorRight.set(-.5);
+                Timer.delay(4.0);
+                logNotice("  left current: " + mMotorLeft.getOutputCurrent());
+                logNotice("  right current: " + mMotorRight.getOutputCurrent());
+                mMotorLeft.set(0);
+                mMotorRight.set(0);
+
+                Timer.delay(.5); // let motors spin down
+                mSolenoid.set(false);
+            }
         }
-        catch (Exception e)
+        catch (Throwable e)
         {
-            retVal = false;
-            logWarning("Caught exception in checkSystem " + e.getMessage());
+            success = false;
+            logException("checkSystem", e);
         }
-        return retVal;
+
+        logNotice("--- finished ---------------------------");
+        return success;
     }
 }
