@@ -96,7 +96,7 @@ public class ControlBoard implements ControlBoardInterface
     @Override
     public boolean getScissorLiftSwitch()
     {
-        return mDrivestick.getRawButtonReleased(28);
+        return mDrivestick.getRawButtonReleased(29);
     }
 
     @Override
@@ -109,7 +109,7 @@ public class ControlBoard implements ControlBoardInterface
     @Override
     public boolean getScissorLiftManualUp()
     {
-        return mDrivestick.getRawButtonReleased(29);
+        return mDrivestick.getRawButtonReleased(21);
     }
 
     @Override

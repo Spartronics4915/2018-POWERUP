@@ -22,8 +22,8 @@ public class Harvester extends Subsystem
 {
 
     private static Harvester sInstance = null;
-    private static final boolean kSolenoidOpen = false;
-    private static final boolean kSolenoidClose = true;
+    private static final boolean kSolenoidOpen = true;
+    private static final boolean kSolenoidClose = false;
 
     public static Harvester getInstance()
     {

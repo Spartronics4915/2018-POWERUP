@@ -62,8 +62,8 @@ public class Constants extends ConstantsBase
     public static final int kLEDDriverLEDId = 1;
     
     // DIO Pins --------------------------------------
-    public static final int kScissorHomeLimitSwitchId = 9;
-    public static final int kFlipperHomeLimitSwitchId = 10;
+    public static final int kScissorHomeLimitSwitchId = kUseTestbedConstants ? 9 : 0;
+    public static final int kFlipperHomeLimitSwitchId = kUseTestbedConstants ? 10 : 1;
     public static final int kHarvesterCubeHeldLimitSwitchId = kUseTestbedConstants ? 0 : 2;
     public static final int kHarvesterEmergencyLimitSwitchId = kUseTestbedConstants ? 1 : 3;
     
