@@ -10,6 +10,7 @@ import com.spartronics4915.lib.util.drivers.TalonSRX4915;
 import com.spartronics4915.lib.util.drivers.TalonSRX4915Factory;
 
 import edu.wpi.first.wpilibj.DoubleSolenoid;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
@@ -263,7 +264,64 @@ public class Climber extends Subsystem
     @Override
     public boolean checkSystem(String variant)
     {
-        logNotice("checkSystem ---------------");
-        return true;
+        boolean success = true;
+        if (!isInitialized())
+        {
+            logWarning("can't check un-initialized system");
+            return false;
+        }
+        logNotice("checkSystem (" + variant + ") ------------------");
+
+        try
+        {
+            boolean allTests = variant.equalsIgnoreCase("all") || variant.equals("");
+            if (variant.equals("basic") || allTests)
+            {
+                logNotice("basic check ------");
+                logNotice("  mWinchPrimary:\n" + mWinchPrimary.dumpState());
+                logNotice("  mWinchSecondary:\n" + mWinchSecondary.dumpState());
+                logNotice("  mStabilizerSolenoid: " + mStabilizerSolenoid.get());
+            }
+            if (variant.equals("solenoid") || allTests)
+            {
+                logNotice("solenoid check ------");
+                logNotice("  fwd 4s");
+                mStabilizerSolenoid.set(DoubleSolenoid.Value.kForward);
+                Timer.delay(4);
+                logNotice("  rev 4s");
+                mStabilizerSolenoid.set(DoubleSolenoid.Value.kReverse);
+                Timer.delay(4);
+                logNotice("  off");
+                mStabilizerSolenoid.set(DoubleSolenoid.Value.kOff);
+            }
+            if (variant.equals("motors") || allTests)
+            {
+                logNotice("motor check ------");
+                logNotice("  fwd .5 4s");
+                mWinchPrimary.set(.5);
+                Timer.delay(4);
+                logNotice("  master current: " + mWinchPrimary.getOutputCurrent());
+                logNotice("  slave current: " + mWinchSecondary.getOutputCurrent());
+              
+                logNotice("  rev .5 4s");
+                mWinchPrimary.set(-.5);
+                Timer.delay(4);
+                logNotice("  master current: " + mWinchPrimary.getOutputCurrent());
+                logNotice("  slave current: " + mWinchSecondary.getOutputCurrent());
+             
+                logNotice("  stop");
+                mWinchPrimary.set(0);
+                
+                // XXX: should we run motors individually?  (disable, then reenable follower)
+            }
+       }
+        catch (Throwable e)
+        {
+            success = false;
+            logException("checkSystem", e);
+        }
+
+        logNotice("--- finished ---------------------------");
+        return success;
     }
 }
