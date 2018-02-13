@@ -440,50 +440,93 @@ public class ArticulatedGrabber extends Subsystem
         }
         else
         {
-            logNotice("mArticulatedGrabber: checkSystem() ---------------------------------");
+            boolean success = true;
+            logNotice("checkSystem (" + variant + ") ------------------");
+            try
+            {
+                boolean allTests = variant.equalsIgnoreCase("all") || variant.equals("");
+                if (variant.equals("basic") || allTests)
+                {
+                    logNotice("basic check ------");
+                    logNotice("    mPositionMotor:\n" + mPositionMotor.dumpState());
+                    logNotice("    mGrabber: " + mGrabber.get());
+                    logNotice("    mGrabberSetup: " + mGrabberSetup.get());
+                    logNotice("    mPotentiometer: " + mPotentiometer.getValue());
+                    logNotice("    mLimitSwitch: " + mLimitSwitch.get());
+                }
 
-            logNotice("mPositionMotor:\n" + mPositionMotor.dumpState());
+                if (variant.equals("grabber") || allTests)
+                {
+                    logNotice("grabber check ------");
+                    logNotice("  mGrabberSetup on (2s)");
+                    mGrabberSetup.set(true);
+                    Timer.delay(2.0);
+                    logNotice("    pot: " + mPotentiometer.getValue());
+                    logNotice("  mGrabber on (2s)");
+                    mGrabber.set(true);
+                    Timer.delay(2.0);
+                    logNotice("    pot: " + mPotentiometer.getValue());
+                    logNotice("  both solenoids off");
+                    mGrabber.set(false);
+                    mGrabberSetup.set(false);
+                    Timer.delay(2.0);
+                    logNotice("    pot: " + mPotentiometer.getValue());
+                }
 
-            // XXX: we can't just set a wanted state here, since the looper
-            //  isn't running.
-            logNotice("WantedState: RELEASE_CUBE");
-            this.setWantedState(ArticulatedGrabber.WantedState.RELEASE_CUBE);
-            Timer.delay(1.0);
-            logNotice("mPositionMotor: " + mPositionMotor.getOutputCurrent());
-            Timer.delay(2.0);
+                if (variant.equals("motor") || allTests)
+                {
+                    logNotice("motor check ------");
+                    logNotice("   fwd .1, 1s");
+                    mPositionMotor.set(.1);
+                    Timer.delay(1.0);
+                    logNotice("    pot: " + mPotentiometer.getValue());
+                    logNotice("   rev .1, 1s");
+                    mPositionMotor.set(-.1);
+                    Timer.delay(1.0);
+                    logNotice("    pot: " + mPotentiometer.getValue());
+                    mPositionMotor.set(0.0);
+                }
 
-            logNotice("WantedState: GRAB_CUBE");
-            this.setWantedState(ArticulatedGrabber.WantedState.GRAB_CUBE);
-            Timer.delay(1.0);
-            logNotice("mPositionMotor: " + mPositionMotor.getOutputCurrent());
-            Timer.delay(2.0);
+                if (variant.equals("motorlimit") || allTests)
+                {
+                    logNotice("motor check ------");
+                    logNotice("   fwd .5 to limit, 5s");
+                    Timer t = new Timer();
+                    int counter = 0;
+                    t.start();
+                    mPositionMotor.set(.5);
+                    while(true)
+                    {
+                        if(mLimitSwitch.get())
+                        {
+                            logNotice("limit switch encounterd at " + mPotentiometer.getValue());
+                            break;
+                        }
+                        else
+                        if(t.hasPeriodPassed(5))
+                        {
+                            logError("fwd 5s didn't encounter limit switch!!!!!!!");
+                            success = false;
+                            break;
+                        }
+                        else
+                        {
+                            Timer.delay(.1);
+                            if(counter++ % 10 == 0)
+                                logNotice("    pot: " + mPotentiometer.getValue());
+                        }
+                    }
+                    mPositionMotor.set(0);
+                }
+            }
+            catch (Throwable e)
+            {
+                success = false;
+                logException("checkSystem", e);
+            }
 
-            logNotice("WantedState: PREPARE_EXCHANGE");
-            this.setWantedState(ArticulatedGrabber.WantedState.PREPARE_EXCHANGE);
-            Timer.delay(1.0);
-            logNotice("mPositionMotor: " + mPositionMotor.getOutputCurrent());
-            Timer.delay(2.0);
-
-            logNotice("WantedState: RELEASE_CUBE");
-            this.setWantedState(ArticulatedGrabber.WantedState.RELEASE_CUBE);
-            Timer.delay(1.0);
-            logNotice("mPositionMotor: " + mPositionMotor.getOutputCurrent());
-            Timer.delay(2.0);
-
-            logNotice("WantedState: PREPARE_INTAKE");
-            this.setWantedState(ArticulatedGrabber.WantedState.PREPARE_INTAKE);
-            Timer.delay(1.0);
-            logNotice("mPositionMotor: " + mPositionMotor.getOutputCurrent());
-            Timer.delay(2.0);
-
-            logNotice("WantedState: TRANSPORT");
-            this.setWantedState(ArticulatedGrabber.WantedState.TRANSPORT);
-            Timer.delay(1.0);
-            logNotice("mPositionMotor: " + mPositionMotor.getOutputCurrent());
-            Timer.delay(2.0);
-
-            logNotice("mArticulatedGrabber: finished ---------------------------------");
-            return true;
+            logNotice("--- finished ---------------------------");
+            return success;
         }
     }
 }

@@ -396,10 +396,10 @@ public class ScissorLift extends Subsystem
             }
        }
 
-        catch(Exception e)
+        catch(Throwable e)
         {
             retval = false;
-            logWarning("Got exception while validating system");
+            logException("checkSystem", e);
         }
 
         return retval;
