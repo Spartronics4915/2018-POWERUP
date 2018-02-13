@@ -68,6 +68,11 @@ public class Logger
         logMarker("Exception", throwable);
     }
 
+    public static void logThrowableCrash(String msg, Throwable throwable)
+    {
+        logMarker("ERROR " + msg, throwable);
+    }
+    
     public static void error(String m)
     {
         logMarker("ERROR   " + m);

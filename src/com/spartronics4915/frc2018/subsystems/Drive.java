@@ -818,13 +818,15 @@ public class Drive extends Subsystem
         return false;
     }
 
-    public boolean checkSystem()
+    @Override
+    public boolean checkSystem(String variant)
     {
         if (!isInitialized())
         {
             logWarning("can't check un-initialized system");
             return false;
         }
-        return mMotorGroup.checkSystem();
+        logNotice("checkSystem ---------------");
+        return mMotorGroup.checkSystem(variant);
     }
 }

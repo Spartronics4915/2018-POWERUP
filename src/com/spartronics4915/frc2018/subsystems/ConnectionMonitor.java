@@ -107,6 +107,13 @@ public class ConnectionMonitor extends Subsystem
     {
 
     }
+    
+    @Override
+    public boolean checkSystem(String variant)
+    {
+        logNotice("checkSystem (unimplemented) -----------");
+        return true;
+    }
 
     public synchronized void setLastPacketTime(double timestamp)
     {
