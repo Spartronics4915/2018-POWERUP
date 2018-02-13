@@ -321,7 +321,7 @@ public class ScissorLift extends Subsystem
 
     public boolean checkSystem(String variant)
     {
-        boolean retval = true;
+        boolean success = true;
         if (!isInitialized())
         {
             logWarning("can't check un-initialized system");
@@ -398,10 +398,10 @@ public class ScissorLift extends Subsystem
 
         catch(Throwable e)
         {
-            retval = false;
+            success = false;
             logException("checkSystem", e);
         }
 
-        return retval;
+        return success;
     }
 }

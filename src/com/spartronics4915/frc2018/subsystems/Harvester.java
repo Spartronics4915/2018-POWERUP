@@ -11,6 +11,7 @@ import com.spartronics4915.lib.util.drivers.TalonSRX4915Factory;
 
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Solenoid;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
@@ -308,13 +309,13 @@ public class Harvester extends Subsystem
     @Override
     public void outputToSmartDashboard()
     {
-        dashboardPutState(mSystemState + "/SystemState");
-        dashboardPutWantedState(mWantedState + "/WantedState");
-        dashboardPutBoolean("/mSolenoid", mSolenoid.get());
-        dashboardPutBoolean("/LimitSwitchCubeHeld", mLimitSwitchCubeHeld.get());
-        dashboardPutBoolean("/LimitSwitchEmergency", mLimitSwitchEmergency.get());
-        dashboardPutNumber("/MotorRight", mMotorRight.get());
-        dashboardPutNumber("/MotorLeft", mMotorLeft.get());
+        dashboardPutState(mSystemState.toString());
+        dashboardPutWantedState(mWantedState.toString());
+        dashboardPutBoolean("mSolenoid", mSolenoid.get());
+        dashboardPutBoolean("LimitSwitchCubeHeld", mLimitSwitchCubeHeld.get());
+        dashboardPutBoolean("LimitSwitchEmergency", mLimitSwitchEmergency.get());
+        dashboardPutNumber("MotorRight", mMotorRight.get());
+        dashboardPutNumber("MotorLeft", mMotorLeft.get());
     }
 
     @Override
@@ -340,7 +341,77 @@ public class Harvester extends Subsystem
     @Override
     public boolean checkSystem(String variant)
     {
-        logNotice("checkSystem ---------------");
-        return true;
+        boolean success = true;
+        if (!isInitialized())
+        {
+            logWarning("can't check un-initialized system");
+            return false;
+        }
+        logNotice("checkSystem (" + variant + ") ------------------");
+
+        try
+        {
+            boolean allTests = variant.equalsIgnoreCase("all") || variant.equals("");
+            if (variant.equals("basic") || allTests)
+            {
+                logNotice("basic check ------");
+                logNotice("  mMotorRight:\n" + mMotorRight.dumpState());
+                logNotice("  mMotorLeft:\n" + mMotorLeft.dumpState());
+                logNotice("  mSolenoid: " + mSolenoid.get());
+                logNotice("  mLimitSwitchCubeHeld: " + mLimitSwitchCubeHeld.get());
+                logNotice("  mLimitSwitchEmergency: " + mLimitSwitchEmergency.get());
+            }
+            if (variant.equals("solenoid") || allTests)
+            {
+                logNotice("solenoid check ------");
+                logNotice("on 4s");
+                mSolenoid.set(true);
+                Timer.delay(4.0);
+                logNotice("  mLimitSwitchCubeHeld: " + mLimitSwitchCubeHeld.get());
+                logNotice("  mLimitSwitchEmergency: " + mLimitSwitchEmergency.get());
+                logNotice("off");
+                mSolenoid.set(false);
+            }
+            if (variant.equals("motors") || allTests)
+            {
+                logNotice("motors check ------");
+                logNotice("open arms (2s)");
+                mSolenoid.set(true);
+                Timer.delay(2.0);
+
+                logNotice("left motor fwd .5 (4s)");
+                mMotorLeft.set(.5);
+                Timer.delay(4.0);
+                logNotice("  current: " + mMotorLeft.getOutputCurrent());
+                mMotorLeft.set(0);
+
+                logNotice("right motor fwd .5 (4s)");
+                mMotorRight.set(.5);
+                Timer.delay(4.0);
+                logNotice("  current: " + mMotorRight.getOutputCurrent());
+                mMotorRight.set(0);
+
+                logNotice("both motors rev .5 (4s)");
+                mMotorLeft.set(-.5);
+                mMotorRight.set(-.5);
+                Timer.delay(4.0);
+                logNotice("  left current: " + mMotorLeft.getOutputCurrent());
+                logNotice("  right current: " + mMotorRight.getOutputCurrent());
+                mMotorLeft.set(0);
+                mMotorRight.set(0);
+
+                Timer.delay(.5); // let motors spin down
+                mSolenoid.set(false);
+            }
+        }
+        catch (Throwable e)
+        {
+            success = false;
+            logException("checkSystem", e);
+        }
+
+        logNotice("--- finished ---------------------------");
+        return success;
+
     }
 }
