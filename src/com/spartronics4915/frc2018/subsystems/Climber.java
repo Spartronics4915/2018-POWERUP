@@ -9,6 +9,8 @@ import com.spartronics4915.lib.util.drivers.TalonSRX4915;
 import com.spartronics4915.lib.util.drivers.TalonSRX4915Factory;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
 
 /**
  * The climber is mostly a winch that pulls some ropes attached to the top of
@@ -60,30 +62,7 @@ public class Climber extends Subsystem
     private Climber()
     {
         boolean success = true;
-        mWinchPrimary =
-                TalonSRX4915Factory.createDefaultMotor(Constants.kClimberWinchPrimaryMotorId);
-        mWinchSecondary =
-                TalonSRX4915Factory.createDefaultSlave(Constants.kClimberWinchSecondaryMotorId,
-                        Constants.kClimberWinchPrimaryMotorId, false);
-        mStabilizerSolenoid = new LazyDoubleSolenoid(Constants.kClimberStabilizationSolenoidId1,
-                Constants.kClimberStabilizationSolenoidId2);
-        mWinchPrimary.configOutputPower(true, 0.5, 0.0, 0.75, 0.0, -0.5);
-        mWinchSecondary.configOutputPower(true, 0.5, 0.0, 0.75, 0.0, -0.5);
 
-        if (!mWinchPrimary.isValid())
-        {
-            logWarning("Primary Winch missing");
-            success = false;
-        }
-        if (!mWinchSecondary.isValid())
-        {
-            logWarning("Secondary Winch missing");
-            success = false;
-        }
-        if (mStabilizerSolenoid.isValid())
-        {
-            logWarning("Stablizer Solenoid is missing");
-            success = false;
         try
         {
             mWinchPrimary =
@@ -120,7 +99,7 @@ public class Climber extends Subsystem
 
         logInitialized(success);
         }
-    }
+    
 
     private Loop mLoop = new Loop()
     {
@@ -287,41 +266,6 @@ public class Climber extends Subsystem
         enabledLooper.register(mLoop);
     }
 
-    public boolean checkSystem()
-    {
-        if (!isInitialized())
-        {
-            logWarning("can't check un-intialized system");
-            return false;
-        }
-        else
-        {
-            logNotice("Climber check -----------------------------");
-
-            logNotice("WantedState = IDLE");
-            this.setWantedState(Climber.WantedState.IDLE);
-            Timer.delay(2.5);
-
-            logNotice("WantedState = PREPARE");
-            this.setWantedState(Climber.WantedState.PREPARE);
-            Timer.delay(2.5);
-
-            logNotice("WantedState = CLIMB");
-            this.setWantedState(Climber.WantedState.CLIMB);
-            Timer.delay(2.5);
-
-            logNotice("WantedState = HOLD");
-            this.setWantedState(Climber.WantedState.HOLD);
-            Timer.delay(2.5);
-            
-            logNotice("Primary winch output = " + mWinchPrimary.getOutputVoltage());
-            logNotice("Secondary winch output = " + mWinchSecondary.getOutputVoltage());
-
-            this.setWantedState(Climber.WantedState.IDLE);
-
-            return true;
-            }
-        }
 
     @Override
     public boolean checkSystem(String variant)

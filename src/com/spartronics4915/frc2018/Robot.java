@@ -434,9 +434,7 @@ public class Robot extends IterativeRobot
         }
         Timer.delay(0.5);
 
-        boolean results = mDrive.checkSystem();
-        results &= Climber.getInstance().checkSystem();
-        // e.g. results &= Intake.getInstance().checkSystem();
+
         boolean success = true;
         if (testMode.equals("ArticulatedGrabber") || testMode.equals("All"))
         {
