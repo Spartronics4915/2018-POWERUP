@@ -124,6 +124,8 @@ public class Logger
     private static void logMarker(String mark, Throwable nullableException)
     {
         printMarker(mark);
+        if(nullableException != null)
+            nullableException.printStackTrace();
         try (PrintWriter writer = new PrintWriter(new FileWriter("/home/lvuser/crash_tracking.txt", true)))
         {
             writer.print(RUN_INSTANCE_UUID.toString());
