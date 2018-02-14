@@ -232,6 +232,7 @@ public class Climber extends Subsystem
     @Override
     public synchronized void stop()
     {
+        mWinchPrimary.set(0.0);
     }
 
     @Override
@@ -269,7 +270,7 @@ public class Climber extends Subsystem
             {
                 logNotice("motor check ------");
                 logNotice("  fwd .5 4s");
-                mWinchPrimary.set(.5); // clockwise, from the side where you can see the spool
+                mWinchPrimary.set(.5); // clockwise, viewed from robot right side.
                 Timer.delay(4);
                 logNotice("  master current: " + mWinchPrimary.getOutputCurrent());
               
