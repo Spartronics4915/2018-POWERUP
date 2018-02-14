@@ -434,7 +434,6 @@ public class Robot extends IterativeRobot
         }
         Timer.delay(0.5);
 
-
         boolean success = true;
         if (testMode.equals("ArticulatedGrabber") || testMode.equals("All"))
         {
