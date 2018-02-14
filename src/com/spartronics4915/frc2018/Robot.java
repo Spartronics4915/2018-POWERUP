@@ -433,7 +433,8 @@ public class Robot extends IterativeRobot
                     " variant:" + testVariant + " -------------------------");
             mEnabledLooper.stop();
         }
-        Timer.delay(0.5);
+        Logger.notice("Waiting 5 seconds before running test methods.");
+        Timer.delay(5);
 
         boolean success = true;
         if (testMode.equals("ArticulatedGrabber") || testMode.equals("All"))
@@ -461,7 +462,7 @@ public class Robot extends IterativeRobot
             success &= mLED.checkSystem(testVariant);
         }
 
-        if (testMode.equals("ScissorLifter") || testMode.equals("All"))
+        if (testMode.equals("ScissorLift") || testMode.equals("All"))
         {
             success &= mLifter.checkSystem(testVariant);
         }
