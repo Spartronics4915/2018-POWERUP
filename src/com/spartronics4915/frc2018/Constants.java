@@ -40,9 +40,9 @@ public class Constants extends ConstantsBase
  
     public static final int kNumTalons = 9; // total talon count on robot (not testbed)
     
-    public static final int kNumPDPs = 1;
+    public static final int kNumPDPs = 1; // doesn't always show up in CANProbe
     public static final int kNumPCMs = 1; // Pressure control module (pneumatics)
-    public static final int kNumCANDevices = kNumTalons + kNumPCMs + kNumPDPs;
+    public static final int kNumCANDevices = kNumTalons + kNumPCMs; // don't count PDP
     
     // -- Pressure Control Module (PCM) Channels ----   
     public static final int kScissorUpSolenoidId = 0; //PCM 0
