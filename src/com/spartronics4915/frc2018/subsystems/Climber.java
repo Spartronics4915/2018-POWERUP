@@ -56,7 +56,7 @@ public class Climber extends Subsystem
     private SystemState mSystemState = SystemState.DISABLED;
     private WantedState mWantedState = WantedState.IDLE;
     private TalonSRX4915 mWinchPrimary = null;
-    private TalonSRX4915 mWinchSecondary = null;
+    //private TalonSRX4915 mWinchSecondary = null;
     private LazyDoubleSolenoid mStabilizerSolenoid = null;
     // Actuators and sensors should be initialized as private members with a value of null here
 
@@ -67,25 +67,16 @@ public class Climber extends Subsystem
         {
             mWinchPrimary =
                     TalonSRX4915Factory.createDefaultMotor(Constants.kClimberWinchPrimaryMotorId);
-            mWinchSecondary =
-                    TalonSRX4915Factory.createDefaultSlave(Constants.kClimberWinchSecondaryMotorId,
-                            Constants.kClimberWinchPrimaryMotorId, false);
             mStabilizerSolenoid = new LazyDoubleSolenoid(Constants.kClimberStabilizationSolenoidId1,
                     Constants.kClimberStabilizationSolenoidId2);
             mWinchPrimary.configOutputPower(true, 0.5, 0.0, 0.75, 0.0, -0.5);
-            mWinchSecondary.configOutputPower(true, 0.5, 0.0, 0.75, 0.0, -0.5);
 
             if (!mWinchPrimary.isValid())
             {
                 logWarning("Primary Winch missing");
                 success = false;
             }
-            if (!mWinchSecondary.isValid())
-            {
-                logWarning("Secondary Winch missing");
-                success = false;
-            }
-            if (mStabilizerSolenoid.isValid())
+           if (mStabilizerSolenoid.isValid())
             {
                 logWarning("Stablizer Solenoid is missing");
                 success = false;
@@ -279,7 +270,6 @@ public class Climber extends Subsystem
             {
                 logNotice("basic check ------");
                 logNotice("  mWinchPrimary:\n" + mWinchPrimary.dumpState());
-                logNotice("  mWinchSecondary:\n" + mWinchSecondary.dumpState());
                 logNotice("  mStabilizerSolenoid: " + mStabilizerSolenoid.get());
             }
             if (variant.equals("solenoid") || allTests)
@@ -301,13 +291,11 @@ public class Climber extends Subsystem
                 mWinchPrimary.set(.5);
                 Timer.delay(4);
                 logNotice("  master current: " + mWinchPrimary.getOutputCurrent());
-                logNotice("  slave current: " + mWinchSecondary.getOutputCurrent());
               
                 logNotice("  rev .5 4s");
                 mWinchPrimary.set(-.5);
                 Timer.delay(4);
                 logNotice("  master current: " + mWinchPrimary.getOutputCurrent());
-                logNotice("  slave current: " + mWinchSecondary.getOutputCurrent());
              
                 logNotice("  stop");
                 mWinchPrimary.set(0);
