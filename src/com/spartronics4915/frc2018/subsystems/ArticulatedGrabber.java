@@ -82,7 +82,7 @@ public class ArticulatedGrabber extends Subsystem
         {
             mPositionMotor =
                     TalonSRX4915Factory.createDefaultMotor(Constants.kGrabberFlipperMotorId);
-            mPositionMotor.configOutputPower(true, .5, 0, 0.1, 0, -0.1);
+            mPositionMotor.configOutputPower(true, .5, 0, 0.5, 0, -0.5);
             mGrabber = new LazySolenoid(Constants.kGrabberSolenoidId);
             mGrabberSetup = new LazySolenoid(Constants.kGrabberSetupSolenoidId);
             mPotentiometer = new AnalogInput(Constants.kGrabberAnglePotentiometerId);
@@ -469,11 +469,11 @@ public class ArticulatedGrabber extends Subsystem
                 {
                     logNotice("motor check ------");
                     logNotice("   fwd .1, 1s");
-                    mPositionMotor.set(.1);
-                    Timer.delay(1.0);
+                    mPositionMotor.set(.2);
+                    Timer.delay(5.0);
                     logNotice("    pot: " + mPotentiometer.getValue());
                     logNotice("   rev .1, 1s");
-                    mPositionMotor.set(-.1);
+                    mPositionMotor.set(-.2);
                     Timer.delay(1.0);
                     logNotice("    pot: " + mPotentiometer.getValue());
                     mPositionMotor.set(0.0);
@@ -482,22 +482,22 @@ public class ArticulatedGrabber extends Subsystem
                 if (variant.equals("motorlimit") || allTests)
                 {
                     logNotice("motor check ------");
-                    logNotice("   fwd .5 to limit, 5s");
+                    logNotice("   fwd .2 to limit, 10s");
                     Timer t = new Timer();
                     int counter = 0;
                     t.start();
-                    mPositionMotor.set(.5);
+                    mPositionMotor.set(.2); // - draws the flipper back to the scissor lift
                     while(true)
                     {
-                        if(mLimitSwitch1.get() || mLimitSwitch2.get())
+                        if(!mLimitSwitch1.get() || !mLimitSwitch2.get()) // FIXME: change to assume normally open
                         {
                             logNotice("limit switch encounterd at " + mPotentiometer.getValue());
                             break;
                         }
                         else
-                        if(t.hasPeriodPassed(5))
+                        if(t.hasPeriodPassed(10))
                         {
-                            logError("fwd 5s didn't encounter limit switch!!!!!!!");
+                            logError("fwd 1s didn't encounter limit switch!!!!!!!");
                             success = false;
                             break;
                         }

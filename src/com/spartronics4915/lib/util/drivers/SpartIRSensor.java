@@ -83,6 +83,11 @@ public class SpartIRSensor
             return false;
     }
 
+    /**
+     * @param minDist in inches
+     * @param maxDist in inches
+     * @return is within the distance
+     */
     public boolean isTargetInDistanceRange(double minDist, double maxDist)
     {
         double d = getDistance();
