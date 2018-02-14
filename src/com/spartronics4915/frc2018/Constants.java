@@ -33,9 +33,8 @@ public class Constants extends ConstantsBase
     public static final int kRightDriveSlaveId = 4;
     public static final int kDriveIMUTalonId = kRightDriveSlaveId; // must be a slave
     
-    public static final int kGrabberFlipperMotorId = 5;
-    public static final int kClimberWinchPrimaryMotorId = 6;
-    public static final int kClimberWinchSecondaryMotorId = 7;
+    public static final int kClimberWinchPrimaryMotorId = 5;
+    public static final int kGrabberFlipperMotorId = 7;
     public static final int kHarvesterLeftMotorId = kUseTestbedConstants ? 18 : 8;
     public static final int kHarvesterRightMotorId = kUseTestbedConstants ? 16 : 9;
  
@@ -64,6 +63,7 @@ public class Constants extends ConstantsBase
     // DIO Pins --------------------------------------
     public static final int kScissorHomeLimitSwitchId = 0;
     public static final int kFlipperHomeLimitSwitchId = 1;
+    public static final int kFlipperHome2LimitSwitchId = 2;
 
     public static final int kHarvesterCubeHeldLimitSwitchId = kUseTestbedConstants ? 10 : 2;
     public static final int kHarvesterEmergencyLimitSwitchId = kUseTestbedConstants ? 11 : 3;
