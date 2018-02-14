@@ -269,7 +269,7 @@ public class Climber extends Subsystem
             {
                 logNotice("motor check ------");
                 logNotice("  fwd .5 4s");
-                mWinchPrimary.set(.5);
+                mWinchPrimary.set(.5); // clockwise, from the side where you can see the spool
                 Timer.delay(4);
                 logNotice("  master current: " + mWinchPrimary.getOutputCurrent());
               

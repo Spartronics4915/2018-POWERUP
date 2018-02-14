@@ -133,11 +133,12 @@ public class Robot extends IterativeRobot
             // NB: make sure to probe for can devices FIRST since subsystems
             //  may invoke its validate methods.
             CANProbe canProbe = CANProbe.getInstance();
-            ArrayList<String> canReport = canProbe.GetReport();
+            ArrayList<String> canReport = canProbe.getReport();
             Logger.notice("CANDevicesFound: " + canReport);
+            int numDevices = canProbe.getCANDeviceCount();
             SmartDashboard.putString("CANBusStatus",
-                    canReport.size() == Constants.kNumCANDevices ? "OK"
-                            : ("" + canReport.size() + "/" + Constants.kNumCANDevices));
+                   numDevices == Constants.kNumCANDevices ? "OK"
+                            : ("" + numDevices + "/" + Constants.kNumCANDevices));
 
             // Subsystem instances
             mDrive = Drive.getInstance();
@@ -432,7 +433,8 @@ public class Robot extends IterativeRobot
                     " variant:" + testVariant + " -------------------------");
             mEnabledLooper.stop();
         }
-        Timer.delay(0.5);
+        Logger.notice("Waiting 5 seconds before running test methods.");
+        Timer.delay(5);
 
         boolean success = true;
         if (testMode.equals("ArticulatedGrabber") || testMode.equals("All"))
@@ -460,7 +462,7 @@ public class Robot extends IterativeRobot
             success &= mLED.checkSystem(testVariant);
         }
 
-        if (testMode.equals("ScissorLifter") || testMode.equals("All"))
+        if (testMode.equals("ScissorLift") || testMode.equals("All"))
         {
             success &= mLifter.checkSystem(testVariant);
         }

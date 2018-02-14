@@ -348,14 +348,14 @@ public class ScissorLift extends Subsystem
                 Timer.delay(2.0);
                 logNotice("  pot: " + mPotentiometer.getValue());
 
-                logNotice("  raise: true (.25 sec)");
+                logNotice("  raise: true (3.5 sec)");
                 mRaiseSolenoid.set(true);;
-                Timer.delay(.25);
+                Timer.delay(3.5);
                 logNotice("  pot: " + mPotentiometer.getValue());
                 
-                logNotice("  raise: false (.25 sec)");
+                logNotice("  raise: false (3.5 sec)");
                 mRaiseSolenoid.set(false);
-                Timer.delay(.25);
+                Timer.delay(3.5);
                 logNotice("  pot: " + mPotentiometer.getValue());
             }
             if(variant.equals("lower") || allTests)
@@ -379,9 +379,9 @@ public class ScissorLift extends Subsystem
             if(variant.equals("brake") || allTests)
             {
                 logNotice("brake check -----");
-                logNotice("  brake: false (2sec)");
+                logNotice("  brake: false (3.5sec)");
                 mHoldSolenoid.set(false);
-                Timer.delay(2.0);
+                Timer.delay(3.5);
                 logNotice("  pot: " + mPotentiometer.getValue());
 
                 logNotice("  brake: true (.25 sec)");

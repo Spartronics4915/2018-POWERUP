@@ -6,6 +6,7 @@ import com.spartronics4915.frc2018.loops.Looper;
 import com.spartronics4915.lib.util.Logger;
 import com.spartronics4915.lib.util.Util;
 import com.spartronics4915.lib.util.drivers.LazySolenoid;
+import com.spartronics4915.lib.util.drivers.SpartIRSensor;
 import com.spartronics4915.lib.util.drivers.TalonSRX4915;
 import com.spartronics4915.lib.util.drivers.TalonSRX4915Factory;
 
@@ -23,8 +24,10 @@ public class Harvester extends Subsystem
 {
 
     private static Harvester sInstance = null;
-    private static final boolean kSolenoidOpen = false;
-    private static final boolean kSolenoidClose = true;
+    private static final boolean kSolenoidOpen = true;
+    private static final boolean kSolenoidClose = false;
+    private static final double kCubeMinDistanceInches = 0; // FIXME
+    private static final double kCubeMaxDistanceInches = 1; // FIXME
 
     public static Harvester getInstance()
     {
@@ -59,8 +62,7 @@ public class Harvester extends Subsystem
 
     private SystemState mSystemState = SystemState.DISABLING;
     private WantedState mWantedState = WantedState.DISABLE;
-    private DigitalInput mLimitSwitchCubeHeld = null;
-    private DigitalInput mLimitSwitchEmergency = null;
+    private SpartIRSensor mCubeHeldSensor = null;
     private LazySolenoid mSolenoid = null;
     private TalonSRX4915 mMotorRight = null;
     private TalonSRX4915 mMotorLeft = null;
@@ -76,9 +78,8 @@ public class Harvester extends Subsystem
 
         try
         {
-            mLimitSwitchCubeHeld = new DigitalInput(Constants.kHarvesterCubeHeldLimitSwitchId);// change value of Limit Switch
-            mLimitSwitchEmergency = new DigitalInput(Constants.kHarvesterEmergencyLimitSwitchId); // changes value of Limit Switch
             mSolenoid = new LazySolenoid(Constants.kHarvesterSolenoidId); // Changes value of Solenoid
+            mCubeHeldSensor = new SpartIRSensor(Constants.kGrabberCubeDistanceRangeFinderId);
             mMotorRight = TalonSRX4915Factory.createDefaultMotor(Constants.kHarvesterRightMotorId); // change value of motor
             mMotorLeft = TalonSRX4915Factory.createDefaultMotor(Constants.kHarvesterLeftMotorId); // change value of motor
             mMotorRight.configOutputPower(true, 0.5, 0, 0.5, 0, -0.5);
@@ -246,7 +247,7 @@ public class Harvester extends Subsystem
     {
         //motors on forward and bars closing, hug when cube is gone
         // You should probably be transferring state and controlling actuators in here
-        if (!mLimitSwitchCubeHeld.get())
+        if (!isCubeHeld())
         {
             setWantedState(WantedState.HUG); // checks if cube is in the robot and will transitions to hugging when the cube is fully in
         }
@@ -263,17 +264,17 @@ public class Harvester extends Subsystem
     private SystemState handleEjecting()
     {
         //motors in reverse and bars closing, close when cube is gone
-        if (mLimitSwitchEmergency.get()) //checks if we have reached an emergency state, and will transition to open when it reaches emergency
-        {
-            setWantedState(WantedState.OPEN);
-            mMotorLeft.set(0.0);
-            mMotorRight.set(0.0);
-        }
-        else
-        {
-            mMotorLeft.set(-1.0);
-            mMotorRight.set(-1.0);
-        }
+//        if (mLimitSwitchEmergency.get()) //checks if we have reached an emergency state, and will transition to open when it reaches emergency
+//        {
+//            setWantedState(WantedState.OPEN);
+//            mMotorLeft.set(0.0);
+//            mMotorRight.set(0.0);
+//        } FIXME
+//        else
+//        {
+        mMotorLeft.set(-1.0);
+        mMotorRight.set(-1.0);
+//        }
         // You should probably be transferring state and controlling actuators in here
         if (mWantedState != WantedState.HUG)
         {
@@ -305,6 +306,11 @@ public class Harvester extends Subsystem
         mWantedState = wantedState;
         dashboardPutWantedState(mWantedState.toString());
     }
+    
+    private boolean isCubeHeld()
+    {
+        return mCubeHeldSensor.isTargetInDistanceRange(kCubeMinDistanceInches, kCubeMaxDistanceInches);
+    }
 
     @Override
     public void outputToSmartDashboard()
@@ -312,8 +318,7 @@ public class Harvester extends Subsystem
         dashboardPutState(mSystemState.toString());
         dashboardPutWantedState(mWantedState.toString());
         dashboardPutBoolean("mSolenoid", mSolenoid.get());
-        dashboardPutBoolean("LimitSwitchCubeHeld", mLimitSwitchCubeHeld.get());
-        dashboardPutBoolean("LimitSwitchEmergency", mLimitSwitchEmergency.get());
+        dashboardPutBoolean("LimitSwitchCubeHeld", isCubeHeld());
         dashboardPutNumber("MotorRight", mMotorRight.get());
         dashboardPutNumber("MotorLeft", mMotorLeft.get());
     }
@@ -358,28 +363,28 @@ public class Harvester extends Subsystem
                 logNotice("  mMotorRight:\n" + mMotorRight.dumpState());
                 logNotice("  mMotorLeft:\n" + mMotorLeft.dumpState());
                 logNotice("  mSolenoid: " + mSolenoid.get());
-                logNotice("  mLimitSwitchCubeHeld: " + mLimitSwitchCubeHeld.get());
-                logNotice("  mLimitSwitchEmergency: " + mLimitSwitchEmergency.get());
+                logNotice("  isCubeHeld: " + isCubeHeld());
+//                logNotice("  mLimitSwitchEmergency: " + mLimitSwitchEmergency.get());
             }
             if (variant.equals("solenoid") || allTests)
             {
                 logNotice("solenoid check ------");
                 logNotice("on 4s");
-                mSolenoid.set(true);
+                mSolenoid.set(kSolenoidOpen);
                 Timer.delay(4.0);
-                logNotice("  mLimitSwitchCubeHeld: " + mLimitSwitchCubeHeld.get());
-                logNotice("  mLimitSwitchEmergency: " + mLimitSwitchEmergency.get());
+                logNotice("  isCubeHeld: " + isCubeHeld());
+//                logNotice("  mLimitSwitchEmergency: " + mLimitSwitchEmergency.get());
                 logNotice("off");
-                mSolenoid.set(false);
+                mSolenoid.set(kSolenoidClose);
             }
             if (variant.equals("motors") || allTests)
             {
                 logNotice("motors check ------");
                 logNotice("open arms (2s)");
-                mSolenoid.set(true);
+                mSolenoid.set(kSolenoidOpen);
                 Timer.delay(2.0);
 
-                logNotice("left motor fwd .5 (4s)");
+                logNotice("left motor fwd .5 (4s)"); // in
                 mMotorLeft.set(.5);
                 Timer.delay(4.0);
                 logNotice("  current: " + mMotorLeft.getOutputCurrent());
@@ -391,7 +396,7 @@ public class Harvester extends Subsystem
                 logNotice("  current: " + mMotorRight.getOutputCurrent());
                 mMotorRight.set(0);
 
-                logNotice("both motors rev .5 (4s)");
+                logNotice("both motors rev .5 (4s)"); // out
                 mMotorLeft.set(-.5);
                 mMotorRight.set(-.5);
                 Timer.delay(4.0);
@@ -401,7 +406,7 @@ public class Harvester extends Subsystem
                 mMotorRight.set(0);
 
                 Timer.delay(.5); // let motors spin down
-                mSolenoid.set(false);
+                mSolenoid.set(kSolenoidClose);
             }
         }
         catch (Throwable e)
