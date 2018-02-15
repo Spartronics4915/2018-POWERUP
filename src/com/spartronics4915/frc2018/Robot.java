@@ -330,6 +330,7 @@ public class Robot extends IterativeRobot
 
             if (mControlBoard.getScissorLiftSwitch())
             {
+                Logger.notice("Setting Scissorlift to SWITCH");
                 mLifter.setWantedState(ScissorLift.WantedState.SWITCH);
             }
 
