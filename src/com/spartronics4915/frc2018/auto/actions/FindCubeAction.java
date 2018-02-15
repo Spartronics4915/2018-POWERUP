@@ -32,5 +32,3 @@ public class FindCubeAction implements Action
     }
 
 }
-
-}
