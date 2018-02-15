@@ -37,9 +37,9 @@ public class ScissorLift extends Subsystem
     // from dashboard during zeroSensors.  That said, we lose those
     // values during reboot, so we must update these compile-time constants
     // with our best-known values.
-    private static final int kDefaultRetractedValue = 0;
+    private static final int kDefaultRetractedValue = 2544;
     private static final int kDefaultSwitchValue = 1000;
-    private static final int kDefaultScaleValue = 2040;
+    private static final int kDefaultScaleValue = 493;
     private static final int kPotentiometerAllowedError = 200;
     private static final double kBrakeTimePeriod = .1;
     private static final double kUnbrakeTimePeriod = .1;
@@ -130,6 +130,7 @@ public class ScissorLift extends Subsystem
         {
             synchronized (ScissorLift.this)
             {
+                mMeasuredValue = mPotentiometer.getValue();
                 SystemState newState = updateState();
                 if (newState != mSystemState)
                 {
