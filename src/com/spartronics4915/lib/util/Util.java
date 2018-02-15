@@ -2,6 +2,7 @@ package com.spartronics4915.lib.util;
 
 import java.util.List;
 
+import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.Solenoid;
 
 /**
@@ -47,13 +48,13 @@ public class Util
     {
         return (a - epsilon <= b) && (a + epsilon >= b);
     }
-    
+
     // check if a < b
     public static boolean epsilonLessThan(double a, double b, double epsilon)
     {
         return (a + epsilon) < b;
     }
-    
+
     // check if a > b
     public static boolean epsilonGreaterThan(double a, double b, double epsilon)
     {
@@ -68,18 +69,5 @@ public class Util
             result &= epsilonEquals(value_in, value, epsilon);
         }
         return result;
-    }
-    
-    /**
-     * @deprecated
-     * FIXME, use the one in LazySolenoid
-     */
-    public static boolean validateSolenoid(Solenoid s)
-    {
-        boolean valid = false;
-        if(!s.isBlackListed() && 
-           !s.getPCMSolenoidVoltageFault())
-            valid = true;
-        return valid;
     }
 }

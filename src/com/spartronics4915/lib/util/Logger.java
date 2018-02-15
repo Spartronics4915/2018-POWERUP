@@ -68,6 +68,11 @@ public class Logger
         logMarker("Exception", throwable);
     }
 
+    public static void logThrowableCrash(String msg, Throwable throwable)
+    {
+        logMarker("ERROR " + msg, throwable);
+    }
+    
     public static void error(String m)
     {
         logMarker("ERROR   " + m);
@@ -119,6 +124,8 @@ public class Logger
     private static void logMarker(String mark, Throwable nullableException)
     {
         printMarker(mark);
+        if(nullableException != null)
+            nullableException.printStackTrace();
         try (PrintWriter writer = new PrintWriter(new FileWriter("/home/lvuser/crash_tracking.txt", true)))
         {
             writer.print(RUN_INSTANCE_UUID.toString());

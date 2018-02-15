@@ -20,7 +20,6 @@ import com.spartronics4915.frc2018.subsystems.Drive;
 import com.spartronics4915.frc2018.subsystems.Harvester;
 import com.spartronics4915.frc2018.subsystems.LED;
 import com.spartronics4915.frc2018.subsystems.ScissorLift;
-import com.spartronics4915.frc2018.subsystems.ScissorLift.WantedState;
 import com.spartronics4915.frc2018.subsystems.Superstructure;
 import com.spartronics4915.lib.util.CANProbe;
 import com.spartronics4915.lib.util.CheesyDriveHelper;
@@ -29,7 +28,6 @@ import com.spartronics4915.lib.util.DelayedBoolean;
 import com.spartronics4915.lib.util.DriveSignal;
 import com.spartronics4915.lib.util.math.RigidTransform2d;
 
-import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Timer;
@@ -80,10 +78,12 @@ public class Robot extends IterativeRobot
     private ControlBoardInterface mControlBoard = null;
 
     private Looper mEnabledLooper = null;
-    //    private VisionServer mVisionServer = null;
-    private DelayedBoolean mDelayedAimButton;
 
-    private static final String kRobotVerbosity = "Robot/Verbosity"; // smartdashboard key
+    // smartdashboard keys
+    private static final String kRobotVerbosity = "Robot/Verbosity";
+    private static final String kRobotTestModeOptions = "TestModeOptions";
+    private static final String kRobotTestMode = "TestMode";
+    private static final String kRobotTestVariant = "TestVariant";
 
     public Robot()
     {
@@ -133,11 +133,12 @@ public class Robot extends IterativeRobot
             // NB: make sure to probe for can devices FIRST since subsystems
             //  may invoke its validate methods.
             CANProbe canProbe = CANProbe.getInstance();
-            ArrayList<String> canReport = canProbe.GetReport();
+            ArrayList<String> canReport = canProbe.getReport();
             Logger.notice("CANDevicesFound: " + canReport);
+            int numDevices = canProbe.getCANDeviceCount();
             SmartDashboard.putString("CANBusStatus",
-                    canReport.size() == Constants.kNumCANDevices ? "OK"
-                            : ("" + canReport.size() + "/" + Constants.kNumCANDevices));
+                   numDevices == Constants.kNumCANDevices ? "OK"
+                            : ("" + numDevices + "/" + Constants.kNumCANDevices));
 
             // Subsystem instances
             mDrive = Drive.getInstance();
@@ -147,6 +148,7 @@ public class Robot extends IterativeRobot
             mHarvester = Harvester.getInstance();
             mLifter = ScissorLift.getInstance();
             mSuperstructure = Superstructure.getInstance();
+
             mRobotState = RobotState.getInstance();
             mAutoModeExecuter = null;
             mConnectionMonitor = ConnectionMonitor.getInstance();
@@ -164,13 +166,11 @@ public class Robot extends IterativeRobot
             mEnabledLooper.register(VisionProcessor.getInstance());
             mEnabledLooper.register(RobotStateEstimator.getInstance());
 
-            // mVisionServer.addVisionUpdateReceiver(VisionProcessor.getInstance());
-
             AutoModeSelector.initAutoModeSelector();
-
-            mDelayedAimButton = new DelayedBoolean(Timer.getFPGATimestamp(), 0.1);
-            // Force an true update now to prevent robot from running at start.
-            mDelayedAimButton.update(Timer.getFPGATimestamp(), true);
+            SmartDashboard.putString(kRobotTestModeOptions,
+                    "None,ArticulatedGrabber,Climber,Drive,Harvester,LED,ScissorLift,All");
+            SmartDashboard.putString(kRobotTestMode, "None");
+            SmartDashboard.putString(kRobotTestVariant, "");
 
             // Pre calculate the paths we use for auto.
             PathAdapter.calculatePaths();
@@ -276,6 +276,7 @@ public class Robot extends IterativeRobot
      * Each subsystem will constantly compare
      * its desired and actual states and act to bring the two closer.
      */
+
     @Override
     public void teleopPeriodic()
     {
@@ -287,50 +288,85 @@ public class Robot extends IterativeRobot
                     mCheesyDriveHelper.cheesyDrive(throttle, turn, mControlBoard.getQuickTurn(),
                             !mControlBoard.getLowGear()));
 
-            if(mControlBoard.getScissorLiftRetracted())
+            if (mControlBoard.getHarvesterIntake())
             {
-                mLifter.setWantedState(WantedState.RETRACTED);
+                mHarvester.setWantedState(Harvester.WantedState.HARVEST);
             }
-            
-            if(mControlBoard.getScissorLiftSwitch())
+
+            if (mControlBoard.getHarvesterEject())
             {
-                mLifter.setWantedState(WantedState.SWITCH);
+                mHarvester.setWantedState(Harvester.WantedState.EJECT);
             }
-            
-            if(mControlBoard.getScissorLiftScale())
+
+            if (mControlBoard.getHarvesterOpen())
             {
-                mLifter.setWantedState(WantedState.SCALE);
+                mHarvester.setWantedState(Harvester.WantedState.OPEN);
             }
-            
-            if(mControlBoard.getScissorLiftManualUp())
+
+            if (mControlBoard.getClimberClimb())
             {
-                mLifter.setWantedState(WantedState.MANUALUP);
+                mClimber.setWantedState(Climber.WantedState.CLIMB);
             }
-            
-            if(mControlBoard.getScissorLiftManualDown())
+
+            if (mControlBoard.getClimberIdle())
             {
-                mLifter.setWantedState(WantedState.MANUALDOWN);
+                mClimber.setWantedState(Climber.WantedState.IDLE);
             }
-            
-            if(mControlBoard.getScissorLiftOff())
+
+            if (mControlBoard.getClimberHold())
             {
-                mLifter.setWantedState(WantedState.OFF);
+                mClimber.setWantedState(Climber.WantedState.HOLD);
             }
-            
+
+            if (mControlBoard.getClimberPrepare())
+            {
+                mClimber.setWantedState(Climber.WantedState.PREPARE);
+            }
+
+            if (mControlBoard.getScissorLiftRetracted())
+            {
+                mLifter.setWantedState(ScissorLift.WantedState.RETRACTED);
+            }
+
+            if (mControlBoard.getScissorLiftSwitch())
+            {
+                mLifter.setWantedState(ScissorLift.WantedState.SWITCH);
+            }
+
+            if (mControlBoard.getScissorLiftScale())
+            {
+                mLifter.setWantedState(ScissorLift.WantedState.SCALE);
+            }
+
+            if (mControlBoard.getScissorLiftManualUp())
+            {
+                mLifter.setWantedState(ScissorLift.WantedState.MANUALUP);
+            }
+
+            if (mControlBoard.getScissorLiftManualDown())
+            {
+                mLifter.setWantedState(ScissorLift.WantedState.MANUALDOWN);
+            }
+
+            if (mControlBoard.getScissorLiftOff())
+            {
+                mLifter.setWantedState(ScissorLift.WantedState.OFF);
+            }
+
             if (mControlBoard.getDebugPrimary())
             {
                 Logger.debug("Setting Lifter to RETRACTED");
-                mLifter.setWantedState(WantedState.RETRACTED);
+                mLifter.setWantedState(ScissorLift.WantedState.RETRACTED);
             }
             else if (mControlBoard.getDebugSecondary())
             {
                 Logger.debug("Setting Lifter to SCALE");
-                mLifter.setWantedState(WantedState.SCALE);
+                mLifter.setWantedState(ScissorLift.WantedState.SCALE);
             }
             else if (mControlBoard.getDebugTertiary())
             {
                 Logger.debug("Setting Lifter to SWITCH");
-                mLifter.setWantedState(WantedState.SWITCH);
+                mLifter.setWantedState(ScissorLift.WantedState.SWITCH);
             }
 
             allButTestPeriodic();
@@ -383,24 +419,68 @@ public class Robot extends IterativeRobot
     public void testInit()
     {
         Logger.setVerbosity(SmartDashboard.getString(kRobotVerbosity, "NOTICE"));
-        Timer.delay(0.5);
+        String testMode = SmartDashboard.getString(kRobotTestMode, "None");
+        String testVariant = SmartDashboard.getString(kRobotTestVariant, "");
 
-        boolean results = mDrive.checkSystem();
-        // e.g. results &= Intake.getInstance().checkSystem();
-
-        if (!results)
+        if (testMode.equals("None"))
         {
-            Logger.error("CHECK ABOVE OUTPUT SOME SYSTEMS FAILED!!!");
+            Logger.notice("Robot: no tests to run");
+            return;
         }
         else
         {
-            Logger.notice("ALL SYSTEMS PASSED");
+            Logger.notice("Robot: running test mode " + testMode +
+                    " variant:" + testVariant + " -------------------------");
+            mEnabledLooper.stop();
+        }
+        Logger.notice("Waiting 5 seconds before running test methods.");
+        Timer.delay(5);
+
+        boolean success = true;
+        if (testMode.equals("ArticulatedGrabber") || testMode.equals("All"))
+        {
+            success &= mGrabber.checkSystem(testVariant);
+        }
+
+        if (testMode.equals("Drive") || testMode.equals("All"))
+        {
+            success &= mDrive.checkSystem(testVariant);
+        }
+
+        if (testMode.equals("Climber") || testMode.equals("All"))
+        {
+            success &= mClimber.checkSystem(testVariant);
+        }
+
+        if (testMode.equals("Harvester") || testMode.equals("All"))
+        {
+            success &= mHarvester.checkSystem(testVariant);
+        }
+
+        if (testMode.equals("LED") || testMode.equals("All"))
+        {
+            success &= mLED.checkSystem(testVariant);
+        }
+
+        if (testMode.equals("ScissorLift") || testMode.equals("All"))
+        {
+            success &= mLifter.checkSystem(testVariant);
+        }
+
+        if (!success)
+        {
+            Logger.error("Robot: CHECK ABOVE OUTPUT SOME SYSTEMS FAILED!!!");
+        }
+        else
+        {
+            Logger.notice("Robot: ALL SYSTEMS PASSED");
         }
     }
 
     @Override
     public void testPeriodic()
     {
+        // nothing to do here.
     }
 
     /**

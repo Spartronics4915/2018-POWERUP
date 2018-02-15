@@ -4,7 +4,9 @@ import com.spartronics4915.frc2018.Constants;
 import com.spartronics4915.frc2018.loops.Loop;
 import com.spartronics4915.frc2018.loops.Looper;
 import com.spartronics4915.frc2018.subsystems.LED.SystemState;
+import com.spartronics4915.lib.util.Logger;
 import com.spartronics4915.lib.util.Util;
+import com.spartronics4915.lib.util.drivers.LazySolenoid;
 
 import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.Solenoid;
@@ -50,6 +52,7 @@ public class ScissorLift extends Subsystem
         HOLDING,
         BRAKING,
         UNBRAKING,
+        RELEASING,
     }
 
     public enum WantedState
@@ -61,6 +64,7 @@ public class ScissorLift extends Subsystem
         // might add HOOK/CLIMB
         MANUALUP,
         MANUALDOWN,
+        CLIMBING_RELEASE,
     }
 
     private SystemState mSystemState = SystemState.OFF;
@@ -68,9 +72,9 @@ public class ScissorLift extends Subsystem
     private int[] mWantedStateMap = new int[WantedState.values().length]; // set in zeroSensors()
     private AnalogInput mPotentiometer;
     private int mMeasuredValue; // [0,4095]
-    private Solenoid mRaiseSolenoid;
-    private Solenoid mLowerSolenoid;
-    private Solenoid mHoldSolenoid;
+    private LazySolenoid mRaiseSolenoid;
+    private LazySolenoid mLowerSolenoid;
+    private LazySolenoid mHoldSolenoid;
     private Timer mTimer;
 
     // Actuators and sensors should be initialized as private members with a value of null here
@@ -79,24 +83,28 @@ public class ScissorLift extends Subsystem
     {
         boolean success = true;
 
-        mPotentiometer = new AnalogInput(Constants.kScissorHeightPotentiometerId);
-        mRaiseSolenoid = new Solenoid(Constants.kScissorUpSolenoidId);
-        mLowerSolenoid = new Solenoid(Constants.kScissorDownSolenoidId);
-        mHoldSolenoid = new Solenoid(Constants.kScissorBrakeSolenoidId);
-        
-        mTimer = new Timer();
-
-        success = Util.validateSolenoid(mRaiseSolenoid) &&
-                Util.validateSolenoid(mLowerSolenoid) &&
-                Util.validateSolenoid(mHoldSolenoid);
-        
-        dashboardPutState(mSystemState.toString());
-        dashboardPutWantedState(mWantedState.toString());
-        // TODO: check potentiometer value to see if its connected.
-        //  this would be valid if we can count on the lift being
-        //  in a reasonable state (ie lowered).  We can't detect
-        //  wiring mishaps, since reading the analog pin will always
-        //  return a value.
+        try {
+            mPotentiometer = new AnalogInput(Constants.kScissorHeightPotentiometerId);
+            mRaiseSolenoid = new LazySolenoid(Constants.kScissorUpSolenoidId);
+            mLowerSolenoid = new LazySolenoid(Constants.kScissorDownSolenoidId);
+            mHoldSolenoid = new LazySolenoid(Constants.kScissorBrakeSolenoidId);
+            
+            mTimer = new Timer();
+    
+            success = mRaiseSolenoid.isValid() && mLowerSolenoid.isValid() &&
+                    mHoldSolenoid.isValid();
+            
+            dashboardPutState(mSystemState.toString());
+            dashboardPutWantedState(mWantedState.toString());
+            // TODO: check potentiometer value to see if its connected.
+            //  this would be valid if we can count on the lift being
+            //  in a reasonable state (ie lowered).  We can't detect
+            //  wiring mishaps, since reading the analog pin will always
+            //  return a value.
+        } catch (Exception e) {
+            logError("Couldn't instantiate hardware objects.");
+            Logger.logThrowableCrash(e);
+        }
 
         logInitialized(success);
     }
@@ -214,7 +222,7 @@ public class ScissorLift extends Subsystem
         mMeasuredValue = mPotentiometer.getAverageValue();
         if (mWantedState == WantedState.MANUALUP) // TODO: Try to implement a jog function
         {
-            
+
         }
         else if (mWantedState == WantedState.MANUALDOWN)
         {
@@ -226,6 +234,13 @@ public class ScissorLift extends Subsystem
             mLowerSolenoid.set(false);
             mHoldSolenoid.set(true);
             nextState = SystemState.OFF;
+        }
+        else if (mWantedState == WantedState.CLIMBING_RELEASE)
+        {
+            mRaiseSolenoid.set(false);
+            mLowerSolenoid.set(false);
+            mHoldSolenoid.set(false);
+            nextState = SystemState.RELEASING;
         }
         else if (Util.epsilonLessThan(mMeasuredValue, targetValue, kPotentiometerAllowedError))
         {
@@ -250,7 +265,7 @@ public class ScissorLift extends Subsystem
                         nextState = SystemState.RAISING;
                     }
                 }
-                else 
+                else
                 {
                     mLowerSolenoid.set(false);
                     mRaiseSolenoid.set(true);
@@ -304,4 +319,89 @@ public class ScissorLift extends Subsystem
         return nextState;
     }
 
+    public boolean checkSystem(String variant)
+    {
+        boolean success = true;
+        if (!isInitialized())
+        {
+            logWarning("can't check un-initialized system");
+            return false;
+        }
+        logNotice("checkSystem (" + variant + ") ------------------");
+       
+        try 
+        {
+            boolean allTests = variant.equalsIgnoreCase("all") || variant.equals("");
+            if(variant.equals("basic") || allTests)
+            {
+                logNotice("basic check ------");
+                logNotice("  raise solenoid state "+ mRaiseSolenoid.get());
+                logNotice("  lower solenoid state " + mLowerSolenoid.get());
+                logNotice("  hold solenoid state " + mHoldSolenoid.get());
+                logNotice("  potentiometer value " +mPotentiometer.getValue());
+            }
+            if(variant.equals("raise") || allTests)
+            {
+                logNotice("raise check -----");
+                logNotice("  raise: false (2sec)");
+                mRaiseSolenoid.set(false);
+                Timer.delay(2.0);
+                logNotice("  pot: " + mPotentiometer.getValue());
+
+                logNotice("  raise: true (3.5 sec)");
+                mRaiseSolenoid.set(true);;
+                Timer.delay(3.5);
+                logNotice("  pot: " + mPotentiometer.getValue());
+                
+                logNotice("  raise: false (3.5 sec)");
+                mRaiseSolenoid.set(false);
+                Timer.delay(3.5);
+                logNotice("  pot: " + mPotentiometer.getValue());
+            }
+            if(variant.equals("lower") || allTests)
+            {
+                logNotice("lower check -----");
+                logNotice("  lower: false (2sec)");
+                mLowerSolenoid.set(false);
+                Timer.delay(2.0);
+                logNotice("  pot: " + mPotentiometer.getValue());
+
+                logNotice("  lower: true (.25 sec)");
+                mLowerSolenoid.set(true);
+                Timer.delay(.25);
+                logNotice("  pot: " + mPotentiometer.getValue());
+                
+                logNotice("  lower: false (.25 sec)");
+                mLowerSolenoid.set(false);
+                Timer.delay(.25);
+                logNotice("  pot: " + mPotentiometer.getValue());
+            }
+            if(variant.equals("brake") || allTests)
+            {
+                logNotice("brake check -----");
+                logNotice("  brake: false (3.5sec)");
+                mHoldSolenoid.set(false);
+                Timer.delay(3.5);
+                logNotice("  pot: " + mPotentiometer.getValue());
+
+                logNotice("  brake: true (.25 sec)");
+                mHoldSolenoid.set(true);
+                Timer.delay(.25);
+                logNotice("  pot: " + mPotentiometer.getValue());
+                
+                logNotice("  brake: false (.25 sec)");
+                mHoldSolenoid.set(false);
+                Timer.delay(.25);
+                logNotice("  pot: " + mPotentiometer.getValue());
+            }
+       }
+
+        catch(Throwable e)
+        {
+            success = false;
+            logException("checkSystem", e);
+        }
+
+        return success;
+    }
 }
