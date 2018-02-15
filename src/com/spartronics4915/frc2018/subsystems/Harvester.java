@@ -8,7 +8,7 @@ import com.spartronics4915.lib.util.Util;
 import com.spartronics4915.lib.util.drivers.LazySolenoid;
 import com.spartronics4915.lib.util.drivers.TalonSRX4915;
 import com.spartronics4915.lib.util.drivers.TalonSRX4915Factory;
-
+import com.spartronics4915.lib.util.drivers.IRSensor;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Timer;
@@ -64,6 +64,7 @@ public class Harvester extends Subsystem
     private LazySolenoid mSolenoid = null;
     private TalonSRX4915 mMotorRight = null;
     private TalonSRX4915 mMotorLeft = null;
+    private IRSensor mIRSensor = null;
 
     // Actuators and sensors should be initialized as private members with a value of null here
 
@@ -84,6 +85,7 @@ public class Harvester extends Subsystem
             mMotorRight.configOutputPower(true, 0.5, 0, 0.5, 0, -0.5);
             mMotorLeft.configOutputPower(true, 0.5, 0, 0.5, 0, -0.5);
             mMotorLeft.setInverted(true);
+            mIRSensor = new IRSensor(Constants.kGrabberCubeDistanceRangeFinderId, 0, 0);
         }
         catch (Exception e)
         {
@@ -246,7 +248,7 @@ public class Harvester extends Subsystem
     {
         //motors on forward and bars closing, hug when cube is gone
         // You should probably be transferring state and controlling actuators in here
-        if (!mLimitSwitchCubeHeld.get())
+        if (mIRSensor.seesBall())
         {
             setWantedState(WantedState.HUG); // checks if cube is in the robot and will transitions to hugging when the cube is fully in
         }
@@ -263,7 +265,7 @@ public class Harvester extends Subsystem
     private SystemState handleEjecting()
     {
         //motors in reverse and bars closing, close when cube is gone
-        if (mLimitSwitchEmergency.get()) //checks if we have reached an emergency state, and will transition to open when it reaches emergency
+        if (mIRSensor.seesBall()) //checks if we have reached an emergency state, and will transition to open when it reaches emergency
         {
             setWantedState(WantedState.OPEN);
             mMotorLeft.set(0.0);
