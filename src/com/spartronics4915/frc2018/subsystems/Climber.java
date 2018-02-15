@@ -19,10 +19,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  */
 public class Climber extends Subsystem
 {
-
-    private static final DoubleSolenoid.Value kStabilizing = DoubleSolenoid.Value.kForward;
-    private static final DoubleSolenoid.Value kTuckedAway = DoubleSolenoid.Value.kReverse;
-
     private static Climber sInstance = null;
 
     public static Climber getInstance()
@@ -227,6 +223,7 @@ public class Climber extends Subsystem
         //TODO: Put climber current on dashboard
         dashboardPutState(this.mSystemState.toString());
         dashboardPutWantedState(this.mWantedState.toString());
+        dashboardPutNumber("Current", mWinchPrimary.getOutputCurrent());
     }
 
     @Override
