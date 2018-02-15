@@ -24,7 +24,7 @@ public class Harvester extends Subsystem
     private static final boolean kSolenoidOpen = true;
     private static final boolean kSolenoidClose = false;
     private static final double kCubeMinDistanceInches = 0;
-    private static final double kCubeMaxDistanceInches = 6;
+    private static final double kCubeMaxDistanceInches = 0;
 
     public static Harvester getInstance()
     {
@@ -48,11 +48,9 @@ public class Harvester extends Subsystem
 
     public enum WantedState
     {
-        CLOSE,
         OPEN,
         HARVEST,
         EJECT,
-        HUG,
         PREHARVEST,
         DISABLE,
     }
@@ -81,7 +79,7 @@ public class Harvester extends Subsystem
             mMotorLeft = TalonSRX4915Factory.createDefaultMotor(Constants.kHarvesterLeftMotorId); // change value of motor
             mMotorRight.configOutputPower(true, 0.5, 0, 0.5, 0, -0.5);
             mMotorLeft.configOutputPower(true, 0.5, 0, 0.5, 0, -0.5);
-            mMotorLeft.setInverted(true);
+            mMotorRight.setInverted(true);
             
             if (!mMotorRight.isValid())
             {
@@ -119,7 +117,7 @@ public class Harvester extends Subsystem
             {
 
                 if (mSystemState == SystemState.DISABLING)
-                    mWantedState = WantedState.CLOSE;
+                    mSystemState = SystemState.CLOSING;
             }
         }
 
@@ -180,8 +178,6 @@ public class Harvester extends Subsystem
 
         switch (mWantedState)
         {
-            case CLOSE:
-                return SystemState.CLOSING;
             case OPEN:
                 return SystemState.OPENING;
             case PREHARVEST:
@@ -190,8 +186,6 @@ public class Harvester extends Subsystem
                 return SystemState.HARVESTING;
             case EJECT:
                 return SystemState.EJECTING;
-            case HUG:
-                return SystemState.HUGGING;
             default:
                 return mSystemState;
 
@@ -201,86 +195,85 @@ public class Harvester extends Subsystem
     private SystemState handleClosing()
     {
         //motors off and bars in
+        mSolenoid.set(kSolenoidClose);
+        mMotorLeft.set(0.0);
+        mMotorRight.set(0.0);
         if (mWantedState == WantedState.OPEN || mWantedState == WantedState.PREHARVEST)
         {
             return defaultStateTransfer();
         }
-        mSolenoid.set(kSolenoidClose);
-        mMotorLeft.set(0.0);
-        mMotorRight.set(0.0);
         return SystemState.CLOSING; // all defaultStateTransfers return the wanted state
     }
 
     private SystemState handleOpening()
     {
         //motors off and bars out
+        mSolenoid.set(kSolenoidOpen);
+        mMotorLeft.set(0.0);
+        mMotorRight.set(0.0);
         if (mWantedState == WantedState.HARVEST || mWantedState == WantedState.PREHARVEST)
         {
             return defaultStateTransfer();
         }
-        mSolenoid.set(kSolenoidOpen);
-        mMotorLeft.set(0.0);
-        mMotorRight.set(0.0);
         return SystemState.OPENING;
     }
 
     private SystemState handlePreharvesting()
     {
         //motors on and bars out
+        mSolenoid.set(kSolenoidOpen);
+        mMotorLeft.set(1.0);
+        mMotorRight.set(1.0);
         if (mWantedState == WantedState.HARVEST)
         {
             return defaultStateTransfer();
         }
-        mSolenoid.set(kSolenoidOpen);
-        mMotorLeft.set(1.0);
-        mMotorRight.set(1.0);
         return SystemState.PREHARVESTING;
     }
 
     private SystemState handleHarvesting()
     {
         //motors on forward and bars closing, hug when cube is gone
-        if (isCubeHeld())
-        {
-            setWantedState(WantedState.HUG); // checks if cube is in the robot and will transitions to hugging when the cube is fully in
-        }
-        if (mWantedState != WantedState.CLOSE)
-        {
-            return defaultStateTransfer();
-        }
         mSolenoid.set(kSolenoidClose);
         mMotorLeft.set(1.0);
         mMotorRight.set(1.0);
-        return SystemState.HARVESTING;
+        if (isCubeHeld())
+        {
+            return SystemState.HUGGING;  // checks if cube is in the robot and will transitions to hugging when the cube is fully in
+        }
+        else
+        {
+            return defaultStateTransfer();
+        }
     }
 
     private SystemState handleEjecting()
     {
         //motors in reverse and bars closing, close when cube is gone
-        if (!isCubeHeld()) 
-        { //Cube is gone!  Transition to Open (turn off motor) to prevent damage
-            setWantedState(WantedState.OPEN);
-        }
-        if (mWantedState != WantedState.HUG)
-        {
-            return defaultStateTransfer();
-        }
         mSolenoid.set(kSolenoidClose);
         mMotorRight.set(-1.0);
         mMotorLeft.set(-1.0);
-        return SystemState.EJECTING;
+        if (!isCubeHeld()) 
+        { //Cube is gone!  Transition to Open (turn off motor) to prevent damage
+            setWantedState(WantedState.OPEN);
+            return SystemState.OPENING;
+        }
+        else
+        {
+            return defaultStateTransfer();
+        }
     }
 
     private SystemState handleHugging()
     {
         //motors off and bars closing go to closed when cube is gone
-        if (mWantedState == WantedState.HARVEST || mWantedState == WantedState.OPEN)
-        {
-            return defaultStateTransfer();
-        }
         mSolenoid.set(kSolenoidClose);
         mMotorLeft.set(0.0);
         mMotorRight.set(0.0);
+        if (mWantedState == WantedState.HARVEST || mWantedState == WantedState.OPEN || mWantedState == WantedState.EJECT)
+        {
+            return defaultStateTransfer();
+        }
         return SystemState.HUGGING;
     }
 
