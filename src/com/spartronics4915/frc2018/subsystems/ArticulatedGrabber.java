@@ -31,7 +31,8 @@ public class ArticulatedGrabber extends Subsystem
     private LazySolenoid mGrabber = null;
     private LazySolenoid mGrabberSetup = null;
     private AnalogInput mPotentiometer = null;
-    private DigitalInput mLimitSwitch = null;
+    private DigitalInput mLimitSwitch1 = null;
+    private DigitalInput mLimitSwitch2 = null;
 
     public static ArticulatedGrabber getInstance() //returns an instance of ArticulatedGrabber
     {
@@ -81,11 +82,12 @@ public class ArticulatedGrabber extends Subsystem
         {
             mPositionMotor =
                     TalonSRX4915Factory.createDefaultMotor(Constants.kGrabberFlipperMotorId);
-            mPositionMotor.configOutputPower(true, .5, 0, 0.1, 0, -0.1);
+            mPositionMotor.configOutputPower(true, .5, 0, 0.5, 0, -0.5);
             mGrabber = new LazySolenoid(Constants.kGrabberSolenoidId);
             mGrabberSetup = new LazySolenoid(Constants.kGrabberSetupSolenoidId);
             mPotentiometer = new AnalogInput(Constants.kGrabberAnglePotentiometerId);
-            mLimitSwitch = new DigitalInput(Constants.kFlipperHomeLimitSwitchId);
+            mLimitSwitch1 = new DigitalInput(Constants.kFlipperHomeLimitSwitchId);
+            mLimitSwitch2 = new DigitalInput(Constants.kFlipperHome2LimitSwitchId);
 
             if (!mGrabber.isValid()) //instantiate your actuator and sensor objects here
             {
@@ -240,12 +242,6 @@ public class ArticulatedGrabber extends Subsystem
         {
             //We may want to check the limit switch when looking at moving to position zero as a safety mechanism
             case TRANSPORT:
-                if (!mLimitSwitch.get())
-                {
-                    scalePosition += potValue;
-                    intakePosition += potValue;
-                    homePosition += potValue;
-                }
                 if (Util.epsilonEquals(potValue, homePosition, acceptablePositionError))
                 {
                     mPositionMotor.set(0);
@@ -311,13 +307,7 @@ public class ArticulatedGrabber extends Subsystem
 
             case PREPARE_EXCHANGE:
 
-                if (!mLimitSwitch.get())
-                {
-                    scalePosition += potValue;
-                    intakePosition += potValue;
-                    homePosition += potValue;
-                }
-                if (Util.epsilonEquals(potValue, homePosition, acceptablePositionError))
+               if (Util.epsilonEquals(potValue, homePosition, acceptablePositionError))
                 {
                     mPositionMotor.set(0);
                     return potValue;
@@ -400,7 +390,8 @@ public class ArticulatedGrabber extends Subsystem
         dashboardPutState("position: " + mSystemState.articulatorPosition + " grabber: "
                 + mSystemState.grabberOpen);
         dashboardPutNumber("potentiometer value: ", mPotentiometer.getAverageValue());
-        dashboardPutBoolean("limit switch pressed: ", !mLimitSwitch.get());
+        dashboardPutBoolean("limitswitch1 pressed: ", !mLimitSwitch1.get());
+        dashboardPutBoolean("limitswitch2 pressed: ", !mLimitSwitch2.get());
         dashboardPutNumber("position motor", mPositionMotor.getOutputCurrent());
     }
 
@@ -417,11 +408,11 @@ public class ArticulatedGrabber extends Subsystem
     @Override
     public void zeroSensors() //calibrates sensors by adding the amount of offput from the potentiometer
     {
-        if (!mLimitSwitch.get())
+        if (!mLimitSwitch1.get())
         {
-            scalePosition += potValue;
-            intakePosition += potValue;
-            homePosition += potValue;
+            // scalePosition += potValue;
+            // intakePosition += potValue;
+            // homePosition += potValue;
         }
     }
 
@@ -452,8 +443,9 @@ public class ArticulatedGrabber extends Subsystem
                     logNotice("    mGrabber: " + mGrabber.get());
                     logNotice("    mGrabberSetup: " + mGrabberSetup.get());
                     logNotice("    mPotentiometer: " + mPotentiometer.getValue());
-                    logNotice("    mLimitSwitch: " + mLimitSwitch.get());
-                }
+                    logNotice("    mLimitSwitch1: " + mLimitSwitch1.get());
+                    logNotice("    mLimitSwitch2: " + mLimitSwitch2.get());
+               }
 
                 if (variant.equals("grabber") || allTests)
                 {
@@ -477,11 +469,11 @@ public class ArticulatedGrabber extends Subsystem
                 {
                     logNotice("motor check ------");
                     logNotice("   fwd .1, 1s");
-                    mPositionMotor.set(.1);
-                    Timer.delay(1.0);
+                    mPositionMotor.set(.2);
+                    Timer.delay(5.0);
                     logNotice("    pot: " + mPotentiometer.getValue());
                     logNotice("   rev .1, 1s");
-                    mPositionMotor.set(-.1);
+                    mPositionMotor.set(-.2);
                     Timer.delay(1.0);
                     logNotice("    pot: " + mPotentiometer.getValue());
                     mPositionMotor.set(0.0);
@@ -490,22 +482,22 @@ public class ArticulatedGrabber extends Subsystem
                 if (variant.equals("motorlimit") || allTests)
                 {
                     logNotice("motor check ------");
-                    logNotice("   fwd .5 to limit, 5s");
+                    logNotice("   fwd .2 to limit, 10s");
                     Timer t = new Timer();
                     int counter = 0;
                     t.start();
-                    mPositionMotor.set(.5);
+                    mPositionMotor.set(.2); // - draws the flipper back to the scissor lift
                     while(true)
                     {
-                        if(mLimitSwitch.get())
+                        if(!mLimitSwitch1.get() || !mLimitSwitch2.get()) // FIXME: change to assume normally open
                         {
                             logNotice("limit switch encounterd at " + mPotentiometer.getValue());
                             break;
                         }
                         else
-                        if(t.hasPeriodPassed(5))
+                        if(t.hasPeriodPassed(10))
                         {
-                            logError("fwd 5s didn't encounter limit switch!!!!!!!");
+                            logError("fwd 1s didn't encounter limit switch!!!!!!!");
                             success = false;
                             break;
                         }

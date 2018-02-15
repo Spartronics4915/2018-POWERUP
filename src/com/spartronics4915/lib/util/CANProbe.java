@@ -82,9 +82,14 @@ public class CANProbe
     /**
      * @return ArrayList of strings holding the names of devices we've found.
      */
-    public ArrayList<String> GetReport()
+    public ArrayList<String> getReport()
     {
         return mReport;
+    }
+    
+    public int getCANDeviceCount() // skips the pdp, which has shown to be flaky
+    {
+        return mValidPCMIds.size() + mValidSRXIds.size();
     }
 
     /**

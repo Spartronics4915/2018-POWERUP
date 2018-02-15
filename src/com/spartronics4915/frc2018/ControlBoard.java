@@ -37,7 +37,7 @@ public class ControlBoard implements ControlBoardInterface
     @Override
     public double getThrottle()
     {
-        return mDrivestick.getY();
+        return -mDrivestick.getY(); // Reversed on the joystick
     }
 
     @Override

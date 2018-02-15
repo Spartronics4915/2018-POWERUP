@@ -33,17 +33,16 @@ public class Constants extends ConstantsBase
     public static final int kRightDriveSlaveId = 4;
     public static final int kDriveIMUTalonId = kRightDriveSlaveId; // must be a slave
     
-    public static final int kGrabberFlipperMotorId = 5;
-    public static final int kClimberWinchPrimaryMotorId = 6;
-    public static final int kClimberWinchSecondaryMotorId = 7;
+    public static final int kClimberWinchPrimaryMotorId = 5;
+    public static final int kGrabberFlipperMotorId = 7;
     public static final int kHarvesterLeftMotorId = kUseTestbedConstants ? 18 : 8;
     public static final int kHarvesterRightMotorId = kUseTestbedConstants ? 16 : 9;
  
-    public static final int kNumTalons = 9; // total talon count on robot (not testbed)
+    public static final int kNumTalons = 8; // total talon count on robot (not testbed)
     
-    public static final int kNumPDPs = 1;
+    public static final int kNumPDPs = 1; // doesn't always show up in CANProbe
     public static final int kNumPCMs = 1; // Pressure control module (pneumatics)
-    public static final int kNumCANDevices = kNumTalons + kNumPCMs + kNumPDPs;
+    public static final int kNumCANDevices = kNumTalons + kNumPCMs; // don't count PDP
     
     // -- Pressure Control Module (PCM) Channels ----   
     public static final int kScissorUpSolenoidId = 0; //PCM 0
@@ -62,11 +61,16 @@ public class Constants extends ConstantsBase
     public static final int kLEDDriverLEDId = 1;
     
     // DIO Pins --------------------------------------
+<<<<<<< HEAD
     public static final int kScissorHomeLimitSwitchId = 0;
     public static final int kFlipperHomeLimitSwitchId = 1;
 
     public static final int kHarvesterCubeHeldLimitSwitchId = kUseTestbedConstants ? 10 : 2;
     public static final int kHarvesterEmergencyLimitSwitchId = kUseTestbedConstants ? 11 : 3;
+=======
+    public static final int kFlipperHomeLimitSwitchId = 0;
+    public static final int kFlipperHome2LimitSwitchId = 2;
+>>>>>>> 2a0d213e0f3bf923fa8cba5e2c4d1e2b99bbf15a
     
     // Analog In Pins ---------------------------------
     public static final int kScissorHeightPotentiometerId = 0;
