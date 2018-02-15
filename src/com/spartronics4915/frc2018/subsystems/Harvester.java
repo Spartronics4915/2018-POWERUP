@@ -9,9 +9,6 @@ import com.spartronics4915.lib.util.drivers.LazySolenoid;
 import com.spartronics4915.lib.util.drivers.SpartIRSensor;
 import com.spartronics4915.lib.util.drivers.TalonSRX4915;
 import com.spartronics4915.lib.util.drivers.TalonSRX4915Factory;
-import com.spartronics4915.lib.util.drivers.IRSensor;
-import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -26,11 +23,8 @@ public class Harvester extends Subsystem
     private static Harvester sInstance = null;
     private static final boolean kSolenoidOpen = true;
     private static final boolean kSolenoidClose = false;
-<<<<<<< HEAD
-=======
-    private static final double kCubeMinDistanceInches = 0; // FIXME
-    private static final double kCubeMaxDistanceInches = 1; // FIXME
->>>>>>> 2a0d213e0f3bf923fa8cba5e2c4d1e2b99bbf15a
+    private static final double kCubeMinDistanceInches = 0;
+    private static final double kCubeMaxDistanceInches = 6;
 
     public static Harvester getInstance()
     {
@@ -69,7 +63,6 @@ public class Harvester extends Subsystem
     private LazySolenoid mSolenoid = null;
     private TalonSRX4915 mMotorRight = null;
     private TalonSRX4915 mMotorLeft = null;
-    private IRSensor mIRSensor = null;
 
     // Actuators and sensors should be initialized as private members with a value of null here
 
@@ -89,7 +82,6 @@ public class Harvester extends Subsystem
             mMotorRight.configOutputPower(true, 0.5, 0, 0.5, 0, -0.5);
             mMotorLeft.configOutputPower(true, 0.5, 0, 0.5, 0, -0.5);
             mMotorLeft.setInverted(true);
-            mIRSensor = new IRSensor(Constants.kGrabberCubeDistanceRangeFinderId, 0, 0);
         }
         catch (Exception e)
         {
@@ -209,7 +201,6 @@ public class Harvester extends Subsystem
     private SystemState handleClosing()
     {
         //motors off and bars in
-        // You should probably be transferring state and controlling actuators in here
         if (mWantedState == WantedState.OPEN || mWantedState == WantedState.PREHARVEST)
         {
             return defaultStateTransfer();
@@ -223,7 +214,6 @@ public class Harvester extends Subsystem
     private SystemState handleOpening()
     {
         //motors off and bars out
-        // You should probably be transferring state and controlling actuators in here
         if (mWantedState == WantedState.HARVEST || mWantedState == WantedState.PREHARVEST)
         {
             return defaultStateTransfer();
@@ -237,7 +227,6 @@ public class Harvester extends Subsystem
     private SystemState handlePreharvesting()
     {
         //motors on and bars out
-        // You should probably be transferring state and controlling actuators in here
         if (mWantedState == WantedState.HARVEST)
         {
             return defaultStateTransfer();
@@ -251,12 +240,7 @@ public class Harvester extends Subsystem
     private SystemState handleHarvesting()
     {
         //motors on forward and bars closing, hug when cube is gone
-        // You should probably be transferring state and controlling actuators in here
-<<<<<<< HEAD
-        if (mIRSensor.seesBall())
-=======
-        if (!isCubeHeld())
->>>>>>> 2a0d213e0f3bf923fa8cba5e2c4d1e2b99bbf15a
+        if (isCubeHeld())
         {
             setWantedState(WantedState.HUG); // checks if cube is in the robot and will transitions to hugging when the cube is fully in
         }
@@ -273,32 +257,10 @@ public class Harvester extends Subsystem
     private SystemState handleEjecting()
     {
         //motors in reverse and bars closing, close when cube is gone
-<<<<<<< HEAD
-        if (mIRSensor.seesBall()) //checks if we have reached an emergency state, and will transition to open when it reaches emergency
-        {
+        if (!isCubeHeld()) 
+        { //Cube is gone!  Transition to Open (turn off motor) to prevent damage
             setWantedState(WantedState.OPEN);
-            mMotorLeft.set(0.0);
-            mMotorRight.set(0.0);
         }
-        else
-        {
-            mMotorLeft.set(-1.0);
-            mMotorRight.set(-1.0);
-        }
-=======
-//        if (mLimitSwitchEmergency.get()) //checks if we have reached an emergency state, and will transition to open when it reaches emergency
-//        {
-//            setWantedState(WantedState.OPEN);
-//            mMotorLeft.set(0.0);
-//            mMotorRight.set(0.0);
-//        } FIXME
-//        else
-//        {
-        mMotorLeft.set(-1.0);
-        mMotorRight.set(-1.0);
-//        }
->>>>>>> 2a0d213e0f3bf923fa8cba5e2c4d1e2b99bbf15a
-        // You should probably be transferring state and controlling actuators in here
         if (mWantedState != WantedState.HUG)
         {
             return defaultStateTransfer();
@@ -307,13 +269,11 @@ public class Harvester extends Subsystem
         mMotorRight.set(-1.0);
         mMotorLeft.set(-1.0);
         return SystemState.EJECTING;
-
     }
 
     private SystemState handleHugging()
     {
         //motors off and bars closing go to closed when cube is gone
-        // You should probably be transferring state and controlling actuators in here
         if (mWantedState == WantedState.HARVEST || mWantedState == WantedState.OPEN)
         {
             return defaultStateTransfer();
@@ -338,22 +298,13 @@ public class Harvester extends Subsystem
     @Override
     public void outputToSmartDashboard()
     {
-<<<<<<< HEAD
-        dashboardPutState(mSystemState + " /SystemState");
-        dashboardPutWantedState(mWantedState + " /WantedState");
-        dashboardPutBoolean("/mSolenoid ", mSolenoid.get());
-        dashboardPutBoolean("/LimitSwitchCubeHeld ", mLimitSwitchCubeHeld.get());
-        dashboardPutBoolean("/LimitSwitchEmergency ", mLimitSwitchEmergency.get());
-        dashboardPutNumber("/MotorRight ", mMotorRight.get());
-        dashboardPutNumber("/MotorLeft ", mMotorLeft.get());
-=======
         dashboardPutState(mSystemState.toString());
         dashboardPutWantedState(mWantedState.toString());
         dashboardPutBoolean("mSolenoid", mSolenoid.get());
-        dashboardPutBoolean("LimitSwitchCubeHeld", isCubeHeld());
+        dashboardPutBoolean("IRSensor CubeHeld", isCubeHeld());
         dashboardPutNumber("MotorRight", mMotorRight.get());
         dashboardPutNumber("MotorLeft", mMotorLeft.get());
->>>>>>> 2a0d213e0f3bf923fa8cba5e2c4d1e2b99bbf15a
+        dashboardPutNumber("Cube Distance: ", mCubeHeldSensor.getDistance());
     }
 
     @Override
@@ -397,7 +348,6 @@ public class Harvester extends Subsystem
                 logNotice("  mMotorLeft:\n" + mMotorLeft.dumpState());
                 logNotice("  mSolenoid: " + mSolenoid.get());
                 logNotice("  isCubeHeld: " + isCubeHeld());
-//                logNotice("  mLimitSwitchEmergency: " + mLimitSwitchEmergency.get());
             }
             if (variant.equals("solenoid") || allTests)
             {
@@ -406,7 +356,6 @@ public class Harvester extends Subsystem
                 mSolenoid.set(kSolenoidOpen);
                 Timer.delay(4.0);
                 logNotice("  isCubeHeld: " + isCubeHeld());
-//                logNotice("  mLimitSwitchEmergency: " + mLimitSwitchEmergency.get());
                 logNotice("off");
                 mSolenoid.set(kSolenoidClose);
             }
@@ -440,6 +389,12 @@ public class Harvester extends Subsystem
 
                 Timer.delay(.5); // let motors spin down
                 mSolenoid.set(kSolenoidClose);
+            }
+            if (variant.equals("IRSensor") || allTests)
+            {
+                logNotice("SensorCheck");
+                logNotice("Is Cube Held?");
+                logNotice("Cube Distance: " + mCubeHeldSensor.getDistance());
             }
         }
         catch (Throwable e)
