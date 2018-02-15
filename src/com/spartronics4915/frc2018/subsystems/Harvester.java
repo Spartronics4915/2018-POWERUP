@@ -82,6 +82,22 @@ public class Harvester extends Subsystem
             mMotorRight.configOutputPower(true, 0.5, 0, 0.5, 0, -0.5);
             mMotorLeft.configOutputPower(true, 0.5, 0, 0.5, 0, -0.5);
             mMotorLeft.setInverted(true);
+            
+            if (!mMotorRight.isValid())
+            {
+                logError("Right Motor is invalid");
+                success = false;
+            }
+            if (!mMotorLeft.isValid())
+            {
+                logError("Left Motor is invalid");
+                success = false;
+            }
+            if (!mSolenoid.isValid())
+            {
+                logError("Solenoid is invalid");
+                success = false;
+            }
         }
         catch (Exception e)
         {
@@ -91,22 +107,6 @@ public class Harvester extends Subsystem
         }
 
         logInitialized(success);
-    
-        if (!mMotorRight.isValid())
-        {
-            logError("Right Motor is invalid");
-            success = false;
-        }
-        if (!mMotorLeft.isValid())
-        {
-            logError("Left Motor is invalid");
-            success = false;
-        }
-        if (!mSolenoid.isValid())
-        {
-            logError("Solenoid is invalid");
-            success = false;
-        }
     }
 
     private Loop mLoop = new Loop()

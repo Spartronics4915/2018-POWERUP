@@ -41,6 +41,8 @@ public interface ControlBoardInterface
     
     boolean getHarvesterOpen();
     
+    boolean getHarvesterPreharvest();
+    
     // Debug buttons, remove me
     boolean getDebugPrimary();
 

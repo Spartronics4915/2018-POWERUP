@@ -109,7 +109,7 @@ public class ControlBoard implements ControlBoardInterface
     @Override
     public boolean getScissorLiftManualUp()
     {
-        return mDrivestick.getRawButtonReleased(21);
+        return mDrivestick.getRawButtonReleased(31);
     }
 
     @Override
@@ -132,6 +132,11 @@ public class ControlBoard implements ControlBoardInterface
     
     @Override
     public boolean getHarvesterOpen()
+    {
+        return mDrivestick.getRawButtonReleased(11);
+    }
+    @Override
+    public boolean getHarvesterPreharvest()
     {
         return mDrivestick.getRawButtonReleased(11);
     }
