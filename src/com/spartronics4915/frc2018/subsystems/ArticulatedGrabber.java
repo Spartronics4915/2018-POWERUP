@@ -58,7 +58,8 @@ public class ArticulatedGrabber extends Subsystem
         GRAB_CUBE, //grabbing and over the ground        //position: 2, open: false
         PREPARE_EXCHANGE, //not grabbing and flat against lift  //position: 0, open: true
         RELEASE_CUBE, //not grabbing over the switch/scale  //position: 1, open: true
-        PREPARE_INTAKE //not grabbing over the ground        //position: 2, open: true
+        PREPARE_INTAKE, //not grabbing over the ground        //position: 2, open: true
+        DISABLED
     }
 
     //TODO: once testing begins add default positions for the potentiometer
@@ -80,7 +81,7 @@ public class ArticulatedGrabber extends Subsystem
 
     private SystemState mNextState = new SystemState();
     private SystemState mSystemState = new SystemState();
-    private WantedState mWantedState = WantedState.PREPARE_EXCHANGE;
+    private WantedState mWantedState = WantedState.DISABLED;
 
     private ArticulatedGrabber() //sets up everything
     {
@@ -198,6 +199,13 @@ public class ArticulatedGrabber extends Subsystem
     {
         switch (mWantedState) //you should probably be transferring state and controlling actuators in here
         {
+            case DISABLED:
+                if (mNextState.grabberOpen)
+                {
+                    mGrabber.set(false);
+                }
+                return false;
+                
             case TRANSPORT:
                 if (mNextState.grabberOpen)
                 {
@@ -260,6 +268,10 @@ public class ArticulatedGrabber extends Subsystem
         switch (mWantedState) //you should probably be transferring state and controlling actuators in here
         {
             //We may want to check the limit switch when looking at moving to position zero as a safety mechanism
+            case DISABLED:
+                mPositionMotor.set(0);;
+                return potValue;
+                
             case TRANSPORT:
                 if (Util.epsilonEquals(potValue, holdPosition, acceptablePositionError))
                 {
