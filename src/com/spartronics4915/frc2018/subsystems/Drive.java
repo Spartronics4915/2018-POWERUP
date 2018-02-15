@@ -65,6 +65,7 @@ public class Drive extends Subsystem
         TURN_TO_HEADING, // turn in place
         DRIVE_TOWARDS_GOAL_COARSE_ALIGN, // turn to face the boiler, then DRIVE_TOWARDS_GOAL_COARSE_ALIGN
         DRIVE_TOWARDS_GOAL_APPROACH, // drive forwards until we are at optimal shooting distance
+        FIND_CUBE //Spin untill we find the cube!
     }
 
     // Control states
@@ -137,6 +138,9 @@ public class Drive extends Subsystem
                         return;
                     case DRIVE_TOWARDS_GOAL_APPROACH:
                         updateDriveTowardsGoalApproach(timestamp);
+                        return;
+                    case FIND_CUBE:
+                        searchForCube(timestamp);
                         return;
                     default:
                         logError("Unexpected drive control state: " + mDriveControlState);
@@ -455,6 +459,22 @@ public class Drive extends Subsystem
         // angle reversed to correct for raspi coordsys
         performClosedLoopTurn(robotToTarget);
     }
+    
+    private void searchForCube(double timestamp)
+    {
+        if (!this.isInitialized())
+            return;
+        double dx = mVisionTargetAngleEntry.getNumber(0).doubleValue();
+        if (dx != 0.0) {
+            setWantAimToVisionTarget();
+        }
+        if (dx == 0.0) {
+            dx = -5;
+        }
+        final Rotation2d robotToTarget = Rotation2d.fromDegrees(dx); 
+        // angle reversed to correct for raspi coordsys
+        performClosedLoopTurn(robotToTarget);
+    }
 
     /*
      * Trigger updates to closed-loop position based on a rotation expressed
@@ -635,6 +655,19 @@ public class Drive extends Subsystem
         }
     }
 
+    public synchronized void setWantSearchForCube()
+    {
+        if (mDriveControlState != DriveControlState.FIND_CUBE)
+        {
+            mIsOnTarget = false;
+            configureTalonsForPositionControl();
+            mDriveControlState = DriveControlState.FIND_CUBE;
+            // no target received yet, start at current heading
+            updatePositionSetpoint(mMotorGroup.getLeftDistanceInches(),
+                    mMotorGroup.getRightDistanceInches());
+            mTargetHeading = Rotation2d.fromDegrees(mMotorGroup.getGyroAngle());
+        }
+    }
     /**
      * Configures the drivebase for auto driving
      */
