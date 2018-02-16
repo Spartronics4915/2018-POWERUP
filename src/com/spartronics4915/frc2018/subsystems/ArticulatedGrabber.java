@@ -68,8 +68,8 @@ public class ArticulatedGrabber extends Subsystem
     private final int kDefaultPickOffset = 273; //offset from the rev limit switch
     private final int kDefaultPlaceOffset = 10; //offset from the rev limit switch
 
-    private int mFwdPotentiometerValue = 1021;
-    private int mRevPotentiometerValue = 465;
+    private int mFwdLimitPotentiometerValue = 1021;
+    private int mRevLimitPotentiometerValue = 465;
 
     // these actual positions are computed from measured pot values at limit switches
     //  offset by tuned values.
@@ -263,7 +263,7 @@ public class ArticulatedGrabber extends Subsystem
             case DISABLED:
                 mPositionMotor.set(0);
                 return potValue;
-
+            //Intentional fall through    
             case TRANSPORT:
             case PREPARE_EXCHANGE:
                 targetPosition = mHoldPosition;
@@ -376,11 +376,11 @@ public class ArticulatedGrabber extends Subsystem
 
     private void updatePositions()
     {
-        mHoldPosition = mFwdPotentiometerValue -
+        mHoldPosition = mFwdLimitPotentiometerValue -
                 dashboardGetNumber("Target1", kDefaultHoldOffset).intValue();
-        mPickPosition = mRevPotentiometerValue +
+        mPickPosition = mRevLimitPotentiometerValue +
                 dashboardGetNumber("Target2", kDefaultPickOffset).intValue();
-        mPlacePosition = mRevPotentiometerValue +
+        mPlacePosition = mRevLimitPotentiometerValue +
                 dashboardGetNumber("Target3", kDefaultPlaceOffset).intValue();
 
         logNotice("hold position: " + mHoldPosition);
@@ -393,12 +393,12 @@ public class ArticulatedGrabber extends Subsystem
     {
         if (!mLimitSwitchRev.get()) // limit switches are normally open
         {
-            mRevPotentiometerValue = mPotentiometer.getAverageValue();
+            mRevLimitPotentiometerValue = mPotentiometer.getAverageValue();
             updatePositions();
         }
         else if (!mLimitSwitchFwd.get())
         {
-            mFwdPotentiometerValue = mPotentiometer.getAverageValue();
+            mFwdLimitPotentiometerValue = mPotentiometer.getAverageValue();
             updatePositions();
         }
     }
@@ -479,9 +479,9 @@ public class ArticulatedGrabber extends Subsystem
                         if (!mLimitSwitchFwd.get()) // limit switches are normally closed
                         {
                             logNotice("limit switch encounterd at " + mPotentiometer.getValue());
-                            logNotice("mFwdPotentiometerValue before: " + mFwdPotentiometerValue);
-                            mFwdPotentiometerValue = mPotentiometer.getAverageValue();
-                            logNotice("mFwdPotentiometerValue after: " + mFwdPotentiometerValue);
+                            logNotice("mFwdPotentiometerValue before: " + mFwdLimitPotentiometerValue);
+                            mFwdLimitPotentiometerValue = mPotentiometer.getAverageValue();
+                            logNotice("mFwdPotentiometerValue after: " + mFwdLimitPotentiometerValue);
                             break;
                         }
                         else if (t.hasPeriodPassed(10))
@@ -507,9 +507,9 @@ public class ArticulatedGrabber extends Subsystem
                         if (!mLimitSwitchRev.get()) // limit switches are normally closed
                         {
                             logNotice("limit switch encounterd at " + mPotentiometer.getValue());
-                            logNotice("mRevPotentiometerValue before: " + mRevPotentiometerValue);
-                            mRevPotentiometerValue = mPotentiometer.getAverageValue();
-                            logNotice("mRevPotentiometerValue after: " + mRevPotentiometerValue);
+                            logNotice("mRevPotentiometerValue before: " + mRevLimitPotentiometerValue);
+                            mRevLimitPotentiometerValue = mPotentiometer.getAverageValue();
+                            logNotice("mRevPotentiometerValue after: " + mRevLimitPotentiometerValue);
                             break;
                         }
                         else if (t.hasPeriodPassed(10))
