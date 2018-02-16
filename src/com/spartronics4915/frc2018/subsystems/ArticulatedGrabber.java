@@ -70,9 +70,9 @@ public class ArticulatedGrabber extends Subsystem
     private int fwdPotentiometerValue = 1021;
     private int revPotentiometerValue = 465;
     
-    private final int kPlaceOffset = 10; //offset from the reverse limit switch
+    private final int kPlaceOffset = 20; //offset from the reverse limit switch
     private final int kPickOffset = 273; //offset from the reverse limit switch //(emergencyFwd-emergencyRev)/2
-    private final int kHomeOffset = 10; //offset from the forward limit switch
+    private final int kHomeOffset = 20; //offset from the forward limit switch
     
     private int acceptablePositionError = 20; //margin of error
     private int potValue;
