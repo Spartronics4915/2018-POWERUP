@@ -160,6 +160,35 @@ public class ScissorLift extends Subsystem
         dashboardPutWantedState(wantedState.toString());
         logNotice("Wanted state to" + wantedState);
     }
+    
+    public synchronized boolean atTarget()
+    {
+        boolean matches = false;
+        switch (mSystemState)
+        {
+            case OFF:
+                matches = (mWantedState == WantedState.OFF);
+                break;
+            case RAISING:
+                matches = false;
+                break;
+            case LOWERING:
+                matches = false;
+                break;
+            case HOLDING:
+                matches  = (mWantedState == WantedState.RETRACTED || mWantedState == WantedState.OFF || mWantedState == WantedState.SWITCH || mWantedState == WantedState.SCALE);
+            case BRAKING:
+                matches = false;
+                break;
+            case UNBRAKING:
+                matches = false;
+                break;
+            default:
+                matches = false;
+                break;
+        }
+        return matches;
+    }
 
     @Override
     public void outputToSmartDashboard()
@@ -217,7 +246,7 @@ public class ScissorLift extends Subsystem
     {
         enabledLooper.register(mLoop);
     }
-
+    
     // based on the combination of wanted state, current state and the current potentiometer value,
     // transfer the current system state to another state.
     /*
