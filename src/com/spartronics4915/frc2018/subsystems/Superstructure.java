@@ -119,31 +119,43 @@ public class Superstructure extends Subsystem
                     case RETRACTING_FLIPPER: // Retract from dunk
                         if (mStateChanged)
                             mGrabber.setWantedState(ArticulatedGrabber.WantedState.TRANSPORT);
+                        else if (mWantedState == WantedState.RETRACT_FROM_DUNK)
+                            
                         break;
                     case RETRACTING_SCISSOR:
                         if (mStateChanged)
                             mLifter.setWantedState(ScissorLift.WantedState.RETRACTED);
-                        else if (mLifter.atTarget())
-                            newState = SystemState.PREPARING_ARTICULATED_GRABBER;
+                        else if (mWantedState == WantedState.RETRACT_FROM_DUNK)
+                        {
+                            if (mLifter.atTarget())
+                                newState = SystemState.PREPARING_ARTICULATED_GRABBER;
+                            break;
+                        }
+                        else
+                            newState = defaultStateTransfer();
                         break;
-//                    case PREPARING_ARTICULATED_GRABBER:  // Transfer cube from harvester to scissor
-//                        newState = handleTransferCube(mStateChanged);
-//                        break;
-//                    case GRABBING_ARTICULATED_GRABBER:
-//                        newState = handleTransferCube(mStateChanged);
-//                        break;
-//                    case OPENING_HARVESTER:
-//                        newState = handleTransferCube(mStateChanged);
-//                        break;
-//                    case TRANSPORTING_ARTICULATED_GRABBER:
-//                        newState = handleTransferCube(mStateChanged);
-//                        break;
-//                    case RELEASING_SCISSOR: // Climb
-//                        newState = handleClimb(mStateChanged);
-//                        break;
-//                    case CLIMBING:
-//                        newState = handleClimb(mStateChanged);
-//                        break;
+                    case PREPARING_ARTICULATED_GRABBER:  // Transfer cube from harvester to scissor
+                        newState = handleTransferCube(mStateChanged);
+                        break;
+                    case GRABBING_ARTICULATED_GRABBER:
+                        newState = handleTransferCube(mStateChanged);
+                        break;
+                    case OPENING_HARVESTER:
+                        newState = handleTransferCube(mStateChanged);
+                        break;
+                    case TRANSPORTING_ARTICULATED_GRABBER:
+                        newState = handleTransferCube(mStateChanged);
+                        break;
+                    case RELEASING_SCISSOR: // Climb
+                        if (mStateChanged)
+                            mLifter.setWantedState(ScissorLift.WantedState.OFF);
+                        else if (mLifter.atTarget())
+                            newState = SystemState.CLIMBING;
+                        break;
+                    case CLIMBING:
+                        if (mStateChanged)
+                            mClimber.setWantedState(Climber.WantedState.CLIMB);
+                        break;
                     default:
                         newState = SystemState.IDLE;
                 }
@@ -170,6 +182,30 @@ public class Superstructure extends Subsystem
         }
     };
 
+    private SystemState defaultStateTransfer()
+    {
+        SystemState newState = SystemState.IDLE;
+        switch (mWantedState)
+        {
+            case IDLE:
+                newState = SystemState.IDLE;
+                break;
+            case RETRACT_FROM_DUNK:
+                newState = SystemState.RETRACTING_FLIPPER; // Go to the first system state in the sequence of retract from dunk states
+                break;
+            case TRANSFER_CUBE_TO_GRABBER:
+                newState = SystemState.PREPARING_ARTICULATED_GRABBER; // First state, same as above
+                break;
+            case CLIMB:
+                newState = SystemState.RELEASING_SCISSOR; // First state, same as above
+                break;
+            default:
+                newState = SystemState.IDLE;
+                break;
+        }
+        return newState;
+    }
+    
     private SystemState handleIdle(boolean stateChanged)
     {
         if (stateChanged)
