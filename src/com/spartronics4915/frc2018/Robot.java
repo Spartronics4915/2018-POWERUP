@@ -349,7 +349,7 @@ public class Robot extends IterativeRobot
                 mLifter.setWantedState(ScissorLift.WantedState.MANUALDOWN);
             }
 
-            if (mControlBoard.getScissorLiftOff())
+            if (mControlBoard.getScissorLiftOff())   
             {
                 mLifter.setWantedState(ScissorLift.WantedState.OFF);
             }
@@ -357,12 +357,12 @@ public class Robot extends IterativeRobot
             if (mControlBoard.getDebugPrimary())
             {
                 Logger.debug("Setting Grabber to TRANSPORT");
-                mGrabber.setWantedState(ArticulatedGrabber.WantedState.TRANSPORT);
+                mGrabber.setWantedState(ArticulatedGrabber.WantedState.GRAB_CUBE);
             }
             else if (mControlBoard.getDebugSecondary())
             {
-                Logger.debug("Setting Lifter to GRAB_CUBE");
-                mGrabber.setWantedState(ArticulatedGrabber.WantedState.GRAB_CUBE);
+                Logger.debug("Setting Lifter to PREPARE_EXCHANGE");
+                mGrabber.setWantedState(ArticulatedGrabber.WantedState.PREPARE_INTAKE);
             }
             else if (mControlBoard.getDebugTertiary())
             {
