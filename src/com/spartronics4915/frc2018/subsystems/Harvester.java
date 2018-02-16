@@ -307,6 +307,46 @@ public class Harvester extends Subsystem
         dashboardPutWantedState(mWantedState.toString());
     }
     
+    public boolean atTarget()
+    {
+        boolean t = false;
+        switch (mSystemState)
+        {
+            case CLOSING:
+                if (mWantedState == WantedState.CLOSE)
+                    t = true;
+                break;
+            case OPENING:
+                if (mWantedState == WantedState.OPEN)
+                    t = true;
+                break;
+            case HARVESTING:
+                if (mWantedState == WantedState.HARVEST)
+                    t = true;
+                break;
+            case EJECTING:
+                if (mWantedState == WantedState.EJECT)
+                    t = true;
+                break;
+            case HUGGING:
+                if (mWantedState == WantedState.HUG)
+                    t = true;
+                break;
+            case PREHARVESTING:
+                if (mWantedState == WantedState.PREHARVEST)
+                    t = true;
+                break;
+            case DISABLING:
+                if (mWantedState == WantedState.DISABLE)
+                    t = true;
+                break;
+            default:
+                t = false;
+                break;
+        }
+        return t;
+    }
+    
     private boolean isCubeHeld()
     {
         return mCubeHeldSensor.isTargetInDistanceRange(kCubeMinDistanceInches, kCubeMaxDistanceInches);
