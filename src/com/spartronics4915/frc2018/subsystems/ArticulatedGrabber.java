@@ -162,19 +162,14 @@ public class ArticulatedGrabber extends Subsystem
 
                 if (mNextState.grabberOpen != mSystemState.grabberOpen) //logs change in state/position then assigns current state
                 {
-                    dashboardPutString("State change: ", "Articulated Grabber state from "
-                            + mSystemState.grabberOpen + "to" + mNextState.grabberOpen);
-                    logInfo("State change: Articulated Grabber state from "
-                            + mSystemState.grabberOpen + "to" + mNextState.grabberOpen);
+                    logInfo("Grabber change from "
+                            + mSystemState.grabberOpen + " to " + mNextState.grabberOpen);
                 }
                 if (!Util.epsilonEquals(mNextState.articulatorPosition,
                         mSystemState.articulatorPosition, kAcceptablePositionError))
                 {
-                    dashboardPutString("Position change: ",
-                            "Articulated Grabber position from " + mSystemState.articulatorPosition
-                                    + "to" + mNextState.articulatorPosition);
-                    logInfo("Position change: Articulated Grabber position from "
-                            + mSystemState.articulatorPosition + "to"
+                    logInfo("Position change from "
+                            + mSystemState.articulatorPosition + " to "
                             + mNextState.articulatorPosition);
                 }
                 mSystemState = mNextState;
@@ -364,12 +359,10 @@ public class ArticulatedGrabber extends Subsystem
     public void outputToSmartDashboard() //dashboard logging
     {
         dashboardPutWantedState(mWantedState.toString());
-        dashboardPutState("position: " + mSystemState.articulatorPosition + " grabber: "
-                + mSystemState.grabberOpen);
-        dashboardPutNumber("Potentiometer", mPotentiometer.getAverageValue());
-        dashboardPutBoolean("limitswitch1 pressed: ", !mLimitSwitchRev.get());
-        dashboardPutBoolean("limitswitch2 pressed: ", !mLimitSwitchFwd.get());
-        dashboardPutNumber("position motor", mPositionMotor.getOutputCurrent());
+        dashboardPutState("Grab:" + !mSystemState.grabberOpen + " Pot:" + mPotentiometer.getAverageValue());
+        dashboardPutBoolean("RevLimitSwitch", !mLimitSwitchRev.get());
+        dashboardPutBoolean("FwdLimitSwitch", !mLimitSwitchFwd.get());
+        dashboardPutNumber("MotorCurrent", mPositionMotor.getOutputCurrent());
     }
 
     @Override
