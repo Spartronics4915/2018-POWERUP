@@ -124,7 +124,12 @@ public class Superstructure extends Subsystem
                         if (mStateChanged)
                             mGrabber.setWantedState(ArticulatedGrabber.WantedState.TRANSPORT);
                         else if (mWantedState == WantedState.RETRACT_FROM_DUNK)
-                            
+                        {
+                            if (mLifter.atTarget())
+                                newState = SystemState.RETRACTING_SCISSOR;
+                        }
+                        else
+                            newState = defaultStateTransfer();
                         break;
                     case RETRACTING_SCISSOR:
                         if (mStateChanged)
