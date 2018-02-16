@@ -16,6 +16,11 @@ import edu.wpi.first.wpilibj.Timer;
  * The scissor lift is controlled by pneumatics. It has multiple set positions
  * and variable height. The key thing here is that its system state relates to
  * the highly variable position of the lifter.
+ * 
+ * TODO:  right now the method for calculating offsets presumes that the
+ * default potentiometer value is near zero.  Since it appears that the
+ * pot value is high at retracted position (with decreasing values as you 
+ * go higher), we must modify the update strategy to target = mPotHome - defaultTarget.
  */
 public class ScissorLift extends Subsystem
 {
