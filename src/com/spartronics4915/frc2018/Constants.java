@@ -61,8 +61,8 @@ public class Constants extends ConstantsBase
     public static final int kLEDDriverLEDId = 1;
     
     // DIO Pins --------------------------------------
-    public static final int kFlipperHomeLimitSwitchId = 0;
-    public static final int kFlipperHome2LimitSwitchId = 2;
+    public static final int kFlipperRevLimitSwitchId = 0;
+    public static final int kFlipperFwdLimitSwitchId = 2;
     
     // Analog In Pins ---------------------------------
     public static final int kScissorHeightPotentiometerId = 0;
