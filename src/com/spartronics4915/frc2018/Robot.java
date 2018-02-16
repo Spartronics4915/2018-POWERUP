@@ -335,6 +335,7 @@ public class Robot extends IterativeRobot
 
             if (mControlBoard.getScissorLiftSwitch())
             {
+                Logger.notice("Setting Scissorlift to SWITCH");
                 mLifter.setWantedState(ScissorLift.WantedState.SWITCH);
             }
 
@@ -353,25 +354,25 @@ public class Robot extends IterativeRobot
                 mLifter.setWantedState(ScissorLift.WantedState.MANUALDOWN);
             }
 
-            if (mControlBoard.getScissorLiftOff())
+            if (mControlBoard.getScissorLiftOff())   
             {
                 mLifter.setWantedState(ScissorLift.WantedState.OFF);
             }
 
             if (mControlBoard.getDebugPrimary())
             {
-                Logger.debug("Setting Lifter to RETRACTED");
-                mLifter.setWantedState(ScissorLift.WantedState.RETRACTED);
+                Logger.debug("Setting Grabber to TRANSPORT");
+                mGrabber.setWantedState(ArticulatedGrabber.WantedState.GRAB_CUBE);
             }
             else if (mControlBoard.getDebugSecondary())
             {
-                Logger.debug("Setting Lifter to SCALE");
-                mLifter.setWantedState(ScissorLift.WantedState.SCALE);
+                Logger.debug("Setting Lifter to PREPARE_EXCHANGE");
+                mGrabber.setWantedState(ArticulatedGrabber.WantedState.PREPARE_INTAKE);
             }
             else if (mControlBoard.getDebugTertiary())
             {
-                Logger.debug("Setting Lifter to SWITCH");
-                mLifter.setWantedState(ScissorLift.WantedState.SWITCH);
+                Logger.debug("Setting Lifter to PREPARE_DROP");
+                mGrabber.setWantedState(ArticulatedGrabber.WantedState.PREPARE_DROP);
             }
 
             allButTestPeriodic();
