@@ -164,6 +164,7 @@ public class LED extends Subsystem
     {
         setDriverLEDOff();
         //setVisionLampOff();
+        //We do NOT want the vision lED to be turned off by default
         return defaultStateTransfer();
     }
 
