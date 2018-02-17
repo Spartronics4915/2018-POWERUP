@@ -60,7 +60,9 @@ public class ArticulatedGrabber extends Subsystem
         PREPARE_INTAKE, //not grabbing over the ground        //position: 2, open: true
         DISABLED
     }
-    private final double kMaxMotorSpeed = 1.0; //Maximum Motor Speed: used in handlePosition method and config for mPositionMotor
+
+    //Maximum Motor Speed: used in handlePosition method and config for mPositionMotor
+    private final double kMaxMotorSpeed = 1.0;
     private final int kAcceptablePositionError = 20; //margin of error
 
     private final int kDefaultHoldOffset = 10; //offset from the fwd limit switch
@@ -290,24 +292,36 @@ public class ArticulatedGrabber extends Subsystem
                 mPositionMotor.set(0.0);
                 return potValue;
         }
-        if (Util.epsilonEquals(potValue, targetPosition, kAcceptablePositionError))
+
+        if (!mLimitSwitchFwd.get() || !mLimitSwitchRev.get())
         {
-            mPositionMotor.set(0);
-            return potValue;
-        }
-        else if (potValue > targetPosition)
-        {
-            mPositionMotor.set(-kMaxMotorSpeed);
-            return potValue;
-        }
-        else if (potValue < targetPosition)
-        {
-            mPositionMotor.set(kMaxMotorSpeed);
+            logError("Articulated Grabber DISABLED \nLimit Switch Reached: \nReverse: "
+                    + mLimitSwitchRev.get() + ", \nForward: " + mLimitSwitchFwd.get());
+            setWantedState(WantedState.DISABLED);
+            mPositionMotor.set(0.0);
             return potValue;
         }
         else
         {
-            return potValue;
+            if (Util.epsilonEquals(potValue, targetPosition, kAcceptablePositionError))
+            {
+                mPositionMotor.set(0);
+                return potValue;
+            }
+            else if (potValue > targetPosition)
+            {
+                mPositionMotor.set(-kMaxMotorSpeed);
+                return potValue;
+            }
+            else if (potValue < targetPosition)
+            {
+                mPositionMotor.set(kMaxMotorSpeed);
+                return potValue;
+            }
+            else
+            {
+                return potValue;
+            }
         }
 
     }
@@ -326,27 +340,33 @@ public class ArticulatedGrabber extends Subsystem
         switch (mWantedState)
         {
             case TRANSPORT: //grabbing and flat against lift      //position: 0, open: false
-                if (Util.epsilonEquals(potValue, mHoldPosition, kAcceptablePositionError) && !mGrabber.get()) 
+                if (Util.epsilonEquals(potValue, mHoldPosition, kAcceptablePositionError)
+                        && !mGrabber.get())
                     t = true;
                 break;
             case PREPARE_DROP: //grabbing and over switch/scale      //position: 1, open: false
-                if (Util.epsilonEquals(potValue, mPlacePosition, kAcceptablePositionError) && !mGrabber.get()) 
+                if (Util.epsilonEquals(potValue, mPlacePosition, kAcceptablePositionError)
+                        && !mGrabber.get())
                     t = true;
                 break;
             case GRAB_CUBE: //grabbing and over the ground        //position: 2, open: false
-                if (Util.epsilonEquals(potValue, mPickPosition, kAcceptablePositionError) && !mGrabber.get())
+                if (Util.epsilonEquals(potValue, mPickPosition, kAcceptablePositionError)
+                        && !mGrabber.get())
                     t = true;
                 break;
             case PREPARE_EXCHANGE: //not grabbing and flat against lift  //position: 0, open: true
-                if (Util.epsilonEquals(potValue, mHoldPosition, kAcceptablePositionError) && mGrabber.get())
+                if (Util.epsilonEquals(potValue, mHoldPosition, kAcceptablePositionError)
+                        && mGrabber.get())
                     t = true;
                 break;
             case RELEASE_CUBE: //not grabbing over the switch/scale  //position: 1, open: true
-                if (Util.epsilonEquals(potValue, mPlacePosition, kAcceptablePositionError) && mGrabber.get())
+                if (Util.epsilonEquals(potValue, mPlacePosition, kAcceptablePositionError)
+                        && mGrabber.get())
                     t = true;
                 break;
             case PREPARE_INTAKE: //not grabbing over the ground        //position: 2, open: true
-                if (Util.epsilonEquals(potValue, mPickPosition, kAcceptablePositionError) && mGrabber.get())
+                if (Util.epsilonEquals(potValue, mPickPosition, kAcceptablePositionError)
+                        && mGrabber.get())
                     t = true;
                 break;
             case DISABLED:
@@ -364,7 +384,8 @@ public class ArticulatedGrabber extends Subsystem
     public void outputToSmartDashboard() //dashboard logging
     {
         dashboardPutWantedState(mWantedState.toString());
-        dashboardPutState("Grab:" + !mSystemState.grabberOpen + " Pot:" + mPotentiometer.getAverageValue());
+        dashboardPutState(
+                "Grab:" + !mSystemState.grabberOpen + " Pot:" + mPotentiometer.getAverageValue());
         dashboardPutBoolean("RevLimitSwitch", !mLimitSwitchRev.get());
         dashboardPutBoolean("FwdLimitSwitch", !mLimitSwitchFwd.get());
         dashboardPutNumber("MotorCurrent", mPositionMotor.getOutputCurrent());
@@ -486,9 +507,11 @@ public class ArticulatedGrabber extends Subsystem
                         if (!mLimitSwitchFwd.get()) // limit switches are normally closed
                         {
                             logNotice("limit switch encounterd at " + mPotentiometer.getValue());
-                            logNotice("mFwdPotentiometerValue before: " + mFwdLimitPotentiometerValue);
+                            logNotice("mFwdPotentiometerValue before: "
+                                    + mFwdLimitPotentiometerValue);
                             mFwdLimitPotentiometerValue = mPotentiometer.getAverageValue();
-                            logNotice("mFwdPotentiometerValue after: " + mFwdLimitPotentiometerValue);
+                            logNotice(
+                                    "mFwdPotentiometerValue after: " + mFwdLimitPotentiometerValue);
                             break;
                         }
                         else if (t.hasPeriodPassed(10))
@@ -514,9 +537,11 @@ public class ArticulatedGrabber extends Subsystem
                         if (!mLimitSwitchRev.get()) // limit switches are normally closed
                         {
                             logNotice("limit switch encounterd at " + mPotentiometer.getValue());
-                            logNotice("mRevPotentiometerValue before: " + mRevLimitPotentiometerValue);
+                            logNotice("mRevPotentiometerValue before: "
+                                    + mRevLimitPotentiometerValue);
                             mRevLimitPotentiometerValue = mPotentiometer.getAverageValue();
-                            logNotice("mRevPotentiometerValue after: " + mRevLimitPotentiometerValue);
+                            logNotice(
+                                    "mRevPotentiometerValue after: " + mRevLimitPotentiometerValue);
                             break;
                         }
                         else if (t.hasPeriodPassed(10))
