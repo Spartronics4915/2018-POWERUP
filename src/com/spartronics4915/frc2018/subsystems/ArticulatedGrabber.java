@@ -58,7 +58,7 @@ public class ArticulatedGrabber extends Subsystem
         PREPARE_EXCHANGE, //not grabbing and flat against lift  //position: 0, open: true
         RELEASE_CUBE, //not grabbing over the switch/scale  //position: 1, open: true
         PREPARE_INTAKE, //not grabbing over the ground        //position: 2, open: true
-        MANUAL,
+        MANUAL,//TODO: Change to manual control open and closed?
         DISABLED
     }
 
