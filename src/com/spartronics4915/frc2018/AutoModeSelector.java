@@ -44,6 +44,7 @@ public class AutoModeSelector
             new AutoModeCreator("C: Place at Switch", () -> new PlaceSwitchFromCMode()),
             new AutoModeCreator("Test: Stress Motor Mode", () -> new StressMotorsMode()),
             new AutoModeCreator("Test: Turn to Cube Mode", () -> new TurnToCubeMode()),
+            new AutoModeCreator("Test: Find the Cube Mode", () -> new FindCube()),
 
             // e.g. new AutoModeCreator("Boiler Gear then 10 Ball Shoot Red", () -> new BoilerGearThenShootModeRed()),
     };

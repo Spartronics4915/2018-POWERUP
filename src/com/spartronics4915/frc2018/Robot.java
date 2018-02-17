@@ -137,7 +137,7 @@ public class Robot extends IterativeRobot
             Logger.notice("CANDevicesFound: " + canReport);
             int numDevices = canProbe.getCANDeviceCount();
             SmartDashboard.putString("CANBusStatus",
-                   numDevices == Constants.kNumCANDevices ? "OK"
+                    numDevices == Constants.kNumCANDevices ? "OK"
                             : ("" + numDevices + "/" + Constants.kNumCANDevices));
 
             // Subsystem instances
@@ -327,42 +327,41 @@ public class Robot extends IterativeRobot
             {
                 //TODO: implement superstructure - see strategy playbook
             }
-            
+
             if (mControlBoard.getClimb())
             {
                 mClimber.setWantedState(Climber.WantedState.CLIMB);
             }
-            
+
             if (mControlBoard.getStopClimb())
             {
                 mClimber.setWantedState(Climber.WantedState.HOLD);
             }
-            
+
             if (mControlBoard.getClimberIdle())
             {
                 mClimber.setWantedState(Climber.WantedState.IDLE);
             }
-            
+
             if (mControlBoard.getScissorLiftOff())
             {
                 mLifter.setWantedState(ScissorLift.WantedState.OFF);
             }
-            
+
             if (mControlBoard.getGrabberTransport())
             {
                 mGrabber.setWantedState(ArticulatedGrabber.WantedState.TRANSPORT);
             }
-            
+
             if (mControlBoard.getGrabberGrabCube())
             {
                 mGrabber.setWantedState(ArticulatedGrabber.WantedState.GRAB_CUBE);
             }
-            
+
             if (mControlBoard.getGrabberPrepareDrop())
             {
                 mGrabber.setWantedState(ArticulatedGrabber.WantedState.PREPARE_DROP);
             }
-
 
             allButTestPeriodic();
         }

@@ -23,7 +23,7 @@ public interface ControlBoardInterface
     boolean getReadyToDropScale();
 
     boolean getDropCube();
-    
+
     boolean getOpenHarvester();
 
     boolean getCloseHarvester();
@@ -31,27 +31,19 @@ public interface ControlBoardInterface
     boolean getEjectCube();
 
     boolean getCarryCube();
-    
+
     boolean getClimb();
-    
+
     boolean getStopClimb();
-    
+
     //TESTING CONTROLS
     boolean getClimberIdle();
-    
+
     boolean getScissorLiftOff();
-    
+
     boolean getGrabberTransport();
-    
+
     boolean getGrabberGrabCube();
-    
+
     boolean getGrabberPrepareDrop();
-    
-    // Debug buttons, remove me
-    boolean getDebugPrimary();
-
-    boolean getDebugSecondary();
-
-    boolean getDebugTertiary();
-
 }

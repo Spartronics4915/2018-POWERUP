@@ -31,8 +31,8 @@ public class ArticulatedGrabber extends Subsystem
     private LazySolenoid mGrabber = null;
     private LazySolenoid mGrabberSetup = null;
     private AnalogInput mPotentiometer = null;
-    private DigitalInput mLimitSwitch1 = null;
-    private DigitalInput mLimitSwitch2 = null;
+    private DigitalInput mLimitSwitchRev = null;
+    private DigitalInput mLimitSwitchFwd = null;
 
     public static ArticulatedGrabber getInstance() //returns an instance of ArticulatedGrabber
     {
@@ -58,21 +58,28 @@ public class ArticulatedGrabber extends Subsystem
         GRAB_CUBE, //grabbing and over the ground        //position: 2, open: false
         PREPARE_EXCHANGE, //not grabbing and flat against lift  //position: 0, open: true
         RELEASE_CUBE, //not grabbing over the switch/scale  //position: 1, open: true
-        PREPARE_INTAKE //not grabbing over the ground        //position: 2, open: true
+        PREPARE_INTAKE, //not grabbing over the ground        //position: 2, open: true
+        DISABLED
     }
+    private final double kMaxMotorSpeed = 1.0; //Maximum Motor Speed: used in handlePosition method and config for mPositionMotor
+    private final int kAcceptablePositionError = 20; //margin of error
 
-    //TODO: once testing begins add default positions for the potentiometer
-    private int scalePosition = 2; //calibration
-    private int intakePosition = 1; //calibration
-    private int homePosition = 0; //calibration
-    private int acceptablePositionError = 0; //margin of error  //TODO set this when we have the robot
-    private int potValue;
+    private final int kDefaultHoldOffset = 10; //offset from the fwd limit switch
+    private final int kDefaultPickOffset = 273; //offset from the rev limit switch
+    private final int kDefaultPlaceOffset = 10; //offset from the rev limit switch
 
-    private double maxMotorSpeed = 1.0; //Maximum Motor Speed: used in handlePosition method and config for mPositionMotor
+    private int mFwdLimitPotentiometerValue = 1021;
+    private int mRevLimitPotentiometerValue = 465;
+
+    // these actual positions are computed from measured pot values at limit switches
+    //  offset by tuned values.
+    private int mHoldPosition = 1011;
+    private int mPickPosition = 738;
+    private int mPlacePosition = 475;
 
     private SystemState mNextState = new SystemState();
     private SystemState mSystemState = new SystemState();
-    private WantedState mWantedState = WantedState.PREPARE_EXCHANGE;
+    private WantedState mWantedState = WantedState.DISABLED;
 
     private ArticulatedGrabber() //sets up everything
     {
@@ -83,11 +90,12 @@ public class ArticulatedGrabber extends Subsystem
             mPositionMotor =
                     TalonSRX4915Factory.createDefaultMotor(Constants.kGrabberFlipperMotorId);
             mPositionMotor.configOutputPower(true, .5, 0, 0.5, 0, -0.5);
+            mPositionMotor.setBrakeMode(true);
             mGrabber = new LazySolenoid(Constants.kGrabberSolenoidId);
             mGrabberSetup = new LazySolenoid(Constants.kGrabberSetupSolenoidId);
             mPotentiometer = new AnalogInput(Constants.kGrabberAnglePotentiometerId);
-            mLimitSwitch1 = new DigitalInput(Constants.kFlipperHomeLimitSwitchId);
-            mLimitSwitch2 = new DigitalInput(Constants.kFlipperHome2LimitSwitchId);
+            mLimitSwitchRev = new DigitalInput(Constants.kFlipperRevLimitSwitchId);
+            mLimitSwitchFwd = new DigitalInput(Constants.kFlipperFwdLimitSwitchId);
 
             if (!mGrabber.isValid()) //instantiate your actuator and sensor objects here
             {
@@ -104,6 +112,13 @@ public class ArticulatedGrabber extends Subsystem
                 success = false;
                 logWarning("PositionMotor Invalid");
             }
+
+            // Initialize network tables during robotInit(), allows us to tweak values
+            //  XXX: requires us to place best-known values into these values.
+            dashboardPutNumber("Target1", kDefaultHoldOffset);
+            dashboardPutNumber("Target2", kDefaultPickOffset);
+            dashboardPutNumber("Target3", kDefaultPlaceOffset);
+
         }
         catch (Exception e)
         { //catches the failure to contain it to subsystem
@@ -140,24 +155,20 @@ public class ArticulatedGrabber extends Subsystem
                 }
 
                 //handles calls
-                potValue = mPotentiometer.getAverageValue(); //just cuts down on the number of calls
+                int potValue = mPotentiometer.getAverageValue(); //just cuts down on the number of calls
                 mNextState.articulatorPosition = handleGrabberPosition(potValue);
                 mNextState.grabberOpen = handleGrabberState(potValue);
 
                 if (mNextState.grabberOpen != mSystemState.grabberOpen) //logs change in state/position then assigns current state
                 {
-                    dashboardPutString("State change: ", "Articulated Grabber state from "
-                            + mSystemState.grabberOpen + "to" + mNextState.grabberOpen);
-                    logInfo("State change: Articulated Grabber state from "
-                            + mSystemState.grabberOpen + "to" + mNextState.grabberOpen);
+                    logInfo("Grabber change from "
+                            + mSystemState.grabberOpen + " to " + mNextState.grabberOpen);
                 }
-                if (mNextState.articulatorPosition != mSystemState.articulatorPosition) //logs change then updates SystemState
+                if (!Util.epsilonEquals(mNextState.articulatorPosition,
+                        mSystemState.articulatorPosition, kAcceptablePositionError))
                 {
-                    dashboardPutString("Position change: ",
-                            "Articulated Grabber position from " + mSystemState.articulatorPosition
-                                    + "to" + mNextState.articulatorPosition);
-                    logInfo("Position change: Articulated Grabber position from "
-                            + mSystemState.articulatorPosition + "to"
+                    logInfo("Position change from "
+                            + mSystemState.articulatorPosition + " to "
                             + mNextState.articulatorPosition);
                 }
                 mSystemState = mNextState;
@@ -179,6 +190,13 @@ public class ArticulatedGrabber extends Subsystem
     {
         switch (mWantedState) //you should probably be transferring state and controlling actuators in here
         {
+            case DISABLED:
+                if (mNextState.grabberOpen)
+                {
+                    mGrabber.set(false);
+                }
+                return false;
+
             case TRANSPORT:
                 if (mNextState.grabberOpen)
                 {
@@ -194,11 +212,18 @@ public class ArticulatedGrabber extends Subsystem
                 return false;
 
             case GRAB_CUBE:
-                if (mNextState.grabberOpen)
+                if (Util.epsilonEquals(potValue, mPickPosition, kAcceptablePositionError)) //TODO test on real robot
                 {
-                    mGrabber.set(false);
+                    if (mNextState.grabberOpen)
+                    {
+                        mGrabber.set(false);
+                    }
+                    return false;
                 }
-                return false;
+                else
+                {
+                    return true;
+                }
 
             case PREPARE_EXCHANGE:
                 if (!mNextState.grabberOpen)
@@ -208,7 +233,7 @@ public class ArticulatedGrabber extends Subsystem
                 return true;
 
             case RELEASE_CUBE:
-                if (Util.epsilonEquals(potValue, scalePosition, acceptablePositionError)) //TODO test on real robot
+                if (Util.epsilonEquals(potValue, mPlacePosition, kAcceptablePositionError)) //TODO test on real robot
                 {
                     if (!mNextState.grabberOpen)
                     {
@@ -238,161 +263,112 @@ public class ArticulatedGrabber extends Subsystem
 
     private int handleGrabberPosition(int potValue) //controls switching states for articulator
     {
+        int targetPosition = 0;
         switch (mWantedState) //you should probably be transferring state and controlling actuators in here
         {
             //We may want to check the limit switch when looking at moving to position zero as a safety mechanism
+            case DISABLED:
+                mPositionMotor.set(0);
+                return potValue;
+            //Intentional fall through    
             case TRANSPORT:
-                if (Util.epsilonEquals(potValue, homePosition, acceptablePositionError))
-                {
-                    mPositionMotor.set(0);
-                    return potValue;
-                }
-                else if (potValue > homePosition)
-                {
-                    mPositionMotor.set(-maxMotorSpeed);
-                    return potValue;
-                }
-                else if (potValue < homePosition)
-                {
-                    mPositionMotor.set(maxMotorSpeed);
-                    return potValue;
-                }
-                else
-                {
-                    return potValue;
-                }
+            case PREPARE_EXCHANGE:
+                targetPosition = mHoldPosition;
+                break;
 
             case PREPARE_DROP:
-                if (Util.epsilonEquals(potValue, scalePosition, acceptablePositionError))
-                {
-                    mPositionMotor.set(0);
-                    return potValue;
-                }
-                else if (potValue > scalePosition)
-                {
-                    mPositionMotor.set(-maxMotorSpeed);
-                    return potValue;
-                }
-                else if (potValue < scalePosition)
-                {
-                    mPositionMotor.set(maxMotorSpeed);
-                    return potValue;
-                }
-                else
-                {
-                    return potValue;
-                }
+            case RELEASE_CUBE:
+                targetPosition = mPlacePosition;
+                break;
 
             case GRAB_CUBE:
-
-                if (Util.epsilonEquals(potValue, intakePosition, acceptablePositionError))
-                {
-                    mPositionMotor.set(0);
-                    return potValue;
-                }
-                else if (potValue > intakePosition)
-                {
-                    mPositionMotor.set(-maxMotorSpeed);
-                    return potValue;
-                }
-                else if (potValue < intakePosition)
-                {
-                    mPositionMotor.set(maxMotorSpeed);
-                    return potValue;
-                }
-                else
-                {
-                    return potValue;
-                }
-
-            case PREPARE_EXCHANGE:
-
-               if (Util.epsilonEquals(potValue, homePosition, acceptablePositionError))
-                {
-                    mPositionMotor.set(0);
-                    return potValue;
-                }
-                else if (potValue > homePosition)
-                {
-                    mPositionMotor.set(-maxMotorSpeed);
-                    return potValue;
-                }
-                else if (potValue < homePosition)
-                {
-                    mPositionMotor.set(maxMotorSpeed);
-                    return potValue;
-                }
-                else
-                {
-                    return potValue;
-                }
-
-            case RELEASE_CUBE:
-
-                if (Util.epsilonEquals(potValue, scalePosition, acceptablePositionError))
-                {
-                    mPositionMotor.set(0);
-                    return potValue;
-                }
-                else if (potValue > scalePosition)
-                {
-                    mPositionMotor.set(-maxMotorSpeed);
-                    return potValue;
-                }
-                else if (potValue < scalePosition)
-                {
-                    mPositionMotor.set(maxMotorSpeed);
-                    return potValue;
-                }
-                else
-                {
-                    return potValue;
-                }
-
             case PREPARE_INTAKE:
-
-                if (Util.epsilonEquals(potValue, intakePosition, acceptablePositionError))
-                {
-                    mPositionMotor.set(0);
-                    return potValue;
-                }
-                else if (potValue > intakePosition)
-                {
-                    mPositionMotor.set(-maxMotorSpeed);
-                    return potValue;
-                }
-                else if (potValue < intakePosition)
-                {
-                    mPositionMotor.set(maxMotorSpeed);
-                    return potValue;
-                }
-                else
-                {
-                    return potValue;
-                }
+                targetPosition = mPickPosition;
+                break;
 
             default:
                 logWarning("Unexpected Case " + mWantedState.toString());
                 mPositionMotor.set(0.0);
                 return potValue;
         }
+        if (Util.epsilonEquals(potValue, targetPosition, kAcceptablePositionError))
+        {
+            mPositionMotor.set(0);
+            return potValue;
+        }
+        else if (potValue > targetPosition)
+        {
+            mPositionMotor.set(-kMaxMotorSpeed);
+            return potValue;
+        }
+        else if (potValue < targetPosition)
+        {
+            mPositionMotor.set(kMaxMotorSpeed);
+            return potValue;
+        }
+        else
+        {
+            return potValue;
+        }
+
     }
 
     public void setWantedState(WantedState wantedState)
     {
         mWantedState = wantedState;
-        dashboardPutWantedState(mWantedState.toString());
+    }
+
+    // This is unfortunate code duplication. This should be used other places in the subsystem,
+    // but bag day is < week away, so it's not.
+    public boolean atTarget()
+    {
+        double potValue = mPotentiometer.getAverageValue();
+        boolean t = false;
+        switch (mWantedState)
+        {
+            case TRANSPORT: //grabbing and flat against lift      //position: 0, open: false
+                if (Util.epsilonEquals(potValue, 0, kAcceptablePositionError)) // FIXME
+                    t = true;
+                break;
+            case PREPARE_DROP: //grabbing and over switch/scale      //position: 1, open: false
+                if (Util.epsilonEquals(potValue, 0, kAcceptablePositionError)) // FIXME
+                    t = true;
+                break;
+            case GRAB_CUBE: //grabbing and over the ground        //position: 2, open: false
+                if (Util.epsilonEquals(potValue, 0, kAcceptablePositionError)) // FIXME
+                    t = true;
+                break;
+            case PREPARE_EXCHANGE: //not grabbing and flat against lift  //position: 0, open: true
+                if (Util.epsilonEquals(potValue, mHoldPosition, kAcceptablePositionError))
+                    t = true;
+                break;
+            case RELEASE_CUBE: //not grabbing over the switch/scale  //position: 1, open: true
+                if (Util.epsilonEquals(potValue, mPlacePosition, kAcceptablePositionError))
+                    t = true;
+                break;
+            case PREPARE_INTAKE: //not grabbing over the ground        //position: 2, open: true
+                if (Util.epsilonEquals(potValue, mPickPosition, kAcceptablePositionError))
+                    t = true;
+                break;
+            case DISABLED:
+                if (mPositionMotor.get() == 0)
+                    t = true;
+                break;
+            default:
+                t = false;
+                break;
+        }
+        return t;
     }
 
     @Override
     public void outputToSmartDashboard() //dashboard logging
     {
-        dashboardPutState("position: " + mSystemState.articulatorPosition + " grabber: "
-                + mSystemState.grabberOpen);
-        dashboardPutNumber("potentiometer value: ", mPotentiometer.getAverageValue());
-        dashboardPutBoolean("limitswitch1 pressed: ", !mLimitSwitch1.get());
-        dashboardPutBoolean("limitswitch2 pressed: ", !mLimitSwitch2.get());
-        dashboardPutNumber("position motor", mPositionMotor.getOutputCurrent());
+        dashboardPutWantedState(mWantedState.toString());
+        dashboardPutState("Grab:" + !mSystemState.grabberOpen + " Pot:" + mPotentiometer.getAverageValue());
+        dashboardPutBoolean("RevLimitSwitch", !mLimitSwitchRev.get());
+        dashboardPutBoolean("FwdLimitSwitch", !mLimitSwitchFwd.get());
+        dashboardPutNumber("MotorCurrent", mPositionMotor.getOutputCurrent());
     }
 
     @Override
@@ -405,14 +381,32 @@ public class ArticulatedGrabber extends Subsystem
         mSystemState.grabberOpen = false; //TODO maybe add something to stop WantedStates from retriggering SystemStates
     }
 
-    @Override
-    public void zeroSensors() //calibrates sensors by adding the amount of offput from the potentiometer
+    private void updatePositions()
     {
-        if (!mLimitSwitch1.get())
+        mHoldPosition = mFwdLimitPotentiometerValue -
+                dashboardGetNumber("Target1", kDefaultHoldOffset).intValue();
+        mPickPosition = mRevLimitPotentiometerValue +
+                dashboardGetNumber("Target2", kDefaultPickOffset).intValue();
+        mPlacePosition = mRevLimitPotentiometerValue +
+                dashboardGetNumber("Target3", kDefaultPlaceOffset).intValue();
+
+        logNotice("hold position: " + mHoldPosition);
+        logNotice("pick position: " + mPickPosition);
+        logNotice("place position: " + mPlacePosition);
+    }
+
+    @Override
+    public void zeroSensors() //calibrates sensors by adding the amount of offset from the potentiometer
+    {
+        if (!mLimitSwitchRev.get()) // limit switches are normally open
         {
-            // scalePosition += potValue;
-            // intakePosition += potValue;
-            // homePosition += potValue;
+            mRevLimitPotentiometerValue = mPotentiometer.getAverageValue();
+            updatePositions();
+        }
+        else if (!mLimitSwitchFwd.get())
+        {
+            mFwdLimitPotentiometerValue = mPotentiometer.getAverageValue();
+            updatePositions();
         }
     }
 
@@ -443,9 +437,9 @@ public class ArticulatedGrabber extends Subsystem
                     logNotice("    mGrabber: " + mGrabber.get());
                     logNotice("    mGrabberSetup: " + mGrabberSetup.get());
                     logNotice("    mPotentiometer: " + mPotentiometer.getValue());
-                    logNotice("    mLimitSwitch1: " + mLimitSwitch1.get());
-                    logNotice("    mLimitSwitch2: " + mLimitSwitch2.get());
-               }
+                    logNotice("    mLimitSwitch1: " + mLimitSwitchRev.get());
+                    logNotice("    mLimitSwitch2: " + mLimitSwitchFwd.get());
+                }
 
                 if (variant.equals("grabber") || allTests)
                 {
@@ -468,34 +462,36 @@ public class ArticulatedGrabber extends Subsystem
                 if (variant.equals("motor") || allTests)
                 {
                     logNotice("motor check ------");
-                    logNotice("   fwd .1, 1s");
-                    mPositionMotor.set(.2);
-                    Timer.delay(5.0);
                     logNotice("    pot: " + mPotentiometer.getValue());
-                    logNotice("   rev .1, 1s");
+                    logNotice("   fwd .2, 1s");
+                    mPositionMotor.set(.2);
+                    Timer.delay(1.0);
+                    logNotice("    pot: " + mPotentiometer.getValue());
+                    logNotice("   rev .2, 1s");
                     mPositionMotor.set(-.2);
                     Timer.delay(1.0);
                     logNotice("    pot: " + mPotentiometer.getValue());
                     mPositionMotor.set(0.0);
                 }
-
                 if (variant.equals("motorlimit") || allTests)
                 {
                     logNotice("motor check ------");
-                    logNotice("   fwd .2 to limit, 10s");
+                    logNotice("   fwd .4 to limit, 10s");
                     Timer t = new Timer();
                     int counter = 0;
                     t.start();
-                    mPositionMotor.set(.2); // - draws the flipper back to the scissor lift
-                    while(true)
+                    mPositionMotor.set(.4);
+                    while (true)
                     {
-                        if(!mLimitSwitch1.get() || !mLimitSwitch2.get()) // FIXME: change to assume normally open
+                        if (!mLimitSwitchFwd.get()) // limit switches are normally closed
                         {
                             logNotice("limit switch encounterd at " + mPotentiometer.getValue());
+                            logNotice("mFwdPotentiometerValue before: " + mFwdLimitPotentiometerValue);
+                            mFwdLimitPotentiometerValue = mPotentiometer.getAverageValue();
+                            logNotice("mFwdPotentiometerValue after: " + mFwdLimitPotentiometerValue);
                             break;
                         }
-                        else
-                        if(t.hasPeriodPassed(10))
+                        else if (t.hasPeriodPassed(10))
                         {
                             logError("fwd 1s didn't encounter limit switch!!!!!!!");
                             success = false;
@@ -504,11 +500,42 @@ public class ArticulatedGrabber extends Subsystem
                         else
                         {
                             Timer.delay(.1);
-                            if(counter++ % 10 == 0)
+                            if (counter++ % 10 == 0)
                                 logNotice("    pot: " + mPotentiometer.getValue());
                         }
                     }
+                    logNotice("Position Motor Current: " + mPositionMotor.getOutputCurrent());
+                    logNotice("   rev .7 to limit, 10s");
+                    mPositionMotor.set(-.7);
+                    t.reset();
+                    t.start();
+                    while (true)
+                    {
+                        if (!mLimitSwitchRev.get()) // limit switches are normally closed
+                        {
+                            logNotice("limit switch encounterd at " + mPotentiometer.getValue());
+                            logNotice("mRevPotentiometerValue before: " + mRevLimitPotentiometerValue);
+                            mRevLimitPotentiometerValue = mPotentiometer.getAverageValue();
+                            logNotice("mRevPotentiometerValue after: " + mRevLimitPotentiometerValue);
+                            break;
+                        }
+                        else if (t.hasPeriodPassed(10))
+                        {
+                            logError("rev 1s didn't encounter limit switch!!!!!!!");
+                            success = false;
+                            break;
+                        }
+                        else
+                        {
+                            Timer.delay(.1);
+                            if (counter++ % 10 == 0)
+                                logNotice("    pot: " + mPotentiometer.getValue());
+                        }
+                    }
+                    logNotice("Position Motor Current: " + mPositionMotor.getOutputCurrent());
                     mPositionMotor.set(0);
+                    updatePositions();
+                    logNotice("calibration complete----------");
                 }
             }
             catch (Throwable e)
