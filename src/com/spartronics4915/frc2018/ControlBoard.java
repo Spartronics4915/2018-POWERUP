@@ -1,6 +1,9 @@
 package com.spartronics4915.frc2018;
 
+import com.spartronics4915.lib.util.Logger;
+
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
  * Contains the button mappings for the competition control board. Like the
@@ -27,139 +30,104 @@ public class ControlBoard implements ControlBoardInterface
 
     private final Joystick mDrivestick;
     private final Joystick mButtonBoard;
-    private double previousGetReadyToHarvest;
-    private double previousGetDropCube;
+    private double mPreviousGetReadyToHarvest;
+    private double mPreviousGetDropCube;
+    private final boolean mTestsAllowed;
 
     protected ControlBoard()
     {
         mDrivestick = new Joystick(0);
         mButtonBoard = new Joystick(1);
-        previousGetReadyToHarvest = 0.0;
-        previousGetDropCube = 0.0;
+        mPreviousGetReadyToHarvest = 0.0;
+        mPreviousGetDropCube = 0.0;
+        mTestsAllowed = SmartDashboard.getBoolean("TestingGUI", false);
     }
 
     @Override
-    public double getThrottle()
+    public double readStick(Sticks a)
     {
-        return -mDrivestick.getZ(); // Is this reversed on the new joystick???
+        double result = 0.;
+        switch (a)
+        {
+            case kThrottle:
+                result = -mDrivestick.getZ(); // Is this reversed on the new joystick???
+                break;
+            case kTurn:
+                result = mDrivestick.getX();
+                break;
+            default:
+                Logger.error("ControlBoard: unimplemented analog control: " + a.toString());
+                break;
+        }
+        return result;
     }
 
     @Override
-    public double getTurn()
+    public boolean readButton(Buttons b)
     {
-        return mDrivestick.getX();
-    }
-
-    @Override
-    public boolean getQuickTurn()
-    {
-        return mDrivestick.getRawButtonPressed(2);
-    }
-
-    @Override
-    public boolean getLowGear()
-    {
-        return mDrivestick.getTriggerPressed();
-    }
-
-    @Override
-    public boolean getReadyToHarvest()
-    {
-        double current = mButtonBoard.getRawAxis(2);
-        boolean isReady;
-
-        isReady = (previousGetReadyToHarvest != current) && (current == 1.0);
-        previousGetReadyToHarvest = current;
-        return isReady;
-    }
-
-    @Override
-    public boolean getReadyToDropSwitch()
-    {
-        return mButtonBoard.getRawButtonPressed(1);
-    }
-
-    @Override
-    public boolean getReadyToDropScale()
-    {
-        return mButtonBoard.getRawButtonPressed(2);
-    }
-
-    @Override
-    public boolean getDropCube()
-    {
-        double current = mButtonBoard.getRawAxis(3);
-        boolean isReady;
-
-        isReady = (previousGetDropCube != current) && (current == 1.0);
-        previousGetDropCube = current;
-        return isReady;
-    }
-
-    @Override
-    public boolean getOpenHarvester()
-    {
-        return mButtonBoard.getRawButtonPressed(5);
-    }
-
-    @Override
-    public boolean getCloseHarvester()
-    {
-        return mButtonBoard.getRawButtonPressed(3);
-    }
-
-    @Override
-    public boolean getEjectCube()
-    {
-        return mButtonBoard.getRawButtonPressed(4);
-    }
-
-    @Override
-    public boolean getCarryCube()
-    {
-        return mButtonBoard.getRawButtonPressed(6);
-    }
-
-    @Override
-    public boolean getClimb()
-    {
-        return mButtonBoard.getRawButtonPressed(7);
-    }
-
-    @Override
-    public boolean getStopClimb()
-    {
-        return mButtonBoard.getRawButtonPressed(8);
-    }
-
-    //Temporary Drive Stick controls
-    @Override
-    public boolean getClimberIdle()
-    {
-        return mDrivestick.getRawButtonPressed(5);
-    }
-
-    @Override
-    public boolean getGrabberTransport()
-    {
-        return mDrivestick.getRawButtonPressed(6);
-    }
-
-    @Override
-    public boolean getGrabberGrabCube()
-    {
-        return mDrivestick.getRawButtonPressed(7);
-    }
-
-    @Override
-    public boolean getGrabberPrepareDrop()
-    {
-        return mDrivestick.getRawButtonPressed(8);
-    }
-
-    @Override
-    public boolean getGrabberPrepareIntake()
-    {
-        return mDrivestick.getRawButtonPressed(9);
+        boolean result = false;
+        double current;
+        switch (b)
+        {
+            case kQuickTurn:
+                result = mDrivestick.getRawButtonPressed(2);
+                break;
+            case kLowGear:
+                result = mDrivestick.getTriggerPressed(); // available!
+                break;
+            case kReadyToHarvest:
+                current = mButtonBoard.getRawAxis(2);
+                result = (mPreviousGetReadyToHarvest != current) && (current == 1.0);
+                mPreviousGetReadyToHarvest = current;
+                break;
+            case kReadyToDropSwitch:
+                result = mButtonBoard.getRawButtonPressed(1);
+                break;
+            case kReadyToDropScale:
+                result = mButtonBoard.getRawButtonPressed(2);
+                break;
+            case kDropCube:
+                current = mButtonBoard.getRawAxis(3);
+                result = (mPreviousGetDropCube != current) && (current == 1.0);
+                mPreviousGetDropCube = current;
+                break;
+            case kOpenHarvester:
+                result = mButtonBoard.getRawButtonPressed(5);
+                break;
+            case kCloseHarvester:
+                result = mButtonBoard.getRawButtonPressed(3);
+                break;
+            case kEjectCube:
+                result = mButtonBoard.getRawButtonPressed(4);
+                break;
+            case kCarryCube:
+                result = mButtonBoard.getRawButtonPressed(6);
+                break;
+            case kClimb:
+                result = mButtonBoard.getRawButtonPressed(7);
+                break;
+            case kStopClimb:
+                result = mButtonBoard.getRawButtonPressed(8);
+                break;
+            case kTestClimbIdle:
+                result = mTestsAllowed ? mDrivestick.getRawButtonPressed(5) : false;
+                break;
+            case kTestGrabberTransport:
+                result = mTestsAllowed ? mDrivestick.getRawButtonPressed(6) : false;
+                break;
+            case kTestGrabberGrabCube:
+                result = mTestsAllowed ? mDrivestick.getRawButtonPressed(7) : false;
+                break;
+            case kTestGrabberPrepareDrop:
+                result = mTestsAllowed ? mDrivestick.getRawButtonPressed(8) : false;
+                break;
+            case kTestGrabberPrepareIntake:
+                result = mTestsAllowed ? mDrivestick.getRawButtonPressed(9) : false;
+                break;
+            default:
+                Logger.error("ControlBoard: unimplemented boolean: " + b.toString());
+                break;
+        }
+        return result;
     }
 }
