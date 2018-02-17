@@ -42,7 +42,6 @@ public class Harvester extends Subsystem
         HARVESTING,
         EJECTING,
         HUGGING,
-        PREHARVESTING,
         DISABLING,
     }
 
@@ -51,7 +50,6 @@ public class Harvester extends Subsystem
         OPEN,
         HARVEST,
         EJECT,
-        PREHARVEST,
         DISABLE,
     }
 
@@ -135,9 +133,6 @@ public class Harvester extends Subsystem
                     case OPENING:
                         newState = handleOpening();
                         break;
-                    case PREHARVESTING:
-                        newState = handlePreharvesting();
-                        break;
                     case HARVESTING:
                         newState = handleHarvesting();
                         break;
@@ -180,15 +175,12 @@ public class Harvester extends Subsystem
         {
             case OPEN:
                 return SystemState.OPENING;
-            case PREHARVEST:
-                return SystemState.PREHARVESTING;
             case HARVEST:
                 return SystemState.HARVESTING;
             case EJECT:
                 return SystemState.EJECTING;
             default:
                 return mSystemState;
-
         }
     }
 
@@ -198,7 +190,7 @@ public class Harvester extends Subsystem
         mSolenoid.set(kSolenoidClose);
         mMotorLeft.set(0.0);
         mMotorRight.set(0.0);
-        if (mWantedState == WantedState.OPEN || mWantedState == WantedState.PREHARVEST)
+        if (mWantedState == WantedState.OPEN)
         {
             return defaultStateTransfer();
         }
@@ -209,26 +201,13 @@ public class Harvester extends Subsystem
     {
         //motors off and bars out
         mSolenoid.set(kSolenoidOpen);
-        mMotorLeft.set(0.0);
-        mMotorRight.set(0.0);
-        if (mWantedState == WantedState.HARVEST || mWantedState == WantedState.PREHARVEST)
-        {
-            return defaultStateTransfer();
-        }
-        return SystemState.OPENING;
-    }
-
-    private SystemState handlePreharvesting()
-    {
-        //motors on and bars out
-        mSolenoid.set(kSolenoidOpen);
         mMotorLeft.set(1.0);
         mMotorRight.set(1.0);
         if (mWantedState == WantedState.HARVEST)
         {
             return defaultStateTransfer();
         }
-        return SystemState.PREHARVESTING;
+        return SystemState.OPENING;
     }
 
     private SystemState handleHarvesting()
@@ -288,10 +267,6 @@ public class Harvester extends Subsystem
         boolean t = false;
         switch (mSystemState)
         {
-            case CLOSING:
-                if (mWantedState == WantedState.CLOSE)
-                    t = true;
-                break;
             case OPENING:
                 if (mWantedState == WantedState.OPEN)
                     t = true;
@@ -302,14 +277,6 @@ public class Harvester extends Subsystem
                 break;
             case EJECTING:
                 if (mWantedState == WantedState.EJECT)
-                    t = true;
-                break;
-            case HUGGING:
-                if (mWantedState == WantedState.HUG)
-                    t = true;
-                break;
-            case PREHARVESTING:
-                if (mWantedState == WantedState.PREHARVEST)
                     t = true;
                 break;
             case DISABLING:

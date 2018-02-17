@@ -303,11 +303,6 @@ public class Robot extends IterativeRobot
                 mHarvester.setWantedState(Harvester.WantedState.OPEN);
             }
             
-            if (mControlBoard.getHarvesterPreharvest())
-            {
-                mHarvester.setWantedState(Harvester.WantedState.PREHARVEST);
-            }
-            
             if (mControlBoard.getClimberClimb())
             {
                 mClimber.setWantedState(Climber.WantedState.CLIMB);
