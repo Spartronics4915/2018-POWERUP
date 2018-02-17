@@ -352,17 +352,16 @@ public class Robot extends IterativeRobot
             {
                 mGrabber.setWantedState(ArticulatedGrabber.WantedState.GRAB_CUBE);
             }
-
+            
             if (mControlBoard.getGrabberPrepareDrop())
             {
                 mGrabber.setWantedState(ArticulatedGrabber.WantedState.PREPARE_DROP);
             }
-
+            
             if (mControlBoard.getGrabberPrepareIntake())
             {
                 mGrabber.setWantedState(ArticulatedGrabber.WantedState.PREPARE_INTAKE);
             }
-
             allButTestPeriodic();
         }
         catch (Throwable t)
