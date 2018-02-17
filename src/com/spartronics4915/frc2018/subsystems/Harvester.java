@@ -50,6 +50,7 @@ public class Harvester extends Subsystem
         OPEN,
         HARVEST,
         EJECT,
+        HUG,
         DISABLE,
     }
 
@@ -179,6 +180,8 @@ public class Harvester extends Subsystem
                 return SystemState.HARVESTING;
             case EJECT:
                 return SystemState.EJECTING;
+            case HUG:
+                return SystemState.HUGGING;
             default:
                 return mSystemState;
         }
@@ -279,6 +282,10 @@ public class Harvester extends Subsystem
                 if (mWantedState == WantedState.EJECT)
                     t = true;
                 break;
+            case HUGGING:
+                if (mWantedState == WantedState.HUG)
+                    t = true;
+                    break;
             case DISABLING:
                 if (mWantedState == WantedState.DISABLE)
                     t = true;
@@ -292,7 +299,7 @@ public class Harvester extends Subsystem
     
     private boolean isCubeHeld()
     {
-        return mCubeHeldSensor.isTargetInDistanceRange(kCubeMinDistanceInches, kCubeMaxDistanceInches);
+        return mCubeHeldSensor.isTargetAcquired();
     }
 
     @Override
