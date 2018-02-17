@@ -27,6 +27,8 @@ import com.spartronics4915.lib.util.Logger;
 import com.spartronics4915.lib.util.DelayedBoolean;
 import com.spartronics4915.lib.util.DriveSignal;
 import com.spartronics4915.lib.util.math.RigidTransform2d;
+import com.spartronics4915.frc2018.ControlBoardInterface.Sticks;
+import com.spartronics4915.frc2018.ControlBoardInterface.Buttons;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.IterativeRobot;
@@ -176,6 +178,7 @@ public class Robot extends IterativeRobot
             PathAdapter.calculatePaths();
             zeroAllSensors();
             success = true;
+            
         }
         catch (Throwable t)
         {
@@ -257,6 +260,8 @@ public class Robot extends IterativeRobot
             mDrive.setOpenLoop(DriveSignal.NEUTRAL);
             mDrive.enableBraking(false);
             zeroAllSensors();
+            
+            mLED.setVisionLampOn();
         }
         catch (Throwable t)
         {
@@ -282,83 +287,85 @@ public class Robot extends IterativeRobot
     {
         try
         {
-            double throttle = mControlBoard.getThrottle();
-            double turn = mControlBoard.getTurn();
+            double throttle = mControlBoard.readStick(Sticks.kThrottle);
+            double turn = mControlBoard.readStick(Sticks.kTurn);
             mDrive.setOpenLoop(
-                    mCheesyDriveHelper.cheesyDrive(throttle, turn, mControlBoard.getQuickTurn(),
-                            !mControlBoard.getLowGear()));
+                    mCheesyDriveHelper.cheesyDrive(throttle, turn, 
+                            mControlBoard.readButton(Buttons.kQuickTurn),
+                            !mControlBoard.readButton(Buttons.kLowGear)));
 
-            if (mControlBoard.getReadyToHarvest())
+            if (mControlBoard.readButton(Buttons.kReadyToHarvest))
             {
                 mLifter.setWantedState(ScissorLift.WantedState.OFF);
             }
 
-            if (mControlBoard.getReadyToDropSwitch())
+            if (mControlBoard.readButton(Buttons.kReadyToDropSwitch))
             {
                 mLifter.setWantedState(ScissorLift.WantedState.SWITCH);
             }
 
-            if (mControlBoard.getReadyToDropScale())
+            if (mControlBoard.readButton(Buttons.kReadyToDropScale))
             {
                 mLifter.setWantedState(ScissorLift.WantedState.SCALE);
             }
-            if (mControlBoard.getDropCube())
+
+            if (mControlBoard.readButton(Buttons.kDropCube))
             {
                 //TODO: implement superstructure - see strategy playbook
             }
 
-            if (mControlBoard.getOpenHarvester())
+            if (mControlBoard.readButton(Buttons.kOpenHarvester))
             {
                 mHarvester.setWantedState(Harvester.WantedState.OPEN);
             }
 
-            if (mControlBoard.getCloseHarvester())
+            if (mControlBoard.readButton(Buttons.kCloseHarvester))
             {
                 mHarvester.setWantedState(Harvester.WantedState.HARVEST);
             }
 
-            if (mControlBoard.getEjectCube())
+            if (mControlBoard.readButton(Buttons.kEjectCube))
             {
                 mHarvester.setWantedState(Harvester.WantedState.EJECT);
             }
 
-            if (mControlBoard.getCarryCube())
+            if (mControlBoard.readButton(Buttons.kCarryCube))
             {
                 //TODO: implement superstructure - see strategy playbook
             }
 
-            if (mControlBoard.getClimb())
+            if (mControlBoard.readButton(Buttons.kClimb))
             {
                 mClimber.setWantedState(Climber.WantedState.CLIMB);
                 //TODO: implement superstructure - see strategy playbook
             }
 
-            if (mControlBoard.getStopClimb())
+            if (mControlBoard.readButton(Buttons.kStopClimb))
             {
                 mClimber.setWantedState(Climber.WantedState.HOLD);
             }
 
-            if (mControlBoard.getClimberIdle())
+            if (mControlBoard.readButton(Buttons.kTestClimbIdle))
             {
                 mClimber.setWantedState(Climber.WantedState.IDLE);
             }
 
-            if (mControlBoard.getGrabberTransport())
+            if (mControlBoard.readButton(Buttons.kTestGrabberTransport))
             {
                 mGrabber.setWantedState(ArticulatedGrabber.WantedState.TRANSPORT);
             }
 
-            if (mControlBoard.getGrabberGrabCube())
+            if (mControlBoard.readButton(Buttons.kTestGrabberGrabCube))
             {
                 mGrabber.setWantedState(ArticulatedGrabber.WantedState.GRAB_CUBE);
             }
             
-            if (mControlBoard.getGrabberPrepareDrop())
+            if (mControlBoard.readButton(Buttons.kTestGrabberPrepareDrop))
             {
                 mGrabber.setWantedState(ArticulatedGrabber.WantedState.PREPARE_DROP);
             }
             
-            if (mControlBoard.getGrabberPrepareIntake())
+            if (mControlBoard.readButton(Buttons.kTestGrabberPrepareIntake))
             {
                 mGrabber.setWantedState(ArticulatedGrabber.WantedState.PREPARE_INTAKE);
             }
@@ -393,6 +400,8 @@ public class Robot extends IterativeRobot
             mDrive.setOpenLoop(DriveSignal.NEUTRAL);
 
             PathAdapter.calculatePaths();
+            
+            mLED.setVisionLampOff();
         }
         catch (Throwable t)
         {
