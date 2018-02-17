@@ -5,45 +5,34 @@ package com.spartronics4915.frc2018;
  */
 public interface ControlBoardInterface
 {
+    enum Sticks
+    {
+        kThrottle,
+        kTurn,
+    }
+    
+    enum Buttons
+    {
+        kQuickTurn,
+        kLowGear,
+        kReadyToHarvest,
+        kReadyToDropSwitch,
+        kReadyToDropScale,
+        kDropCube,
+        kOpenHarvester,
+        kCloseHarvester,
+        kEjectCube,
+        kCarryCube,
+        kClimb,
+        kStopClimb,
+        kTestClimbIdle,
+        kTestGrabberTransport,
+        kTestGrabberGrabCube,
+        kTestGrabberPrepareDrop,
+        kTestGrabberPrepareIntake
+    }
+    
+    double readStick(Sticks a);
+    boolean readButton(Buttons b);
 
-    // DRIVER CONTROLS
-    double getThrottle();
-
-    double getTurn();
-
-    boolean getQuickTurn();
-
-    boolean getLowGear();
-
-    //MECHANISM CONTROLS
-    boolean getReadyToHarvest();
-
-    boolean getReadyToDropSwitch();
-
-    boolean getReadyToDropScale();
-
-    boolean getDropCube();
-
-    boolean getOpenHarvester();
-
-    boolean getCloseHarvester();
-
-    boolean getEjectCube();
-
-    boolean getCarryCube();
-
-    boolean getClimb();
-
-    boolean getStopClimb();
-
-    //TESTING CONTROLS
-    boolean getClimberIdle();
-
-    boolean getGrabberTransport();
-
-    boolean getGrabberGrabCube();
-
-    boolean getGrabberPrepareDrop();
-
-    boolean getGrabberPrepareIntake();
 }
