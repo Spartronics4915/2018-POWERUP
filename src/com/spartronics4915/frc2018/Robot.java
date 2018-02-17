@@ -290,7 +290,7 @@ public class Robot extends IterativeRobot
 
             if (mControlBoard.getReadyToHarvest())
             {
-                mLifter.setWantedState(ScissorLift.WantedState.RETRACTED);
+                mLifter.setWantedState(ScissorLift.WantedState.OFF);
             }
 
             if (mControlBoard.getReadyToDropSwitch())
@@ -331,6 +331,7 @@ public class Robot extends IterativeRobot
             if (mControlBoard.getClimb())
             {
                 mClimber.setWantedState(Climber.WantedState.CLIMB);
+                //TODO: implement superstructure - see strategy playbook
             }
 
             if (mControlBoard.getStopClimb())
@@ -341,11 +342,6 @@ public class Robot extends IterativeRobot
             if (mControlBoard.getClimberIdle())
             {
                 mClimber.setWantedState(Climber.WantedState.IDLE);
-            }
-
-            if (mControlBoard.getScissorLiftOff())
-            {
-                mLifter.setWantedState(ScissorLift.WantedState.OFF);
             }
 
             if (mControlBoard.getGrabberTransport())
@@ -361,6 +357,11 @@ public class Robot extends IterativeRobot
             if (mControlBoard.getGrabberPrepareDrop())
             {
                 mGrabber.setWantedState(ArticulatedGrabber.WantedState.PREPARE_DROP);
+            }
+
+            if (mControlBoard.getGrabberPrepareIntake())
+            {
+                mGrabber.setWantedState(ArticulatedGrabber.WantedState.PREPARE_INTAKE);
             }
 
             allButTestPeriodic();

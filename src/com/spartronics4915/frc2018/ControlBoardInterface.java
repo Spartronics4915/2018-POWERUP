@@ -39,11 +39,11 @@ public interface ControlBoardInterface
     //TESTING CONTROLS
     boolean getClimberIdle();
 
-    boolean getScissorLiftOff();
-
     boolean getGrabberTransport();
 
     boolean getGrabberGrabCube();
 
     boolean getGrabberPrepareDrop();
+
+    boolean getGrabberPrepareIntake();
 }

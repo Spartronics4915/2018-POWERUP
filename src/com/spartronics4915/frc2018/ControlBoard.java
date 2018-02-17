@@ -140,25 +140,25 @@ public class ControlBoard implements ControlBoardInterface
     }
 
     @Override
-    public boolean getScissorLiftOff()
+    public boolean getGrabberTransport()
     {
         return mDrivestick.getRawButtonPressed(6);
     }
 
     @Override
-    public boolean getGrabberTransport()
+    public boolean getGrabberGrabCube()
     {
         return mDrivestick.getRawButtonPressed(7);
     }
 
     @Override
-    public boolean getGrabberGrabCube()
+    public boolean getGrabberPrepareDrop()
     {
         return mDrivestick.getRawButtonPressed(8);
     }
 
     @Override
-    public boolean getGrabberPrepareDrop()
+    public boolean getGrabberPrepareIntake()
     {
         return mDrivestick.getRawButtonPressed(9);
     }
