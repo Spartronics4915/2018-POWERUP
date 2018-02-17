@@ -204,8 +204,8 @@ public class Harvester extends Subsystem
     {
         //motors off and bars out
         mSolenoid.set(kSolenoidOpen);
-        mMotorLeft.set(1.0);
-        mMotorRight.set(1.0);
+        mMotorLeft.set(0.0);
+        mMotorRight.set(0.0);
         if (mWantedState == WantedState.HARVEST || mWantedState == WantedState.EJECT)
         {
             return defaultStateTransfer();
