@@ -163,7 +163,7 @@ public class LED extends Subsystem
     private synchronized SystemState handleOff()
     {
         setDriverLEDOff();
-        setVisionLampOff();
+        //setVisionLampOff();
         return defaultStateTransfer();
     }
 
@@ -266,7 +266,7 @@ public class LED extends Subsystem
         {
             dashboardPutBoolean("DriverLED", true);
             mIsLEDOn = true;
-            mDriverLED.set(Relay.Value.kOn);
+            mDriverLED.set(Relay.Value.kForward);
         }
     }
 
@@ -291,7 +291,7 @@ public class LED extends Subsystem
         {
             mIsLampOn = true;
             dashboardPutBoolean("VisionLamp", mIsLampOn);
-            mVisionLamp.set(Relay.Value.kOn);
+            mVisionLamp.set(Relay.Value.kForward);
         }
     }
 
