@@ -176,6 +176,7 @@ public class Robot extends IterativeRobot
             PathAdapter.calculatePaths();
             zeroAllSensors();
             success = true;
+            
         }
         catch (Throwable t)
         {
@@ -257,6 +258,8 @@ public class Robot extends IterativeRobot
             mDrive.setOpenLoop(DriveSignal.NEUTRAL);
             mDrive.enableBraking(false);
             zeroAllSensors();
+            
+            mLED.setVisionLampOn();
         }
         catch (Throwable t)
         {
@@ -394,6 +397,8 @@ public class Robot extends IterativeRobot
             mDrive.setOpenLoop(DriveSignal.NEUTRAL);
 
             PathAdapter.calculatePaths();
+            
+            mLED.setVisionLampOff();
         }
         catch (Throwable t)
         {
