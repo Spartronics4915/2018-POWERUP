@@ -250,6 +250,11 @@ public class Harvester extends Subsystem
     private SystemState handleHugging()
     {
         //motors off and bars closing go to closed when cube is gone
+        if (!isCubeHeld())
+        {
+            setWantedState(WantedState.OPEN);
+            return SystemState.OPENING;
+        }
         mSolenoid.set(kSolenoidClose);
         mMotorLeft.set(0.0);
         mMotorRight.set(0.0);
