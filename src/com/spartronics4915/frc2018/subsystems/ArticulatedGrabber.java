@@ -192,19 +192,7 @@ public class ArticulatedGrabber extends Subsystem
         switch (mWantedState) //you should probably be transferring state and controlling actuators in here
         {
             case DISABLED:
-                if (mNextState.grabberOpen)
-                {
-                    mGrabber.set(false);
-                }
-                return false;
-
             case TRANSPORT:
-                if (mNextState.grabberOpen)
-                {
-                    mGrabber.set(false);
-                }
-                return false;
-
             case PREPARE_DROP:
                 if (mNextState.grabberOpen)
                 {
@@ -226,6 +214,7 @@ public class ArticulatedGrabber extends Subsystem
                     return true;
                 }
 
+            case PREPARE_INTAKE:
             case PREPARE_EXCHANGE:
                 if (!mNextState.grabberOpen)
                 {
@@ -246,15 +235,6 @@ public class ArticulatedGrabber extends Subsystem
                 {
                     return false;
                 }
-
-            case PREPARE_INTAKE:
-
-                if (!mNextState.grabberOpen)
-                {
-                    mGrabber.set(true);
-                }
-                return true;
-
             default:
                 logWarning("Unexpected Case " + mWantedState.toString());
                 mGrabber.set(false);
@@ -292,38 +272,35 @@ public class ArticulatedGrabber extends Subsystem
                 mPositionMotor.set(0.0);
                 return potValue;
         }
-
-        if (!mLimitSwitchFwd.get() || !mLimitSwitchRev.get())
+        if (mPositionMotor.get() < 0 && !mLimitSwitchRev.get())
         {
-            logError("Articulated Grabber DISABLED \nLimit Switch Reached: \nReverse: "
-                    + mLimitSwitchRev.get() + ", \nForward: " + mLimitSwitchFwd.get());
-            setWantedState(WantedState.DISABLED);
             mPositionMotor.set(0.0);
+            return mFwdLimitPotentiometerValue;
+        }
+        else if (mPositionMotor.get() > 0 && !mLimitSwitchFwd.get())
+        {
+            mPositionMotor.set(0.0);
+            return mRevLimitPotentiometerValue;
+        }
+        else if (Util.epsilonEquals(potValue, targetPosition, kAcceptablePositionError))
+        {
+            mPositionMotor.set(0);
+            return potValue;
+        }
+        else if (potValue > targetPosition)
+        {
+            mPositionMotor.set(-kMaxMotorSpeed);
+            return potValue;
+        }
+        else if (potValue < targetPosition)
+        {
+            mPositionMotor.set(kMaxMotorSpeed);
             return potValue;
         }
         else
         {
-            if (Util.epsilonEquals(potValue, targetPosition, kAcceptablePositionError))
-            {
-                mPositionMotor.set(0);
-                return potValue;
-            }
-            else if (potValue > targetPosition)
-            {
-                mPositionMotor.set(-kMaxMotorSpeed);
-                return potValue;
-            }
-            else if (potValue < targetPosition)
-            {
-                mPositionMotor.set(kMaxMotorSpeed);
-                return potValue;
-            }
-            else
-            {
-                return potValue;
-            }
+            return potValue;
         }
-
     }
 
     public void setWantedState(WantedState wantedState)
