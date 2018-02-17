@@ -212,11 +212,18 @@ public class ArticulatedGrabber extends Subsystem
                 return false;
 
             case GRAB_CUBE:
-                if (mNextState.grabberOpen)
+                if (Util.epsilonEquals(potValue, mPickPosition, kAcceptablePositionError)) //TODO test on real robot
                 {
-                    mGrabber.set(false);
+                    if (mNextState.grabberOpen)
+                    {
+                        mGrabber.set(false);
+                    }
+                    return false;
                 }
-                return false;
+                else
+                {
+                    return true;
+                }
 
             case PREPARE_EXCHANGE:
                 if (!mNextState.grabberOpen)
