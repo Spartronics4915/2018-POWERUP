@@ -61,103 +61,102 @@ public class ControlBoard implements ControlBoardInterface
     {
         return mDrivestick.getTriggerPressed();
     }
-    
+
     @Override
     public boolean getReadyToHarvest()
     {
         double current = mButtonBoard.getRawAxis(2);
         boolean isReady;
-        
+
         isReady = (previousGetReadyToHarvest != current) && (current == 1.0);
         previousGetReadyToHarvest = current;
         return isReady;
     }
-    
+
     @Override
     public boolean getReadyToDropSwitch()
     {
         return mButtonBoard.getRawButtonPressed(1);
     }
-    
+
     @Override
     public boolean getReadyToDropScale()
     {
         return mButtonBoard.getRawButtonPressed(2);
     }
-    
+
     @Override
     public boolean getDropCube()
     {
         double current = mButtonBoard.getRawAxis(3);
         boolean isReady;
-        
+
         isReady = (previousGetDropCube != current) && (current == 1.0);
         previousGetDropCube = current;
         return isReady;
     }
-    
+
     @Override
     public boolean getOpenHarvester()
     {
         return mButtonBoard.getRawButtonPressed(5);
     }
-    
+
     @Override
     public boolean getCloseHarvester()
     {
         return mButtonBoard.getRawButtonPressed(3);
     }
-    
+
     @Override
     public boolean getEjectCube()
     {
         return mButtonBoard.getRawButtonPressed(4);
     }
-    
+
     @Override
     public boolean getCarryCube()
     {
         return mButtonBoard.getRawButtonPressed(6);
     }
-    
+
     @Override
     public boolean getClimb()
     {
         return mButtonBoard.getRawButtonPressed(7);
     }
-    
+
     @Override
     public boolean getStopClimb()
     {
         return mButtonBoard.getRawButtonPressed(8);
     }
 
-    
     //Temporary Drive Stick controls
     @Override
     public boolean getClimberIdle()
     {
         return mDrivestick.getRawButtonPressed(5);
     }
-    
+
     @Override
     public boolean getScissorLiftOff()
     {
         return mDrivestick.getRawButtonPressed(6);
     }
-    
+
     @Override
     public boolean getGrabberTransport()
     {
         return mDrivestick.getRawButtonPressed(7);
     }
-    
+
     @Override
     public boolean getGrabberGrabCube()
     {
         return mDrivestick.getRawButtonPressed(8);
     }
-    
+
     @Override
     public boolean getGrabberPrepareDrop()
     {
