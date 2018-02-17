@@ -46,7 +46,6 @@ public class AutoModeSelector
             new AutoModeCreator("Test: Turn to Cube Mode", () -> new TurnToCubeMode()),
             new AutoModeCreator("Test: Find the Cube Mode", () -> new FindCube()),
 
-
             // e.g. new AutoModeCreator("Boiler Gear then 10 Ball Shoot Red", () -> new BoilerGearThenShootModeRed()),
     };
 
