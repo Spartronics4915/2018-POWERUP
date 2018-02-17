@@ -361,12 +361,12 @@ public class Robot extends IterativeRobot
             }
             else if (mControlBoard.getDebugSecondary())
             {
-                Logger.debug("Setting Lifter to PREPARE_EXCHANGE");
+                Logger.debug("Setting Grabber to PREPARE_EXCHANGE");
                 mGrabber.setWantedState(ArticulatedGrabber.WantedState.PREPARE_INTAKE);
             }
             else if (mControlBoard.getDebugTertiary())
             {
-                Logger.debug("Setting Lifter to PREPARE_DROP");
+                Logger.debug("Setting Grabber to PREPARE_DROP");
                 mGrabber.setWantedState(ArticulatedGrabber.WantedState.PREPARE_DROP);
             }
 

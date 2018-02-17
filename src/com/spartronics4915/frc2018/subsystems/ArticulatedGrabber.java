@@ -11,7 +11,6 @@ import com.spartronics4915.lib.util.drivers.TalonSRX4915Factory;
 
 import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Timer;
 
 /**
@@ -327,15 +326,15 @@ public class ArticulatedGrabber extends Subsystem
         switch (mWantedState)
         {
             case TRANSPORT: //grabbing and flat against lift      //position: 0, open: false
-                if (Util.epsilonEquals(potValue, 0, kAcceptablePositionError)) // FIXME
+                if (Util.epsilonEquals(potValue, mHoldPosition, kAcceptablePositionError)) // FIXME
                     t = true;
                 break;
             case PREPARE_DROP: //grabbing and over switch/scale      //position: 1, open: false
-                if (Util.epsilonEquals(potValue, 0, kAcceptablePositionError)) // FIXME
+                if (Util.epsilonEquals(potValue, mPlacePosition, kAcceptablePositionError)) // FIXME
                     t = true;
                 break;
             case GRAB_CUBE: //grabbing and over the ground        //position: 2, open: false
-                if (Util.epsilonEquals(potValue, 0, kAcceptablePositionError)) // FIXME
+                if (Util.epsilonEquals(potValue, mPickPosition, kAcceptablePositionError)) // FIXME
                     t = true;
                 break;
             case PREPARE_EXCHANGE: //not grabbing and flat against lift  //position: 0, open: true
