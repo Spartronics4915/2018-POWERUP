@@ -354,20 +354,20 @@ public class Robot extends IterativeRobot
                 mLifter.setWantedState(ScissorLift.WantedState.OFF);
             }
 
-            if (mControlBoard.getDebugPrimary())
+            if (mControlBoard.getDebugPrimary())//3
             {
                 Logger.debug("Setting Grabber to TRANSPORT");
+                mGrabber.setWantedState(ArticulatedGrabber.WantedState.TRANSPORT);
+            }
+            else if (mControlBoard.getDebugSecondary())//4
+            {
+                Logger.debug("Setting Grabber to GRAB_CUBE");
                 mGrabber.setWantedState(ArticulatedGrabber.WantedState.GRAB_CUBE);
             }
-            else if (mControlBoard.getDebugSecondary())
+            else if (mControlBoard.getDebugTertiary())//5
             {
-                Logger.debug("Setting Grabber to PREPARE_EXCHANGE");
+                Logger.debug("Setting Grabber to PREPARE_INTAKE");
                 mGrabber.setWantedState(ArticulatedGrabber.WantedState.PREPARE_INTAKE);
-            }
-            else if (mControlBoard.getDebugTertiary())
-            {
-                Logger.debug("Setting Grabber to PREPARE_DROP");
-                mGrabber.setWantedState(ArticulatedGrabber.WantedState.PREPARE_DROP);
             }
 
             allButTestPeriodic();
