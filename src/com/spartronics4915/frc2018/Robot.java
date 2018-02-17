@@ -386,6 +386,8 @@ public class Robot extends IterativeRobot
             }
             mAutoModeExecuter = null;
 
+            zeroAllSensors();
+            
             mEnabledLooper.stop();
 
             // Call stop on all our Subsystems.
