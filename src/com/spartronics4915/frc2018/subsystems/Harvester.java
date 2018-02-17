@@ -221,6 +221,7 @@ public class Harvester extends Subsystem
         mMotorRight.set(1.0);
         if (isCubeHeld())
         {
+            setWantedState(WantedState.HUG);
             return SystemState.HUGGING;  // checks if cube is in the robot and will transitions to hugging when the cube is fully in
         }
         else
@@ -252,7 +253,7 @@ public class Harvester extends Subsystem
         mSolenoid.set(kSolenoidClose);
         mMotorLeft.set(0.0);
         mMotorRight.set(0.0);
-        if (mWantedState == WantedState.HARVEST || mWantedState == WantedState.OPEN || mWantedState == WantedState.EJECT)
+        if (mWantedState == WantedState.OPEN || mWantedState == WantedState.EJECT)
         {
             return defaultStateTransfer();
         }
@@ -312,6 +313,7 @@ public class Harvester extends Subsystem
         dashboardPutNumber("MotorRight", mMotorRight.get());
         dashboardPutNumber("MotorLeft", mMotorLeft.get());
         dashboardPutNumber("Cube Distance: ", mCubeHeldSensor.getDistance());
+        dashboardPutState("Is Cube Held? " + isCubeHeld());
     }
 
     @Override
