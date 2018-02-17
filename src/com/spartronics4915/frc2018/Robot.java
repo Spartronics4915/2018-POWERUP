@@ -209,7 +209,7 @@ public class Robot extends IterativeRobot
             Logger.setVerbosity(SmartDashboard.getString(kRobotVerbosity, "NOTICE"));
             Logger.logAutoInit();
             Logger.notice("Auto start timestamp: " + Timer.getFPGATimestamp());
-
+            mControlBoard.checkForTestMode();
             if (mAutoModeExecuter != null)
             {
                 mAutoModeExecuter.stop();
@@ -254,6 +254,7 @@ public class Robot extends IterativeRobot
         {
             Logger.setVerbosity(SmartDashboard.getString(kRobotVerbosity, "NOTICE"));
             Logger.logTeleopInit();
+            mControlBoard.checkForTestMode();
 
             // Start loopers
             mEnabledLooper.start();
@@ -385,6 +386,7 @@ public class Robot extends IterativeRobot
         {
             Logger.setVerbosity(SmartDashboard.getString(kRobotVerbosity, "NOTICE"));
             Logger.logDisabledInit();
+            mControlBoard.checkForTestMode();
 
             if (mAutoModeExecuter != null)
             {
