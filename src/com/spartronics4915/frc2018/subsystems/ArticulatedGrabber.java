@@ -73,8 +73,8 @@ public class ArticulatedGrabber extends Subsystem
     // these actual positions are computed from measured pot values at limit switches
     //  offset by tuned values.
     private int mHoldPosition = 1011;
-    private int mPickPosition = 738;
-    private int mPlacePosition = 475;
+    private int mPlacePosition = 738;
+    private int mPickPosition = 475;
 
     private SystemState mNextState = new SystemState();
     private SystemState mSystemState = new SystemState();
