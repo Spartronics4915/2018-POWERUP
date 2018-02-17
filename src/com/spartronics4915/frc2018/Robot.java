@@ -288,86 +288,81 @@ public class Robot extends IterativeRobot
                     mCheesyDriveHelper.cheesyDrive(throttle, turn, mControlBoard.getQuickTurn(),
                             !mControlBoard.getLowGear()));
 
-            if (mControlBoard.getHarvesterIntake())
+            if (mControlBoard.getReadyToHarvest())
             {
-                mHarvester.setWantedState(Harvester.WantedState.HARVEST);
+                mLifter.setWantedState(ScissorLift.WantedState.RETRACTED);
             }
 
-            if (mControlBoard.getHarvesterEject())
+            if (mControlBoard.getReadyToDropSwitch())
             {
-                mHarvester.setWantedState(Harvester.WantedState.EJECT);
+                mLifter.setWantedState(ScissorLift.WantedState.SWITCH);
             }
 
-            if (mControlBoard.getHarvesterOpen())
+            if (mControlBoard.getReadyToDropScale())
+            {
+                mLifter.setWantedState(ScissorLift.WantedState.SCALE);
+            }
+
+            if (mControlBoard.getDropCube())
+            {
+                //TODO: implement superstructure - see strategy playbook
+            }
+
+            if (mControlBoard.getOpenHarvester())
             {
                 mHarvester.setWantedState(Harvester.WantedState.OPEN);
             }
 
-            if (mControlBoard.getClimberClimb())
+            if (mControlBoard.getCloseHarvester())
+            {
+                mHarvester.setWantedState(Harvester.WantedState.HARVEST);
+            }
+
+            if (mControlBoard.getEjectCube())
+            {
+                mHarvester.setWantedState(Harvester.WantedState.EJECT);
+            }
+
+            if (mControlBoard.getCarryCube())
+            {
+                //TODO: implement superstructure - see strategy playbook
+            }
+            
+            if (mControlBoard.getClimb())
             {
                 mClimber.setWantedState(Climber.WantedState.CLIMB);
             }
-
+            
+            if (mControlBoard.getStopClimb())
+            {
+                mClimber.setWantedState(Climber.WantedState.HOLD);
+            }
+            
             if (mControlBoard.getClimberIdle())
             {
                 mClimber.setWantedState(Climber.WantedState.IDLE);
             }
-
-            if (mControlBoard.getClimberHold())
-            {
-                mClimber.setWantedState(Climber.WantedState.HOLD);
-            }
-
-            if (mControlBoard.getClimberPrepare())
-            {
-                mClimber.setWantedState(Climber.WantedState.PREPARE);
-            }
-
-            if (mControlBoard.getScissorLiftRetracted())
-            {
-                mLifter.setWantedState(ScissorLift.WantedState.RETRACTED);
-            }
-
-            if (mControlBoard.getScissorLiftSwitch())
-            {
-                mLifter.setWantedState(ScissorLift.WantedState.SWITCH);
-            }
-
-            if (mControlBoard.getScissorLiftScale())
-            {
-                mLifter.setWantedState(ScissorLift.WantedState.SCALE);
-            }
-
-            if (mControlBoard.getScissorLiftManualUp())
-            {
-                mLifter.setWantedState(ScissorLift.WantedState.MANUALUP);
-            }
-
-            if (mControlBoard.getScissorLiftManualDown())
-            {
-                mLifter.setWantedState(ScissorLift.WantedState.MANUALDOWN);
-            }
-
+            
             if (mControlBoard.getScissorLiftOff())
             {
                 mLifter.setWantedState(ScissorLift.WantedState.OFF);
             }
+            
+            if (mControlBoard.getGrabberTransport())
+            {
+                mGrabber.setWantedState(ArticulatedGrabber.WantedState.TRANSPORT);
+            }
+            
+            if (mControlBoard.getGrabberGrabCube())
+            {
+                mGrabber.setWantedState(ArticulatedGrabber.WantedState.GRAB_CUBE);
+            }
+            
+            if (mControlBoard.getGrabberPrepareDrop())
+            {
+                mGrabber.setWantedState(ArticulatedGrabber.WantedState.PREPARE_DROP);
+            }
 
-            if (mControlBoard.getDebugPrimary())
-            {
-                Logger.debug("Setting Lifter to RETRACTED");
-                mLifter.setWantedState(ScissorLift.WantedState.RETRACTED);
-            }
-            else if (mControlBoard.getDebugSecondary())
-            {
-                Logger.debug("Setting Lifter to SCALE");
-                mLifter.setWantedState(ScissorLift.WantedState.SCALE);
-            }
-            else if (mControlBoard.getDebugTertiary())
-            {
-                Logger.debug("Setting Lifter to SWITCH");
-                mLifter.setWantedState(ScissorLift.WantedState.SWITCH);
-            }
 
             allButTestPeriodic();
         }
