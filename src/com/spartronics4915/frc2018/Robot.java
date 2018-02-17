@@ -137,7 +137,7 @@ public class Robot extends IterativeRobot
             Logger.notice("CANDevicesFound: " + canReport);
             int numDevices = canProbe.getCANDeviceCount();
             SmartDashboard.putString("CANBusStatus",
-                   numDevices == Constants.kNumCANDevices ? "OK"
+                    numDevices == Constants.kNumCANDevices ? "OK"
                             : ("" + numDevices + "/" + Constants.kNumCANDevices));
 
             // Subsystem instances
@@ -288,24 +288,55 @@ public class Robot extends IterativeRobot
                     mCheesyDriveHelper.cheesyDrive(throttle, turn, mControlBoard.getQuickTurn(),
                             !mControlBoard.getLowGear()));
 
-            if (mControlBoard.getHarvesterIntake())
+            if (mControlBoard.getReadyToHarvest())
             {
-                mHarvester.setWantedState(Harvester.WantedState.HARVEST);
+                mLifter.setWantedState(ScissorLift.WantedState.OFF);
             }
 
-            if (mControlBoard.getHarvesterEject())
+            if (mControlBoard.getReadyToDropSwitch())
             {
-                mHarvester.setWantedState(Harvester.WantedState.EJECT);
+                mLifter.setWantedState(ScissorLift.WantedState.SWITCH);
             }
 
-            if (mControlBoard.getHarvesterOpen())
+            if (mControlBoard.getReadyToDropScale())
+            {
+                mLifter.setWantedState(ScissorLift.WantedState.SCALE);
+            }
+
+            if (mControlBoard.getDropCube())
+            {
+                //TODO: implement superstructure - see strategy playbook
+            }
+
+            if (mControlBoard.getOpenHarvester())
             {
                 mHarvester.setWantedState(Harvester.WantedState.OPEN);
             }
 
-            if (mControlBoard.getClimberClimb())
+            if (mControlBoard.getCloseHarvester())
+            {
+                mHarvester.setWantedState(Harvester.WantedState.HARVEST);
+            }
+
+            if (mControlBoard.getEjectCube())
+            {
+                mHarvester.setWantedState(Harvester.WantedState.EJECT);
+            }
+
+            if (mControlBoard.getCarryCube())
+            {
+                //TODO: implement superstructure - see strategy playbook
+            }
+
+            if (mControlBoard.getClimb())
             {
                 mClimber.setWantedState(Climber.WantedState.CLIMB);
+                //TODO: implement superstructure - see strategy playbook
+            }
+
+            if (mControlBoard.getStopClimb())
+            {
+                mClimber.setWantedState(Climber.WantedState.HOLD);
             }
 
             if (mControlBoard.getClimberIdle())
@@ -313,63 +344,25 @@ public class Robot extends IterativeRobot
                 mClimber.setWantedState(Climber.WantedState.IDLE);
             }
 
-            if (mControlBoard.getClimberHold())
+            if (mControlBoard.getGrabberTransport())
             {
-                mClimber.setWantedState(Climber.WantedState.HOLD);
-            }
-
-            if (mControlBoard.getClimberPrepare())
-            {
-                mClimber.setWantedState(Climber.WantedState.PREPARE);
-            }
-
-            if (mControlBoard.getScissorLiftRetracted())
-            {
-                mLifter.setWantedState(ScissorLift.WantedState.RETRACTED);
-            }
-
-            if (mControlBoard.getScissorLiftSwitch())
-            {
-                Logger.notice("Setting Scissorlift to SWITCH");
-                mLifter.setWantedState(ScissorLift.WantedState.SWITCH);
-            }
-
-            if (mControlBoard.getScissorLiftScale())
-            {
-                mLifter.setWantedState(ScissorLift.WantedState.SCALE);
-            }
-
-            if (mControlBoard.getScissorLiftManualUp())
-            {
-                mLifter.setWantedState(ScissorLift.WantedState.MANUALUP);
-            }
-
-            if (mControlBoard.getScissorLiftManualDown())
-            {
-                mLifter.setWantedState(ScissorLift.WantedState.MANUALDOWN);
-            }
-
-            if (mControlBoard.getScissorLiftOff())   
-            {
-                mLifter.setWantedState(ScissorLift.WantedState.OFF);
-            }
-
-            if (mControlBoard.getDebugPrimary())//3
-            {
-                Logger.debug("Setting Grabber to TRANSPORT");
                 mGrabber.setWantedState(ArticulatedGrabber.WantedState.TRANSPORT);
             }
-            else if (mControlBoard.getDebugSecondary())//4
+
+            if (mControlBoard.getGrabberGrabCube())
             {
-                Logger.debug("Setting Grabber to GRAB_CUBE");
                 mGrabber.setWantedState(ArticulatedGrabber.WantedState.GRAB_CUBE);
             }
-            else if (mControlBoard.getDebugTertiary())//5
+            
+            if (mControlBoard.getGrabberPrepareDrop())
             {
-                Logger.debug("Setting Grabber to PREPARE_INTAKE");
+                mGrabber.setWantedState(ArticulatedGrabber.WantedState.PREPARE_DROP);
+            }
+            
+            if (mControlBoard.getGrabberPrepareIntake())
+            {
                 mGrabber.setWantedState(ArticulatedGrabber.WantedState.PREPARE_INTAKE);
             }
-
             allButTestPeriodic();
         }
         catch (Throwable t)

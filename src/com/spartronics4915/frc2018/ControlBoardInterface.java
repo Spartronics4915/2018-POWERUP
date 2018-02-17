@@ -15,37 +15,35 @@ public interface ControlBoardInterface
 
     boolean getLowGear();
 
-    boolean getClimberClimb();
+    //MECHANISM CONTROLS
+    boolean getReadyToHarvest();
 
+    boolean getReadyToDropSwitch();
+
+    boolean getReadyToDropScale();
+
+    boolean getDropCube();
+
+    boolean getOpenHarvester();
+
+    boolean getCloseHarvester();
+
+    boolean getEjectCube();
+
+    boolean getCarryCube();
+
+    boolean getClimb();
+
+    boolean getStopClimb();
+
+    //TESTING CONTROLS
     boolean getClimberIdle();
 
-    boolean getClimberHold();
+    boolean getGrabberTransport();
 
-    boolean getClimberPrepare();
+    boolean getGrabberGrabCube();
 
-    boolean getScissorLiftOff();
-    
-    boolean getScissorLiftRetracted();
-    
-    boolean getScissorLiftSwitch();
-    
-    boolean getScissorLiftScale();
-    
-    boolean getScissorLiftManualUp();
-    
-    boolean getScissorLiftManualDown();
-    
-    boolean getHarvesterIntake();
-    
-    boolean getHarvesterEject();
-    
-    boolean getHarvesterOpen();
-    
-    // Debug buttons, remove me
-    boolean getDebugPrimary();
+    boolean getGrabberPrepareDrop();
 
-    boolean getDebugSecondary();
-
-    boolean getDebugTertiary();
-
+    boolean getGrabberPrepareIntake();
 }
