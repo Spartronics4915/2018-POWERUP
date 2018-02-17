@@ -293,13 +293,13 @@ public class ArticulatedGrabber extends Subsystem
         {
             logWarning("Articulated Grabber Reverse LimitSwitch Reached");
             mPositionMotor.set(0.0);
-            return mFwdLimitPotentiometerValue;
+            return mRevLimitPotentiometerValue;
         }
         else if (mPositionMotor.get() > 0 && !mLimitSwitchFwd.get())
         {
             logWarning("Articulated Grabber Foward LimitSwitch Reached");
             mPositionMotor.set(0.0);
-            return mRevLimitPotentiometerValue;
+            return mFwdLimitPotentiometerValue;
         }
         else if (Util.epsilonEquals(potValue, targetPosition, kAcceptablePositionError))
         {
