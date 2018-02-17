@@ -48,7 +48,7 @@ public class ScissorLift extends Subsystem
     private static final int kDefaultClimbOffset = 2294;
     private static final int kPotentiometerAllowedError = 200;
     private static final double kBrakeTimePeriod = .1;
-    private static final double kUnbrakeTimePeriod = .1;
+    private static final double kUnbrakeTimePeriod = .3;
 
     public enum SystemState
     {
@@ -332,6 +332,7 @@ public class ScissorLift extends Subsystem
                 {
                     if (mTimer.hasPeriodPassed(kUnbrakeTimePeriod))
                     {
+                        mHoldSolenoid.set(false);
                         mLowerSolenoid.set(false);
                         mRaiseSolenoid.set(true);
                         nextState = SystemState.RAISING;
