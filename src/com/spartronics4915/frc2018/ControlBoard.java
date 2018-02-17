@@ -127,7 +127,7 @@ public class ControlBoard implements ControlBoardInterface
     @Override
     public boolean getHarvesterEject()
     {
-        return mDrivestick.getRawButtonReleased(16); 
+        return mDrivestick.getRawButtonReleased(9); 
     }
     
     @Override

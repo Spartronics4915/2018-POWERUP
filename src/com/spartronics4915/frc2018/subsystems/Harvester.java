@@ -203,7 +203,7 @@ public class Harvester extends Subsystem
         mSolenoid.set(kSolenoidOpen);
         mMotorLeft.set(1.0);
         mMotorRight.set(1.0);
-        if (mWantedState == WantedState.HARVEST)
+        if (mWantedState == WantedState.HARVEST || mWantedState == WantedState.EJECT)
         {
             return defaultStateTransfer();
         }
