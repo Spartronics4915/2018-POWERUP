@@ -42,10 +42,10 @@ public class ScissorLift extends Subsystem
     // from dashboard during zeroSensors.  That said, we lose those
     // values during reboot, so we must update these compile-time constants
     // with our best-known values.
-    private static final int kDefaultRetractedOffset = 2544;
-    private static final int kDefaultSwitchOffset = 2000;
-    private static final int kDefaultScaleOffset = 493;
-    private static final int kDefaultClimbOffset = 250;
+    private static final int kDefaultRetractedOffset = 0;  //2544
+    private static final int kDefaultSwitchOffset = 544;
+    private static final int kDefaultScaleOffset = 2051;
+    private static final int kDefaultClimbOffset = 2294;
     private static final int kPotentiometerAllowedError = 200;
     private static final double kBrakeTimePeriod = .1;
     private static final double kUnbrakeTimePeriod = .1;
@@ -78,7 +78,7 @@ public class ScissorLift extends Subsystem
     private int[] mWantedStateMap = new int[WantedState.values().length]; // set in zeroSensors()
     private AnalogInput mPotentiometer;
     private int mMeasuredValue; // [0,4095]
-    private int mPotentiometerHome = 0;
+    private int mPotentiometerHome = 2544;
     private LazySolenoid mRaiseSolenoid;
     private LazySolenoid mLowerSolenoid;
     private LazySolenoid mHoldSolenoid;
@@ -111,6 +111,7 @@ public class ScissorLift extends Subsystem
             dashboardPutNumber("Target2", kDefaultSwitchOffset);
             dashboardPutNumber("Target3", kDefaultScaleOffset);
             dashboardPutNumber("Target4", kDefaultClimbOffset);
+            zeroPotentiometer(); // this is where we establish our base potentiometer value
             // TODO: Is there a way to validate our potentiometer state? We can't detect
             //  wiring mishaps, since reading the analog pin will always return a value.
 
@@ -137,7 +138,7 @@ public class ScissorLift extends Subsystem
                 dashboardPutState(mSystemState.toString());
                 dashboardPutWantedState(mWantedState.toString());
                 zeroPotentiometer();
-                zeroSensors(); // make sure mWantedStateMap is initialized
+                //zeroSensors(); // we dont want called between autonomous and teleop
             }
         }
 
@@ -228,22 +229,23 @@ public class ScissorLift extends Subsystem
 
     private int getRetractedOffset()
     {
-        return dashboardGetNumber("Target1", kDefaultRetractedOffset).intValue() + mPotentiometerHome;
+        //potentiometer numbers get smaller as Scissor Lift gets higher so we think of our targets as offsets
+        return mPotentiometerHome - dashboardGetNumber("Target1", kDefaultRetractedOffset).intValue();
     }
 
     private int getSwitchOffset()
     {
-        return dashboardGetNumber("Target2", kDefaultSwitchOffset).intValue() + mPotentiometerHome;
+        return mPotentiometerHome - dashboardGetNumber("Target2", kDefaultSwitchOffset).intValue(); 
     }
 
     private int getScaleOffset()
     {
-        return dashboardGetNumber("Target3", kDefaultScaleOffset).intValue() + mPotentiometerHome;
+        return mPotentiometerHome - dashboardGetNumber("Target3", kDefaultScaleOffset).intValue();
     }
 
     private int getClimbOffset()
     {
-        return dashboardGetNumber("Target4", kDefaultClimbOffset).intValue() + mPotentiometerHome;
+        return mPotentiometerHome - dashboardGetNumber("Target4", kDefaultClimbOffset).intValue();
     }
     
     @Override
