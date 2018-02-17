@@ -58,6 +58,7 @@ public class ArticulatedGrabber extends Subsystem
         PREPARE_EXCHANGE, //not grabbing and flat against lift  //position: 0, open: true
         RELEASE_CUBE, //not grabbing over the switch/scale  //position: 1, open: true
         PREPARE_INTAKE, //not grabbing over the ground        //position: 2, open: true
+        MANUAL,
         DISABLED
     }
 
@@ -71,7 +72,7 @@ public class ArticulatedGrabber extends Subsystem
 
     private int mFwdLimitPotentiometerValue = 1021;
     private int mRevLimitPotentiometerValue = 465;
-
+    
     // these actual positions are computed from measured pot values at limit switches
     //  offset by tuned values.
     private int mHoldPosition = 1011;
@@ -154,9 +155,21 @@ public class ArticulatedGrabber extends Subsystem
                     mGrabberSetup.set(true);
                     mSystemState.grabberSetup = true; //TODO add stagger time to fix the jolt bug
                 }
-
+                
                 //handles calls
-                int potValue = mPotentiometer.getAverageValue(); //just cuts down on the number of calls
+                int potValue;
+                if (!mLimitSwitchRev.get())
+                {
+                    potValue = mRevLimitPotentiometerValue;
+                }
+                else if (!mLimitSwitchFwd.get())
+                {
+                    potValue = mFwdLimitPotentiometerValue;
+                }
+                else 
+                {
+                    potValue = mPotentiometer.getAverageValue(); //just cuts down on the number of calls
+                }
                 mNextState.articulatorPosition = handleGrabberPosition(potValue);
                 mNextState.grabberOpen = handleGrabberState(potValue);
 
@@ -191,6 +204,7 @@ public class ArticulatedGrabber extends Subsystem
     {
         switch (mWantedState) //you should probably be transferring state and controlling actuators in here
         {
+            case MANUAL:
             case DISABLED:
             case TRANSPORT:
             case PREPARE_DROP:
@@ -266,7 +280,10 @@ public class ArticulatedGrabber extends Subsystem
             case PREPARE_INTAKE:
                 targetPosition = mPickPosition;
                 break;
-
+            
+            case MANUAL:
+                break;
+                
             default:
                 logWarning("Unexpected Case " + mWantedState.toString());
                 mPositionMotor.set(0.0);
@@ -274,11 +291,13 @@ public class ArticulatedGrabber extends Subsystem
         }
         if (mPositionMotor.get() < 0 && !mLimitSwitchRev.get())
         {
+            logWarning("Articulated Grabber Reverse LimitSwitch Reached");
             mPositionMotor.set(0.0);
             return mFwdLimitPotentiometerValue;
         }
         else if (mPositionMotor.get() > 0 && !mLimitSwitchFwd.get())
         {
+            logWarning("Articulated Grabber Foward LimitSwitch Reached");
             mPositionMotor.set(0.0);
             return mRevLimitPotentiometerValue;
         }
