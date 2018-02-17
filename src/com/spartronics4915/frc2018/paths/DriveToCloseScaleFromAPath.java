@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import com.spartronics4915.frc2018.paths.PathBuilder.Waypoint;
 import com.spartronics4915.lib.util.control.Path;
 import com.spartronics4915.lib.util.math.RigidTransform2d;
-import com.spartronics4915.lib.util.math.Translation2d;
 
 public class DriveToCloseScaleFromAPath extends DriveToCloseScaleFromCPath
 {

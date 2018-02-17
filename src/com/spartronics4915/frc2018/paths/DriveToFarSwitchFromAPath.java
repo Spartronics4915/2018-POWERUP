@@ -2,7 +2,6 @@ package com.spartronics4915.frc2018.paths;
 
 import java.util.ArrayList;
 
-import com.spartronics4915.frc2018.Constants;
 import com.spartronics4915.frc2018.paths.PathBuilder.Waypoint;
 import com.spartronics4915.lib.util.control.Path;
 import com.spartronics4915.lib.util.math.RigidTransform2d;
