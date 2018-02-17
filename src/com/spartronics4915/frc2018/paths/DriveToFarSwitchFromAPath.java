@@ -1,5 +1,7 @@
 package com.spartronics4915.frc2018.paths;
 
+import java.util.ArrayList;
+
 import com.spartronics4915.frc2018.Constants;
 import com.spartronics4915.frc2018.paths.PathBuilder.Waypoint;
 import com.spartronics4915.lib.util.control.Path;
@@ -10,17 +12,12 @@ public class DriveToFarSwitchFromAPath extends DriveToFarSwitchFromCPath
     @Override
     public Path buildPath()
     {
-        return PathBuilder.buildPathFromWaypoints(super.getWaypoints());
-//        for (Waypoint w : super.getWaypoints())
-//        {
-//            
-//        }
+        return PathBuilder.buildPathFromWaypoints(PathTransformHelper.mirrorWaypointsAboutAxis((ArrayList<Waypoint>)super.getWaypoints(), false, true));
     }
     
     @Override
     public RigidTransform2d getStartPose()
     {
-        return new RigidTransform2d(Constants.kFieldHeightTranslation.translateBy(super.getStartPose().getTranslation().inverse()),
-                super.getStartPose().getRotation()); 
+        return PathTransformHelper.mirrorRigidTransformAboutAxis(super.getStartPose(), false, true); 
     }
 }
