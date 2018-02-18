@@ -95,7 +95,7 @@ public class ArticulatedGrabber extends Subsystem
         {
             mPositionMotor =
                     TalonSRX4915Factory.createDefaultMotor(Constants.kGrabberFlipperMotorId);
-            mPositionMotor.configOutputPower(true, .5, 0, 0.5, 0, -1);
+            mPositionMotor.configOutputPower(true, .5, 0, 0, 0, -1);//Voltage ramp middle zero
             mPositionMotor.setBrakeMode(true);
             mGrabber = new LazySolenoid(Constants.kGrabberSolenoidId);
             mGrabberSetup = new LazySolenoid(Constants.kGrabberSetupSolenoidId);
