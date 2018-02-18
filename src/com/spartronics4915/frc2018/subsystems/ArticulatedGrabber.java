@@ -58,20 +58,24 @@ public class ArticulatedGrabber extends Subsystem
         PREPARE_EXCHANGE, //not grabbing and flat against lift  //position: 0, open: true
         RELEASE_CUBE, //not grabbing over the switch/scale  //position: 1, open: true
         PREPARE_INTAKE, //not grabbing over the ground        //position: 2, open: true
-        MANUAL,//TODO: Change to manual control open and closed?
+        MANUAL_OPEN,//TODO: Change to manual control open and closed?
+        MANUAL_CLOSED,
         DISABLED
     }
 
     //Maximum Motor Speed: used in handlePosition method and config for mPositionMotor
-    private final double kMaxMotorSpeed = 1.0;
+    private final double kMaxMotorSpeed = 0.8;
     private final int kAcceptablePositionError = 20; //margin of error
 
-    private final int kDefaultPlaceOffset = 70; //offset from the fwd limit switch
-    private final int kDefaultPickOffset = 273; //offset from the rev limit switch
-    private final int kDefaultHoldOffset = 70; //offset from the rev limit switch
+    private final int kDefaultHoldOffset = 50; //offset from the rev limit switch
+    private final int kDefaultPlaceOffset = 253; 
+    private final int kDefaultPickOffset = 470; 
 
     private int mFwdLimitPotentiometerValue = 1065;
     private int mRevLimitPotentiometerValue = 465;
+    
+    private boolean mFwdLimitFlag = false;
+    private boolean mRevLimitFlag = false;
     
     // these actual positions are computed from measured pot values at limit switches
     //  offset by tuned values.
@@ -118,8 +122,8 @@ public class ArticulatedGrabber extends Subsystem
             // Initialize network tables during robotInit(), allows us to tweak values
             //  XXX: requires us to place best-known values into these values.
             dashboardPutNumber("Target1", kDefaultHoldOffset);
-            dashboardPutNumber("Target2", kDefaultPickOffset);
-            dashboardPutNumber("Target3", kDefaultPlaceOffset);
+            dashboardPutNumber("Target2", kDefaultPlaceOffset);
+            dashboardPutNumber("Target3", kDefaultPickOffset);
 
         }
         catch (Exception e)
@@ -158,18 +162,14 @@ public class ArticulatedGrabber extends Subsystem
                 
                 //handles calls
                 int potValue;
+                potValue = mPotentiometer.getAverageValue(); //just cuts down on the number of calls
+                
                 if (!mLimitSwitchRev.get())
                 {
-                    potValue = mRevLimitPotentiometerValue;
+                    mRevLimitPotentiometerValue = potValue;
+                    updatePositions();
                 }
-                else if (!mLimitSwitchFwd.get())
-                {
-                    potValue = mFwdLimitPotentiometerValue;
-                }
-                else 
-                {
-                    potValue = mPotentiometer.getAverageValue(); //just cuts down on the number of calls
-                }
+                
                 mNextState.articulatorPosition = handleGrabberPosition(potValue);
                 mNextState.grabberOpen = handleGrabberState(potValue);
 
@@ -204,7 +204,7 @@ public class ArticulatedGrabber extends Subsystem
     {
         switch (mWantedState) //you should probably be transferring state and controlling actuators in here
         {
-            case MANUAL:
+            case MANUAL_CLOSED:
             case DISABLED:
             case TRANSPORT:
             case PREPARE_DROP:
@@ -228,6 +228,7 @@ public class ArticulatedGrabber extends Subsystem
                     return true;
                 }
 
+            case MANUAL_OPEN:
             case PREPARE_INTAKE:
             case PREPARE_EXCHANGE:
                 if (!mNextState.grabberOpen)
@@ -255,7 +256,33 @@ public class ArticulatedGrabber extends Subsystem
                 return false;
         }
     }
-
+    
+    private void fwdMotor(double speed) 
+    {
+        if(!mFwdLimitFlag && mLimitSwitchFwd.get()) 
+        {
+            mPositionMotor.set(speed);
+            mRevLimitFlag = false;
+        }
+        else 
+        {
+            mFwdLimitFlag = true;
+        }
+    }
+    
+    private void revMotor(double speed) 
+    {
+        if(!mRevLimitFlag && mLimitSwitchRev.get()) 
+        {
+            mPositionMotor.set(-speed);
+            mFwdLimitFlag = false;
+        }
+        else 
+        {
+            mRevLimitFlag = true;
+        }
+    }
+    
     private int handleGrabberPosition(int potValue) //controls switching states for articulator
     {
         int targetPosition = 0;
@@ -281,7 +308,8 @@ public class ArticulatedGrabber extends Subsystem
                 targetPosition = mPickPosition;
                 break;
             
-            case MANUAL:
+            case MANUAL_OPEN:
+            case MANUAL_CLOSED:
                 break;
                 
             default:
@@ -293,12 +321,14 @@ public class ArticulatedGrabber extends Subsystem
         {
             logWarning("Articulated Grabber Reverse LimitSwitch Reached");
             mPositionMotor.set(0.0);
+            mRevLimitFlag = true;
             return mRevLimitPotentiometerValue;
         }
         else if (mPositionMotor.get() > 0 && !mLimitSwitchFwd.get())
         {
             logWarning("Articulated Grabber Foward LimitSwitch Reached");
             mPositionMotor.set(0.0);
+            mFwdLimitFlag = true;
             return mFwdLimitPotentiometerValue;
         }
         else if (Util.epsilonEquals(potValue, targetPosition, kAcceptablePositionError))
@@ -308,12 +338,12 @@ public class ArticulatedGrabber extends Subsystem
         }
         else if (potValue > targetPosition)
         {
-            mPositionMotor.set(-kMaxMotorSpeed);
+            revMotor(kMaxMotorSpeed);
             return potValue;
         }
         else if (potValue < targetPosition)
         {
-            mPositionMotor.set(kMaxMotorSpeed);
+            fwdMotor(kMaxMotorSpeed);
             return potValue;
         }
         else
@@ -400,7 +430,7 @@ public class ArticulatedGrabber extends Subsystem
 
     private void updatePositions()
     {
-        mHoldPosition = mFwdLimitPotentiometerValue -
+        mHoldPosition = mRevLimitPotentiometerValue +
                 dashboardGetNumber("Target1", kDefaultHoldOffset).intValue();
         mPickPosition = mRevLimitPotentiometerValue +
                 dashboardGetNumber("Target2", kDefaultPickOffset).intValue();
@@ -481,7 +511,7 @@ public class ArticulatedGrabber extends Subsystem
                     logNotice("motor check ------");
                     logNotice("    pot: " + mPotentiometer.getValue());
                     logNotice("   fwd .2, 1s");
-                    mPositionMotor.set(.2);
+                    fwdMotor(.2);
                     Timer.delay(1.0);
                     logNotice("    pot: " + mPotentiometer.getValue());
                     logNotice("   rev .2, 1s");
@@ -501,7 +531,7 @@ public class ArticulatedGrabber extends Subsystem
                     }
                     logNotice("exersise complete----------");
                 }
-                if(variant.equals("ex1") || allTests) //test fwd to limit switch
+                if(variant.equals("fwdtest") || allTests) //test fwd to limit switch
                 {
                     logNotice("motor check ------");
                     logNotice("   fwd .5 to limit, 10s");
@@ -509,7 +539,7 @@ public class ArticulatedGrabber extends Subsystem
                     Timer t = new Timer();
                     int counter = 0;
                     t.start();
-                    mPositionMotor.set(.5);
+                    fwdMotor(.5);
                     while (true)
                     {
                         if(mPositionMotor.getOutputCurrent() > maxCurrent) 
@@ -525,6 +555,7 @@ public class ArticulatedGrabber extends Subsystem
                             logNotice(
                                     "mFwdPotentiometerValue after: " + mFwdLimitPotentiometerValue);
                             mPositionMotor.set(0.0);
+                            mFwdLimitFlag = true;
                             break;
                         }
                         else if (t.hasPeriodPassed(1000))
@@ -535,19 +566,16 @@ public class ArticulatedGrabber extends Subsystem
                         }
                         else
                         {
-                            Timer.delay(0);
-                            if (counter++ % 10 == 0)
+                            if (counter++ % 100 == 0)
                                 logNotice("    pot: " + mPotentiometer.getValue());
                         }
                     }
-                    logNotice("Position Motor Current: " + mPositionMotor.getOutputCurrent());
-                    logNotice("   rev .7 to limit, 10s");
                     logNotice("Position Motor Current: " + maxCurrent);
                     maxCurrent = 0;
                     updatePositions();
                     logNotice("calibration complete----------");
                 }
-                if(variant.equals("ex2") || allTests) //test rev to limit switch
+                if(variant.equals("revtest") || allTests) //test rev to limit switch
                 {
                     logNotice("motor check ------");
                     logNotice("   fwd .4 to limit, 10s");
@@ -555,7 +583,7 @@ public class ArticulatedGrabber extends Subsystem
                     Timer t = new Timer();
                     int counter = 0;
                     t.start();
-                    mPositionMotor.set(-.8);
+                    revMotor(0.8);
                     while (true)
                     {
                         if(mPositionMotor.getOutputCurrent() > maxCurrent) 
@@ -571,6 +599,7 @@ public class ArticulatedGrabber extends Subsystem
                             logNotice(
                                     "mRevPotentiometerValue after: " + mRevLimitPotentiometerValue);
                             mPositionMotor.set(0.0);
+                            mRevLimitFlag = true;
                             break;
                         }
                         else if (t.hasPeriodPassed(1000))
@@ -581,8 +610,8 @@ public class ArticulatedGrabber extends Subsystem
                         }
                         else
                         {
-                            Timer.delay(0);
-                            if (counter++ % 10 == 0)
+                            //timer.delay(0);
+                            if (counter++ % 100 == 0)
                                 logNotice("    pot: " + mPotentiometer.getValue());
                         }
                     }
@@ -600,7 +629,7 @@ public class ArticulatedGrabber extends Subsystem
                     Timer t = new Timer();
                     int counter = 0;
                     t.start();
-                    mPositionMotor.set(.5);
+                    fwdMotor(0.5);
                     while (true)
                     {
                         if(mPositionMotor.getOutputCurrent() > maxCurrent) 
@@ -616,6 +645,7 @@ public class ArticulatedGrabber extends Subsystem
                             logNotice(
                                     "mFwdPotentiometerValue after: " + mFwdLimitPotentiometerValue);
                             mPositionMotor.set(0.0);
+                            mFwdLimitFlag = true;
                             break;
                         }
                         else if (t.hasPeriodPassed(1000))
@@ -626,8 +656,8 @@ public class ArticulatedGrabber extends Subsystem
                         }
                         else
                         {
-                            Timer.delay(0);
-                            if (counter++ % 10 == 0)
+                            //timer.delay(0);
+                            if (counter++ % 100 == 0)
                                 logNotice("    pot: " + mPotentiometer.getValue());
                         }
                     }
@@ -635,7 +665,7 @@ public class ArticulatedGrabber extends Subsystem
                     logNotice("   rev .7 to limit, 10s");
                     logNotice("Position Motor Current: " + maxCurrent);
                     maxCurrent = 0;
-                    mPositionMotor.set(-.8);
+                    revMotor(0.8);
                     t.reset();
                     t.start();
                     while (true)
@@ -653,6 +683,7 @@ public class ArticulatedGrabber extends Subsystem
                             logNotice(
                                     "mRevPotentiometerValue after: " + mRevLimitPotentiometerValue);
                             mPositionMotor.set(0.0);
+                            mRevLimitFlag = true;
                             break;
                         }
                         else if (t.hasPeriodPassed(1000))
@@ -663,8 +694,8 @@ public class ArticulatedGrabber extends Subsystem
                         }
                         else
                         {
-                            Timer.delay(0);
-                            if (counter++ % 10 == 0)
+                            //timer.delay(0);
+                            if (counter++ % 100 == 0)
                                 logNotice("    pot: " + mPotentiometer.getValue());
                         }
                     }
@@ -691,7 +722,7 @@ public class ArticulatedGrabber extends Subsystem
         Timer t = new Timer();
         int counter = 0;
         t.start();
-        mPositionMotor.set(power);
+        fwdMotor(power);
         double maxCurrent = 0;
         while (true)
         {
@@ -702,6 +733,7 @@ public class ArticulatedGrabber extends Subsystem
             if (!mLimitSwitchFwd.get() || !mLimitSwitchRev.get()) // limit switches are normally closed
             {
                 logNotice("limit switch encounterd at " + mPotentiometer.getValue());
+                mFwdLimitFlag = true;
                 break;
             }
             else if (Util.epsilonEquals(mPotentiometer.getAverageValue(), mPickPosition, kAcceptablePositionError)) 
@@ -716,12 +748,12 @@ public class ArticulatedGrabber extends Subsystem
             }
             else
             {
-                Timer.delay(0);
-                if (counter++ % 10 == 0)
+                //timer.delay(0);
+                if (counter++ % 100 == 0)
                     logNotice("    pot: " + mPotentiometer.getValue());
             }
         }
-        mPositionMotor.set(-power);
+        revMotor(-power);
         t.reset();
         t.start();
         while (true)
@@ -733,6 +765,7 @@ public class ArticulatedGrabber extends Subsystem
             if (!mLimitSwitchFwd.get() || !mLimitSwitchRev.get()) // limit switches are normally closed
             {
                 logNotice("limit switch encounterd at " + mPotentiometer.getValue());
+                mRevLimitFlag = true;
                 break;
             }
             else if (Util.epsilonEquals(mPotentiometer.getAverageValue(), mHoldPosition, kAcceptablePositionError)) 
@@ -747,8 +780,8 @@ public class ArticulatedGrabber extends Subsystem
             }
             else
             {
-                Timer.delay(0);
-                if (counter++ % 10 == 0)
+                //timer.delay(0);
+                if (counter++ % 100 == 0)
                     logNotice("    pot: " + mPotentiometer.getValue());
             }
         }
