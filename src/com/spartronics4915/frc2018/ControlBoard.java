@@ -32,7 +32,7 @@ public class ControlBoard implements ControlBoardInterface
     private final Joystick mButtonBoard;
     private double mPreviousGetReadyToHarvest;
     private double mPreviousGetDropCube;
-    private final boolean mTestsAllowed;
+    private boolean mTestsAllowed;
 
     protected ControlBoard()
     {
@@ -40,6 +40,11 @@ public class ControlBoard implements ControlBoardInterface
         mButtonBoard = new Joystick(1);
         mPreviousGetReadyToHarvest = 0.0;
         mPreviousGetDropCube = 0.0;
+        checkForTestMode();
+    }
+    
+    public void checkForTestMode()
+    {
         mTestsAllowed = SmartDashboard.getBoolean("TestingGUI", false);
     }
 

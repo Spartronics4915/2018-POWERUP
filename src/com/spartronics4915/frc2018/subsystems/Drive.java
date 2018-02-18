@@ -99,7 +99,6 @@ public class Drive extends Subsystem
                 //  into velocity mode here? (without consulting mDriveControlState)
                 logNotice("onStart " + mDriveControlState);
                 setOpenLoop(DriveSignal.NEUTRAL);
-                mMotorGroup.enableBraking(false);
                 setVelocitySetpoint(0, 0);
                 if (!mMotorGroup.hasIMU())
                 {
@@ -219,11 +218,6 @@ public class Drive extends Subsystem
         mMotorGroup.driveOpenLoop(signal.getLeft(), signal.getRight());
     }
 
-    public void enableBraking(boolean s)
-    {
-        mMotorGroup.enableBraking(s);
-    }
-
     @Override
     public synchronized void stop()
     {
@@ -325,7 +319,7 @@ public class Drive extends Subsystem
             return;
         logNotice("beginOpenLoop");
         mMotorGroup.beginOpenLoop(kOpenLoopRampRate, kOpenLoopNominalOutput, kOpenLoopPeakOutput);
-        mMotorGroup.enableBraking(false); // rationale: drivers would like to coast as then enter neutral-deadband
+        mMotorGroup.enableBraking(true); // drivers like to stop on a dime
         mDriveControlState = DriveControlState.OPEN_LOOP;
     }
 
