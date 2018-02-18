@@ -26,25 +26,18 @@ public class PathTransformHelper
         return rt;
     }
     
-    public static Translation2d mirrorTranslationAboutAxis(Translation2d oldTranslation, boolean mirrorX, boolean mirrorY)
+    public static Translation2d mirrorTranslationAboutAxis(Translation2d translation, boolean mirrorX, boolean mirrorY)
     {
-        Translation2d t = Translation2d.identity();
+        Logger.notice("Transforming from: " + translation.toString());
+        
         if (mirrorX)
-        {
-            t.setX(Constants.kFieldWidthTranslation.translateBy(oldTranslation.inverse()).x());
-        }
-        else
-            t.setX(oldTranslation.x());
+            translation.setX(Constants.kFieldWidthTranslation.translateBy(translation.inverse()).x());
         
         if (mirrorY)
-        {
-            t.setY(Constants.kFieldHeightTranslation.translateBy(oldTranslation.inverse()).y());
-        }
-        else
-            t.setY(oldTranslation.y());
+            translation.setY(Constants.kFieldHeightTranslation.translateBy(translation.inverse()).y());
         
-        Logger.notice("Transforming (X,Y): " + oldTranslation.toString() + " to: " + t.toString());
+        Logger.notice("Transforming to: " + translation.toString());
         
-        return t;
+        return translation;
     }
 }
