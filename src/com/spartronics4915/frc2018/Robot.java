@@ -220,8 +220,6 @@ public class Robot extends IterativeRobot
 
             mAutoModeExecuter = null;
 
-            mDrive.enableBraking(true);
-
             mEnabledLooper.start();
             mAutoModeExecuter = new AutoModeExecuter();
             mAutoModeExecuter.setAutoMode(AutoModeSelector.getSelectedAutoMode());
@@ -259,7 +257,6 @@ public class Robot extends IterativeRobot
             // Start loopers
             mEnabledLooper.start();
             mDrive.setOpenLoop(DriveSignal.NEUTRAL);
-            mDrive.enableBraking(false);
             zeroAllSensors();
             
             mLED.setVisionLampOn();
