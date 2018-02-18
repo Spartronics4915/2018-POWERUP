@@ -66,11 +66,11 @@ public class ArticulatedGrabber extends Subsystem
     private final double kMaxMotorSpeed = 1.0;
     private final int kAcceptablePositionError = 20; //margin of error
 
-    private final int kDefaultPlaceOffset = 40; //offset from the fwd limit switch
+    private final int kDefaultPlaceOffset = 70; //offset from the fwd limit switch
     private final int kDefaultPickOffset = 273; //offset from the rev limit switch
-    private final int kDefaultHoldOffset = 40; //offset from the rev limit switch
+    private final int kDefaultHoldOffset = 70; //offset from the rev limit switch
 
-    private int mFwdLimitPotentiometerValue = 1010;
+    private int mFwdLimitPotentiometerValue = 1065;
     private int mRevLimitPotentiometerValue = 465;
     
     // these actual positions are computed from measured pot values at limit switches
@@ -91,14 +91,14 @@ public class ArticulatedGrabber extends Subsystem
         {
             mPositionMotor =
                     TalonSRX4915Factory.createDefaultMotor(Constants.kGrabberFlipperMotorId);
-            mPositionMotor.configOutputPower(true, .5, 0, 0.5, 0, -0.5);
+            mPositionMotor.configOutputPower(true, .5, 0, 0.5, 0, -1);
             mPositionMotor.setBrakeMode(true);
             mGrabber = new LazySolenoid(Constants.kGrabberSolenoidId);
             mGrabberSetup = new LazySolenoid(Constants.kGrabberSetupSolenoidId);
             mPotentiometer = new AnalogInput(Constants.kGrabberAnglePotentiometerId);
             mLimitSwitchRev = new DigitalInput(Constants.kFlipperRevLimitSwitchId);
             mLimitSwitchFwd = new DigitalInput(Constants.kFlipperFwdLimitSwitchId);
-
+            
             if (!mGrabber.isValid()) //instantiate your actuator and sensor objects here
             {
                 success = false;
@@ -490,27 +490,32 @@ public class ArticulatedGrabber extends Subsystem
                     logNotice("    pot: " + mPotentiometer.getValue());
                     mPositionMotor.set(0.0);
                 }
-                if(variant.equals("exersise") || allTests)
+                if(variant.equals("exercise") || allTests)
                 {
                     logNotice("motor exersise ------");
                     logNotice("   fwd .4 to limit, 10s");
-                    int i = 5;
+                    int i = 2;
                     while(i-- > 0) 
                     {
                         logNotice("   Max Current: "+testFlipCycle(0.5));
                     }
                     logNotice("exersise complete----------");
                 }
-                if (variant.equals("motorlimit") || allTests)
+                if(variant.equals("ex1") || allTests) //test fwd to limit switch
                 {
                     logNotice("motor check ------");
-                    logNotice("   fwd .4 to limit, 10s");
+                    logNotice("   fwd .5 to limit, 10s");
+                    double maxCurrent = 0;
                     Timer t = new Timer();
                     int counter = 0;
                     t.start();
-                    mPositionMotor.set(.4);
+                    mPositionMotor.set(.5);
                     while (true)
                     {
+                        if(mPositionMotor.getOutputCurrent() > maxCurrent) 
+                        {
+                            maxCurrent = mPositionMotor.getOutputCurrent();
+                        }
                         if (!mLimitSwitchFwd.get()) // limit switches are normally closed
                         {
                             logNotice("limit switch encounterd at " + mPotentiometer.getValue());
@@ -519,9 +524,10 @@ public class ArticulatedGrabber extends Subsystem
                             mFwdLimitPotentiometerValue = mPotentiometer.getAverageValue();
                             logNotice(
                                     "mFwdPotentiometerValue after: " + mFwdLimitPotentiometerValue);
+                            mPositionMotor.set(0.0);
                             break;
                         }
-                        else if (t.hasPeriodPassed(10))
+                        else if (t.hasPeriodPassed(1000))
                         {
                             logError("fwd 1s didn't encounter limit switch!!!!!!!");
                             success = false;
@@ -529,18 +535,33 @@ public class ArticulatedGrabber extends Subsystem
                         }
                         else
                         {
-                            Timer.delay(.1);
+                            Timer.delay(0);
                             if (counter++ % 10 == 0)
                                 logNotice("    pot: " + mPotentiometer.getValue());
                         }
                     }
                     logNotice("Position Motor Current: " + mPositionMotor.getOutputCurrent());
                     logNotice("   rev .7 to limit, 10s");
-                    mPositionMotor.set(-.7);
-                    t.reset();
+                    logNotice("Position Motor Current: " + maxCurrent);
+                    maxCurrent = 0;
+                    updatePositions();
+                    logNotice("calibration complete----------");
+                }
+                if(variant.equals("ex2") || allTests) //test rev to limit switch
+                {
+                    logNotice("motor check ------");
+                    logNotice("   fwd .4 to limit, 10s");
+                    double maxCurrent = 0;
+                    Timer t = new Timer();
+                    int counter = 0;
                     t.start();
+                    mPositionMotor.set(-.8);
                     while (true)
                     {
+                        if(mPositionMotor.getOutputCurrent() > maxCurrent) 
+                        {
+                            maxCurrent = mPositionMotor.getOutputCurrent();
+                        }
                         if (!mLimitSwitchRev.get()) // limit switches are normally closed
                         {
                             logNotice("limit switch encounterd at " + mPotentiometer.getValue());
@@ -549,9 +570,10 @@ public class ArticulatedGrabber extends Subsystem
                             mRevLimitPotentiometerValue = mPotentiometer.getAverageValue();
                             logNotice(
                                     "mRevPotentiometerValue after: " + mRevLimitPotentiometerValue);
+                            mPositionMotor.set(0.0);
                             break;
                         }
-                        else if (t.hasPeriodPassed(10))
+                        else if (t.hasPeriodPassed(1000))
                         {
                             logError("rev 1s didn't encounter limit switch!!!!!!!");
                             success = false;
@@ -559,12 +581,95 @@ public class ArticulatedGrabber extends Subsystem
                         }
                         else
                         {
-                            Timer.delay(.1);
+                            Timer.delay(0);
+                            if (counter++ % 10 == 0)
+                                logNotice("    pot: " + mPotentiometer.getValue());
+                        }
+                    }
+                    logNotice("Position Motor Current: " + maxCurrent);
+                    maxCurrent = 0;
+                    mPositionMotor.set(0);
+                    updatePositions();
+                    logNotice("calibration complete----------");
+                }
+                if (variant.equals("motorlimit") || allTests)
+                {
+                    logNotice("motor check ------");
+                    logNotice("   fwd .4 to limit, 10s");
+                    double maxCurrent = 0;
+                    Timer t = new Timer();
+                    int counter = 0;
+                    t.start();
+                    mPositionMotor.set(.5);
+                    while (true)
+                    {
+                        if(mPositionMotor.getOutputCurrent() > maxCurrent) 
+                        {
+                            maxCurrent = mPositionMotor.getOutputCurrent();
+                        }
+                        if (!mLimitSwitchFwd.get()) // limit switches are normally closed
+                        {
+                            logNotice("limit switch encounterd at " + mPotentiometer.getValue());
+                            logNotice("mFwdPotentiometerValue before: "
+                                    + mFwdLimitPotentiometerValue);
+                            mFwdLimitPotentiometerValue = mPotentiometer.getAverageValue();
+                            logNotice(
+                                    "mFwdPotentiometerValue after: " + mFwdLimitPotentiometerValue);
+                            mPositionMotor.set(0.0);
+                            break;
+                        }
+                        else if (t.hasPeriodPassed(1000))
+                        {
+                            logError("fwd 1s didn't encounter limit switch!!!!!!!");
+                            success = false;
+                            break;
+                        }
+                        else
+                        {
+                            Timer.delay(0);
                             if (counter++ % 10 == 0)
                                 logNotice("    pot: " + mPotentiometer.getValue());
                         }
                     }
                     logNotice("Position Motor Current: " + mPositionMotor.getOutputCurrent());
+                    logNotice("   rev .7 to limit, 10s");
+                    logNotice("Position Motor Current: " + maxCurrent);
+                    maxCurrent = 0;
+                    mPositionMotor.set(-.8);
+                    t.reset();
+                    t.start();
+                    while (true)
+                    {
+                        if(mPositionMotor.getOutputCurrent() > maxCurrent) 
+                        {
+                            maxCurrent = mPositionMotor.getOutputCurrent();
+                        }
+                        if (!mLimitSwitchRev.get()) // limit switches are normally closed
+                        {
+                            logNotice("limit switch encounterd at " + mPotentiometer.getValue());
+                            logNotice("mRevPotentiometerValue before: "
+                                    + mRevLimitPotentiometerValue);
+                            mRevLimitPotentiometerValue = mPotentiometer.getAverageValue();
+                            logNotice(
+                                    "mRevPotentiometerValue after: " + mRevLimitPotentiometerValue);
+                            mPositionMotor.set(0.0);
+                            break;
+                        }
+                        else if (t.hasPeriodPassed(1000))
+                        {
+                            logError("rev 1s didn't encounter limit switch!!!!!!!");
+                            success = false;
+                            break;
+                        }
+                        else
+                        {
+                            Timer.delay(0);
+                            if (counter++ % 10 == 0)
+                                logNotice("    pot: " + mPotentiometer.getValue());
+                        }
+                    }
+                    logNotice("Position Motor Current: " + maxCurrent);
+                    maxCurrent = 0;
                     mPositionMotor.set(0);
                     updatePositions();
                     logNotice("calibration complete----------");
@@ -604,14 +709,14 @@ public class ArticulatedGrabber extends Subsystem
                 logNotice("Yay FWD soft limit switch encounterd at " + mPotentiometer.getValue());
                 break;
             }
-            else if (t.hasPeriodPassed(10))
+            else if (t.hasPeriodPassed(1000))
             {
                 logError("fwd 1s didn't encounter limit switch!!!!!!!");
                 break;
             }
             else
             {
-                Timer.delay(.1);
+                Timer.delay(0);
                 if (counter++ % 10 == 0)
                     logNotice("    pot: " + mPotentiometer.getValue());
             }
@@ -635,14 +740,14 @@ public class ArticulatedGrabber extends Subsystem
                 logNotice("Yay REV soft limit switch encounterd at " + mPotentiometer.getValue());
                 break;
             }
-            else if (t.hasPeriodPassed(10))
+            else if (t.hasPeriodPassed(1000))
             {
                 logError("rev 1s didn't encounter limit switch!!!!!!!");
                 break;
             }
             else
             {
-                Timer.delay(.1);
+                Timer.delay(0);
                 if (counter++ % 10 == 0)
                     logNotice("    pot: " + mPotentiometer.getValue());
             }
