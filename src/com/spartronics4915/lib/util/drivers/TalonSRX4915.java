@@ -180,7 +180,7 @@ public class TalonSRX4915 implements Sendable, MotorSafety
         mTalon.configNominalOutputReverse(0.0, timeOutMS); // [-1, 0]
         mTalon.configPeakOutputForward(1.0, timeOutMS);
         mTalon.configPeakOutputReverse(-1.0, timeOutMS);
-        
+
         // current limits are TalonSRX-specific
         // Configure the continuous allowable current-draw (when current limit is enabled).
         // Current limit is activated when current exceeds the peak limit for longer than the
@@ -297,6 +297,29 @@ public class TalonSRX4915 implements Sendable, MotorSafety
         mTalon.configSelectedFeedbackSensor(dev, 0/* pidIdx */, sInitTimeoutMS);
         mTalon.setSensorPhase(sensorPhase);
         mTalon.setInverted(invertMotorOutput);
+    }
+    
+    // soft limits depend upon a sensor and are measured in raw sensor units.
+    public void configMotorSoftLimits(boolean enableFwd, boolean enableRev,
+                                    int sensorUnits)
+    {
+        mTalon.configForwardSoftLimitEnable(enableFwd, sInitTimeoutMS);
+        mTalon.configForwardSoftLimitThreshold(sensorUnits, sInitTimeoutMS);
+        mTalon.configReverseSoftLimitEnable(enableRev, sInitTimeoutMS);
+        mTalon.configReverseSoftLimitThreshold(sensorUnits, sInitTimeoutMS);  
+    }
+    
+    public void configLimitSwitches(LimitSwitchSource fwdsrc,
+                                    LimitSwitchSource revsrc,
+            LimitSwitchNormal normallyOpenOrClosed)
+    {
+        if (mTalon != null)
+        {
+            mTalon.configForwardLimitSwitchSource(fwdsrc,
+                    normallyOpenOrClosed, sInitTimeoutMS);
+            mTalon.configReverseLimitSwitchSource(revsrc,
+                    normallyOpenOrClosed, sInitTimeoutMS);
+        }
     }
 
     public void configFollower(int masterId, boolean invert)
