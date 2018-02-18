@@ -11,7 +11,6 @@ import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
-
 /**
  * The climber is mostly a winch that pulls some ropes attached to the top of
  * the scissor
@@ -19,6 +18,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  */
 public class Climber extends Subsystem
 {
+
     private static Climber sInstance = null;
 
     public static Climber getInstance()
@@ -76,8 +76,7 @@ public class Climber extends Subsystem
         }
 
         logInitialized(success);
-        }
-    
+    }
 
     private Loop mLoop = new Loop()
     {
@@ -243,7 +242,6 @@ public class Climber extends Subsystem
         enabledLooper.register(mLoop);
     }
 
-
     @Override
     public boolean checkSystem(String variant)
     {
@@ -270,18 +268,18 @@ public class Climber extends Subsystem
                 mWinchPrimary.set(.5); // clockwise, viewed from robot right side.
                 Timer.delay(4);
                 logNotice("  master current: " + mWinchPrimary.getOutputCurrent());
-              
+
                 logNotice("  rev .5 4s");
                 mWinchPrimary.set(-.5);
                 Timer.delay(4);
                 logNotice("  master current: " + mWinchPrimary.getOutputCurrent());
-             
+
                 logNotice("  stop");
                 mWinchPrimary.set(0);
-                
+
                 // XXX: should we run motors individually?  (disable, then reenable follower)
             }
-       }
+        }
         catch (Throwable e)
         {
             success = false;
