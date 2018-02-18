@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import com.spartronics4915.frc2018.Constants;
 import com.spartronics4915.frc2018.paths.PathBuilder.Waypoint;
+import com.spartronics4915.lib.util.Logger;
 import com.spartronics4915.lib.util.math.RigidTransform2d;
 import com.spartronics4915.lib.util.math.Translation2d;
 
@@ -41,6 +42,8 @@ public class PathTransformHelper
         }
         else
             t.setY(oldTranslation.y());
+        
+        Logger.notice("Transforming (X,Y): " + oldTranslation.toString() + " to: " + t.toString());
         
         return t;
     }

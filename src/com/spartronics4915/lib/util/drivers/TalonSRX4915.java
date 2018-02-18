@@ -245,7 +245,6 @@ public class TalonSRX4915 implements Sendable, MotorSafety
         if (c == Config.kDriveMotor)
         {
             // drive wants very tight feedback
-            mTalon.setNeutralMode(NeutralMode.Brake);
             mTalon.configVelocityMeasurementPeriod(VelocityMeasPeriod.Period_10Ms, timeOutMS);
             mTalon.configVelocityMeasurementWindow(32, timeOutMS);
             mTalon.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0, 5, timeOutMS);
