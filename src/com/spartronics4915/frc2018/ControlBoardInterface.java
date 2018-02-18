@@ -34,5 +34,6 @@ public interface ControlBoardInterface
     
     double readStick(Sticks a);
     boolean readButton(Buttons b);
+    void checkForTestMode();
 
 }
