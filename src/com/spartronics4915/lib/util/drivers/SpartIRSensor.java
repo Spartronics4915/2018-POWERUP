@@ -50,6 +50,7 @@ public class SpartIRSensor
 {
 
     AnalogInput mAnalogInput;
+    double mTriggerVoltage = 1.1;
 
     public SpartIRSensor(int port)
     {
@@ -98,5 +99,13 @@ public class SpartIRSensor
         else
             return false;
     }
-
+    
+    public boolean isTargetAcquired()
+    {
+        double voltage = getVoltage();
+        if (voltage > mTriggerVoltage)
+            return true;
+        else
+            return false;
+    }
 }
