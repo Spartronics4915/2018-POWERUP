@@ -288,7 +288,7 @@ public class Robot extends IterativeRobot
             double turn = mControlBoard.readStick(Sticks.TURN);
             mDrive.setOpenLoop(
                     mCheesyDriveHelper.cheesyDrive(throttle, turn, 
-                            mControlBoard.readButton(Buttons.QUICK_TURN),
+                            mControlBoard.readButton(Buttons.DRIVE_QUICK_TURN),
                             !mControlBoard.readButton(Buttons.DRIVE_SLOW)));
 
             if (mControlBoard.readButton(Buttons.SCISSOR_OFF))
@@ -306,9 +306,14 @@ public class Robot extends IterativeRobot
                 mLifter.setWantedState(ScissorLift.WantedState.SCALE);
             }
 
-            if (mControlBoard.readButton(Buttons.DROP_CUBE))
+            if (mControlBoard.readButton(Buttons.GRABBER_DROP_CUBE))
             {
-                //TODO: implement superstructure - see strategy playbook
+                mGrabber.setWantedState(ArticulatedGrabber.WantedState.RELEASE_CUBE);
+            }
+            
+            if (mControlBoard.readButton(Buttons.SUPERSTRUCTURE_RETRACT_FROM_DUNK))
+            {
+                mSuperstructure.setWantedState(Superstructure.WantedState.RETRACT_FROM_DUNK);
             }
 
             if (mControlBoard.readButton(Buttons.HARVESTER_OPEN))
@@ -326,7 +331,7 @@ public class Robot extends IterativeRobot
                 mHarvester.setWantedState(Harvester.WantedState.EJECT);
             }
 
-            if (mControlBoard.readButton(Buttons.HARVESTER_CARRY))
+            if (mControlBoard.readButton(Buttons.SUPERSTRUCTURE_CARRY_CUBE))
             {
                 mSuperstructure.setWantedState(Superstructure.WantedState.TRANSFER_CUBE_TO_GRABBER);
             }

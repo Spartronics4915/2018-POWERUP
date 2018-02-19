@@ -13,16 +13,17 @@ public interface ControlBoardInterface
     
     enum Buttons
     {
-        QUICK_TURN,
+        DRIVE_QUICK_TURN,
         DRIVE_SLOW,
         SCISSOR_OFF,
         SCISSOR_SWITCH,
         SCISSOR_SCALE,
-        DROP_CUBE,
+        GRABBER_DROP_CUBE,
+        SUPERSTRUCTURE_RETRACT_FROM_DUNK,
         HARVESTER_OPEN,
         HARVESTER_CLOSE,
         HARVESTER_EJECT,
-        HARVESTER_CARRY,
+        SUPERSTRUCTURE_CARRY_CUBE,
         HARVESTER_CLIMB,
         CLIMBER_STOP,
         CLIMB_IDLE_TEST,

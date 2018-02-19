@@ -74,7 +74,7 @@ public class ControlBoard implements ControlBoardInterface
         double current;
         switch (b)
         {
-            case QUICK_TURN:
+            case DRIVE_QUICK_TURN:
                 result = mDrivestick.getRawButtonPressed(2);
                 break;
             case DRIVE_SLOW:
@@ -91,10 +91,13 @@ public class ControlBoard implements ControlBoardInterface
             case SCISSOR_SCALE:
                 result = mButtonBoard.getRawButtonPressed(2);
                 break;
-            case DROP_CUBE:
+            case GRABBER_DROP_CUBE:
                 current = mButtonBoard.getRawAxis(3);
                 result = (mPreviousGetDropCube != current) && (current == 1.0);
                 mPreviousGetDropCube = current;
+                break;
+            case SUPERSTRUCTURE_RETRACT_FROM_DUNK:
+                result = mButtonBoard.getRawButtonPressed(11);
                 break;
             case HARVESTER_OPEN:
                 result = mButtonBoard.getRawButtonPressed(5);
@@ -105,7 +108,7 @@ public class ControlBoard implements ControlBoardInterface
             case HARVESTER_EJECT:
                 result = mButtonBoard.getRawButtonPressed(4);
                 break;
-            case HARVESTER_CARRY:
+            case SUPERSTRUCTURE_CARRY_CUBE:
                 result = mButtonBoard.getRawButtonPressed(6);
                 break;
             case HARVESTER_CLIMB:
