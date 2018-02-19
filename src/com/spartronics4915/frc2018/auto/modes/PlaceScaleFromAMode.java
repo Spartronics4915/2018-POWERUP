@@ -9,9 +9,8 @@ import com.spartronics4915.frc2018.auto.actions.WaitAction;
 import com.spartronics4915.frc2018.paths.DriveToCloseScaleFromAPath;
 import com.spartronics4915.frc2018.paths.DriveToFarScaleFromAPath;
 import com.spartronics4915.frc2018.paths.PathContainer;
+import com.spartronics4915.lib.util.Util;
 import com.spartronics4915.lib.util.math.Rotation2d;
-
-import edu.wpi.first.wpilibj.DriverStation;
 
 public class PlaceScaleFromAMode extends AutoModeBase
 {
@@ -30,7 +29,7 @@ public class PlaceScaleFromAMode extends AutoModeBase
     {
         PathContainer path;
         Rotation2d endTurn;
-        if (DriverStation.getInstance().getGameSpecificMessage().charAt(1) == 'L')
+        if (Util.getGameSpecificMessage().charAt(1) == 'L')
         {
             path = mClosePath;
             endTurn = Rotation2d.fromDegrees(90);

@@ -56,8 +56,7 @@ public class Superstructure extends Subsystem
         IDLE,
         RETRACTING_FLIPPER, // Retract from dunk
         RETRACTING_SCISSOR,
-        PREPARING_ARTICULATED_GRABBER, // Transfer cube from harvester to scissor
-        GRABBING_ARTICULATED_GRABBER,
+        GRABBING_ARTICULATED_GRABBER, // Transfer cube from harvester to scissor
         OPENING_HARVESTER,
         TRANSPORTING_ARTICULATED_GRABBER,
         RELEASING_SCISSOR, // Climb
@@ -142,10 +141,7 @@ public class Superstructure extends Subsystem
                         else
                             newState = defaultStateTransfer();
                         break;
-                    case PREPARING_ARTICULATED_GRABBER:  // Transfer cube from harvester to scissor
-                        // TODO: This might be unneeded, better ask Noah
-                        break;
-                    case GRABBING_ARTICULATED_GRABBER:
+                    case GRABBING_ARTICULATED_GRABBER: // Transfer cube from harvester to scissor
                         if (mStateChanged)
                             mGrabber.setWantedState(ArticulatedGrabber.WantedState.GRAB_CUBE);
                         else if (mWantedState == WantedState.TRANSFER_CUBE_TO_GRABBER)
@@ -233,7 +229,7 @@ public class Superstructure extends Subsystem
                 newState = SystemState.RETRACTING_FLIPPER; // Go to the first system state in the sequence of retract from dunk states
                 break;
             case TRANSFER_CUBE_TO_GRABBER:
-                newState = SystemState.PREPARING_ARTICULATED_GRABBER; // First state, same as above
+                newState = SystemState.GRABBING_ARTICULATED_GRABBER; // First state, same as above
                 break;
             case CLIMB:
 //                if (DriverStation.getInstance().getMatchTime() < kMatchDurationSeconds - kEndgameDurationSeconds) // Don't extend the scissor if we're not in the endgame

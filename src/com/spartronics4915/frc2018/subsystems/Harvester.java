@@ -340,10 +340,11 @@ public class Harvester extends Subsystem
     @Override
     public synchronized void stop()
     {
+        mSystemState = SystemState.DISABLING;
+        mWantedState = WantedState.DISABLE;
         mSolenoid.set(kSolenoidClose);
         mMotorLeft.set(0.0);
         mMotorRight.set(0.0);
-        mSystemState = SystemState.DISABLING;
     }
 
     @Override

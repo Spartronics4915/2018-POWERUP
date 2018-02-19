@@ -215,8 +215,8 @@ public class ScissorLift extends Subsystem
     @Override
     public synchronized void stop()
     {
-        mWantedState = WantedState.OFF;
         mSystemState = SystemState.OFF;
+        setWantedState(WantedState.OFF);
         mLowerSolenoid.set(false);
         mRaiseSolenoid.set(false);
         mHoldSolenoid.set(false);

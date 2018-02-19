@@ -1,16 +1,22 @@
 package com.spartronics4915.frc2018.paths;
 
+import java.util.ArrayList;
+
+import com.spartronics4915.frc2018.paths.PathBuilder.Waypoint;
+import com.spartronics4915.lib.util.control.Path;
 import com.spartronics4915.lib.util.math.RigidTransform2d;
 
 public class DriveToCloseSwitchFromAPath extends DriveToCloseSwitchFromCPath
 {
     @Override
-    public RigidTransform2d getStartPose() {
-        return new RigidTransform2d(super.getStartPose().getTranslation(), super.getStartPose().getRotation().inverse()); 
+    public Path buildPath()
+    {
+        return PathBuilder.buildPathFromWaypoints(PathTransformHelper.mirrorWaypointsAboutAxis((ArrayList<Waypoint>)super.getWaypoints(), false, true));
     }
     
     @Override
-    public boolean isReversed() {
-        return true;
+    public RigidTransform2d getStartPose()
+    {
+        return PathTransformHelper.mirrorRigidTransformAboutAxis(super.getStartPose(), false, true); 
     }
 }
