@@ -61,12 +61,12 @@ public class LED extends Subsystem
 
     public enum BlingState
     {
-        A, B, C, D
+        SOLID_BLUE, SOLID_RED, SOLID_YELLOW, FLASHING_YELLOW
     }
 
     private SystemState mSystemState = SystemState.OFF;
     private WantedState mWantedState = WantedState.OFF;
-    private BlingState mBlingState = BlingState.A;
+    private BlingState mBlingState = BlingState.SOLID_BLUE;
 
     private boolean mIsLEDOn, mIsLampOn;
     private Relay mDriverLED;
@@ -115,7 +115,7 @@ public class LED extends Subsystem
             {
                 mSystemState = SystemState.OFF;
                 mWantedState = WantedState.OFF;
-                mBlingState = BlingState.A;
+                mBlingState = BlingState.SOLID_BLUE;
                 handleOff();
                 mIsBlinking = false;
             }
@@ -130,16 +130,16 @@ public class LED extends Subsystem
             {
                 switch (mBlingState)
                 {
-                    case A:
+                    case SOLID_BLUE:
                         mBling.writeString("0");
                         break;
-                    case B:
+                    case SOLID_RED:
                         mBling.writeString("1");
                         break;
-                    case C:
+                    case SOLID_YELLOW:
                         mBling.writeString("2");
                         break;
-                    case D:
+                    case FLASHING_YELLOW:
                         mBling.writeString("3");
                         break;
                     default:
@@ -250,7 +250,7 @@ public class LED extends Subsystem
     @Override
     public void outputToSmartDashboard()
     {
-
+        dashboardPutString("BlingState", mBlingState.toString());
     }
 
     @Override
@@ -298,7 +298,10 @@ public class LED extends Subsystem
 
     public synchronized void setBlingState(BlingState b)
     {
-        mBlingState = b;
+        if(mBlingState != b)
+        {
+            mBlingState = b;
+        }
     }
 
     public synchronized void warnDriver(String msg)
