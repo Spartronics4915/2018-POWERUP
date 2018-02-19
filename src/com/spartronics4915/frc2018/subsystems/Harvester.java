@@ -201,9 +201,9 @@ public class Harvester extends Subsystem
         mMotorRight.set(0.0);
         if (mWantedState == WantedState.OPEN)
         {
-            return defaultStateTransfer();
+            return defaultStateTransfer(); //all defaultStateTransfers return the wanted state
         }
-        return SystemState.CLOSING; // all defaultStateTransfers return the wanted state
+        return SystemState.CLOSING;
     }
 
     private SystemState handleOpening()
@@ -215,7 +215,6 @@ public class Harvester extends Subsystem
         {
             return defaultStateTransfer();
         }
-        
         // if timeout reached, turn off motors
         if (mTimer.hasPeriodPassed(kCloseTimePeriod))
         {
@@ -261,12 +260,6 @@ public class Harvester extends Subsystem
     private SystemState handleHugging()
     {
         //motors off and bars closing go to closed when cube is gone
-        if (!isCubeHeld())
-        {
-            mSolenoid.set(kSolenoidOpen);
-            setWantedState(WantedState.OPEN);
-            return SystemState.OPENING;
-        }
         mMotorLeft.set(0.0);
         mMotorRight.set(0.0);
         //ADD LED STUFF HERE
@@ -322,6 +315,7 @@ public class Harvester extends Subsystem
 
     private boolean isCubeHeld()
     {
+        //TODO Set LED lights to on solid yellow
         return mCubeHeldSensor.isTargetAcquired();
     }
 

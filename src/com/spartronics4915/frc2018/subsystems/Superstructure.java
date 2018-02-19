@@ -80,7 +80,6 @@ public class Superstructure extends Subsystem
     // here because they're useful.
     private double mCurrentStateStartTime;
     private boolean mStateChanged;
-    private boolean mAlliance;
     
     private final double kMatchDurationSeconds = 135;
     private final double kEndgameDurationSeconds = 30;
@@ -107,15 +106,6 @@ public class Superstructure extends Subsystem
                 mWantStateChangeStartTime = timestamp;
                 mSystemState = SystemState.IDLE;
                 mStateChanged = true;
-                mAlliance = true; //TODO change this based on alliance color, true = red, false = blue.
-                if (mAlliance = true)
-                {
-                    //TODO set color change here
-                }
-                else
-                {
-                    //TODO set color change here
-                }
             }
         }
 
@@ -246,8 +236,8 @@ public class Superstructure extends Subsystem
                 newState = SystemState.PREPARING_ARTICULATED_GRABBER; // First state, same as above
                 break;
             case CLIMB:
-   //            if (DriverStation.getInstance().getMatchTime() < kMatchDurationSeconds - kEndgameDurationSeconds) // Don't extend the scissor if we're not in the endgame
-   //                 return; This is commented out to make testing easier. Re-add it once this is verified.
+               if (DriverStation.getInstance().getMatchTime() < kMatchDurationSeconds - kEndgameDurationSeconds) // Don't extend the scissor if we're not in the endgame
+                    return; //Flash light here //This is commented out to make testing easier. Re-add it once this is verified.
                 newState = SystemState.RELEASING_SCISSOR; // First state, same as above
                 break;
             default:
