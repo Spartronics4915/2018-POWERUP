@@ -1,6 +1,8 @@
 package com.spartronics4915.frc2018;
 
 import com.spartronics4915.lib.util.ConstantsBase;
+import com.spartronics4915.lib.util.math.Translation2d;
+
 import edu.wpi.first.wpilibj.Solenoid;
 
 /**
@@ -14,7 +16,7 @@ import edu.wpi.first.wpilibj.Solenoid;
  */
 public class Constants extends ConstantsBase
 {
-    public static final boolean kUseTestbedConstants = false;
+    public static final boolean kUseTestbedConstants = false; // XXX: We should use the ConstantsBase reflection -> file instead of this
     // Hardware configuration constants --------------------------------------------------------
     
     // CAN Bus --------------------------- 
@@ -48,8 +50,8 @@ public class Constants extends ConstantsBase
     public static final int kScissorUpSolenoidId = 0; //PCM 0
     public static final int kScissorDownSolenoidId = 1; //PCM 0
     public static final int kScissorBrakeSolenoidId = 2; //PCM 0
-    public static final int kGrabberSolenoidId = 3; //PCM 0
-    public static final int kGrabberSetupSolenoidId = 4; //PCM 0
+    public static final int kGrabberSetupSolenoidId = 3; //PCM 0
+    public static final int kGrabberSolenoidId = 4; //PCM 0
     public static final int kHarvesterSolenoidId = 5; //PCM 0
     public static final int kClimberStabilizationSolenoidId1 = 6; //PCM 0
     public static final int kClimberStabilizationSolenoidId2 = 7; //PCM 0
@@ -160,7 +162,6 @@ public class Constants extends ConstantsBase
     public static final double kTrackReportComparatorAgeWeight = 1.0;
 
     // Pose of the camera frame w.r.t. the robot frame
-    // TODO: Update for 2018
     public static final String kVisionTableName = "Vision"; // name in networktables below root
     public static final String kVisionTargetAngleName = "ax"; // "clock", "ay" are also available
     public static final double kCameraXOffset = -3.3211;
@@ -180,6 +181,7 @@ public class Constants extends ConstantsBase
     // Field constants
     public static final double kFieldWidth = 648;
     public static final double kFieldHeight = 324;
+    public static final Translation2d kFieldDimensionTranslation = new Translation2d(kFieldWidth, kFieldHeight);
     
     /**
      * Make an {@link Solenoid} instance for the single-number ID of the

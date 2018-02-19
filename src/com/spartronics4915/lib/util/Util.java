@@ -3,7 +3,9 @@ package com.spartronics4915.lib.util;
 import java.util.List;
 
 import edu.wpi.first.wpilibj.DoubleSolenoid;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Solenoid;
+import edu.wpi.first.wpilibj.Timer;
 
 /**
  * Contains basic functions that are used often.
@@ -69,5 +71,15 @@ public class Util
             result &= epsilonEquals(value_in, value, epsilon);
         }
         return result;
+    }
+    
+    public static String getGameSpecificMessage()
+    {
+        do
+        {
+            Timer.delay(0.1);
+        }
+        while (DriverStation.getInstance().getGameSpecificMessage().equals(""));
+        return DriverStation.getInstance().getGameSpecificMessage();
     }
 }

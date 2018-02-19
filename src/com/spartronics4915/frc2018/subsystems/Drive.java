@@ -8,6 +8,7 @@ import com.spartronics4915.frc2018.RobotState;
 import com.spartronics4915.frc2018.ShooterAimingParameters;
 import com.spartronics4915.frc2018.loops.Loop;
 import com.spartronics4915.frc2018.loops.Looper;
+import com.spartronics4915.frc2018.subsystems.Climber.WantedState;
 import com.spartronics4915.lib.util.DriveSignal;
 import com.spartronics4915.lib.util.ReflectingCSVWriter;
 import com.spartronics4915.lib.util.Util;
