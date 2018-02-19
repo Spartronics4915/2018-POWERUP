@@ -12,12 +12,11 @@ public class PathTransformHelper
 {
     public static ArrayList<Waypoint> mirrorWaypointsAboutAxis(ArrayList<Waypoint> waypoints, boolean mirrorX, boolean mirrorY)
     {
-        ArrayList<Waypoint> newWaypoints = new ArrayList<Waypoint>();
         for (Waypoint w : waypoints)
         {
-            newWaypoints.add(new Waypoint(mirrorTranslationAboutAxis(w.position, mirrorX, mirrorY), w.radius, w.speed));
+            w.position = mirrorTranslationAboutAxis(w.position, mirrorX, mirrorY);
         }
-        return newWaypoints;
+        return waypoints;
     }
     
     public static RigidTransform2d mirrorRigidTransformAboutAxis(RigidTransform2d rt, boolean mirrorX, boolean mirrorY)
@@ -31,10 +30,10 @@ public class PathTransformHelper
         Logger.notice("Transforming from: " + translation.toString());
         
         if (mirrorX)
-            translation.setX(Constants.kFieldWidthTranslation.translateBy(translation.inverse()).x());
+            translation.setX(Constants.kFieldDimensionTranslation.x() - translation.x());
         
         if (mirrorY)
-            translation.setY(Constants.kFieldHeightTranslation.translateBy(translation.inverse()).y());
+            translation.setY(Constants.kFieldDimensionTranslation.y() - translation.y());
         
         Logger.notice("Transforming to: " + translation.toString());
         

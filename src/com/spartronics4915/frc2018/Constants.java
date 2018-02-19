@@ -181,8 +181,7 @@ public class Constants extends ConstantsBase
     // Field constants
     public static final double kFieldWidth = 648;
     public static final double kFieldHeight = 324;
-    public static final Translation2d kFieldWidthTranslation = new Translation2d(kFieldWidth, 0);
-    public static final Translation2d kFieldHeightTranslation = new Translation2d(0, kFieldHeight);
+    public static final Translation2d kFieldDimensionTranslation = new Translation2d(kFieldWidth, kFieldHeight);
     
     /**
      * Make an {@link Solenoid} instance for the single-number ID of the

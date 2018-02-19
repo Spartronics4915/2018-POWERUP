@@ -3,6 +3,7 @@ package com.spartronics4915.frc2018.paths;
 import java.util.List;
 
 import com.spartronics4915.frc2018.auto.actions.WaitForPathMarkerAction;
+import com.spartronics4915.lib.util.Logger;
 import com.spartronics4915.lib.util.control.Path;
 import com.spartronics4915.lib.util.control.PathSegment;
 import com.spartronics4915.lib.util.math.RigidTransform2d;
@@ -137,6 +138,10 @@ public class PathBuilder
                     p.addSegment(new PathSegment(start.x(), start.y(), end.x(), end.y(), b.speed,
                             p.getLastMotionState(), endSpeed));
                 }
+            }
+            else
+            {
+                Logger.warning("Line too small when building path.");
             }
 
         }
