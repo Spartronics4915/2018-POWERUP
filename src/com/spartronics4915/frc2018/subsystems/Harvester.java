@@ -209,12 +209,19 @@ public class Harvester extends Subsystem
 
     private SystemState handleOpening()
     {
-        //motors off and bars out
-        mMotorLeft.set(0.0);
-        mMotorRight.set(0.0);
+        // due to mechanical stuck issue, run motors reverse, open bars and turn off motors after timeout
+        mMotorLeft.set(-1.0);
+        mMotorRight.set(-1.0);
         if (mWantedState == WantedState.HARVEST || mWantedState == WantedState.EJECT)
         {
             return defaultStateTransfer();
+        }
+        
+        // if timeout reached, turn off motors
+        if (mTimer.hasPeriodPassed(kCloseTimePeriod))
+        {
+            mMotorLeft.set(0.0);
+            mMotorRight.set(0.0);
         }
         return SystemState.OPENING;
     }
@@ -272,7 +279,7 @@ public class Harvester extends Subsystem
 
     public void setWantedState(WantedState wantedState)
     {
-        if (wantedState == wantedState.HARVEST)
+        if (wantedState == WantedState.HARVEST || wantedState == WantedState.OPEN)
         {
             mTimer.reset();
             mTimer.start();
