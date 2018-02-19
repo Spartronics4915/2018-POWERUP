@@ -230,6 +230,7 @@ public class Climber extends Subsystem
     public synchronized void stop()
     {
         mWinchPrimary.set(0.0);
+        setWantedState(WantedState.IDLE);
     }
 
     @Override

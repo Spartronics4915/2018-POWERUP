@@ -116,7 +116,7 @@ class Line {
 		ctx.beginPath();
         ctx.moveTo(this.start.drawX, this.start.drawY);
         ctx.lineTo(this.end.drawX, this.end.drawY);
-        
+
 		try {
         	var grad = ctx.createLinearGradient(this.start.drawX, this.start.drawY, this.end.drawX, this.end.drawY);
 	grad.addColorStop(0, getColorForSpeed(this.pointB.speed));
@@ -212,7 +212,7 @@ class Arc {
 		drawRotatedRect(this.center.translate(new Translation2d(this.radius*Math.cos(sAngle-i/length*angle),-this.radius*Math.sin(sAngle-i/length*angle))), robotHeight, robotWidth, sAngle-i/length*angle+Math.PI/2, null, pathFillColor, true);
 		}
 
-		
+
 
 	}
 
@@ -222,7 +222,7 @@ class Arc {
 }
 
 
-function init() { 
+function init() {
 	$("#field").css("width", (width / 1.5) + "px");
 	$("#field").css("height", (height / 1.5) + "px");
 	ctx = document.getElementById('field').getContext('2d')
@@ -270,7 +270,7 @@ function addPoint() {
 	var prev;
 	if(waypoints.length > 0)
 		prev = waypoints[waypoints.length - 1].position;
-	else 
+	else
 		prev = new Translation2d(50, 50);
 	$("tbody").append("<tr>"
 		+"<td><input value='"+(prev.x+20)+"'></td>"
@@ -427,6 +427,7 @@ function getDataString() {
 	var str = `package com.spartronics4915.frc2018.paths;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import com.spartronics4915.frc2018.paths.PathBuilder.Waypoint;
 import com.spartronics4915.lib.util.control.Path;
@@ -435,31 +436,45 @@ import com.spartronics4915.lib.util.math.Rotation2d;
 import com.spartronics4915.lib.util.math.Translation2d;
 
 public class ${title} implements PathContainer {
-    
-    @Override
-    public Path buildPath() {
-        ArrayList<Waypoint> sWaypoints = new ArrayList<Waypoint>();
+
+    ArrayList<Waypoint> sWaypoints = new ArrayList<Waypoint>();
+
+    public ${title}()
+    {
 ${pathInit}
-        return PathBuilder.buildPathFromWaypoints(sWaypoints);
-    }
-    
-    @Override
-    public RigidTransform2d getStartPose() {
-        return new RigidTransform2d(${startPoint}, Rotation2d.fromDegrees(90.0)); 
     }
 
     @Override
-    public boolean isReversed() {
-        return ${isReversed}; 
+    public Path buildPath()
+    {
+        return PathBuilder.buildPathFromWaypoints(sWaypoints);
     }
-	// ${importStr}
-	// IS_REVERSED: ${isReversed}
-	// FILE_NAME: ${title}
+
+    @Override
+    public List<Waypoint> getWaypoints()
+    {
+        return sWaypoints;
+    }
+
+    @Override
+    public RigidTransform2d getStartPose()
+    {
+        return new RigidTransform2d(${startPoint}, Rotation2d.fromDegrees(90.0));
+    }
+
+    @Override
+    public boolean isReversed()
+    {
+        return ${isReversed};
+    }
+    // ${importStr}
+    // IS_REVERSED: ${isReversed}
+    // FILE_NAME: ${title}
 }`
 	return str;
 }
 
-function exportData() { 
+function exportData() {
 	update();
 	var title = ($("#title").val().length > 0) ? $("#title").val() : "UntitledPath";
 	var blob = new Blob([getDataString()], {type: "text/plain;charset=utf-8"});
