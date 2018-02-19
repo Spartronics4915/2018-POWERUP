@@ -262,6 +262,7 @@ public class Harvester extends Subsystem
         }
         mMotorLeft.set(0.0);
         mMotorRight.set(0.0);
+        //ADD LED STUFF HERE
         if (mWantedState == WantedState.OPEN || mWantedState == WantedState.EJECT)
         {
             return defaultStateTransfer();
