@@ -61,12 +61,12 @@ public class LED extends Subsystem
 
     public enum BlingState
     {
-        SOLID_BLUE, SOLID_RED, SOLID_YELLOW, FLASHING_YELLOW
+        OFF, SOLID_BLUE, SOLID_RED, SOLID_YELLOW, FLASHING_YELLOW
     }
 
     private SystemState mSystemState = SystemState.OFF;
     private WantedState mWantedState = WantedState.OFF;
-    private BlingState mBlingState = BlingState.SOLID_BLUE;
+    private BlingState mBlingState = BlingState.OFF;
 
     private boolean mIsLEDOn, mIsLampOn;
     private Relay mDriverLED;
@@ -92,6 +92,7 @@ public class LED extends Subsystem
             configureBlink(kDefaultBlinkCount, kDefaultBlinkDuration);
 
             mBling = new SerialPort(9600, SerialPort.Port.kUSB);
+            setBlingState(BlingState.OFF);
         }
         catch (Exception e)
         {
@@ -115,7 +116,6 @@ public class LED extends Subsystem
             {
                 mSystemState = SystemState.OFF;
                 mWantedState = WantedState.OFF;
-                mBlingState = BlingState.SOLID_BLUE;
                 handleOff();
                 mIsBlinking = false;
             }
@@ -128,25 +128,6 @@ public class LED extends Subsystem
         {
             synchronized (LED.this)
             {
-                switch (mBlingState)
-                {
-                    case SOLID_BLUE:
-                        mBling.writeString("0");
-                        break;
-                    case SOLID_RED:
-                        mBling.writeString("1");
-                        break;
-                    case SOLID_YELLOW:
-                        mBling.writeString("2");
-                        break;
-                    case FLASHING_YELLOW:
-                        mBling.writeString("3");
-                        break;
-                    default:
-                        mBling.writeString("0");
-                        break;
-                }
-
                 SystemState newState;
                 double timeInState = timestamp - mCurrentStateStartTime;
                 switch (mSystemState)
@@ -301,7 +282,33 @@ public class LED extends Subsystem
         if(mBlingState != b)
         {
             mBlingState = b;
+            switch (b)
+            {
+                case OFF:
+                    mBling.writeString("0");
+                    break;
+                case SOLID_BLUE:
+                    mBling.writeString("1");
+                    break;
+                case SOLID_RED:
+                    mBling.writeString("2");
+                    break;
+                case SOLID_YELLOW:
+                    mBling.writeString("3");
+                    break;
+                case FLASHING_YELLOW:
+                    mBling.writeString("4");
+                    break;
+                default:
+                    mBling.writeString("0");
+                    break;
+            }
         }
+    }
+    
+    public synchronized BlingState getBlingState()
+    {
+        return mBlingState;
     }
 
     public synchronized void warnDriver(String msg)
