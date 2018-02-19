@@ -34,7 +34,6 @@ public class Climber extends Subsystem
     {
         DISABLED,
         IDLING,
-        PREPARING,
         CLIMBING,
         HOLDING,
 
@@ -43,7 +42,6 @@ public class Climber extends Subsystem
     public enum WantedState
     {
         IDLE,
-        PREPARE,
         CLIMB,
         HOLD,
     }
@@ -61,7 +59,7 @@ public class Climber extends Subsystem
         {
             mWinchPrimary =
                     TalonSRX4915Factory.createDefaultMotor(Constants.kClimberWinchPrimaryMotorId);
-            mWinchPrimary.configOutputPower(true, 0.5, 0.0, 0.75, 0.0, -0.5);
+            mWinchPrimary.configOutputPower(true, 0.5, 0.0, 1.0, 0.0, -0.5); //Ramp rate is .5 seconds
             mWinchPrimary.setBrakeMode(true);
 
             if (!mWinchPrimary.isValid())
@@ -112,9 +110,6 @@ public class Climber extends Subsystem
                     case DISABLED:
                         newState = handleDisabled();
                         break;
-                    case PREPARING:
-                        newState = handlePreparing();
-                        break;
                     default:
                         newState = handleIdling();
                         break;
@@ -141,9 +136,10 @@ public class Climber extends Subsystem
 
     private SystemState handleClimbing()
     {
-        mWinchPrimary.set(1.0);
+        mWinchPrimary.set(0.75);
         if (mWantedState == WantedState.HOLD)
         {
+            mWinchPrimary.configCurrentLimit(true, 15, 25, 500); //Continuous, peak, peak duration (ms)
             return SystemState.HOLDING;
         }
         else
@@ -156,22 +152,23 @@ public class Climber extends Subsystem
     private SystemState handleIdling()
     {
         mWinchPrimary.set(0.0);
-        if (mWantedState == WantedState.PREPARE)
+        if (mWantedState == WantedState.CLIMB)
         {
-            return SystemState.PREPARING;
+            mWinchPrimary.configCurrentLimit(false, 0, 0, 0);
+            return SystemState.CLIMBING;
         }
         else
         {
-
             return SystemState.IDLING;
         }
     }
 
     private SystemState handleHolding()
     {
-        mWinchPrimary.set(0.0);
+        mWinchPrimary.set(0.75);
         if (mWantedState == WantedState.CLIMB)
         {
+            mWinchPrimary.configCurrentLimit(false, 0, 0, 0);
             return SystemState.CLIMBING;
         }
         else if (mWantedState == WantedState.IDLE)
@@ -193,23 +190,6 @@ public class Climber extends Subsystem
         }
         logWarning("Wanted State is not Idle at init.");
         return SystemState.IDLING;
-    }
-
-    private SystemState handlePreparing()
-    {
-        mWinchPrimary.set(0.0);
-        if (mWantedState == WantedState.CLIMB)
-        {
-            return SystemState.CLIMBING;
-        }
-        else if (mWantedState == WantedState.IDLE)
-        {
-            return SystemState.IDLING;
-        }
-        else
-        {
-            return SystemState.PREPARING;
-        }
     }
 
     public void setWantedState(WantedState wantedState)
