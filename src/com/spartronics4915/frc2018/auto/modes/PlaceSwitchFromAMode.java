@@ -8,8 +8,7 @@ import com.spartronics4915.frc2018.auto.actions.WaitAction;
 import com.spartronics4915.frc2018.paths.DriveToCloseSwitchFromAPath;
 import com.spartronics4915.frc2018.paths.DriveToFarSwitchFromAPath;
 import com.spartronics4915.frc2018.paths.PathContainer;
-
-import edu.wpi.first.wpilibj.DriverStation;
+import com.spartronics4915.lib.util.Util;
 
 public class PlaceSwitchFromAMode extends AutoModeBase
 {
@@ -27,7 +26,7 @@ public class PlaceSwitchFromAMode extends AutoModeBase
     protected void routine() throws AutoModeEndedException
     {
         PathContainer path;
-        if (DriverStation.getInstance().getGameSpecificMessage().charAt(0) == 'R')
+        if (Util.getGameSpecificMessage().charAt(0) == 'R')
         {
             path = mClosePath;
         }

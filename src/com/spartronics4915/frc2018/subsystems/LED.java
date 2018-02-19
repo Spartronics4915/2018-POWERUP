@@ -12,7 +12,8 @@ import edu.wpi.first.wpilibj.Timer;
 /**
  * The LED subsystem consists of:
  * - DriverLED: for communicating information to drivers (also on dashboard)
- * - VisionLamp: a relay to turn on or off the vision headlights (used for illuminating vision targets).
+ * - VisionLamp: a relay to turn on or off the vision headlights (used for
+ * illuminating vision targets).
  * - Bling: a serial port that sends the desired BlingState to the Arduino.
  * - potential extensions:
  * - LED light or strip for communicating with human player
@@ -61,12 +62,12 @@ public class LED extends Subsystem
 
     public enum BlingState
     {
-        SOLID_BLUE, SOLID_RED, SOLID_YELLOW, FLASHING_YELLOW
+        OFF, SOLID_BLUE, SOLID_RED, SOLID_YELLOW, FLASHING_YELLOW
     }
 
     private SystemState mSystemState = SystemState.OFF;
     private WantedState mWantedState = WantedState.OFF;
-    private BlingState mBlingState = BlingState.SOLID_BLUE;
+    private BlingState mBlingState = null;
 
     private boolean mIsLEDOn, mIsLampOn;
     private Relay mDriverLED;
@@ -76,6 +77,12 @@ public class LED extends Subsystem
     private double mBlinkDuration;
     private int mBlinkCount;
     private double mTotalBlinkDuration;
+
+    private final byte[] kOff = "0".getBytes();
+    private final byte[] kSolidBlue = "1".getBytes();
+    private final byte[] kSolidRed = "2".getBytes();
+    private final byte[] kSolidYellow = "3".getBytes();
+    private final byte[] kFlashingYellow = "4".getBytes();
 
     public LED()
     {
@@ -92,6 +99,7 @@ public class LED extends Subsystem
             configureBlink(kDefaultBlinkCount, kDefaultBlinkDuration);
 
             mBling = new SerialPort(9600, SerialPort.Port.kUSB);
+            setBlingState(BlingState.OFF);
         }
         catch (Exception e)
         {
@@ -115,7 +123,6 @@ public class LED extends Subsystem
             {
                 mSystemState = SystemState.OFF;
                 mWantedState = WantedState.OFF;
-                mBlingState = BlingState.SOLID_BLUE;
                 handleOff();
                 mIsBlinking = false;
             }
@@ -128,25 +135,6 @@ public class LED extends Subsystem
         {
             synchronized (LED.this)
             {
-                switch (mBlingState)
-                {
-                    case SOLID_BLUE:
-                        mBling.writeString("0");
-                        break;
-                    case SOLID_RED:
-                        mBling.writeString("1");
-                        break;
-                    case SOLID_YELLOW:
-                        mBling.writeString("2");
-                        break;
-                    case FLASHING_YELLOW:
-                        mBling.writeString("3");
-                        break;
-                    default:
-                        mBling.writeString("0");
-                        break;
-                }
-
                 SystemState newState;
                 double timeInState = timestamp - mCurrentStateStartTime;
                 switch (mSystemState)
@@ -268,6 +256,8 @@ public class LED extends Subsystem
     @Override
     public void registerEnabledLoops(Looper enabledLooper)
     {
+        if (!this.isInitialized())
+            return;
         enabledLooper.register(mLoop);
     }
 
@@ -298,10 +288,36 @@ public class LED extends Subsystem
 
     public synchronized void setBlingState(BlingState b)
     {
-        if(mBlingState != b)
+        if (mBlingState != b)
         {
+            switch (b)
+            {
+                case OFF:
+                    mBling.write(kOff, kOff.length);
+                    break;
+                case SOLID_BLUE:
+                    mBling.write(kSolidBlue, kSolidBlue.length);
+                    break;
+                case SOLID_RED:
+                    mBling.write(kSolidRed, kSolidRed.length);
+                    break;
+                case SOLID_YELLOW:
+                    mBling.write(kSolidYellow, kSolidYellow.length);
+                    break;
+                case FLASHING_YELLOW:
+                    mBling.write(kFlashingYellow, kFlashingYellow.length);
+                    break;
+                default:
+                    mBling.write(kOff, kOff.length);
+                    break;
+            }
             mBlingState = b;
         }
+    }
+
+    public synchronized BlingState getBlingState()
+    {
+        return mBlingState;
     }
 
     public synchronized void warnDriver(String msg)

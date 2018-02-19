@@ -7,29 +7,30 @@ public interface ControlBoardInterface
 {
     enum Sticks
     {
-        kThrottle,
-        kTurn,
+        THROTTLE,
+        TURN,
     }
     
     enum Buttons
     {
-        kQuickTurn,
-        kLowGear,
-        kReadyToHarvest,
-        kReadyToDropSwitch,
-        kReadyToDropScale,
-        kDropCube,
-        kOpenHarvester,
-        kCloseHarvester,
-        kEjectCube,
-        kCarryCube,
-        kClimb,
-        kStopClimb,
-        kTestClimbIdle,
-        kTestGrabberTransport,
-        kTestGrabberGrabCube,
-        kTestGrabberPrepareDrop,
-        kTestGrabberPrepareIntake
+        DRIVE_QUICK_TURN,
+        DRIVE_SLOW,
+        SCISSOR_OFF,
+        SCISSOR_SWITCH,
+        SCISSOR_SCALE,
+        GRABBER_DROP_CUBE,
+        SUPERSTRUCTURE_RETRACT_FROM_DUNK,
+        HARVESTER_OPEN,
+        HARVESTER_CLOSE,
+        HARVESTER_EJECT,
+        SUPERSTRUCTURE_CARRY_CUBE,
+        HARVESTER_CLIMB,
+        CLIMBER_STOP,
+        CLIMB_IDLE_TEST,
+        GRABBER_TRANSPORT_TEST,
+        GRABBER_GRAB_CUBE_TEST,
+        GRABBER_PREPARE_DROP_TEST,
+        GRABBER_PREPARE_INTAKE_TEST
     }
     
     double readStick(Sticks a);

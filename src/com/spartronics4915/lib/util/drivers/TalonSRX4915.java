@@ -356,7 +356,19 @@ public class TalonSRX4915 implements Sendable, MotorSafety
         mTalon.configPeakOutputForward(peakFwdOutput, sInitTimeoutMS);
         mTalon.configPeakOutputReverse(peakRevOutput, sInitTimeoutMS);
     }
-
+    
+    public void configCurrentLimit(boolean enabled, int continuousLimit,
+            int peakLimit, int peakDuration )
+    {
+        if(mTalon != null)
+        {
+            mTalon.enableCurrentLimit(false);
+            mTalon.configContinuousCurrentLimit(continuousLimit, sInitTimeoutMS); // 10 amps
+            mTalon.configPeakCurrentLimit(peakLimit, sInitTimeoutMS);
+            mTalon.configPeakCurrentDuration(peakDuration, sInitTimeoutMS); // millisecond
+        }
+    }
+    
     public void configMotionMagicRPM(double maxVelocityRPM, double maxAccelRPMPerSec)
     {
         if (mTalon == null)
