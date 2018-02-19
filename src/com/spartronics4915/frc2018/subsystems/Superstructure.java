@@ -261,6 +261,7 @@ public class Superstructure extends Subsystem
     
     public synchronized void setWantedState(WantedState wantedState)
     {
+        logNotice("Wanted state to "+wantedState.toString());
         mWantedState = wantedState;
     }
 

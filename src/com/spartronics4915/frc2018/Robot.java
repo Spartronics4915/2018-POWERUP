@@ -284,84 +284,84 @@ public class Robot extends IterativeRobot
     {
         try
         {
-            double throttle = mControlBoard.readStick(Sticks.kThrottle);
-            double turn = mControlBoard.readStick(Sticks.kTurn);
+            double throttle = mControlBoard.readStick(Sticks.THROTTLE);
+            double turn = mControlBoard.readStick(Sticks.TURN);
             mDrive.setOpenLoop(
                     mCheesyDriveHelper.cheesyDrive(throttle, turn, 
-                            mControlBoard.readButton(Buttons.kQuickTurn),
-                            !mControlBoard.readButton(Buttons.kLowGear)));
+                            mControlBoard.readButton(Buttons.QUICK_TURN),
+                            !mControlBoard.readButton(Buttons.DRIVE_SLOW)));
 
-            if (mControlBoard.readButton(Buttons.kReadyToHarvest))
+            if (mControlBoard.readButton(Buttons.SCISSOR_OFF))
             {
                 mLifter.setWantedState(ScissorLift.WantedState.OFF);
             }
 
-            if (mControlBoard.readButton(Buttons.kReadyToDropSwitch))
+            if (mControlBoard.readButton(Buttons.SCISSOR_SWITCH))
             {
                 mLifter.setWantedState(ScissorLift.WantedState.SWITCH);
             }
 
-            if (mControlBoard.readButton(Buttons.kReadyToDropScale))
+            if (mControlBoard.readButton(Buttons.SCISSOR_SCALE))
             {
                 mLifter.setWantedState(ScissorLift.WantedState.SCALE);
             }
 
-            if (mControlBoard.readButton(Buttons.kDropCube))
+            if (mControlBoard.readButton(Buttons.DROP_CUBE))
             {
                 //TODO: implement superstructure - see strategy playbook
             }
 
-            if (mControlBoard.readButton(Buttons.kOpenHarvester))
+            if (mControlBoard.readButton(Buttons.HARVESTER_OPEN))
             {
                 mHarvester.setWantedState(Harvester.WantedState.OPEN);
             }
 
-            if (mControlBoard.readButton(Buttons.kCloseHarvester))
+            if (mControlBoard.readButton(Buttons.HARVESTER_CLOSE))
             {
                 mHarvester.setWantedState(Harvester.WantedState.HARVEST);
             }
 
-            if (mControlBoard.readButton(Buttons.kEjectCube))
+            if (mControlBoard.readButton(Buttons.HARVESTER_EJECT))
             {
                 mHarvester.setWantedState(Harvester.WantedState.EJECT);
             }
 
-            if (mControlBoard.readButton(Buttons.kCarryCube))
+            if (mControlBoard.readButton(Buttons.HARVESTER_CARRY))
             {
                 mSuperstructure.setWantedState(Superstructure.WantedState.TRANSFER_CUBE_TO_GRABBER);
             }
 
-            if (mControlBoard.readButton(Buttons.kClimb))
+            if (mControlBoard.readButton(Buttons.HARVESTER_CLIMB))
             {
                 mSuperstructure.setWantedState(Superstructure.WantedState.CLIMB);
             }
 
-            if (mControlBoard.readButton(Buttons.kStopClimb))
+            if (mControlBoard.readButton(Buttons.CLIMBER_STOP))
             {
                 mClimber.setWantedState(Climber.WantedState.HOLD);
             }
 
-            if (mControlBoard.readButton(Buttons.kTestClimbIdle))
+            if (mControlBoard.readButton(Buttons.CLIMB_IDLE_TEST))
             {
                 mClimber.setWantedState(Climber.WantedState.IDLE);
             }
 
-            if (mControlBoard.readButton(Buttons.kTestGrabberTransport))
+            if (mControlBoard.readButton(Buttons.GRABBER_TRANSPORT_TEST))
             {
                 mGrabber.setWantedState(ArticulatedGrabber.WantedState.TRANSPORT);
             }
 
-            if (mControlBoard.readButton(Buttons.kTestGrabberGrabCube))
+            if (mControlBoard.readButton(Buttons.GRABBER_GRAB_CUBE_TEST))
             {
                 mGrabber.setWantedState(ArticulatedGrabber.WantedState.GRAB_CUBE);
             }
             
-            if (mControlBoard.readButton(Buttons.kTestGrabberPrepareDrop))
+            if (mControlBoard.readButton(Buttons.GRABBER_PREPARE_DROP_TEST))
             {
                 mGrabber.setWantedState(ArticulatedGrabber.WantedState.PREPARE_DROP);
             }
             
-            if (mControlBoard.readButton(Buttons.kTestGrabberPrepareIntake))
+            if (mControlBoard.readButton(Buttons.GRABBER_PREPARE_INTAKE_TEST))
             {
                 mGrabber.setWantedState(ArticulatedGrabber.WantedState.PREPARE_INTAKE);
             }
