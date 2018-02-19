@@ -27,15 +27,11 @@ public class PathTransformHelper
     
     public static Translation2d mirrorTranslationAboutAxis(Translation2d translation, boolean mirrorX, boolean mirrorY)
     {
-        Logger.notice("Transforming from: " + translation.toString());
-        
         if (mirrorX)
             translation.setX(Constants.kFieldDimensionTranslation.x() - translation.x());
         
         if (mirrorY)
             translation.setY(Constants.kFieldDimensionTranslation.y() - translation.y());
-        
-        Logger.notice("Transforming to: " + translation.toString());
         
         return translation;
     }
