@@ -129,6 +129,9 @@ public class ControlBoard implements ControlBoardInterface
             case kTestGrabberPrepareIntake:
                 result = mTestsAllowed ? mDrivestick.getRawButtonPressed(9) : false;
                 break;
+            case kTestGrabberManualOpenGrabber:
+                result = mTestsAllowed ? mDrivestick.getRawButtonPressed(10) : false;
+                break;
             default:
                 Logger.error("ControlBoard: unimplemented boolean: " + b.toString());
                 break;

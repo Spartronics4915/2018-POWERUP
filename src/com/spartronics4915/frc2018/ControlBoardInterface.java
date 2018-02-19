@@ -29,7 +29,8 @@ public interface ControlBoardInterface
         kTestGrabberTransport,
         kTestGrabberGrabCube,
         kTestGrabberPrepareDrop,
-        kTestGrabberPrepareIntake
+        kTestGrabberPrepareIntake,
+        kTestGrabberManualOpenGrabber
     }
     
     double readStick(Sticks a);
