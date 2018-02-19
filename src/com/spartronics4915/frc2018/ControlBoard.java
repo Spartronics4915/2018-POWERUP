@@ -96,9 +96,6 @@ public class ControlBoard implements ControlBoardInterface
                 result = (mPreviousGetDropCube != current) && (current == 1.0);
                 mPreviousGetDropCube = current;
                 break;
-            case SUPERSTRUCTURE_RETRACT_FROM_DUNK:
-                result = mButtonBoard.getRawButtonPressed(11);
-                break;
             case HARVESTER_OPEN:
                 result = mButtonBoard.getRawButtonPressed(5);
                 break;

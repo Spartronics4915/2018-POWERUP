@@ -66,10 +66,10 @@ public class ArticulatedGrabber extends Subsystem
 
     //Maximum Motor Speed: used in handlePosition method and configure for mPositionMotor
     private final double kMaxMotorSpeed = 0.8;
-    private final int kAcceptablePositionError = 20; //margin of error
+    private final int kAcceptablePositionError = 0; //margin of error
 
     private final int kDefaultHoldOffset = 50; //offset from the reverse limit switch
-    private final int kDefaultPlaceOffset = 107;
+    private final int kDefaultPlaceOffset = 175;
     //we are not using pick we are just running to the limit switch for now
     //private final int kDefaultPickOffset = 107; 
 
@@ -223,15 +223,8 @@ public class ArticulatedGrabber extends Subsystem
             case GRAB_CUBE:
                 if (!mLimitSwitchFwd.get()) //TODO test on real robot
                 {
-                    if (mNextState.grabberClosed)
-                    {
-                        mGrabber.set(true);
-                    }
+                    mGrabber.set(true);
                     return true;
-                }
-                else
-                {
-                    return false;
                 }
 
             case MANUAL_OPEN:
@@ -246,14 +239,12 @@ public class ArticulatedGrabber extends Subsystem
             case RELEASE_CUBE:
                 if (Util.epsilonEquals(potValue, mPlacePosition, kAcceptablePositionError)) //TODO test on real robot
                 {
-                    if (!mNextState.grabberClosed)
-                    {
-                        mGrabber.set(true);
-                    }
+                    mGrabber.set(true);
                     return true;
                 }
                 else
                 {
+                    mGrabber.set(false);
                     return false;
                 }
             default:
@@ -381,23 +372,21 @@ public class ArticulatedGrabber extends Subsystem
                     t = true;
                 break;
             case GRAB_CUBE: //grabbing and over the ground        //position: 2, open: false
-                if (//Util.epsilonEquals(potValue, mPickPosition, kAcceptablePositionError)
-                       !mLimitSwitchFwd.get() && !mGrabber.get())
+                if (!mLimitSwitchFwd.get() && mSystemState.grabberClosed)
                     t = true;
                 break;
             case PREPARE_EXCHANGE: //not grabbing and flat against lift  //position: 0, open: true
                 if (Util.epsilonEquals(potValue, mHoldPosition, kAcceptablePositionError)
-                        && mGrabber.get())
+                        && !mSystemState.grabberClosed)
                     t = true;
                 break;
             case RELEASE_CUBE: //not grabbing over the switch/scale  //position: 1, open: true
                 if (Util.epsilonEquals(potValue, mPlacePosition, kAcceptablePositionError)
-                        && mGrabber.get())
+                        && !mSystemState.grabberClosed)
                     t = true;
                 break;
             case PREPARE_INTAKE: //not grabbing over the ground        //position: 2, open: true
-                if (//Util.epsilonEquals(potValue, mPickPosition, kAcceptablePositionError)
-                       !mLimitSwitchFwd.get() && mGrabber.get())
+                if (!mLimitSwitchFwd.get() && !mSystemState.grabberClosed)
                     t = true;
                 break;
             case DISABLED:

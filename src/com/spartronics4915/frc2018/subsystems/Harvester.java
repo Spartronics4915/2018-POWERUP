@@ -4,13 +4,11 @@ import com.spartronics4915.frc2018.Constants;
 import com.spartronics4915.frc2018.loops.Loop;
 import com.spartronics4915.frc2018.loops.Looper;
 import com.spartronics4915.lib.util.Logger;
-import com.spartronics4915.lib.util.Util;
 import com.spartronics4915.lib.util.drivers.LazySolenoid;
 import com.spartronics4915.lib.util.drivers.SpartIRSensor;
 import com.spartronics4915.lib.util.drivers.TalonSRX4915;
 import com.spartronics4915.lib.util.drivers.TalonSRX4915Factory;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
  * The harvester is a set of two collapsible rollers that pull in and hold
@@ -25,7 +23,7 @@ public class Harvester extends Subsystem
     private static final boolean kSolenoidClose = false;
     private static final double kCubeMinDistanceInches = 0;
     private static final double kCubeMaxDistanceInches = 0;
-    private static final double kCloseTimePeriod = 1;
+    private static final double kCloseTimePeriod = 2;
 
 
     public static Harvester getInstance()
@@ -79,8 +77,8 @@ public class Harvester extends Subsystem
             mCubeHeldSensor = new SpartIRSensor(Constants.kGrabberCubeDistanceRangeFinderId);
             mMotorRight = TalonSRX4915Factory.createDefaultMotor(Constants.kHarvesterRightMotorId); // change value of motor
             mMotorLeft = TalonSRX4915Factory.createDefaultMotor(Constants.kHarvesterLeftMotorId); // change value of motor
-            mMotorRight.configOutputPower(true, 0.5, 0, 0.5, 0, -0.5);
-            mMotorLeft.configOutputPower(true, 0.5, 0, 0.5, 0, -0.5);
+            mMotorRight.configOutputPower(true, 0.5, 0, 0.75, 0, -0.75);
+            mMotorLeft.configOutputPower(true, 0.5, 0, 0.75, 0, -0.75);
             mMotorRight.setInverted(true);
             mTimer = new Timer();
             

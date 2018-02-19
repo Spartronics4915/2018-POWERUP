@@ -294,6 +294,7 @@ public class Robot extends IterativeRobot
             if (mControlBoard.readButton(Buttons.SCISSOR_OFF))
             {
                 mLifter.setWantedState(ScissorLift.WantedState.OFF);
+                mGrabber.setWantedState(ArticulatedGrabber.WantedState.TRANSPORT);
             }
 
             if (mControlBoard.readButton(Buttons.SCISSOR_SWITCH))
@@ -309,11 +310,6 @@ public class Robot extends IterativeRobot
             if (mControlBoard.readButton(Buttons.GRABBER_DROP_CUBE))
             {
                 mGrabber.setWantedState(ArticulatedGrabber.WantedState.RELEASE_CUBE);
-            }
-            
-            if (mControlBoard.readButton(Buttons.SUPERSTRUCTURE_RETRACT_FROM_DUNK))
-            {
-                mSuperstructure.setWantedState(Superstructure.WantedState.RETRACT_FROM_DUNK);
             }
 
             if (mControlBoard.readButton(Buttons.HARVESTER_OPEN))
