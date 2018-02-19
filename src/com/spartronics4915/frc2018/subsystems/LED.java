@@ -6,13 +6,14 @@ import com.spartronics4915.frc2018.loops.Looper;
 import com.spartronics4915.lib.util.Logger;
 
 import edu.wpi.first.wpilibj.Relay;
+import edu.wpi.first.wpilibj.SerialPort;
 import edu.wpi.first.wpilibj.Timer;
 
 /**
  * The LED subsystem consists of:
  * - DriverLED: for communicating information to drivers (also on dashboard)
- * - VisionLamp: on the front of the robot used for illuminating potential
- * vision targets
+ * - VisionLamp: a relay to turn on or off the vision headlights (used for illuminating vision targets).
+ * - Bling: a serial port that sends the desired BlingState to the Arduino.
  * - potential extensions:
  * - LED light or strip for communicating with human player
  * - LED light or strip to communicate distance to driver
@@ -58,12 +59,19 @@ public class LED extends Subsystem
         OFF, FIXED_ON, BLINK, FIND_RANGE, WARN
     }
 
+    public enum BlingState
+    {
+        SOLID_BLUE, SOLID_RED, SOLID_YELLOW, FLASHING_YELLOW
+    }
+
     private SystemState mSystemState = SystemState.OFF;
     private WantedState mWantedState = WantedState.OFF;
+    private BlingState mBlingState = BlingState.SOLID_BLUE;
 
     private boolean mIsLEDOn, mIsLampOn;
     private Relay mDriverLED;
     private Relay mVisionLamp;
+    private SerialPort mBling;
     private boolean mIsBlinking = false;
     private double mBlinkDuration;
     private int mBlinkCount;
@@ -71,15 +79,28 @@ public class LED extends Subsystem
 
     public LED()
     {
-        mDriverLED = new Relay(Constants.kLEDDriverLEDId);
-        setDriverLEDOff();
+        boolean success = true;
 
-        mVisionLamp = new Relay(Constants.kLEDVisionLampId);
-        setVisionLampOff();
+        try
+        {
+            mDriverLED = new Relay(Constants.kLEDDriverLEDId);
+            setDriverLEDOff();
 
-        configureBlink(kDefaultBlinkCount, kDefaultBlinkDuration);
- 
-        logInitialized(true);
+            mVisionLamp = new Relay(Constants.kLEDVisionLampId);
+            setVisionLampOff();
+
+            configureBlink(kDefaultBlinkCount, kDefaultBlinkDuration);
+
+            mBling = new SerialPort(9600, SerialPort.Port.kUSB);
+        }
+        catch (Exception e)
+        {
+            logError("Couldn't instantiate hardware objects");
+            Logger.logThrowableCrash(e);
+            success = false;
+        }
+
+        logInitialized(success);
     }
 
     private Loop mLoop = new Loop()
@@ -94,6 +115,7 @@ public class LED extends Subsystem
             {
                 mSystemState = SystemState.OFF;
                 mWantedState = WantedState.OFF;
+                mBlingState = BlingState.SOLID_BLUE;
                 handleOff();
                 mIsBlinking = false;
             }
@@ -106,6 +128,25 @@ public class LED extends Subsystem
         {
             synchronized (LED.this)
             {
+                switch (mBlingState)
+                {
+                    case SOLID_BLUE:
+                        mBling.writeString("0");
+                        break;
+                    case SOLID_RED:
+                        mBling.writeString("1");
+                        break;
+                    case SOLID_YELLOW:
+                        mBling.writeString("2");
+                        break;
+                    case FLASHING_YELLOW:
+                        mBling.writeString("3");
+                        break;
+                    default:
+                        mBling.writeString("0");
+                        break;
+                }
+
                 SystemState newState;
                 double timeInState = timestamp - mCurrentStateStartTime;
                 switch (mSystemState)
@@ -131,7 +172,7 @@ public class LED extends Subsystem
                     logInfo("LED state " + mSystemState + " to " + newState);
                     mSystemState = newState;
                     mCurrentStateStartTime = timestamp;
-               }
+                }
             }
         }
 
@@ -209,7 +250,7 @@ public class LED extends Subsystem
     @Override
     public void outputToSmartDashboard()
     {
-
+        dashboardPutString("BlingState", mBlingState.toString());
     }
 
     @Override
@@ -246,7 +287,7 @@ public class LED extends Subsystem
                 break;
             case FIND_RANGE:
             case WARN:
-                configureBlink(kDefaultBlinkCount*2, .5*kDefaultBlinkDuration);
+                configureBlink(kDefaultBlinkCount * 2, .5 * kDefaultBlinkDuration);
                 break;
             case FIXED_ON:
                 break;
@@ -254,7 +295,15 @@ public class LED extends Subsystem
                 break;
         }
     }
-    
+
+    public synchronized void setBlingState(BlingState b)
+    {
+        if(mBlingState != b)
+        {
+            mBlingState = b;
+        }
+    }
+
     public synchronized void warnDriver(String msg)
     {
         setWantedState(WantedState.WARN);
@@ -312,7 +361,7 @@ public class LED extends Subsystem
         mBlinkCount = blinkCount;
         mTotalBlinkDuration = mBlinkCount * mBlinkDuration;
     }
-    
+
     @Override
     public boolean checkSystem(String variant)
     {
