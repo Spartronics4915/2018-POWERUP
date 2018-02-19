@@ -268,6 +268,8 @@ public class LED extends Subsystem
     @Override
     public void registerEnabledLoops(Looper enabledLooper)
     {
+        if (!this.isInitialized())
+            return;
         enabledLooper.register(mLoop);
     }
 
