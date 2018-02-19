@@ -62,6 +62,7 @@ public class Climber extends Subsystem
             mWinchPrimary =
                     TalonSRX4915Factory.createDefaultMotor(Constants.kClimberWinchPrimaryMotorId);
             mWinchPrimary.configOutputPower(true, 0.5, 0.0, 0.75, 0.0, -0.5);
+            mWinchPrimary.setBrakeMode(true);
 
             if (!mWinchPrimary.isValid())
             {
