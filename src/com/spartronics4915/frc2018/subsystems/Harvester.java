@@ -27,7 +27,6 @@ public class Harvester extends Subsystem
     private static final double kCubeMaxDistanceInches = 0;
     private static final double kCloseTimePeriod = 1;
 
-
     public static Harvester getInstance()
     {
         if (sInstance == null)
@@ -83,7 +82,7 @@ public class Harvester extends Subsystem
             mMotorLeft.configOutputPower(true, 0.5, 0, 0.5, 0, -0.5);
             mMotorRight.setInverted(true);
             mTimer = new Timer();
-            
+
             if (!mMotorRight.isValid())
             {
                 logError("Right Motor is invalid");
@@ -227,7 +226,7 @@ public class Harvester extends Subsystem
         if (mTimer.hasPeriodPassed(kCloseTimePeriod))
         {
             setWantedState(WantedState.HUG);
-            return SystemState.HUGGING;  // checks if cube is in the robot and will transitions to hugging when the cube is fully in
+            return SystemState.HUGGING; // checks if cube is in the robot and will transitions to hugging when the cube is fully in
         }
         else
         {
@@ -240,7 +239,7 @@ public class Harvester extends Subsystem
         //motors in reverse and bars closing, close when cube is gone
         mMotorRight.set(-1.0);
         mMotorLeft.set(-1.0);
-        if (!isCubeHeld()) 
+        if (!isCubeHeld())
         { //Cube is gone!  Transition to Open (turn off motor) to prevent damage
             mSolenoid.set(kSolenoidOpen);
             setWantedState(WantedState.OPEN);
@@ -280,7 +279,7 @@ public class Harvester extends Subsystem
         mWantedState = wantedState;
         dashboardPutWantedState(mWantedState.toString());
     }
-    
+
     public boolean atTarget()
     {
         boolean t = false;
@@ -301,7 +300,7 @@ public class Harvester extends Subsystem
             case HUGGING:
                 if (mWantedState == WantedState.HUG)
                     t = true;
-                    break;
+                break;
             case DISABLING:
                 if (mWantedState == WantedState.DISABLE)
                     t = true;
@@ -312,7 +311,7 @@ public class Harvester extends Subsystem
         }
         return t;
     }
-    
+
     private boolean isCubeHeld()
     {
         return mCubeHeldSensor.isTargetAcquired();
