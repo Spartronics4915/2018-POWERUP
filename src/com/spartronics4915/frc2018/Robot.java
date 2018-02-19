@@ -370,7 +370,6 @@ public class Robot extends IterativeRobot
             {
                 mGrabber.setWantedState(ArticulatedGrabber.WantedState.PREPARE_INTAKE);
             }
-            
             allButTestPeriodic();
         }
         catch (Throwable t)
