@@ -749,12 +749,6 @@ public class ArticulatedGrabber extends Subsystem
                 mFwdLimitFlag = true;
                 break;
             }
-            else if (Util.epsilonEquals(mPotentiometer.getAverageValue(), mPickPosition,
-                    kAcceptablePositionError))
-            {
-                logNotice("Yay FWD soft limit switch encounterd at " + mPotentiometer.getValue());
-                break;
-            }
             else if (t.hasPeriodPassed(10))
             {
                 logError("fwd 1s didn't encounter limit switch!!!!!!!");
