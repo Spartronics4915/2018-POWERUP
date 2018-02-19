@@ -257,7 +257,6 @@ public class Robot extends IterativeRobot
             // Start loopers
             mEnabledLooper.start();
             mDrive.setOpenLoop(DriveSignal.NEUTRAL);
-            zeroAllSensors();
             
             mLED.setVisionLampOn();
         }
@@ -329,13 +328,12 @@ public class Robot extends IterativeRobot
 
             if (mControlBoard.readButton(Buttons.kCarryCube))
             {
-                //TODO: implement superstructure - see strategy playbook
+                mSuperstructure.setWantedState(Superstructure.WantedState.TRANSFER_CUBE_TO_GRABBER);
             }
 
             if (mControlBoard.readButton(Buttons.kClimb))
             {
-                mClimber.setWantedState(Climber.WantedState.CLIMB);
-                //TODO: implement superstructure - see strategy playbook
+                mSuperstructure.setWantedState(Superstructure.WantedState.CLIMB);
             }
 
             if (mControlBoard.readButton(Buttons.kStopClimb))
