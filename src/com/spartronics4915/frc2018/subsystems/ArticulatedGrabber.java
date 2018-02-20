@@ -237,13 +237,13 @@ public class ArticulatedGrabber extends Subsystem
             case RELEASE_CUBE:
                 if (Util.epsilonEquals(potValue, mPlacePosition, kAcceptablePositionError)) //TODO test on real robot
                 {
-                    mGrabber.set(true);
-                    return true;
+                    mGrabber.set(false);
+                    return false;
                 }
                 else
                 {
-                    mGrabber.set(false);
-                    return false;
+                    mGrabber.set(true);
+                    return true;
                 }
             default:
                 logWarning("Unexpected Case " + mWantedState.toString());
