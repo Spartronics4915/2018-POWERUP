@@ -321,6 +321,7 @@ public class Harvester extends Subsystem
     @Override
     public void outputToSmartDashboard()
     {
+        if(!isInitialized()) return;
         dashboardPutState(mSystemState.toString());
         dashboardPutWantedState(mWantedState.toString());
         dashboardPutBoolean("mSolenoid", mSolenoid.get());

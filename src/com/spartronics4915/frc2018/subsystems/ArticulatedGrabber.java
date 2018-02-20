@@ -401,6 +401,7 @@ public class ArticulatedGrabber extends Subsystem
     @Override
     public void outputToSmartDashboard() //logs values to the smartdashboard
     {
+        if(!isInitialized()) return;
         dashboardPutWantedState(mWantedState.toString());
         dashboardPutState(
                 "Grabber Open: " + !mSystemState.grabberClosed + " Pot: "
@@ -413,6 +414,7 @@ public class ArticulatedGrabber extends Subsystem
     @Override
     public synchronized void stop()
     {
+        if(!isInitialized()) return;
         setWantedState(WantedState.DISABLED);
         mPositionMotor.set(0);
         mGrabber.set(true);
@@ -438,6 +440,7 @@ public class ArticulatedGrabber extends Subsystem
     @Override
     public void zeroSensors() //calibrates sensors by reseting the position of mRevLimitSwitch
     {
+        if(!isInitialized()) return;
         if (!mLimitSwitchRev.get()) // limit switches are normally open
         {
             mRevLimitPotentiometerValue = mPotentiometer.getAverageValue();
