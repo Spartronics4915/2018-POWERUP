@@ -345,6 +345,11 @@ public class ArticulatedGrabber extends Subsystem
             return potValue;
         }
     }
+    
+    public WantedState getWantedState()
+    {
+        return mWantedState;
+    }
 
     public void setWantedState(WantedState wantedState)
     {
