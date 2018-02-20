@@ -175,6 +175,11 @@ public class ScissorLift extends Subsystem
         dashboardPutWantedState(wantedState.toString());
         logNotice("Wanted state to" + wantedState);
     }
+    
+    public synchronized WantedState getWantedState()
+    {
+        return mWantedState;
+    }
 
     public synchronized boolean atTarget()
     {

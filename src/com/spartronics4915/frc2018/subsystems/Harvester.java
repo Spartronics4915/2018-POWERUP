@@ -268,6 +268,11 @@ public class Harvester extends Subsystem
         }
         return SystemState.HUGGING;
     }
+    
+    public WantedState getWantedState()
+    {
+        return mWantedState;
+    }
 
     public void setWantedState(WantedState wantedState)
     {
@@ -321,6 +326,7 @@ public class Harvester extends Subsystem
     @Override
     public void outputToSmartDashboard()
     {
+        if(!isInitialized()) return;
         dashboardPutState(mSystemState.toString());
         dashboardPutWantedState(mWantedState.toString());
         dashboardPutBoolean("mSolenoid", mSolenoid.get());
