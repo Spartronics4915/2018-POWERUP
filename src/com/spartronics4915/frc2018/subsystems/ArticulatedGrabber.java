@@ -44,7 +44,6 @@ public class ArticulatedGrabber extends Subsystem
 
     public class SystemState //SystemState corresponds to the two values being tracked
     {
-
         public int articulatorPosition; //indicates the position of the "flipper" arm
         public boolean grabberClosed; //false == grabber Open, true == grabber Closed
         public boolean grabberSetup; //turns on at startup, should always stay on
@@ -165,8 +164,7 @@ public class ArticulatedGrabber extends Subsystem
                 updatePositions();
 
                 //handles calls
-                int potValue;
-                potValue = mPotentiometer.getAverageValue(); //just cuts down on the number of calls
+                int potValue = mPotentiometer.getAverageValue(); //just cuts down on the number of calls
 
                 if (!mLimitSwitchRev.get())
                 {
@@ -239,13 +237,13 @@ public class ArticulatedGrabber extends Subsystem
             case RELEASE_CUBE:
                 if (Util.epsilonEquals(potValue, mPlacePosition, kAcceptablePositionError)) //TODO test on real robot
                 {
-                    mGrabber.set(true);
-                    return true;
+                    mGrabber.set(false);
+                    return false;
                 }
                 else
                 {
-                    mGrabber.set(false);
-                    return false;
+                    mGrabber.set(true);
+                    return true;
                 }
             default:
                 logWarning("Unexpected Case " + mWantedState.toString());
