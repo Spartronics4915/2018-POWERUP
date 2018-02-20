@@ -244,6 +244,8 @@ public class LED extends Subsystem
     @Override
     public void outputToSmartDashboard()
     {
+        if (!isInitialized())
+            return;
         dashboardPutString("BlingState", mBlingState.toString());
     }
 

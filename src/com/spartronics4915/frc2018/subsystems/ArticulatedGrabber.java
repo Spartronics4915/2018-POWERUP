@@ -44,7 +44,6 @@ public class ArticulatedGrabber extends Subsystem
 
     public class SystemState //SystemState corresponds to the two values being tracked
     {
-
         public int articulatorPosition; //indicates the position of the "flipper" arm
         public boolean grabberClosed; //false == grabber Open, true == grabber Closed
         public boolean grabberSetup; //turns on at startup, should always stay on
@@ -69,7 +68,7 @@ public class ArticulatedGrabber extends Subsystem
     private final int kAcceptablePositionError = 20; //margin of error
 
     private final int kDefaultHoldOffset = 50; //offset from the reverse limit switch
-    private final int kDefaultPlaceOffset = 107;
+    private final int kDefaultPlaceOffset = 175;
     //we are not using pick we are just running to the limit switch for now
     //private final int kDefaultPickOffset = 107; 
 
@@ -165,8 +164,7 @@ public class ArticulatedGrabber extends Subsystem
                 updatePositions();
 
                 //handles calls
-                int potValue;
-                potValue = mPotentiometer.getAverageValue(); //just cuts down on the number of calls
+                int potValue = mPotentiometer.getAverageValue(); //just cuts down on the number of calls
 
                 if (!mLimitSwitchRev.get())
                 {
@@ -223,15 +221,8 @@ public class ArticulatedGrabber extends Subsystem
             case GRAB_CUBE:
                 if (!mLimitSwitchFwd.get()) //TODO test on real robot
                 {
-                    if (mNextState.grabberClosed)
-                    {
-                        mGrabber.set(true);
-                    }
+                    mGrabber.set(true);
                     return true;
-                }
-                else
-                {
-                    return false;
                 }
 
             case MANUAL_OPEN:
@@ -246,15 +237,13 @@ public class ArticulatedGrabber extends Subsystem
             case RELEASE_CUBE:
                 if (Util.epsilonEquals(potValue, mPlacePosition, kAcceptablePositionError)) //TODO test on real robot
                 {
-                    if (!mNextState.grabberClosed)
-                    {
-                        mGrabber.set(true);
-                    }
-                    return true;
+                    mGrabber.set(false);
+                    return false;
                 }
                 else
                 {
-                    return false;
+                    mGrabber.set(true);
+                    return true;
                 }
             default:
                 logWarning("Unexpected Case " + mWantedState.toString());
@@ -372,32 +361,30 @@ public class ArticulatedGrabber extends Subsystem
         {
             case TRANSPORT: //grabbing and flat against lift      //position: 0, open: false
                 if (Util.epsilonEquals(potValue, mHoldPosition, kAcceptablePositionError)
-                        && !mGrabber.get())
+                        && mSystemState.grabberClosed)
                     t = true;
                 break;
             case PREPARE_DROP: //grabbing and over switch/scale      //position: 1, open: false
                 if (Util.epsilonEquals(potValue, mPlacePosition, kAcceptablePositionError)
-                        && !mGrabber.get())
+                        && mSystemState.grabberClosed)
                     t = true;
                 break;
             case GRAB_CUBE: //grabbing and over the ground        //position: 2, open: false
-                if (//Util.epsilonEquals(potValue, mPickPosition, kAcceptablePositionError)
-                       !mLimitSwitchFwd.get() && !mGrabber.get())
+                if (!mLimitSwitchFwd.get() && mSystemState.grabberClosed)
                     t = true;
                 break;
             case PREPARE_EXCHANGE: //not grabbing and flat against lift  //position: 0, open: true
                 if (Util.epsilonEquals(potValue, mHoldPosition, kAcceptablePositionError)
-                        && mGrabber.get())
+                        && !mSystemState.grabberClosed)
                     t = true;
                 break;
             case RELEASE_CUBE: //not grabbing over the switch/scale  //position: 1, open: true
                 if (Util.epsilonEquals(potValue, mPlacePosition, kAcceptablePositionError)
-                        && mGrabber.get())
+                        && !mSystemState.grabberClosed)
                     t = true;
                 break;
             case PREPARE_INTAKE: //not grabbing over the ground        //position: 2, open: true
-                if (//Util.epsilonEquals(potValue, mPickPosition, kAcceptablePositionError)
-                       !mLimitSwitchFwd.get() && mGrabber.get())
+                if (!mLimitSwitchFwd.get() && !mSystemState.grabberClosed)
                     t = true;
                 break;
             case DISABLED:
@@ -414,6 +401,7 @@ public class ArticulatedGrabber extends Subsystem
     @Override
     public void outputToSmartDashboard() //logs values to the smartdashboard
     {
+        if(!isInitialized()) return;
         dashboardPutWantedState(mWantedState.toString());
         dashboardPutState(
                 "Grabber Open: " + !mSystemState.grabberClosed + " Pot: "
@@ -426,6 +414,7 @@ public class ArticulatedGrabber extends Subsystem
     @Override
     public synchronized void stop()
     {
+        if(!isInitialized()) return;
         setWantedState(WantedState.DISABLED);
         mPositionMotor.set(0);
         mGrabber.set(true);
@@ -451,6 +440,7 @@ public class ArticulatedGrabber extends Subsystem
     @Override
     public void zeroSensors() //calibrates sensors by reseting the position of mRevLimitSwitch
     {
+        if(!isInitialized()) return;
         if (!mLimitSwitchRev.get()) // limit switches are normally open
         {
             mRevLimitPotentiometerValue = mPotentiometer.getAverageValue();
