@@ -312,6 +312,7 @@ public class Superstructure extends Subsystem
                 // need to reset subsystems to an idle?
             }
         }
+        return newState;
     }
 
     private SystemState defaultStateTransfer()
