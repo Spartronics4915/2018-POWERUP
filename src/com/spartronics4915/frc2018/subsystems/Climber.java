@@ -192,9 +192,14 @@ public class Climber extends Subsystem
         return SystemState.IDLING;
     }
 
-    public void setWantedState(WantedState wantedState)
+    public synchronized void setWantedState(WantedState wantedState)
     {
         mWantedState = wantedState;
+    }
+    
+    public synchronized WantedState getWantedState()
+    {
+        return mWantedState;
     }
 
     @Override
@@ -211,6 +216,7 @@ public class Climber extends Subsystem
     {
         mWinchPrimary.set(0.0);
         setWantedState(WantedState.IDLE);
+        mSystemState = SystemState.IDLING;
     }
 
     @Override

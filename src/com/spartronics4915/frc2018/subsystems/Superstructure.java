@@ -9,7 +9,8 @@ import edu.wpi.first.wpilibj.Timer;
 
 /**
  * The superstructure subsystem is the overarching superclass containing all
- * components of the superstructure: climber, harvester, and articulated grabber,
+ * components of the superstructure: climber, harvester, and articulated
+ * grabber,
  * and lifter.
  * 
  * The superstructure subsystem also contains some miscellaneous hardware that
@@ -40,7 +41,7 @@ public class Superstructure extends Subsystem
         }
         return mInstance;
     }
-    
+
     private final LED mLED = LED.getInstance();
     private final ArticulatedGrabber mGrabber = ArticulatedGrabber.getInstance();
     private final Climber mClimber = Climber.getInstance();
@@ -57,6 +58,7 @@ public class Superstructure extends Subsystem
         OPENING_HARVESTER, // Transfer cube from harvester to scissor
         GRABBING_ARTICULATED_GRABBER,
         TRANSPORTING_ARTICULATED_GRABBER,
+        TRANSPORTING_ARTICULATED_GRABBER_DELAY,
         RELEASING_SCISSOR, // Climb
         CLIMBING,
     };
@@ -76,9 +78,9 @@ public class Superstructure extends Subsystem
     // here because they're useful.
     private double mCurrentStateStartTime;
     private boolean mStateChanged;
-    
+
     private Timer mTimer = new Timer();
-    
+
     private final double kMatchDurationSeconds = 135;
     private final double kEndgameDurationSeconds = 30;
     private final double kFinishGrabAfterSeconds = 0.8;
@@ -117,7 +119,7 @@ public class Superstructure extends Subsystem
                 switch (mSystemState)
                 {
                     case IDLE:
-                            newState = defaultStateTransfer();
+                        newState = defaultStateTransfer();
                         break;
                     case OPENING_HARVESTER: // Transfer cube from harvester to scissor
                         if (mStateChanged)
@@ -147,7 +149,8 @@ public class Superstructure extends Subsystem
                             mTimer.reset();
                             mTimer.start();
                         }
-                        else if (mWantedState == WantedState.TRANSFER_CUBE_TO_GRABBER && mTimer.hasPeriodPassed(kFinishGrabAfterSeconds))
+                        else if (mWantedState == WantedState.TRANSFER_CUBE_TO_GRABBER
+                                && mTimer.hasPeriodPassed(kFinishGrabAfterSeconds))
                         {
                             mGrabber.setWantedState(ArticulatedGrabber.WantedState.TRANSPORT);
                             if (mGrabber.atTarget())
@@ -188,7 +191,8 @@ public class Superstructure extends Subsystem
 
                 if (newState != mSystemState)
                 {
-                    Logger.notice("Superstructure state " + mSystemState + " to " + newState + " Timestamp: "
+                    Logger.notice("Superstructure state " + mSystemState + " to " + newState
+                            + " Timestamp: "
                             + Timer.getFPGATimestamp());
                     mSystemState = newState;
                     mCurrentStateStartTime = timestamp;
@@ -207,6 +211,108 @@ public class Superstructure extends Subsystem
             stop();
         }
     };
+    
+    private SystemState updateState()
+    {
+        SystemState newState = mSystemState;
+        switch (mSystemState)
+        {
+            case IDLE:
+                switch(mWantedState)
+                {
+                    case TRANSFER_CUBE_TO_GRABBER:
+                        newState = SystemState.OPENING_HARVESTER;
+                        break;
+                    case CLIMB:
+                        newState = SystemState.RELEASING_SCISSOR;
+                        break;
+                    default: // either idle or unimplemented
+                        break;
+                }
+                break;
+            case OPENING_HARVESTER: // Transfer cube from harvester to scissor
+                if (mHarvester.getWantedState() != Harvester.WantedState.OPEN)
+                    mHarvester.setWantedState(Harvester.WantedState.OPEN);
+                if (mWantedState == WantedState.TRANSFER_CUBE_TO_GRABBER)
+                {
+                    if (mHarvester.atTarget())
+                        newState = SystemState.GRABBING_ARTICULATED_GRABBER;
+                }
+                else
+                    newState = SystemState.IDLE;
+                break;
+            case GRABBING_ARTICULATED_GRABBER:
+                if (mGrabber.getWantedState() != ArticulatedGrabber.WantedState.GRAB_CUBE)
+                    mGrabber.setWantedState(ArticulatedGrabber.WantedState.GRAB_CUBE);
+                if (mWantedState == WantedState.TRANSFER_CUBE_TO_GRABBER)
+                {
+                    if (mGrabber.atTarget())
+                    {
+                        newState = SystemState.TRANSPORTING_ARTICULATED_GRABBER_DELAY;
+                        mTimer.reset();
+                        mTimer.start();
+                   }
+                }
+                else
+                    newState = SystemState.IDLE;
+                break;
+            case TRANSPORTING_ARTICULATED_GRABBER_DELAY:
+                if(mWantedState == WantedState.TRANSFER_CUBE_TO_GRABBER)
+                {
+                    if(mTimer.hasPeriodPassed(kFinishGrabAfterSeconds))
+                    {
+                        newState = SystemState.TRANSPORTING_ARTICULATED_GRABBER;
+                    }
+                }
+                else
+                    newState = SystemState.IDLE;
+                break;
+            case TRANSPORTING_ARTICULATED_GRABBER:
+                if (mWantedState == WantedState.TRANSFER_CUBE_TO_GRABBER)
+                {
+                   if(mGrabber.getWantedState() != ArticulatedGrabber.WantedState.TRANSPORT)
+                       mGrabber.setWantedState(ArticulatedGrabber.WantedState.TRANSPORT);
+                    if (mGrabber.atTarget())
+                    {
+                        mHarvester.setWantedState(Harvester.WantedState.DISABLE);
+                        mWantedState = WantedState.IDLE;
+                        newState = SystemState.IDLE; // Done
+                    }
+                }
+                else
+                    newState = SystemState.IDLE;
+                break;
+            case RELEASING_SCISSOR: // Climb
+                if (mLifter.getWantedState() != ScissorLift.WantedState.OFF)
+                    mLifter.setWantedState(ScissorLift.WantedState.OFF);
+                if (mWantedState == WantedState.CLIMB)
+                {
+                    if (mLifter.atTarget())
+                        newState = SystemState.CLIMBING;
+                }
+                else
+                    newState = SystemState.IDLE;
+                break;
+            case CLIMBING:
+                if (mClimber.getWantedState() != Climber.WantedState.CLIMB)
+                    mClimber.setWantedState(Climber.WantedState.CLIMB);
+                else
+                {
+                    mWantedState = WantedState.IDLE;
+                    newState = SystemState.IDLE; // Done
+                }
+                break;
+            default:
+                newState = defaultStateTransfer();
+        }
+        if(mSystemState != newState)
+        {
+            if(newState == SystemState.IDLE)
+            {
+                // need to reset subsystems to an idle?
+            }
+        }
+    }
 
     private SystemState defaultStateTransfer()
     {
@@ -220,8 +326,8 @@ public class Superstructure extends Subsystem
                 newState = SystemState.OPENING_HARVESTER; // First state
                 break;
             case CLIMB:
-//                if (DriverStation.getInstance().getMatchTime() < kMatchDurationSeconds - kEndgameDurationSeconds) // Don't extend the scissor if we're not in the endgame
-//                    return; This is commented out to make testing easier. Re-add it once this is verified.
+                //                if (DriverStation.getInstance().getMatchTime() < kMatchDurationSeconds - kEndgameDurationSeconds) // Don't extend the scissor if we're not in the endgame
+                //                    return; This is commented out to make testing easier. Re-add it once this is verified.
                 newState = SystemState.RELEASING_SCISSOR; // First state
                 break;
             default:
@@ -230,10 +336,10 @@ public class Superstructure extends Subsystem
         }
         return newState;
     }
-    
+
     public synchronized void setWantedState(WantedState wantedState)
     {
-        logNotice("Wanted state to "+wantedState.toString());
+        logNotice("Wanted state to " + wantedState.toString());
         mWantedState = wantedState;
     }
 
@@ -260,7 +366,7 @@ public class Superstructure extends Subsystem
     {
         enabledLooper.register(mLoop);
     }
-    
+
     @Override
     public boolean checkSystem(String variant)
     {
