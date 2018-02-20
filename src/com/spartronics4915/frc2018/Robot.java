@@ -19,6 +19,7 @@ import com.spartronics4915.frc2018.subsystems.ConnectionMonitor;
 import com.spartronics4915.frc2018.subsystems.Drive;
 import com.spartronics4915.frc2018.subsystems.Harvester;
 import com.spartronics4915.frc2018.subsystems.LED;
+import com.spartronics4915.frc2018.subsystems.LED.BlingState;
 import com.spartronics4915.frc2018.subsystems.ScissorLift;
 import com.spartronics4915.frc2018.subsystems.Superstructure;
 import com.spartronics4915.lib.util.CANProbe;
@@ -294,16 +295,19 @@ public class Robot extends IterativeRobot
             if (mControlBoard.readButton(Buttons.SCISSOR_OFF))
             {
                 mLifter.setWantedState(ScissorLift.WantedState.OFF);
+                mLED.setBlingState(BlingState.SCISSOR_OFF);
             }
 
             if (mControlBoard.readButton(Buttons.SCISSOR_SWITCH))
             {
                 mLifter.setWantedState(ScissorLift.WantedState.SWITCH);
+                mLED.setBlingState(BlingState.SCISSOR_SWITCH);
             }
 
             if (mControlBoard.readButton(Buttons.SCISSOR_SCALE))
             {
                 mLifter.setWantedState(ScissorLift.WantedState.SCALE);
+                mLED.setBlingState(BlingState.SCISSOR_SCALE);
             }
 
             if (mControlBoard.readButton(Buttons.GRABBER_DROP_CUBE))
@@ -319,6 +323,7 @@ public class Robot extends IterativeRobot
             if (mControlBoard.readButton(Buttons.HARVESTER_OPEN))
             {
                 mHarvester.setWantedState(Harvester.WantedState.OPEN);
+                mLED.setBlingState(BlingState.OPEN_HARVESTER);
             }
 
             if (mControlBoard.readButton(Buttons.HARVESTER_CLOSE))
@@ -334,16 +339,19 @@ public class Robot extends IterativeRobot
             if (mControlBoard.readButton(Buttons.SUPERSTRUCTURE_CARRY_CUBE))
             {
                 mSuperstructure.setWantedState(Superstructure.WantedState.TRANSFER_CUBE_TO_GRABBER);
+                mLED.setBlingState(BlingState.CARRY_CUBE);
             }
 
             if (mControlBoard.readButton(Buttons.HARVESTER_CLIMB))
             {
                 mSuperstructure.setWantedState(Superstructure.WantedState.CLIMB);
+                mLED.setBlingState(BlingState.CLIMB);
             }
 
             if (mControlBoard.readButton(Buttons.CLIMBER_STOP))
             {
                 mClimber.setWantedState(Climber.WantedState.HOLD);
+                mLED.setBlingState(BlingState.STOP_CLIMBER);
             }
 
             if (mControlBoard.readButton(Buttons.CLIMB_IDLE_TEST))

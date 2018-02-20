@@ -62,7 +62,7 @@ public class LED extends Subsystem
 
     public enum BlingState
     {
-        OFF, SOLID_BLUE, SOLID_RED, SOLID_YELLOW, FLASHING_YELLOW
+        OFF, SCISSOR_OFF, SCISSOR_SWITCH, CUBE_HELD, CUBE_NEAR, SCISSOR_SCALE, CLIMB, OPEN_HARVESTER, CARRY_CUBE, STOP_CLIMBER
     }
 
     private SystemState mSystemState = SystemState.OFF;
@@ -79,10 +79,15 @@ public class LED extends Subsystem
     private double mTotalBlinkDuration;
 
     private final byte[] kOff = "0".getBytes();
-    private final byte[] kSolidBlue = "1".getBytes();
-    private final byte[] kSolidRed = "2".getBytes();
-    private final byte[] kSolidYellow = "3".getBytes();
-    private final byte[] kFlashingYellow = "4".getBytes();
+    private final byte[] kScissorOff = "1".getBytes();
+    private final byte[] kScissorSwitch = "2".getBytes();
+    private final byte[] kCubeHeld = "3".getBytes();
+    private final byte[] kCubeNear = "4".getBytes();
+    private final byte[] kScissorScale = "5".getBytes();
+    private final byte[] kClimb = "6".getBytes();
+    private final byte[] kOpenHarvester = "7".getBytes();
+    private final byte[] kCarryCube = "8".getBytes();
+    private final byte[] kStopClimber = "9".getBytes();
 
     public LED()
     {
@@ -295,17 +300,32 @@ public class LED extends Subsystem
                 case OFF:
                     mBling.write(kOff, kOff.length);
                     break;
-                case SOLID_BLUE:
-                    mBling.write(kSolidBlue, kSolidBlue.length);
+                case SCISSOR_OFF:
+                    mBling.write(kScissorOff, kScissorOff.length);
                     break;
-                case SOLID_RED:
-                    mBling.write(kSolidRed, kSolidRed.length);
+                case SCISSOR_SWITCH:
+                    mBling.write(kScissorSwitch, kScissorSwitch.length);
                     break;
-                case SOLID_YELLOW:
-                    mBling.write(kSolidYellow, kSolidYellow.length);
+                case CUBE_HELD:
+                    mBling.write(kCubeHeld, kCubeHeld.length);
                     break;
-                case FLASHING_YELLOW:
-                    mBling.write(kFlashingYellow, kFlashingYellow.length);
+                case CUBE_NEAR:
+                    mBling.write(kCubeNear, kCubeNear.length);
+                    break;
+                case SCISSOR_SCALE:
+                    mBling.write(kScissorScale, kScissorScale.length);
+                    break;
+                case CLIMB:
+                    mBling.write(kClimb, kClimb.length);
+                    break;
+                case OPEN_HARVESTER:
+                    mBling.write(kOpenHarvester, kOpenHarvester.length);
+                    break;
+                case CARRY_CUBE:
+                    mBling.write(kCarryCube, kCarryCube.length);
+                    break;
+                case STOP_CLIMBER:
+                    mBling.write(kStopClimber, kStopClimber.length);
                     break;
                 default:
                     mBling.write(kOff, kOff.length);

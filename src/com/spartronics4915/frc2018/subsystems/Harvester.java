@@ -23,8 +23,6 @@ public class Harvester extends Subsystem
     private static Harvester sInstance = null;
     private static final boolean kSolenoidOpen = true;
     private static final boolean kSolenoidClose = false;
-    private static final double kCubeMinDistanceInches = 0;
-    private static final double kCubeMaxDistanceInches = 0;
     private static final double kCloseTimePeriod = 1;
 
     public static Harvester getInstance()
@@ -262,7 +260,6 @@ public class Harvester extends Subsystem
         //motors off and bars closing go to closed when cube is gone
         mMotorLeft.set(0.0);
         mMotorRight.set(0.0);
-        //ADD LED STUFF HERE
         if (mWantedState == WantedState.OPEN || mWantedState == WantedState.EJECT)
         {
             return defaultStateTransfer();
@@ -315,7 +312,6 @@ public class Harvester extends Subsystem
 
     private boolean isCubeHeld()
     {
-        //TODO Set LED lights to on solid yellow
         return mCubeHeldSensor.isTargetAcquired();
     }
 

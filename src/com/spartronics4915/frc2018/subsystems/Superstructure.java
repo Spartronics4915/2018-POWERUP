@@ -232,8 +232,8 @@ public class Superstructure extends Subsystem
                 newState = SystemState.GRABBING_ARTICULATED_GRABBER; // First state, same as above
                 break;
             case CLIMB:
-               if (DriverStation.getInstance().getMatchTime() < kMatchDurationSeconds - kEndgameDurationSeconds) // Don't extend the scissor if we're not in the endgame
-                    return; //Flash light here //This is commented out to make testing easier. Re-add it once this is verified.
+              // if (DriverStation.getInstance().getMatchTime() < kMatchDurationSeconds - kEndgameDurationSeconds) // Don't extend the scissor if we're not in the endgame
+                    //return; //This is commented out to make testing easier. Re-add it once this is verified.
                 newState = SystemState.RELEASING_SCISSOR; // First state, same as above
                 break;
             default:
