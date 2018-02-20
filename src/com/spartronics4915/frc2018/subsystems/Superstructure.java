@@ -117,9 +117,6 @@ public class Superstructure extends Subsystem
                 switch (mSystemState)
                 {
                     case IDLE:
-                        if (mStateChanged)
-                            stop();
-                        else
                             newState = defaultStateTransfer();
                         break;
                     case OPENING_HARVESTER: // Transfer cube from harvester to scissor
@@ -154,8 +151,11 @@ public class Superstructure extends Subsystem
                         {
                             mGrabber.setWantedState(ArticulatedGrabber.WantedState.TRANSPORT);
                             if (mGrabber.atTarget())
+                            {
                                 mHarvester.setWantedState(Harvester.WantedState.DISABLE);
+                                mWantedState = WantedState.IDLE;
                                 newState = SystemState.IDLE; // Done
+                            }
                         }
                         else if (!mTimer.hasPeriodPassed(kFinishGrabAfterSeconds))
                             break;
@@ -177,10 +177,13 @@ public class Superstructure extends Subsystem
                         if (mStateChanged)
                             mClimber.setWantedState(Climber.WantedState.CLIMB);
                         else
-                            newState = defaultStateTransfer(); // Stay in this state until our wanted state is updated
+                        {
+                            mWantedState = WantedState.IDLE;
+                            newState = SystemState.IDLE; // Done
+                        }
                         break;
                     default:
-                        newState = SystemState.IDLE;
+                        newState = defaultStateTransfer();
                 }
 
                 if (newState != mSystemState)
@@ -214,12 +217,12 @@ public class Superstructure extends Subsystem
                 newState = SystemState.IDLE;
                 break;
             case TRANSFER_CUBE_TO_GRABBER:
-                newState = SystemState.OPENING_HARVESTER; // First state, same as above
+                newState = SystemState.OPENING_HARVESTER; // First state
                 break;
             case CLIMB:
 //                if (DriverStation.getInstance().getMatchTime() < kMatchDurationSeconds - kEndgameDurationSeconds) // Don't extend the scissor if we're not in the endgame
 //                    return; This is commented out to make testing easier. Re-add it once this is verified.
-                newState = SystemState.RELEASING_SCISSOR; // First state, same as above
+                newState = SystemState.RELEASING_SCISSOR; // First state
                 break;
             default:
                 newState = SystemState.IDLE;

@@ -66,7 +66,7 @@ public class ArticulatedGrabber extends Subsystem
 
     //Maximum Motor Speed: used in handlePosition method and configure for mPositionMotor
     private final double kMaxMotorSpeed = 0.8;
-    private final int kAcceptablePositionError = 0; //margin of error
+    private final int kAcceptablePositionError = 20; //margin of error
 
     private final int kDefaultHoldOffset = 50; //offset from the reverse limit switch
     private final int kDefaultPlaceOffset = 175;
@@ -363,12 +363,12 @@ public class ArticulatedGrabber extends Subsystem
         {
             case TRANSPORT: //grabbing and flat against lift      //position: 0, open: false
                 if (Util.epsilonEquals(potValue, mHoldPosition, kAcceptablePositionError)
-                        && !mGrabber.get())
+                        && mSystemState.grabberClosed)
                     t = true;
                 break;
             case PREPARE_DROP: //grabbing and over switch/scale      //position: 1, open: false
                 if (Util.epsilonEquals(potValue, mPlacePosition, kAcceptablePositionError)
-                        && !mGrabber.get())
+                        && mSystemState.grabberClosed)
                     t = true;
                 break;
             case GRAB_CUBE: //grabbing and over the ground        //position: 2, open: false
