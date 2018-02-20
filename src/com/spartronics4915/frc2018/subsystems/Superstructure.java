@@ -41,11 +41,11 @@ public class Superstructure extends Subsystem
         return mInstance;
     }
     
-    private final LED mLED = LED.getInstance();
-    private final ArticulatedGrabber mGrabber = ArticulatedGrabber.getInstance();
-    private final Climber mClimber = Climber.getInstance();
-    private final Harvester mHarvester = Harvester.getInstance();
-    private final ScissorLift mLifter = ScissorLift.getInstance();
+    private LED mLED = null;
+    private ArticulatedGrabber mGrabber = null;
+    private Climber mClimber = null;
+    private Harvester mHarvester = null;
+    private ScissorLift mLifter = null;
 
     // Superstructure doesn't own the drive, but needs to access it
     private final Drive mDrive = Drive.getInstance();
@@ -73,7 +73,7 @@ public class Superstructure extends Subsystem
     private WantedState mWantedState = WantedState.IDLE;
 
     // State change timestamps are currently unused, but I'm keeping them
-    // here because they're useful.
+    // here because they're potentially useful.
     private double mCurrentStateStartTime;
     private boolean mStateChanged;
     
@@ -83,6 +83,15 @@ public class Superstructure extends Subsystem
     private final double kEndgameDurationSeconds = 30;
     private final double kFinishGrabAfterSeconds = 0.8;
 
+    private Superstructure()
+    {
+        mLED = LED.getInstance();
+        mGrabber = ArticulatedGrabber.getInstance();
+        mClimber = Climber.getInstance();
+        mHarvester = Harvester.getInstance();
+        mLifter = ScissorLift.getInstance();
+    }
+    
     public boolean isDriveOnTarget()
     {
         return mDrive.isOnTarget() && mDrive.isAutoAiming();
@@ -240,7 +249,6 @@ public class Superstructure extends Subsystem
     @Override
     public void outputToSmartDashboard()
     {
-        // If we have any miscellaneous hardware that we put into this subsystem, it goes here
     }
 
     @Override
