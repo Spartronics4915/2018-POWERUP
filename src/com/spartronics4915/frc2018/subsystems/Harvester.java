@@ -220,8 +220,8 @@ public class Harvester extends Subsystem
         // if timeout reached, turn off motors
         if (!mTimer.hasPeriodPassed(kCloseTimePeriod))
         {
-            mMotorLeft.set(-1.0);
-            mMotorRight.set(-1.0);
+            //mMotorLeft.set(-1.0);
+            //mMotorRight.set(-1.0);
         }
         return SystemState.OPENING;
     }

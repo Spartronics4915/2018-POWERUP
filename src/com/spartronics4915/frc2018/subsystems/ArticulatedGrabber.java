@@ -44,7 +44,6 @@ public class ArticulatedGrabber extends Subsystem
 
     public class SystemState //SystemState corresponds to the two values being tracked
     {
-
         public int articulatorPosition; //indicates the position of the "flipper" arm
         public boolean grabberClosed; //false == grabber Open, true == grabber Closed
         public boolean grabberSetup; //turns on at startup, should always stay on
@@ -69,7 +68,7 @@ public class ArticulatedGrabber extends Subsystem
     private final int kAcceptablePositionError = 20; //margin of error
 
     private final int kDefaultHoldOffset = 50; //offset from the reverse limit switch
-    private final int kDefaultPlaceOffset = 107;
+    private final int kDefaultPlaceOffset = 175;
     //we are not using pick we are just running to the limit switch for now
     //private final int kDefaultPickOffset = 107; 
 
@@ -165,8 +164,7 @@ public class ArticulatedGrabber extends Subsystem
                 updatePositions();
 
                 //handles calls
-                int potValue;
-                potValue = mPotentiometer.getAverageValue(); //just cuts down on the number of calls
+                int potValue = mPotentiometer.getAverageValue(); //just cuts down on the number of calls
 
                 if (!mLimitSwitchRev.get())
                 {
