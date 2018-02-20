@@ -19,7 +19,6 @@ public interface ControlBoardInterface
         SCISSOR_SWITCH,
         SCISSOR_SCALE,
         GRABBER_DROP_CUBE,
-        SUPERSTRUCTURE_RETRACT_FROM_DUNK,
         HARVESTER_OPEN,
         HARVESTER_CLOSE,
         HARVESTER_EJECT,

@@ -54,10 +54,8 @@ public class Superstructure extends Subsystem
     public enum SystemState
     {
         IDLE,
-        RETRACTING_FLIPPER, // Retract from dunk
-        RETRACTING_SCISSOR,
-        GRABBING_ARTICULATED_GRABBER, // Transfer cube from harvester to scissor
-        OPENING_HARVESTER,
+        OPENING_HARVESTER, // Transfer cube from harvester to scissor
+        GRABBING_ARTICULATED_GRABBER,
         TRANSPORTING_ARTICULATED_GRABBER,
         RELEASING_SCISSOR, // Climb
         CLIMBING,
@@ -67,7 +65,6 @@ public class Superstructure extends Subsystem
     public enum WantedState
     {
         IDLE,
-        RETRACT_FROM_DUNK,
         TRANSFER_CUBE_TO_GRABBER,
         CLIMB,
     }
@@ -80,8 +77,11 @@ public class Superstructure extends Subsystem
     private double mCurrentStateStartTime;
     private boolean mStateChanged;
     
+    private Timer mTimer = new Timer();
+    
     private final double kMatchDurationSeconds = 135;
     private final double kEndgameDurationSeconds = 30;
+    private final double kFinishGrabAfterSeconds = 0.8;
 
     public boolean isDriveOnTarget()
     {
@@ -117,47 +117,25 @@ public class Superstructure extends Subsystem
                 switch (mSystemState)
                 {
                     case IDLE:
-                        newState = handleIdle(mStateChanged);
-                        break;
-                    case RETRACTING_FLIPPER: // Retract from dunk
-                        if (mStateChanged)
-                            mGrabber.setWantedState(ArticulatedGrabber.WantedState.TRANSPORT);
-                        else if (mWantedState == WantedState.RETRACT_FROM_DUNK)
-                        {
-                            if (mLifter.atTarget())
-                                newState = SystemState.RETRACTING_SCISSOR;
-                        }
-                        else
                             newState = defaultStateTransfer();
                         break;
-                    case RETRACTING_SCISSOR:
-                        if (mStateChanged)
-                            mLifter.setWantedState(ScissorLift.WantedState.RETRACTED);
-                        else if (mWantedState == WantedState.RETRACT_FROM_DUNK)
-                        {
-                            if (mLifter.atTarget())
-                                newState = SystemState.IDLE; // Done
-                        }
-                        else
-                            newState = defaultStateTransfer();
-                        break;
-                    case GRABBING_ARTICULATED_GRABBER: // Transfer cube from harvester to scissor
-                        if (mStateChanged)
-                            mGrabber.setWantedState(ArticulatedGrabber.WantedState.GRAB_CUBE);
-                        else if (mWantedState == WantedState.TRANSFER_CUBE_TO_GRABBER)
-                        {
-                            if (mGrabber.atTarget())
-                                newState = SystemState.OPENING_HARVESTER;
-                        }
-                        else
-                            newState = defaultStateTransfer();
-                        break;
-                    case OPENING_HARVESTER:
+                    case OPENING_HARVESTER: // Transfer cube from harvester to scissor
                         if (mStateChanged)
                             mHarvester.setWantedState(Harvester.WantedState.OPEN);
                         else if (mWantedState == WantedState.TRANSFER_CUBE_TO_GRABBER)
                         {
                             if (mHarvester.atTarget())
+                                newState = SystemState.GRABBING_ARTICULATED_GRABBER;
+                        }
+                        else
+                            newState = defaultStateTransfer();
+                        break;
+                    case GRABBING_ARTICULATED_GRABBER:
+                        if (mStateChanged)
+                            mGrabber.setWantedState(ArticulatedGrabber.WantedState.GRAB_CUBE);
+                        else if (mWantedState == WantedState.TRANSFER_CUBE_TO_GRABBER)
+                        {
+                            if (mGrabber.atTarget())
                                 newState = SystemState.TRANSPORTING_ARTICULATED_GRABBER;
                         }
                         else
@@ -165,12 +143,22 @@ public class Superstructure extends Subsystem
                         break;
                     case TRANSPORTING_ARTICULATED_GRABBER:
                         if (mStateChanged)
-                            mGrabber.setWantedState(ArticulatedGrabber.WantedState.TRANSPORT);
-                        else if (mWantedState == WantedState.TRANSFER_CUBE_TO_GRABBER)
                         {
-                            if (mGrabber.atTarget())
-                                newState = SystemState.OPENING_HARVESTER;
+                            mTimer.reset();
+                            mTimer.start();
                         }
+                        else if (mWantedState == WantedState.TRANSFER_CUBE_TO_GRABBER && mTimer.hasPeriodPassed(kFinishGrabAfterSeconds))
+                        {
+                            mGrabber.setWantedState(ArticulatedGrabber.WantedState.TRANSPORT);
+                            if (mGrabber.atTarget())
+                            {
+                                mHarvester.setWantedState(Harvester.WantedState.DISABLE);
+                                mWantedState = WantedState.IDLE;
+                                newState = SystemState.IDLE; // Done
+                            }
+                        }
+                        else if (!mTimer.hasPeriodPassed(kFinishGrabAfterSeconds))
+                            break;
                         else
                             newState = defaultStateTransfer();
                         break;
@@ -189,10 +177,13 @@ public class Superstructure extends Subsystem
                         if (mStateChanged)
                             mClimber.setWantedState(Climber.WantedState.CLIMB);
                         else
-                            newState = defaultStateTransfer(); // Stay in this state until our wanted state is updated
+                        {
+                            mWantedState = WantedState.IDLE;
+                            newState = SystemState.IDLE; // Done
+                        }
                         break;
                     default:
-                        newState = SystemState.IDLE;
+                        newState = defaultStateTransfer();
                 }
 
                 if (newState != mSystemState)
@@ -225,38 +216,19 @@ public class Superstructure extends Subsystem
             case IDLE:
                 newState = SystemState.IDLE;
                 break;
-            case RETRACT_FROM_DUNK:
-                newState = SystemState.RETRACTING_FLIPPER; // Go to the first system state in the sequence of retract from dunk states
-                break;
             case TRANSFER_CUBE_TO_GRABBER:
-                newState = SystemState.GRABBING_ARTICULATED_GRABBER; // First state, same as above
+                newState = SystemState.OPENING_HARVESTER; // First state
                 break;
             case CLIMB:
 //                if (DriverStation.getInstance().getMatchTime() < kMatchDurationSeconds - kEndgameDurationSeconds) // Don't extend the scissor if we're not in the endgame
 //                    return; This is commented out to make testing easier. Re-add it once this is verified.
-                newState = SystemState.RELEASING_SCISSOR; // First state, same as above
+                newState = SystemState.RELEASING_SCISSOR; // First state
                 break;
             default:
                 newState = SystemState.IDLE;
                 break;
         }
         return newState;
-    }
-    
-    private SystemState handleIdle(boolean stateChanged)
-    {
-        if (stateChanged)
-        {
-            stop();
-            mLED.setWantedState(LED.WantedState.OFF);
-        }
-
-        switch (mWantedState)
-        {
-            // Add states you want to be able to switch to from IDLE
-            default:
-                return SystemState.IDLE;
-        }
     }
     
     public synchronized void setWantedState(WantedState wantedState)
