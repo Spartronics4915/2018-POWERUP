@@ -329,6 +329,8 @@ public class Robot extends IterativeRobot
             if (mControlBoard.readButton(Buttons.HARVESTER_CLOSE))
             {
                 mHarvester.setWantedState(Harvester.WantedState.HARVEST);
+                mLED.setBlingState(BlingState.CARRY_CUBE);
+
             }
 
             if (mControlBoard.readButton(Buttons.HARVESTER_EJECT))

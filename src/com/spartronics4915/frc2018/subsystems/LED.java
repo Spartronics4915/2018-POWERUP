@@ -62,7 +62,7 @@ public class LED extends Subsystem
 
     public enum BlingState
     {
-        OFF, SCISSOR_OFF, SCISSOR_SWITCH, CUBE_HELD, CUBE_NEAR, SCISSOR_SCALE, CLIMB, OPEN_HARVESTER, CARRY_CUBE, STOP_CLIMBER
+        OFF, SCISSOR_OFF, SCISSOR_SWITCH, CUBE_HELD, CUBE_NEAR, SCISSOR_SCALE, CLIMB, OPEN_HARVESTER, CLOSE_HARVESTER, CARRY_CUBE, STOP_CLIMBER
     }
 
     private SystemState mSystemState = SystemState.OFF;
@@ -86,8 +86,9 @@ public class LED extends Subsystem
     private final byte[] kScissorScale = "5".getBytes();
     private final byte[] kClimb = "6".getBytes();
     private final byte[] kOpenHarvester = "7".getBytes();
-    private final byte[] kCarryCube = "8".getBytes();
-    private final byte[] kStopClimber = "9".getBytes();
+    private final byte[] kCloseHarvester = "8".getBytes();
+    private final byte[] kCarryCube = "9".getBytes();
+    private final byte[] kStopClimber = "10".getBytes();
 
     public LED()
     {
@@ -320,6 +321,9 @@ public class LED extends Subsystem
                     break;
                 case OPEN_HARVESTER:
                     mBling.write(kOpenHarvester, kOpenHarvester.length);
+                    break;
+                case CLOSE_HARVESTER:
+                    mBling.write(kCloseHarvester, kCloseHarvester.length);
                     break;
                 case CARRY_CUBE:
                     mBling.write(kCarryCube, kCarryCube.length);
