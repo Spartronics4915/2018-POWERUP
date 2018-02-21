@@ -87,6 +87,8 @@ public class Robot extends IterativeRobot
     private static final String kRobotTestModeOptions = "TestModeOptions";
     private static final String kRobotTestMode = "TestMode";
     private static final String kRobotTestVariant = "TestVariant";
+    private final double kMatchDurationSeconds = 135;
+    private final double kEndgameDurationSeconds = 30;
 
     public Robot()
     {
@@ -226,6 +228,7 @@ public class Robot extends IterativeRobot
             mAutoModeExecuter.setAutoMode(AutoModeSelector.getSelectedAutoMode());
             mAutoModeExecuter.start();
 
+
         }
         catch (Throwable t)
         {
@@ -325,13 +328,13 @@ public class Robot extends IterativeRobot
             if (mControlBoard.readButton(Buttons.HARVESTER_CLOSE))
             {
                 mHarvester.setWantedState(Harvester.WantedState.HARVEST);
-                mLED.setBlingState(BlingState.CARRY_CUBE);
-
+                mLED.setBlingState(BlingState.CLOSE_HARVESTER);
             }
 
             if (mControlBoard.readButton(Buttons.HARVESTER_EJECT))
             {
                 mHarvester.setWantedState(Harvester.WantedState.EJECT);
+                mLED.setBlingState(BlingState.EJECT_HARVESTER);
             }
 
             if (mControlBoard.readButton(Buttons.SUPERSTRUCTURE_CARRY_CUBE))
@@ -375,6 +378,14 @@ public class Robot extends IterativeRobot
             if (mControlBoard.readButton(Buttons.GRABBER_PREPARE_INTAKE_TEST))
             {
                 mGrabber.setWantedState(ArticulatedGrabber.WantedState.PREPARE_INTAKE);
+            }
+            if (DriverStation.getInstance().getMatchTime() < kMatchDurationSeconds)
+            {
+                mLED.setBlingState(BlingState.TELEOP);
+            }
+            if (DriverStation.getInstance().getMatchTime() < kEndgameDurationSeconds)
+            {
+                mLED.setBlingState(BlingState.ENDGAME);
             }
             allButTestPeriodic();
         }

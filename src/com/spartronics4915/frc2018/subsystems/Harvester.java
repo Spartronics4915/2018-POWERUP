@@ -21,13 +21,7 @@ public class Harvester extends Subsystem
     private static Harvester sInstance = null;
     private static final boolean kSolenoidOpen = true;
     private static final boolean kSolenoidClose = false;
-<<<<<<< HEAD
     private static final double kCloseTimePeriod = 1;
-=======
-    private static final double kCubeMinDistanceInches = 0;
-    private static final double kCubeMaxDistanceInches = 0;
-    private static final double kCloseTimePeriod = 2;
->>>>>>> 7c73de7468224e3cf616f301624a6ced40cb54be
 
     public static Harvester getInstance()
     {
