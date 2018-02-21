@@ -7,35 +7,40 @@ import com.spartronics4915.frc2018.auto.actions.ActuateScissorLiftAction;
 import com.spartronics4915.frc2018.auto.actions.DrivePathAction;
 import com.spartronics4915.frc2018.auto.actions.ResetPoseFromPathAction;
 import com.spartronics4915.frc2018.auto.actions.WaitAction;
-import com.spartronics4915.frc2018.paths.DriveToCloseSwitchFromBPath;
-import com.spartronics4915.frc2018.paths.DriveToFarSwitchFromBPath;
+import com.spartronics4915.frc2018.paths.DriveToCloseScaleFromCPath;
+import com.spartronics4915.frc2018.paths.DriveToCloseSwitchFromCPath;
+import com.spartronics4915.frc2018.paths.DriveToFarScaleFromCPath;
 import com.spartronics4915.frc2018.paths.PathContainer;
 import com.spartronics4915.frc2018.subsystems.ArticulatedGrabber;
 import com.spartronics4915.frc2018.subsystems.ScissorLift;
 import com.spartronics4915.lib.util.Util;
 
-public class PlaceSwitchFromBMode extends AutoModeBase
+public class PlaceOptimizedFromCMode extends AutoModeBase
 {
+    private PathContainer mCloseScalePath = new DriveToCloseScaleFromCPath();
+    private PathContainer mCloseSwitchPath = new DriveToCloseSwitchFromCPath();
+    private PathContainer mFarScalePath = new DriveToFarScaleFromCPath();
 
-    private PathContainer mClosePath = new DriveToCloseSwitchFromBPath();
-    private PathContainer mFarPath = new DriveToFarSwitchFromBPath();
-    
     @Override
     protected void routine() throws AutoModeEndedException
     {
         PathContainer path;
         if (Util.getGameSpecificMessage().charAt(0) == 'R')
         {
-            path = mClosePath;
+            path = mCloseSwitchPath;
+        }
+        else if (Util.getGameSpecificMessage().charAt(1) == 'R')
+        {
+            path = mCloseScalePath;
         }
         else
         {
-            path = mFarPath;
+            path = mFarScalePath;
         }
         runAction(new ResetPoseFromPathAction(path));
         runAction(new WaitAction(0.1)); // Give everything time to get reset
         runAction(new DrivePathAction(path));
-        runAction(new ActuateScissorLiftAction(ScissorLift.WantedState.SWITCH));
+        runAction(new ActuateScissorLiftAction(ScissorLift.WantedState.SCALE));
         runAction(new ActuateArticulatedGrabberAction(ArticulatedGrabber.WantedState.RELEASE_CUBE));
     }
 
