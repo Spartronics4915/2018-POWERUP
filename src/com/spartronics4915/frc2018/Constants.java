@@ -95,7 +95,7 @@ public class Constants extends ConstantsBase
 
     // PID gains for drive velocity loop (HIGH GEAR)
     // Units: setpoint, error, and output are in inches per second.
-    public static final double kDriveVelocityKp = 0.5;
+    public static final double kDriveVelocityKp = 0.2;
     public static final double kDriveVelocityKi = 0.0;
     public static final double kDriveVelocityKd = 150;
     public static final double kDriveVelocityKf = .25;
