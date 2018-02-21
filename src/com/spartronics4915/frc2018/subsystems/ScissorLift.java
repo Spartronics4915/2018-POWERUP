@@ -46,9 +46,9 @@ public class ScissorLift extends Subsystem
     private static final int kDefaultSwitchOffset = 544;
     private static final int kDefaultScaleOffset = 2051;
     private static final int kDefaultClimbOffset = 2294;
-    private static final int kPotentiometerAllowedError = 200;
+    private static final int kPotentiometerAllowedError = 50;
     private static final double kBrakeTimePeriod = .1;
-    private static final double kUnbrakeTimePeriod = .3;
+    private static final double kUnbrakeTimePeriod = .1;
 
     public enum SystemState
     {
@@ -83,6 +83,7 @@ public class ScissorLift extends Subsystem
     private LazySolenoid mLowerSolenoid;
     private LazySolenoid mHoldSolenoid;
     private Timer mTimer;
+    private boolean mHasReachedTarget = false;
 
     // Actuators and sensors should be initialized as private members with a value of null here
 
@@ -171,6 +172,7 @@ public class ScissorLift extends Subsystem
 
     public synchronized void setWantedState(WantedState wantedState)
     {
+        mHasReachedTarget = false;
         mWantedState = wantedState;
         dashboardPutWantedState(wantedState.toString());
         logNotice("Wanted state to" + wantedState);
@@ -198,6 +200,7 @@ public class ScissorLift extends Subsystem
             case HOLDING:
                 matches = (mWantedState == WantedState.RETRACTED || mWantedState == WantedState.OFF
                         || mWantedState == WantedState.SWITCH || mWantedState == WantedState.SCALE);
+                break;
             case BRAKING:
                 matches = false;
                 break;
@@ -319,7 +322,7 @@ public class ScissorLift extends Subsystem
             mHoldSolenoid.set(false);
             nextState = SystemState.RELEASING;
         }
-        else if (Util.epsilonGreaterThan(mMeasuredValue, targetValue, kPotentiometerAllowedError))
+        else if (Util.epsilonGreaterThan(mMeasuredValue, targetValue, kPotentiometerAllowedError) && !mHasReachedTarget)
         {
             // we're below target position, let's raise
             if (mSystemState != SystemState.RAISING)
@@ -352,7 +355,7 @@ public class ScissorLift extends Subsystem
                 }
             }
         }
-        else if (Util.epsilonLessThan(mMeasuredValue, targetValue, kPotentiometerAllowedError))
+        else if (Util.epsilonLessThan(mMeasuredValue, targetValue, kPotentiometerAllowedError) && !mHasReachedTarget)
         {
             // we're above target position, let's lower
             if (mSystemState != SystemState.LOWERING)
@@ -376,6 +379,7 @@ public class ScissorLift extends Subsystem
         }
         else
         {
+            mHasReachedTarget = true;
             // we're on target
             if (mSystemState != SystemState.HOLDING)
             {

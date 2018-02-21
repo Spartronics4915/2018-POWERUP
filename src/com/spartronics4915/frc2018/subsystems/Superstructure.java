@@ -128,40 +128,60 @@ public class Superstructure extends Subsystem
                 switch (mSystemState)
                 {
                     case IDLE:
-                        newState = defaultStateTransfer();
+                        switch(mWantedState)
+                        {
+                            case TRANSFER_CUBE_TO_GRABBER:
+                                newState = SystemState.OPENING_HARVESTER;
+                                break;
+                            case CLIMB:
+                                newState = SystemState.RELEASING_SCISSOR;
+                                break;
+                            default: // either idle or unimplemented
+                                break;
+                        }
                         break;
                     case OPENING_HARVESTER: // Transfer cube from harvester to scissor
-                        if (mStateChanged)
+                        if (mHarvester.getWantedState() != Harvester.WantedState.OPEN)
                             mHarvester.setWantedState(Harvester.WantedState.OPEN);
-                        else if (mWantedState == WantedState.TRANSFER_CUBE_TO_GRABBER)
+                        if (mWantedState == WantedState.TRANSFER_CUBE_TO_GRABBER)
                         {
                             if (mHarvester.atTarget())
                                 newState = SystemState.GRABBING_ARTICULATED_GRABBER;
                         }
                         else
-                            newState = defaultStateTransfer();
+                            newState = SystemState.IDLE;
                         break;
                     case GRABBING_ARTICULATED_GRABBER:
-                        if (mStateChanged)
+                        if (mGrabber.getWantedState() != ArticulatedGrabber.WantedState.GRAB_CUBE)
                             mGrabber.setWantedState(ArticulatedGrabber.WantedState.GRAB_CUBE);
-                        else if (mWantedState == WantedState.TRANSFER_CUBE_TO_GRABBER)
+                        if (mWantedState == WantedState.TRANSFER_CUBE_TO_GRABBER)
                         {
                             if (mGrabber.atTarget())
-                                newState = SystemState.TRANSPORTING_ARTICULATED_GRABBER;
+                            {
+                                newState = SystemState.TRANSPORTING_ARTICULATED_GRABBER_DELAY;
+                                mTimer.reset();
+                                mTimer.start();
+                           }
                         }
                         else
-                            newState = defaultStateTransfer();
+                            newState = SystemState.IDLE;
+                        break;
+                    case TRANSPORTING_ARTICULATED_GRABBER_DELAY:
+                        if(mWantedState == WantedState.TRANSFER_CUBE_TO_GRABBER)
+                        {
+                            if(mTimer.hasPeriodPassed(kFinishGrabAfterSeconds))
+                            {
+                                newState = SystemState.TRANSPORTING_ARTICULATED_GRABBER;
+                            }
+                        }
+                        else
+                            newState = SystemState.IDLE;
                         break;
                     case TRANSPORTING_ARTICULATED_GRABBER:
-                        if (mStateChanged)
+                        if (mWantedState == WantedState.TRANSFER_CUBE_TO_GRABBER)
                         {
-                            mTimer.reset();
-                            mTimer.start();
-                        }
-                        else if (mWantedState == WantedState.TRANSFER_CUBE_TO_GRABBER
-                                && mTimer.hasPeriodPassed(kFinishGrabAfterSeconds))
-                        {
-                            mGrabber.setWantedState(ArticulatedGrabber.WantedState.TRANSPORT);
+                           if(mGrabber.getWantedState() != ArticulatedGrabber.WantedState.TRANSPORT)
+                               mGrabber.setWantedState(ArticulatedGrabber.WantedState.TRANSPORT);
                             if (mGrabber.atTarget())
                             {
                                 mHarvester.setWantedState(Harvester.WantedState.DISABLE);
@@ -169,24 +189,22 @@ public class Superstructure extends Subsystem
                                 newState = SystemState.IDLE; // Done
                             }
                         }
-                        else if (!mTimer.hasPeriodPassed(kFinishGrabAfterSeconds))
-                            break;
                         else
-                            newState = defaultStateTransfer();
+                            newState = SystemState.IDLE;
                         break;
                     case RELEASING_SCISSOR: // Climb
-                        if (mStateChanged)
+                        if (mLifter.getWantedState() != ScissorLift.WantedState.OFF)
                             mLifter.setWantedState(ScissorLift.WantedState.OFF);
-                        else if (mWantedState == WantedState.CLIMB)
+                        if (mWantedState == WantedState.CLIMB)
                         {
                             if (mLifter.atTarget())
                                 newState = SystemState.CLIMBING;
                         }
                         else
-                            newState = defaultStateTransfer();
+                            newState = SystemState.IDLE;
                         break;
                     case CLIMBING:
-                        if (mStateChanged)
+                        if (mClimber.getWantedState() != Climber.WantedState.CLIMB)
                             mClimber.setWantedState(Climber.WantedState.CLIMB);
                         else
                         {
@@ -197,20 +215,14 @@ public class Superstructure extends Subsystem
                     default:
                         newState = defaultStateTransfer();
                 }
-
-                if (newState != mSystemState)
+                if(mSystemState != newState)
                 {
-                    Logger.notice("Superstructure state " + mSystemState + " to " + newState
-                            + " Timestamp: "
-                            + Timer.getFPGATimestamp());
-                    mSystemState = newState;
-                    mCurrentStateStartTime = timestamp;
-                    mStateChanged = true;
+                    if(newState == SystemState.IDLE)
+                    {
+                        // need to reset subsystems to an idle?
+                    }
                 }
-                else
-                {
-                    mStateChanged = false;
-                }
+                mSystemState = newState;
             }
         }
 
@@ -220,109 +232,6 @@ public class Superstructure extends Subsystem
             stop();
         }
     };
-    
-    private SystemState updateState()
-    {
-        SystemState newState = mSystemState;
-        switch (mSystemState)
-        {
-            case IDLE:
-                switch(mWantedState)
-                {
-                    case TRANSFER_CUBE_TO_GRABBER:
-                        newState = SystemState.OPENING_HARVESTER;
-                        break;
-                    case CLIMB:
-                        newState = SystemState.RELEASING_SCISSOR;
-                        break;
-                    default: // either idle or unimplemented
-                        break;
-                }
-                break;
-            case OPENING_HARVESTER: // Transfer cube from harvester to scissor
-                if (mHarvester.getWantedState() != Harvester.WantedState.OPEN)
-                    mHarvester.setWantedState(Harvester.WantedState.OPEN);
-                if (mWantedState == WantedState.TRANSFER_CUBE_TO_GRABBER)
-                {
-                    if (mHarvester.atTarget())
-                        newState = SystemState.GRABBING_ARTICULATED_GRABBER;
-                }
-                else
-                    newState = SystemState.IDLE;
-                break;
-            case GRABBING_ARTICULATED_GRABBER:
-                if (mGrabber.getWantedState() != ArticulatedGrabber.WantedState.GRAB_CUBE)
-                    mGrabber.setWantedState(ArticulatedGrabber.WantedState.GRAB_CUBE);
-                if (mWantedState == WantedState.TRANSFER_CUBE_TO_GRABBER)
-                {
-                    if (mGrabber.atTarget())
-                    {
-                        newState = SystemState.TRANSPORTING_ARTICULATED_GRABBER_DELAY;
-                        mTimer.reset();
-                        mTimer.start();
-                   }
-                }
-                else
-                    newState = SystemState.IDLE;
-                break;
-            case TRANSPORTING_ARTICULATED_GRABBER_DELAY:
-                if(mWantedState == WantedState.TRANSFER_CUBE_TO_GRABBER)
-                {
-                    if(mTimer.hasPeriodPassed(kFinishGrabAfterSeconds))
-                    {
-                        newState = SystemState.TRANSPORTING_ARTICULATED_GRABBER;
-                    }
-                }
-                else
-                    newState = SystemState.IDLE;
-                break;
-            case TRANSPORTING_ARTICULATED_GRABBER:
-                if (mWantedState == WantedState.TRANSFER_CUBE_TO_GRABBER)
-                {
-                   if(mGrabber.getWantedState() != ArticulatedGrabber.WantedState.TRANSPORT)
-                       mGrabber.setWantedState(ArticulatedGrabber.WantedState.TRANSPORT);
-                    if (mGrabber.atTarget())
-                    {
-                        mHarvester.setWantedState(Harvester.WantedState.DISABLE);
-                        mWantedState = WantedState.IDLE;
-                        newState = SystemState.IDLE; // Done
-                    }
-                }
-                else
-                    newState = SystemState.IDLE;
-                break;
-            case RELEASING_SCISSOR: // Climb
-                if (mLifter.getWantedState() != ScissorLift.WantedState.OFF)
-                    mLifter.setWantedState(ScissorLift.WantedState.OFF);
-                if (mWantedState == WantedState.CLIMB)
-                {
-                    if (mLifter.atTarget())
-                        newState = SystemState.CLIMBING;
-                }
-                else
-                    newState = SystemState.IDLE;
-                break;
-            case CLIMBING:
-                if (mClimber.getWantedState() != Climber.WantedState.CLIMB)
-                    mClimber.setWantedState(Climber.WantedState.CLIMB);
-                else
-                {
-                    mWantedState = WantedState.IDLE;
-                    newState = SystemState.IDLE; // Done
-                }
-                break;
-            default:
-                newState = defaultStateTransfer();
-        }
-        if(mSystemState != newState)
-        {
-            if(newState == SystemState.IDLE)
-            {
-                // need to reset subsystems to an idle?
-            }
-        }
-        return newState;
-    }
 
     private SystemState defaultStateTransfer()
     {

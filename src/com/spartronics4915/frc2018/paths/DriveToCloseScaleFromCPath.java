@@ -17,7 +17,9 @@ public class DriveToCloseScaleFromCPath implements PathContainer {
     {
         sWaypoints.add(new Waypoint(18,45,0,0));
         sWaypoints.add(new Waypoint(40,45,0,60));
-        sWaypoints.add(new Waypoint(324,40,0,60));
+        sWaypoints.add(new Waypoint(80,23,0,60));
+        sWaypoints.add(new Waypoint(324,23,26,60));
+        sWaypoints.add(new Waypoint(324,53,0,40));
 
     }
 
@@ -44,7 +46,7 @@ public class DriveToCloseScaleFromCPath implements PathContainer {
     {
         return false;
     }
-    // WAYPOINT_DATA: [{"position":{"x":18,"y":45},"speed":0,"radius":0,"comment":""},{"position":{"x":40,"y":45},"speed":60,"radius":0,"comment":""},{"position":{"x":324,"y":40},"speed":60,"radius":0,"comment":""}]
+    // WAYPOINT_DATA: [{"position":{"x":18,"y":45},"speed":0,"radius":0,"comment":""},{"position":{"x":40,"y":45},"speed":60,"radius":0,"comment":""},{"position":{"x":80,"y":23},"speed":60,"radius":0,"comment":""},{"position":{"x":324,"y":23},"speed":60,"radius":26,"comment":""},{"position":{"x":324,"y":53},"speed":40,"radius":0,"comment":""}]
     // IS_REVERSED: false
     // FILE_NAME: DriveToCloseScaleFromCPath
 }
