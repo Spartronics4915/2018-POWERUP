@@ -55,7 +55,7 @@ public class ControlBoard implements ControlBoardInterface
         switch (a)
         {
             case THROTTLE:
-                result = -mDrivestick.getZ(); // Is this reversed on the new joystick???
+                result = -mDrivestick.getY(); // Is this reversed on the new joystick???
                 break;
             case TURN:
                 result = mDrivestick.getX();

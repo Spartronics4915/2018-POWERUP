@@ -655,6 +655,13 @@ public class TalonSRX4915 implements Sendable, MotorSafety
         this.mControlMode = m; // in SRX mode, set() requires controlmode
     }
 
+    public void setIntegralAccumulator(double iAccum)
+    {
+        if (mTalon == null)
+            return;
+        mTalon.setIntegralAccumulator(iAccum, sPidIdx, sUpdateTimeoutMS);
+    }
+    
     public void setVelocityRPM(double rpm)
     {
         if (mTalon == null)

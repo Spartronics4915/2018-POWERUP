@@ -1,6 +1,7 @@
 package com.spartronics4915.frc2018.auto.actions;
 
 import com.spartronics4915.frc2018.subsystems.ScissorLift;
+import com.spartronics4915.lib.util.Logger;
 
 public class ActuateScissorLiftAction implements Action
 {
@@ -30,6 +31,7 @@ public class ActuateScissorLiftAction implements Action
     {
         // We don't want to change the scissor position at the end.
         // This should be done explicitly by the user instead.
+        Logger.notice("Done actuating scissor lift.");
     }
 
     @Override
@@ -37,6 +39,7 @@ public class ActuateScissorLiftAction implements Action
     {
         mLifter = ScissorLift.getInstance();
         mLifter.setWantedState(mWantedState);
+        Logger.notice("Scissor lift actuating to "+mWantedState.toString()+".");
     }
 
 }
