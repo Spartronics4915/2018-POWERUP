@@ -659,7 +659,7 @@ public class TalonSRX4915 implements Sendable, MotorSafety
     {
         if (mTalon == null)
             return;
-        mTalon.setIntegralAccumulator(iAccum, sPidIdx, sPidIdx);
+        mTalon.setIntegralAccumulator(iAccum, sPidIdx, sUpdateTimeoutMS);
     }
     
     public void setVelocityRPM(double rpm)
