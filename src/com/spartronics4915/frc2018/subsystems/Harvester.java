@@ -264,6 +264,11 @@ public class Harvester extends Subsystem
         }
         return SystemState.HUGGING;
     }
+    
+    public WantedState getWantedState()
+    {
+        return mWantedState;
+    }
 
     public void setWantedState(WantedState wantedState)
     {
