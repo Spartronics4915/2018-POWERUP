@@ -24,11 +24,7 @@ public class ParallelAction implements Action
     
     public ParallelAction(List<Action> actions)
     {
-        mActions = new ArrayList<>(actions.size());
-        for (Action action : actions)
-        {
-            mActions.add(action);
-        }
+        mActions = (ArrayList<Action>)actions;
     }
 
     @Override
