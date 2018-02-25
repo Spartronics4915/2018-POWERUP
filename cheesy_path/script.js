@@ -19,6 +19,8 @@ var minSpeed = 0;
 var minSpeedColor = [255, 0, 0];
 var pathFillColor = "rgba(150, 150, 150, 0.5)";
 
+const TRANSPARENT_IMAGE = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
+
 class Translation2d {
 	constructor(x, y) {
 		this.x = x;
@@ -245,6 +247,21 @@ function init() {
 			update();
 		}, 500);
 	});
+    $("#isTransparent")[0].checked = false;
+    $('#isTransparent').change(function() {
+	    if (this.checked) {
+		    image.src = TRANSPARENT_IMAGE;
+		    imageFlipped.src = TRANSPARENT_IMAGE;
+		    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+		    update();
+	    } else {
+		    image.src = 'field.png';
+		    imageFlipped.src = 'fieldflipped.png';
+		    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+		    ctx.drawImage(image, 0, 0, ctx.canvas.width, ctx.canvas.height);
+		    update();
+	    }
+    });
 }
 
 function clear() {
