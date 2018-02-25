@@ -180,8 +180,8 @@ public class Superstructure extends Subsystem
                     case TRANSPORTING_ARTICULATED_GRABBER:
                         if (mWantedState == WantedState.TRANSFER_CUBE_TO_GRABBER)
                         {
-                           if(mGrabber.getWantedState() != ArticulatedGrabber.WantedState.TRANSPORT)
-                               mGrabber.setWantedState(ArticulatedGrabber.WantedState.TRANSPORT);
+                           if(mGrabber.getWantedState() != ArticulatedGrabber.WantedState.PREPARE_DROP)
+                               mGrabber.setWantedState(ArticulatedGrabber.WantedState.PREPARE_DROP);
                             if (mGrabber.atTarget())
                             {
                                 mHarvester.setWantedState(Harvester.WantedState.DISABLE);
@@ -262,6 +262,16 @@ public class Superstructure extends Subsystem
         mWantedState = wantedState;
     }
 
+    /**
+     * This is a bit like the atTarget methods of many other subsystem.
+     * It's called something different because Superstructure is fundamentally
+     * different from other subsystems.
+     */
+    public synchronized boolean isIdling()
+    {
+        return mSystemState == SystemState.IDLE;
+    }
+    
     @Override
     public void outputToSmartDashboard()
     {
