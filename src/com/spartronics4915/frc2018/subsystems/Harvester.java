@@ -39,6 +39,7 @@ public class Harvester extends Subsystem
         HARVESTING,
         EJECTING,
         HUGGING,
+        AUTOHARVESTING,
         DISABLING,
     }
 
@@ -48,6 +49,7 @@ public class Harvester extends Subsystem
         HARVEST,
         EJECT,
         HUG,
+        AUTOHARVEST,
         DISABLE,
     }
 
@@ -75,7 +77,7 @@ public class Harvester extends Subsystem
             mMotorRight = TalonSRX4915Factory.createDefaultMotor(Constants.kHarvesterRightMotorId); // change value of motor
             mMotorLeft = TalonSRX4915Factory.createDefaultMotor(Constants.kHarvesterLeftMotorId); // change value of motor
             mMotorRight.configOutputPower(true, 0.5, 0, 0.75, 0, -0.75);
-            mMotorLeft.configOutputPower(true, 0.5, 0, 0.75, 0, -0.75);
+            mMotorLeft.configOutputPower(true, 0.5, 0, 1, 0, -1);
             mMotorRight.setInverted(true);
             mTimer = new Timer();
 
@@ -142,6 +144,9 @@ public class Harvester extends Subsystem
                     case HUGGING:
                         newState = handleHugging();
                         break;
+                    case AUTOHARVESTING:
+                        newState = handleAutoHarvesting();
+                        break;
                     case DISABLING:
                         newState = handleClosing();
                         break;
@@ -185,6 +190,9 @@ public class Harvester extends Subsystem
             case HUG:
                 mSolenoid.set(kSolenoidClose);
                 return SystemState.HUGGING;
+            case AUTOHARVEST:
+                mSolenoid.set(kSolenoidOpen);
+                return SystemState.AUTOHARVESTING;
             default:
                 return mSystemState;
         }
@@ -195,7 +203,7 @@ public class Harvester extends Subsystem
         //motors off and bars in
         mMotorLeft.set(0.0);
         mMotorRight.set(0.0);
-        if (mWantedState == WantedState.OPEN)
+        if (mWantedState == WantedState.OPEN || mWantedState ==  WantedState.AUTOHARVEST)
         {
             return defaultStateTransfer(); //all defaultStateTransfers return the wanted state
         }
@@ -207,7 +215,7 @@ public class Harvester extends Subsystem
         // due to mechanical stuck issue, run motors reverse, open bars and turn off motors after timeout
         mMotorLeft.set(0.0);
         mMotorRight.set(0.0);
-        if (mWantedState == WantedState.HARVEST || mWantedState == WantedState.EJECT)
+        if (mWantedState == WantedState.HARVEST || mWantedState == WantedState.EJECT || mWantedState == WantedState.AUTOHARVEST)
         {
             return defaultStateTransfer();
         }
@@ -218,6 +226,22 @@ public class Harvester extends Subsystem
             //mMotorRight.set(-1.0);
         }
         return SystemState.OPENING;
+    }
+    
+    private SystemState handleAutoHarvesting()
+    {
+        mMotorLeft.set(0.0);
+        mMotorRight.set(0.0);
+        //Checks if cube is held and transitions to Harvest when there is
+        if (isCubeHeld())
+        {
+            setWantedState(WantedState.HARVEST);
+            return SystemState.HARVESTING;
+        }
+        else
+        {
+            return defaultStateTransfer();
+        }
     }
 
     private SystemState handleHarvesting()
