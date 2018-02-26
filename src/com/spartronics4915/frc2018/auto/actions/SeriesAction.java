@@ -1,6 +1,7 @@
 package com.spartronics4915.frc2018.auto.actions;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -12,14 +13,14 @@ public class SeriesAction implements Action
     private Action mCurAction;
     private final ArrayList<Action> mRemainingActions;
 
+    public SeriesAction(Action... actions)
+    {
+        this(Arrays.asList(actions));
+    }
+    
     public SeriesAction(List<Action> actions)
     {
-        mRemainingActions = new ArrayList<>(actions.size());
-
-        for (Action action : actions)
-        {
-            mRemainingActions.add(action);
-        }
+        mRemainingActions = (ArrayList<Action>)actions;
 
         mCurAction = null;
     }

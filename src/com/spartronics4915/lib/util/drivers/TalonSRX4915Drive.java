@@ -283,6 +283,12 @@ public class TalonSRX4915Drive
         mLeftMaster.configPID(slotIdx, kp, ki, kd, kf, izone, rampRate);
         mRightMaster.configPID(slotIdx, kp, ki, kd, kf, izone, rampRate);
     }
+    
+    public void resetIntegralAccumulator()
+    {
+        mLeftMaster.setIntegralAccumulator(0);
+        mRightMaster.setIntegralAccumulator(0);
+    }
 
     public String dumpPIDState(int slotIdx)
     {

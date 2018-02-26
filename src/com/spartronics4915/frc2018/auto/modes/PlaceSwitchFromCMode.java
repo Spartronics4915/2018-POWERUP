@@ -20,12 +20,6 @@ public class PlaceSwitchFromCMode extends AutoModeBase
     private PathContainer mClosePath = new DriveToCloseSwitchFromCPath();
     private PathContainer mFarPath = new DriveToFarSwitchFromCPath();
 
-    public PlaceSwitchFromCMode()
-    {
-        mClosePath.buildPath();
-        mFarPath.buildPath();
-    }
-
     @Override
     protected void routine() throws AutoModeEndedException
     {

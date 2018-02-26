@@ -22,12 +22,6 @@ public class PlaceScaleFromAMode extends AutoModeBase
     private PathContainer mClosePath = new DriveToCloseScaleFromAPath();
     private PathContainer mFarPath = new DriveToFarScaleFromAPath();
 
-    public PlaceScaleFromAMode()
-    {
-        mClosePath.buildPath();
-        mFarPath.buildPath();
-    }
-
     @Override
     protected void routine() throws AutoModeEndedException
     {

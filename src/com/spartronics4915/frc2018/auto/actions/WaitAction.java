@@ -12,6 +12,9 @@ public class WaitAction implements Action
     private double mTimeToWait;
     private double mStartTime;
 
+    /**
+     * @param timeToWait in seconds
+     */
     public WaitAction(double timeToWait)
     {
         mTimeToWait = timeToWait;
