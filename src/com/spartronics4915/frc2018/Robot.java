@@ -370,6 +370,10 @@ public class Robot extends IterativeRobot
             {
                 mGrabber.setWantedState(ArticulatedGrabber.WantedState.PREPARE_INTAKE);
             }
+            if (mControlBoard.readButton(Buttons.VISION_CUBE_HARVEST))
+            {
+                mSuperstructure.setWantedState(Superstructure.WantedState.VISION_AQUIRE_CUBE);
+            }
             allButTestPeriodic();
         }
         catch (Throwable t)

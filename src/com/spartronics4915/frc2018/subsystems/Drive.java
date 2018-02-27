@@ -460,6 +460,7 @@ public class Drive extends Subsystem
         {
             // TODO: Figure some way to tell if we are done
             // STOP, OR I'LL SAY STOP, AGAIN!
+            // Very impromtu, Will need to be changed to 'resume normal driving'
             setOpenLoop(new DriveSignal(0.0, 0.0));
             return;
         }
@@ -867,5 +868,10 @@ public class Drive extends Subsystem
         }
         logNotice("checkSystem ---------------");
         return mMotorGroup.checkSystem(variant);
+    }
+    
+    public DriveControlState getDriveState()
+    {
+        return mDriveControlState;
     }
 }
