@@ -472,7 +472,7 @@ public class Drive extends Subsystem
         if (!this.isInitialized())
             return;
         double dx = mVisionTargetAngleEntry.getNumber(0).doubleValue();
-        if (dx < 30 && dx > -30) {  // If our target is within reasonable bounds
+        if (Util.epsilonEquals(dx, 0, 30)) {  // If our target is within reasonable bounds
             setWantAimToVisionTarget();
         }
         if (dx > 30) {  // If we get a bogus target (The bogus target is about 198)

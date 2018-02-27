@@ -71,7 +71,7 @@ public class Superstructure extends Subsystem
         IDLE,
         TRANSFER_CUBE_TO_GRABBER,
         CLIMB,
-        VISION_AQUIRE_CUBE, // drive to, and acquire the cube
+        VISION_ACQUIRE_CUBE, // drive to, and acquire the cube
     }
 
     private SystemState mSystemState = SystemState.IDLE;
@@ -280,7 +280,7 @@ public class Superstructure extends Subsystem
                 //                    return; This is commented out to make testing easier. Re-add it once this is verified.
                 newState = SystemState.RELEASING_SCISSOR; // First state
                 break;
-            case VISION_AQUIRE_CUBE:
+            case VISION_ACQUIRE_CUBE:
                 // Begin the spin
                 newState = SystemState.DRIVE_CUBE;
             default:
