@@ -30,6 +30,7 @@ import com.spartronics4915.lib.util.math.RigidTransform2d;
 import com.spartronics4915.frc2018.ControlBoardInterface.Sticks;
 import com.spartronics4915.frc2018.ControlBoardInterface.Buttons;
 
+import edu.wpi.first.wpilibj.DigitalOutput;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Timer;
@@ -206,6 +207,9 @@ public class Robot extends IterativeRobot
     {
         try
         {
+            
+            mLED.setVisionLampOn();
+            
             Logger.setVerbosity(SmartDashboard.getString(kRobotVerbosity, "NOTICE"));
             Logger.logAutoInit();
             Logger.notice("Auto start timestamp: " + Timer.getFPGATimestamp());

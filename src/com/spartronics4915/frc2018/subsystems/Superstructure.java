@@ -61,6 +61,8 @@ public class Superstructure extends Subsystem
         TRANSPORTING_ARTICULATED_GRABBER_DELAY,
         RELEASING_SCISSOR, // Climb
         CLIMBING,
+        DRIVE_CUBE, // turn to cube
+        VISION_HARVEST // drive to, and harvest cube
     };
 
     // Desired function from user
@@ -69,6 +71,7 @@ public class Superstructure extends Subsystem
         IDLE,
         TRANSFER_CUBE_TO_GRABBER,
         CLIMB,
+        VISION_AQUIRE_CUBE, // drive to, and acquire the cube
     }
 
     private SystemState mSystemState = SystemState.IDLE;

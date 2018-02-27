@@ -66,7 +66,7 @@ public class Drive extends Subsystem
         TURN_TO_HEADING, // turn in place
         DRIVE_TOWARDS_GOAL_COARSE_ALIGN, // turn to face the boiler, then DRIVE_TOWARDS_GOAL_COARSE_ALIGN
         DRIVE_TOWARDS_GOAL_APPROACH, // drive forwards until we are at optimal shooting distance
-        FIND_CUBE //Spin untill we find the cube!
+        FIND_CUBE //Spin until we find the cube!
     }
 
     // Control states
@@ -447,6 +447,8 @@ public class Drive extends Subsystem
         performClosedLoopTurn(robotToTarget);
     }
 
+    // I'm going to switch this up, and the name may be a bit strange for its job
+    // TODO: Fix the name
     private void updateTurnToRobotHeading(double timestamp)
     {
         if (!this.isInitialized())
@@ -454,6 +456,13 @@ public class Drive extends Subsystem
         final double dx = mVisionTargetAngleEntry.getNumber(0).doubleValue();
         final Rotation2d robotToTarget = Rotation2d.fromDegrees(-dx); 
         // angle reversed to correct for raspi coordsys
+        if (Util.epsilonEquals(dx, 0, 1)) //TODO: Double check with someone if this is how you call it (number, target, the range)
+        {
+            // TODO: Figure some way to tell if we are done
+            // STOP, OR I'LL SAY STOP, AGAIN!
+            setOpenLoop(new DriveSignal(0.0, 0.0));
+            return;
+        }
         performClosedLoopTurn(robotToTarget);
     }
     
@@ -462,14 +471,14 @@ public class Drive extends Subsystem
         if (!this.isInitialized())
             return;
         double dx = mVisionTargetAngleEntry.getNumber(0).doubleValue();
-        if (dx != 0.0) {
+        if (dx < 30 && dx > -30) {  // If our target is within reasonable bounds
             setWantAimToVisionTarget();
         }
-        if (dx == 0.0) {
-            dx = -5;
+        if (dx > 30) {  // If we get a bogus target (The bogus target is about 198)
+            dx = -3;
         }
         final Rotation2d robotToTarget = Rotation2d.fromDegrees(dx); 
-        // angle reversed to correct for raspi coordsys
+        // angle reversed to correct for raspi coordsys(???)
         performClosedLoopTurn(robotToTarget);
     }
 
@@ -492,7 +501,7 @@ public class Drive extends Subsystem
             mIsOnTarget = true;
             updatePositionSetpoint(mMotorGroup.getLeftDistanceInches(),
                     mMotorGroup.getRightDistanceInches());
-        }
+        } 
         else
         {
             Kinematics.DriveVelocity wheel_delta = Kinematics
