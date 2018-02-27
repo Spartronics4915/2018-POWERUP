@@ -372,7 +372,7 @@ public class Robot extends IterativeRobot
             }
             if (mControlBoard.readButton(Buttons.VISION_CUBE_HARVEST))
             {
-                mSuperstructure.setWantedState(Superstructure.WantedState.VISION_AQUIRE_CUBE);
+                mSuperstructure.setWantedState(Superstructure.WantedState.VISION_ACQUIRE_CUBE);
             }
             allButTestPeriodic();
         }
