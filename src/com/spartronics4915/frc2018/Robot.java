@@ -263,6 +263,8 @@ public class Robot extends IterativeRobot
             mDrive.setOpenLoop(DriveSignal.NEUTRAL);
             
             mLED.setVisionLampOn();
+            mLED.setBlingState(BlingState.SOLID);
+            mLED.setBlingState(BlingState.BLUE);
         }
         catch (Throwable t)
         {
@@ -299,19 +301,22 @@ public class Robot extends IterativeRobot
             {
                 mLifter.setWantedState(ScissorLift.WantedState.OFF);
                 mGrabber.setWantedState(ArticulatedGrabber.WantedState.TRANSPORT);
-                mLED.setBlingState(BlingState.SCISSOR_OFF);
+                mLED.setBlingState(BlingState.SOLID);
+                mLED.setBlingState(BlingState.YELLOW);
             }
 
             if (mControlBoard.readButton(Buttons.SCISSOR_SWITCH))
             {
                 mLifter.setWantedState(ScissorLift.WantedState.SWITCH);
-                mLED.setBlingState(BlingState.SCISSOR_SWITCH);
+                mLED.setBlingState(BlingState.BLINK);
+                mLED.setBlingState(BlingState.YELLOW);
             }
 
             if (mControlBoard.readButton(Buttons.SCISSOR_SCALE))
             {
                 mLifter.setWantedState(ScissorLift.WantedState.SCALE);
-                mLED.setBlingState(BlingState.SCISSOR_SCALE);
+                mLED.setBlingState(BlingState.FAST_BLINK);
+                mLED.setBlingState(BlingState.YELLOW);
             }
 
             if (mControlBoard.readButton(Buttons.GRABBER_DROP_CUBE))
@@ -322,37 +327,43 @@ public class Robot extends IterativeRobot
             if (mControlBoard.readButton(Buttons.HARVESTER_OPEN))
             {
                 mHarvester.setWantedState(Harvester.WantedState.OPEN);
-                mLED.setBlingState(BlingState.OPEN_HARVESTER);
+                mLED.setBlingState(BlingState.SOLID);
+                mLED.setBlingState(BlingState.BLUE);
             }
 
             if (mControlBoard.readButton(Buttons.HARVESTER_CLOSE))
             {
                 mHarvester.setWantedState(Harvester.WantedState.HARVEST);
-                mLED.setBlingState(BlingState.CLOSE_HARVESTER);
+                mLED.setBlingState(BlingState.BLINK);
+                mLED.setBlingState(BlingState.BLUE);
             }
 
             if (mControlBoard.readButton(Buttons.HARVESTER_EJECT))
             {
                 mHarvester.setWantedState(Harvester.WantedState.EJECT);
-                mLED.setBlingState(BlingState.EJECT_HARVESTER);
+                mLED.setBlingState(BlingState.FAST_BLINK);
+                mLED.setBlingState(BlingState.BLUE);
             }
 
             if (mControlBoard.readButton(Buttons.SUPERSTRUCTURE_CARRY_CUBE))
             {
                 mSuperstructure.setWantedState(Superstructure.WantedState.TRANSFER_CUBE_TO_GRABBER);
-                mLED.setBlingState(BlingState.CARRY_CUBE);
+                mLED.setBlingState(BlingState.BLINK);
+                mLED.setBlingState(BlingState.GREEN);
             }
 
             if (mControlBoard.readButton(Buttons.HARVESTER_CLIMB))
             {
                 mSuperstructure.setWantedState(Superstructure.WantedState.CLIMB);
-                mLED.setBlingState(BlingState.CLIMB);
+                mLED.setBlingState(BlingState.SOLID);
+                mLED.setBlingState(BlingState.RED);
             }
 
             if (mControlBoard.readButton(Buttons.CLIMBER_STOP))
             {
                 mClimber.setWantedState(Climber.WantedState.HOLD);
-                mLED.setBlingState(BlingState.STOP_CLIMBER);
+                mLED.setBlingState(BlingState.BLINK);
+                mLED.setBlingState(BlingState.RED);
             }
 
             if (mControlBoard.readButton(Buttons.CLIMB_IDLE_TEST))
@@ -378,14 +389,6 @@ public class Robot extends IterativeRobot
             if (mControlBoard.readButton(Buttons.GRABBER_PREPARE_INTAKE_TEST))
             {
                 mGrabber.setWantedState(ArticulatedGrabber.WantedState.PREPARE_INTAKE);
-            }
-            if (DriverStation.getInstance().getMatchTime() < kMatchDurationSeconds)
-            {
-                mLED.setBlingState(BlingState.TELEOP);
-            }
-            if (DriverStation.getInstance().getMatchTime() < kEndgameDurationSeconds)
-            {
-                mLED.setBlingState(BlingState.ENDGAME);
             }
             allButTestPeriodic();
         }

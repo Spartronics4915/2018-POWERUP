@@ -54,7 +54,7 @@ public class LED extends Subsystem
     {
         OFF, FIXED_ON, BLINKING, RANGE_FINDING
     }
-
+    
     public enum WantedState
     {
         OFF, FIXED_ON, BLINK, FIND_RANGE, WARN
@@ -62,7 +62,7 @@ public class LED extends Subsystem
 
     public enum BlingState
     {
-        OFF, SCISSOR_OFF, SCISSOR_SWITCH, TELEOP, ENDGAME, SCISSOR_SCALE, CLIMB, OPEN_HARVESTER, CLOSE_HARVESTER, EJECT_HARVESTER, CARRY_CUBE, STOP_CLIMBER
+        OFF, YELLOW, BLINK, GREEN, SOLID, FAST_BLINK, CLIMB, BLUE, CLOSE_HARVESTER, EJECT_HARVESTER, CARRY_CUBE, RED
     }
 
     private SystemState mSystemState = SystemState.OFF;
@@ -80,29 +80,25 @@ public class LED extends Subsystem
     
     /*
      *0 : OFF(GREY)
-     *1 : ?
-     *2 : ?
-     *3 : ?
-     *4 : ?
+     *1 : BLUE
+     *2 : YELLOW
+     *3 : RED
+     *4 : GREEN
      *5 : ?
      *6 : ?
-     *7 : ?
-     *8 : ?
-     *9 : ?
+     *7 : FAST BLINK
+     *8 : SOLID
+     *9 : BLINK
      */
 
-    private final byte[] kOff = "0".getBytes();                //GREY
-    private final byte[] kScissorOff = "1".getBytes();         //YELLOW/BLUE ALTERNATING || FADE BLUE INTO YELLOW AND BACK
-    private final byte[] kScissorSwitch = "2".getBytes();      //YELLOW
-    private final byte[] kScissorScale = "3".getBytes();       //FLASHING YELLOW
-    private final byte[] kTeleop = "4".getBytes();             //FADE GREEN
-    private final byte[] kEndGame = "5".getBytes();            //FLASHING GREEN
-    private final byte[] kClimb = "6".getBytes();              //FLASHING RED
-    private final byte[] kStopClimber = "7".getBytes();        //RED
-    private final byte[] kOpenHarvester = "8".getBytes();      //BLUE
-    private final byte[] kCloseHarvester = "9".getBytes();     //FLASHING BLUE
-    private final byte[] kEjectHarvester = "10".getBytes();    //FADE BLUE
-    private final byte[] kCarryCube = "11".getBytes();         //YELLOW CHASING BLUE || FADE YELLOW
+    private final byte[] kOff = "0".getBytes();
+    private final byte[] kBlue = "1".getBytes();
+    private final byte[] kYellow = "2".getBytes();
+    private final byte[] kRed = "3".getBytes();
+    private final byte[] kGreen = "4".getBytes();
+    private final byte[] kFastBlink = "7".getBytes();
+    private final byte[] kSolid = "8".getBytes();
+    private final byte[] kBlink = "9".getBytes();
     
     public LED()
     {
@@ -318,38 +314,26 @@ public class LED extends Subsystem
                 case OFF:
                     mBling.write(kOff, kOff.length);
                     break;
-                case SCISSOR_OFF:
-                    mBling.write(kScissorOff, kScissorOff.length);
+                case BLUE:
+                    mBling.write(kBlue, kBlue.length);
                     break;
-                case SCISSOR_SWITCH:
-                    mBling.write(kScissorSwitch, kScissorSwitch.length);
+                case YELLOW:
+                    mBling.write(kYellow, kYellow.length);
                     break;
-                case SCISSOR_SCALE:
-                    mBling.write(kScissorScale, kScissorScale.length);
+                case RED:
+                    mBling.write(kRed, kRed.length);
                     break;
-                case TELEOP:
-                    mBling.write(kTeleop, kTeleop.length);
+                case GREEN:
+                    mBling.write(kGreen, kGreen.length);
                     break;
-                case ENDGAME:
-                    mBling.write(kEndGame, kEndGame.length);
+                case FAST_BLINK:
+                    mBling.write(kFastBlink, kFastBlink.length);
                     break;
-                case CLIMB:
-                    mBling.write(kClimb, kClimb.length);
+                case SOLID:
+                    mBling.write(kSolid, kSolid.length);
                     break;
-                case STOP_CLIMBER:
-                    mBling.write(kStopClimber, kStopClimber.length);
-                    break;
-                case OPEN_HARVESTER:
-                    mBling.write(kOpenHarvester, kOpenHarvester.length);
-                    break;
-                case CLOSE_HARVESTER:
-                    mBling.write(kCloseHarvester, kCloseHarvester.length);
-                    break;
-                case EJECT_HARVESTER:
-                    mBling.write(kEjectHarvester, kEjectHarvester.length);
-                    break;
-                case CARRY_CUBE:
-                    mBling.write(kCarryCube, kCarryCube.length);
+                case BLINK:
+                    mBling.write(kBlink, kBlink.length);
                     break;
                 default:
                     mBling.write(kOff, kOff.length);

@@ -203,7 +203,7 @@ public class Harvester extends Subsystem
         //motors off and bars in
         mMotorLeft.set(0.0);
         mMotorRight.set(0.0);
-        if (mWantedState == WantedState.OPEN || mWantedState ==  WantedState.AUTOHARVEST)
+        if (mWantedState == WantedState.OPEN || mWantedState == WantedState.AUTOHARVEST)
         {
             return defaultStateTransfer(); //all defaultStateTransfers return the wanted state
         }
@@ -227,7 +227,7 @@ public class Harvester extends Subsystem
         }
         return SystemState.OPENING;
     }
-    
+
     private SystemState handleAutoHarvesting()
     {
         mMotorLeft.set(0.0);
@@ -288,7 +288,7 @@ public class Harvester extends Subsystem
         }
         return SystemState.HUGGING;
     }
-    
+
     public WantedState getWantedState()
     {
         return mWantedState;
@@ -346,7 +346,8 @@ public class Harvester extends Subsystem
     @Override
     public void outputToSmartDashboard()
     {
-        if(!isInitialized()) return;
+        if (!isInitialized())
+            return;
         dashboardPutState(mSystemState.toString());
         dashboardPutWantedState(mWantedState.toString());
         dashboardPutBoolean("mSolenoid", mSolenoid.get());
