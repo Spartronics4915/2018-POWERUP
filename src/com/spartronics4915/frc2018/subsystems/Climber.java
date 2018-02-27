@@ -136,7 +136,7 @@ public class Climber extends Subsystem
 
     private SystemState handleClimbing()
     {
-        mWinchPrimary.set(0.75);
+        mWinchPrimary.set(-0.75);
         if (mWantedState == WantedState.HOLD)
         {
             mWinchPrimary.configCurrentLimit(true, 15, 25, 500); //Continuous, peak, peak duration (ms)
@@ -165,10 +165,11 @@ public class Climber extends Subsystem
 
     private SystemState handleHolding()
     {
-        mWinchPrimary.set(0.75);
+        mWinchPrimary.set(0);
         if (mWantedState == WantedState.CLIMB)
         {
             mWinchPrimary.configCurrentLimit(false, 0, 0, 0);
+            mWinchPrimary.setBrakeMode(true);
             return SystemState.CLIMBING;
         }
         else if (mWantedState == WantedState.IDLE)
@@ -205,10 +206,9 @@ public class Climber extends Subsystem
     @Override
     public void outputToSmartDashboard()
     {
-        //TODO: Put climber current on dashboard
         dashboardPutState(this.mSystemState.toString());
         dashboardPutWantedState(this.mWantedState.toString());
-        dashboardPutNumber("Current", mWinchPrimary.getOutputCurrent());
+        dashboardPutNumber("Current: ", mWinchPrimary.getOutputCurrent());
     }
 
     @Override

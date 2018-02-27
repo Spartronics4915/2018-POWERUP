@@ -9,16 +9,15 @@ import com.spartronics4915.lib.util.math.RigidTransform2d;
 import com.spartronics4915.lib.util.math.Rotation2d;
 import com.spartronics4915.lib.util.math.Translation2d;
 
-public class DriveToCloseScaleFromCPath implements PathContainer {
+public class DriveSecondCubeToCScalePath implements PathContainer {
 
     ArrayList<Waypoint> sWaypoints = new ArrayList<Waypoint>();
 
-    public DriveToCloseScaleFromCPath()
+    public DriveSecondCubeToCScalePath()
     {
-        sWaypoints.add(new Waypoint(18,45,0,0));
-        sWaypoints.add(new Waypoint(40,45,0,60));
-        sWaypoints.add(new Waypoint(324,20,30,60));
-        sWaypoints.add(new Waypoint(324,58,0,30));
+        sWaypoints.add(new Waypoint(213,90,0,60));
+        sWaypoints.add(new Waypoint(253,73,20,60));
+        sWaypoints.add(new Waypoint(283,73,0,60));
 
     }
 
@@ -37,7 +36,7 @@ public class DriveToCloseScaleFromCPath implements PathContainer {
     @Override
     public RigidTransform2d getStartPose()
     {
-        return new RigidTransform2d(new Translation2d(18, 45), Rotation2d.fromDegrees(90.0));
+        return new RigidTransform2d(new Translation2d(213, 90), Rotation2d.fromDegrees(90.0));
     }
 
     @Override
@@ -45,7 +44,7 @@ public class DriveToCloseScaleFromCPath implements PathContainer {
     {
         return false;
     }
-    // WAYPOINT_DATA: [{"position":{"x":18,"y":45},"speed":0,"radius":0,"comment":""},{"position":{"x":40,"y":45},"speed":60,"radius":0,"comment":""},{"position":{"x":324,"y":20},"speed":60,"radius":30,"comment":""},{"position":{"x":324,"y":58},"speed":30,"radius":0,"comment":""}]
+    // WAYPOINT_DATA: [{"position":{"x":213,"y":90},"speed":60,"radius":0,"comment":""},{"position":{"x":253,"y":73},"speed":60,"radius":20,"comment":""},{"position":{"x":283,"y":73},"speed":60,"radius":0,"comment":""}]
     // IS_REVERSED: false
-    // FILE_NAME: DriveToCloseScaleFromCPath
+    // FILE_NAME: DriveSecondCubeToCScalePath
 }

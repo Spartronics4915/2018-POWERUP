@@ -334,6 +334,7 @@ public class Drive extends Subsystem
         {
             // We entered a velocity control state.
             logNotice("beginSpeedControl");
+            mMotorGroup.resetIntegralAccumulator();
             mMotorGroup.beginClosedLoopVelocity(kVelocityControlSlot,
                     Constants.kDriveHighGearNominalOutput);
             mMotorGroup.enableBraking(true);
@@ -351,6 +352,7 @@ public class Drive extends Subsystem
         {
             // We entered a position control state.
             logNotice("beginPositionControl");
+            mMotorGroup.resetIntegralAccumulator();
             mMotorGroup.beginClosedLoopPosition(kPositionControlSlot,
                     Constants.kDriveLowGearNominalOutput,
                     Constants.kDriveLowGearMaxVelocity,

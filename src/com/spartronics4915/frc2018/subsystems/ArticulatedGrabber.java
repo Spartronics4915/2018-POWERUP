@@ -70,7 +70,6 @@ public class ArticulatedGrabber extends Subsystem
     private final int kDefaultHoldOffset = 50; //offset from the reverse limit switch
     private final int kDefaultPlaceOffset = 175;
     //we are not using pick we are just running to the limit switch for now
-    //private final int kDefaultPickOffset = 107; 
 
     private int mFwdLimitPotentiometerValue = 917;
     private int mRevLimitPotentiometerValue = 465;
@@ -79,8 +78,6 @@ public class ArticulatedGrabber extends Subsystem
     private boolean mRevLimitFlag = false;
 
     // these actual positions are computed from measured pot values at limit switches
-    //  offset by tuned values.
-    //private int mPickPosition = 990;
     private int mPlacePosition = 738;
     private int mHoldPosition = 500;
 
@@ -435,11 +432,6 @@ public class ArticulatedGrabber extends Subsystem
                 dashboardGetNumber("Target1", kDefaultHoldOffset).intValue();
         mPlacePosition = mRevLimitPotentiometerValue +
                 dashboardGetNumber("Target2", kDefaultPlaceOffset).intValue();
-        
-        //Commented out to prevent spamming of the log
-        //logNotice("hold position: " + mHoldPosition);
-        //logNotice("pick position: " + mPickPosition);
-        //logNotice("place position: " + mPlacePosition);
     }
 
     @Override
@@ -611,7 +603,6 @@ public class ArticulatedGrabber extends Subsystem
                         }
                         else
                         {
-                            //timer.delay(0);
                             if (counter++ % 1000 == 0)
                                 logNotice("    pot: " + mPotentiometer.getValue());
                         }
@@ -659,7 +650,6 @@ public class ArticulatedGrabber extends Subsystem
                          * }
                          * else
                          * {
-                         * //timer.delay(0);
                          * if (counter++ % 1000 == 0)
                          * logNotice("    pot: " + mPotentiometer.getValue());
                          * }
@@ -700,7 +690,6 @@ public class ArticulatedGrabber extends Subsystem
                          * }
                          * else
                          * {
-                         * //timer.delay(0);
                          * if (counter++ % 1000 == 0)
                          * logNotice("    pot: " + mPotentiometer.getValue());
                          * }
@@ -751,7 +740,6 @@ public class ArticulatedGrabber extends Subsystem
             }
             else
             {
-                //timer.delay(0);
                 if (counter++ % 1000 == 0)
                     logNotice("    pot: " + mPotentiometer.getValue());
             }
@@ -784,7 +772,6 @@ public class ArticulatedGrabber extends Subsystem
             }
             else
             {
-                //timer.delay(0);
                 if (counter++ % 1000 == 0)
                     logNotice("    pot: " + mPotentiometer.getValue());
             }

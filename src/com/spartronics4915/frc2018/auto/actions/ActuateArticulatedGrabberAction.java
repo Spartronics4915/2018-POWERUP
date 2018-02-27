@@ -1,6 +1,7 @@
 package com.spartronics4915.frc2018.auto.actions;
 
 import com.spartronics4915.frc2018.subsystems.ArticulatedGrabber;
+import com.spartronics4915.lib.util.Logger;
 
 public class ActuateArticulatedGrabberAction implements Action
 {
@@ -30,11 +31,13 @@ public class ActuateArticulatedGrabberAction implements Action
     {
         // We don't want to change the grabber position at the end.
         // This should be done explicitly by the user instead.
+        Logger.notice("Done actuating articulated grabber.");
     }
 
     @Override
     public void start()
     {
+        Logger.notice("Actuating articulated grabber to "+mWantedState.toString()+".");
         mLifter = ArticulatedGrabber.getInstance();
         mLifter.setWantedState(mWantedState);
     }

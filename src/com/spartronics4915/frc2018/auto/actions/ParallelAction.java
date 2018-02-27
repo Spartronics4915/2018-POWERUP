@@ -1,6 +1,7 @@
 package com.spartronics4915.frc2018.auto.actions;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -16,13 +17,14 @@ public class ParallelAction implements Action
 
     private final ArrayList<Action> mActions;
 
+    public ParallelAction(Action... actions)
+    {
+        this(Arrays.asList(actions));
+    }
+    
     public ParallelAction(List<Action> actions)
     {
-        mActions = new ArrayList<>(actions.size());
-        for (Action action : actions)
-        {
-            mActions.add(action);
-        }
+        mActions = (ArrayList<Action>)actions;
     }
 
     @Override
