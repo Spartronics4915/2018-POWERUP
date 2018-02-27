@@ -15,8 +15,9 @@ public class DriveSecondCubeToCSwitchPath implements PathContainer {
 
     public DriveSecondCubeToCSwitchPath()
     {
-        sWaypoints.add(new Waypoint(226,90,0,60));
-        sWaypoints.add(new Waypoint(213,90,0,60));
+        sWaypoints.add(new Waypoint(248,70,0,60));
+        sWaypoints.add(new Waypoint(225,80,0,60));
+        sWaypoints.add(new Waypoint(210,90,0,60));
 
     }
 
@@ -35,7 +36,7 @@ public class DriveSecondCubeToCSwitchPath implements PathContainer {
     @Override
     public RigidTransform2d getStartPose()
     {
-        return new RigidTransform2d(new Translation2d(226, 90), Rotation2d.fromDegrees(90.0));
+        return new RigidTransform2d(new Translation2d(248, 70), Rotation2d.fromDegrees(90.0));
     }
 
     @Override
@@ -43,7 +44,7 @@ public class DriveSecondCubeToCSwitchPath implements PathContainer {
     {
         return false;
     }
-    // WAYPOINT_DATA: [{"position":{"x":226,"y":90},"speed":60,"radius":0,"comment":""},{"position":{"x":213,"y":90},"speed":60,"radius":0,"comment":""}]
+    // WAYPOINT_DATA: [{"position":{"x":248,"y":70},"speed":60,"radius":0,"comment":""},{"position":{"x":225,"y":80},"speed":60,"radius":0,"comment":""},{"position":{"x":210,"y":90},"speed":60,"radius":0,"comment":""}]
     // IS_REVERSED: false
-    // FILE_NAME: DeliverSecondCubeToSwitchPath
+    // FILE_NAME: DriveSecondCubeToCSwitchPath
 }

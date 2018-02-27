@@ -16,10 +16,8 @@ public class DriveToSecondCubeFromCSwitchPath implements PathContainer {
     public DriveToSecondCubeFromCSwitchPath()
     {
         sWaypoints.add(new Waypoint(160,68,0,30));
-        sWaypoints.add(new Waypoint(160,40,20,60));
-        sWaypoints.add(new Waypoint(240,60,20,60, "openharvester"));
-        sWaypoints.add(new Waypoint(240,90,5,60));
-        sWaypoints.add(new Waypoint(226,90,0,60));
+        sWaypoints.add(new Waypoint(160,40,20,60, "openharvester"));
+        sWaypoints.add(new Waypoint(248,70,0,60));
 
     }
 
@@ -44,9 +42,9 @@ public class DriveToSecondCubeFromCSwitchPath implements PathContainer {
     @Override
     public boolean isReversed()
     {
-        return false;
+        return true;
     }
-    // WAYPOINT_DATA: [{"position":{"x":160,"y":68},"speed":30,"radius":0,"comment":""},{"position":{"x":160,"y":40},"speed":60,"radius":20,"comment":""},{"position":{"x":240,"y":60},"speed":60,"radius":20,"comment":""},{"position":{"x":240,"y":90},"speed":60,"radius":5,"comment":""},{"position":{"x":226,"y":90},"speed":60,"radius":0,"comment":""}]
+    // WAYPOINT_DATA: [{"position":{"x":160,"y":68},"speed":30,"radius":0,"comment":""},{"position":{"x":160,"y":40},"speed":60,"radius":20,"comment":""},{"position":{"x":248,"y":70},"speed":60,"radius":0,"comment":""}]
     // IS_REVERSED: false
     // FILE_NAME: DriveToSecondCubeFromCSwitchPath
 }

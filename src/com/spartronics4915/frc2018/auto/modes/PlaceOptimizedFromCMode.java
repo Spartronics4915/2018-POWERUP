@@ -48,8 +48,7 @@ public class PlaceOptimizedFromCMode extends AutoModeBase
         runAction(new ResetPoseFromPathAction(path));
         runAction(new WaitAction(0.1)); // Give everything time to get reset
         runAction(new DrivePathAction(path));
-        runAction(new ActuateScissorLiftAction(ScissorLift.WantedState.SCALE));
-        runAction(new ActuateArticulatedGrabberAction(ArticulatedGrabber.WantedState.RELEASE_CUBE));
+//        runAction(new ActuateArticulatedGrabberAction(ArticulatedGrabber.WantedState.RELEASE_CUBE));
         if (Util.getGameSpecificMessage().charAt(0) == 'R') // TODO: Add a way to pick up a second cube if we went to the scale
         {
             runAction(new ParallelAction(new SeriesAction(new WaitForPathMarkerAction("openharvester"), new ActuateHarvesterAction(Harvester.WantedState.OPEN)),

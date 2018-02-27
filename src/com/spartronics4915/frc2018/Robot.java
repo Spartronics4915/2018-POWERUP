@@ -258,7 +258,7 @@ public class Robot extends IterativeRobot
             mEnabledLooper.start();
             mDrive.setOpenLoop(DriveSignal.NEUTRAL);
             
-            mLED.setVisionLampOn();
+            mLED.setVisionLampOff(); // Vision not used in teleop yet TODO
         }
         catch (Throwable t)
         {
