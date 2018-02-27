@@ -206,10 +206,9 @@ public class Climber extends Subsystem
     @Override
     public void outputToSmartDashboard()
     {
-        //TODO: Put climber current on dashboard
         dashboardPutState(this.mSystemState.toString());
         dashboardPutWantedState(this.mWantedState.toString());
-        dashboardPutNumber("Current", mWinchPrimary.getOutputCurrent());
+        dashboardPutNumber("Current: ", mWinchPrimary.getOutputCurrent());
     }
 
     @Override
