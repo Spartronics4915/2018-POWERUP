@@ -55,7 +55,7 @@ public class ControlBoard implements ControlBoardInterface
         switch (a)
         {
             case THROTTLE:
-                result = -mDrivestick.getY(); // Is this reversed on the new joystick???
+                result = -mDrivestick.getY();
                 break;
             case TURN:
                 result = mDrivestick.getX();
@@ -75,7 +75,7 @@ public class ControlBoard implements ControlBoardInterface
         switch (b)
         {
             case DRIVE_QUICK_TURN:
-                result = mDrivestick.getRawButtonPressed(2);
+                result = mDrivestick.getRawButtonPressed(1);
                 break;
             case DRIVE_SLOW:
                 result = mDrivestick.getTriggerPressed(); // available!
@@ -93,20 +93,20 @@ public class ControlBoard implements ControlBoardInterface
                 break;
             case GRABBER_DROP_CUBE:
                 current = mButtonBoard.getRawAxis(3);
-                result = (mPreviousGetDropCube != current) && (current == 1.0);
+                result = (mPreviousGetDropCube != current) && (current == 1.0 || mDrivestick.getRawButtonPressed(6));
                 mPreviousGetDropCube = current;
                 break;
             case HARVESTER_OPEN:
-                result = mButtonBoard.getRawButtonPressed(5);
+                result = mButtonBoard.getRawButtonPressed(5) || mDrivestick.getRawButtonPressed(2);
                 break;
             case HARVESTER_CLOSE:
-                result = mButtonBoard.getRawButtonPressed(3);
+                result = mButtonBoard.getRawButtonPressed(3) || mDrivestick.getRawButtonPressed(3);
                 break;
             case HARVESTER_EJECT:
                 result = mButtonBoard.getRawButtonPressed(4);
                 break;
             case SUPERSTRUCTURE_CARRY_CUBE:
-                result = mButtonBoard.getRawButtonPressed(6);
+                result = mButtonBoard.getRawButtonPressed(6) || mDrivestick.getRawButtonPressed(5);
                 break;
             case HARVESTER_CLIMB:
                 result = mButtonBoard.getRawButtonPressed(7);
@@ -115,19 +115,19 @@ public class ControlBoard implements ControlBoardInterface
                 result = mButtonBoard.getRawButtonPressed(8);
                 break;
             case CLIMB_IDLE_TEST:
-                result = mTestsAllowed ? mDrivestick.getRawButtonPressed(5) : false;
-                break;
-            case GRABBER_TRANSPORT_TEST:
-                result = mTestsAllowed ? mDrivestick.getRawButtonPressed(6) : false;
-                break;
-            case GRABBER_GRAB_CUBE_TEST:
                 result = mTestsAllowed ? mDrivestick.getRawButtonPressed(7) : false;
                 break;
-            case GRABBER_PREPARE_DROP_TEST:
+            case GRABBER_TRANSPORT_TEST:
                 result = mTestsAllowed ? mDrivestick.getRawButtonPressed(8) : false;
                 break;
-            case GRABBER_PREPARE_INTAKE_TEST:
+            case GRABBER_GRAB_CUBE_TEST:
                 result = mTestsAllowed ? mDrivestick.getRawButtonPressed(9) : false;
+                break;
+            case GRABBER_PREPARE_DROP_TEST:
+                result = mTestsAllowed ? mDrivestick.getRawButtonPressed(10) : false;
+                break;
+            case GRABBER_PREPARE_INTAKE_TEST:
+                result = mTestsAllowed ? mDrivestick.getRawButtonPressed(11) : false;
                 break;
             default:
                 Logger.error("ControlBoard: unimplemented boolean: " + b.toString());
