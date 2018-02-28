@@ -1,49 +1,30 @@
 package com.spartronics4915.frc2018;
 
+import com.spartronics4915.frc2018.ControlBoardInterface.Buttons;
+import com.spartronics4915.frc2018.ControlBoardInterface.Sticks;
 import com.spartronics4915.lib.util.Logger;
 
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
- * Contains the button mappings for the competition control board. Like the
- * drive code, one instance of the ControlBoard
- * object is created upon startup, then other methods request the singleton
- * ControlBoard instance. Implements the
- * ControlBoardInterface.
+ * Contains the button mappings for the backup drive stick 
+ * and the mechanism controller.
+ * A singleton.
+ * Implements the ControlBoardInterface.
  * 
  * @see ControlBoardInterface.java
  */
-public class ControlBoard implements ControlBoardInterface
+
+public class BackupControlBoard implements ControlBoardInterface
 {
-
-    private static ControlBoardInterface mInstance = null;
-    
-    private static final boolean kUseBackupDrivestick = false;
-
-    public static ControlBoardInterface getInstance()
-    {
-        if (mInstance == null)
-        {
-            if(kUseBackupDrivestick)
-            {
-                mInstance = new BackupControlBoard();
-            }
-            else
-            {
-                mInstance = new ControlBoard();
-            }
-        }
-        return mInstance;
-    }
-
     private final Joystick mDrivestick;
     private final Joystick mButtonBoard;
     private double mPreviousGetReadyToHarvest;
     private double mPreviousGetDropCube;
     private boolean mTestsAllowed;
 
-    protected ControlBoard()
+    protected BackupControlBoard()
     {
         mDrivestick = new Joystick(0);
         mButtonBoard = new Joystick(1);
@@ -64,7 +45,7 @@ public class ControlBoard implements ControlBoardInterface
         switch (a)
         {
             case THROTTLE:
-                result = -mDrivestick.getY();
+                result = -mDrivestick.getZ();
                 break;
             case TURN:
                 result = mDrivestick.getX();
@@ -124,23 +105,23 @@ public class ControlBoard implements ControlBoardInterface
                 result = mButtonBoard.getRawButtonPressed(8);
                 break;
             case CAMERA_CHANGE_VIEW:
-                result = mDrivestick.getRawButtonPressed(12) || mButtonBoard.getRawButtonPressed(10);
+                result = mDrivestick.getRawButtonPressed(7) || mButtonBoard.getRawButtonPressed(10);
                 break;
             case CLIMB_IDLE_TEST:
-                result = mTestsAllowed ? mDrivestick.getRawButtonPressed(7) : false;
+                result = mTestsAllowed ? mDrivestick.getRawButtonPressed(8) : false;
                 break;
             case GRABBER_TRANSPORT_TEST:
-                result = mTestsAllowed ? mDrivestick.getRawButtonPressed(8) : false;
+                result = mTestsAllowed ? mDrivestick.getRawButtonPressed(9) : false;
                 break;
             case GRABBER_TEMP_TEST:
             case GRABBER_GRAB_CUBE_TEST:
-                result = mTestsAllowed ? mDrivestick.getRawButtonPressed(9) : false;
-                break;
-            case GRABBER_PREPARE_DROP_TEST:
                 result = mTestsAllowed ? mDrivestick.getRawButtonPressed(10) : false;
                 break;
-            case GRABBER_PREPARE_INTAKE_TEST:
+            case GRABBER_PREPARE_DROP_TEST:
                 result = mTestsAllowed ? mDrivestick.getRawButtonPressed(11) : false;
+                break;
+            case GRABBER_PREPARE_INTAKE_TEST:
+                result = mTestsAllowed ? mDrivestick.getRawButtonPressed(12) : false;
                 break;
             default:
                 Logger.error("ControlBoard: unimplemented boolean: " + b.toString());
@@ -148,4 +129,5 @@ public class ControlBoard implements ControlBoardInterface
         }
         return result;
     }
+
 }
