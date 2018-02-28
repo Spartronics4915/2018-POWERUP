@@ -42,7 +42,7 @@ public class ArticulatedGrabber extends Subsystem
         return sInstance;
     }
 
-    public class SystemState //SystemState corresponds to the two values being tracked
+    public class SystemState //SystemState corresponds to the three values being tracked
     {
         public int articulatorPosition; //indicates the position of the "flipper" arm
         public boolean grabberClosed; //false == grabber Open, true == grabber Closed
@@ -60,7 +60,8 @@ public class ArticulatedGrabber extends Subsystem
         //TODO: Add Joystick Functionality
         MANUAL_OPEN, //for now sets the grabber state open, but doesn't change the position
         MANUAL_CLOSED, //for now sets the grabber state closed, but doesn't change the position
-        DISABLED //Initial and Emergency State
+        DISABLED, //Initial and Emergency State
+        TEMP //A State for testing purposes
     }
 
     //Maximum Motor Speed: used in handlePosition method and configure for mPositionMotor
@@ -208,6 +209,7 @@ public class ArticulatedGrabber extends Subsystem
             case DISABLED:
             case TRANSPORT:
             case PREPARE_DROP:
+            case TEMP:
                 if (mNextState.grabberClosed)
                 {
                     mGrabber.set(true);
@@ -296,6 +298,7 @@ public class ArticulatedGrabber extends Subsystem
 
             case GRAB_CUBE:
             case PREPARE_INTAKE:
+            case TEMP:
                 targetPosition = 10000;
                 break;
 
