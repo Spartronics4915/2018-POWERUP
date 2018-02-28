@@ -220,12 +220,10 @@ public class Superstructure extends Subsystem
                         if (mDrive.getDriveState() != Drive.DriveControlState.FIND_CUBE)
                         {
                             mDrive.setWantSearchForCube(); //Begin Searching for cube
-                            // IF THIS IS NOT CALLED REPEADLY, THEN THE FOLLOWING PART NEEDS TO BE CHANGED
-                            // The other solution is for wantSearchForCube to tell someone when he is done, ATM he just default back to OPEN_LOOP when done.
-                            if (mDrive.onTargetDrive()) // (Or whatever the state is for standard driver operation)
+                            if (mDrive.onTargetDrive()) // Returns a true when the cube is within 1 degree of the robot. 
                             {
                                 newState = SystemState.VISION_HARVEST;
-
+                                
                             }
                         }
                         else
@@ -234,7 +232,6 @@ public class Superstructure extends Subsystem
                         if (mHarvester.getWantedState() != Harvester.WantedState.HARVEST)
                         {
                             mHarvester.setWantedState(Harvester.WantedState.HARVEST);
-                            // IN TANDEM WITH THIS: mDrive.setWantDriveForwardSlowly();
                             // We return to default drive control when the harvester has a cube.
                         }
                         // I don't know if the following 'if' statement is nested in the previous if statement, or fine in its current state

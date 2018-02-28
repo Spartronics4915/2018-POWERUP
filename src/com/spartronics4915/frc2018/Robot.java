@@ -398,6 +398,7 @@ public class Robot extends IterativeRobot
                                             !mControlBoard.readButton(Buttons.DRIVE_SLOW)));
             }
             
+            // Bling settings
             if (DriverStation.getInstance().getMatchTime() < kMatchDurationSeconds)
             {
                 mLED.setBlingState(BlingState.TELEOP);
