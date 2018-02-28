@@ -296,13 +296,6 @@ public class Robot extends IterativeRobot
             double throttle = mControlBoard.readStick(Sticks.THROTTLE);
             double turn = mControlBoard.readStick(Sticks.TURN);
 
-            if (mDrive.getDriveState() != DriveControlState.FIND_CUBE || mDrive.getDriveState() != DriveControlState.TURN_TO_ROBOTANGLE )
-            {
-                mDrive.setOpenLoop(
-                        mCheesyDriveHelper.cheesyDrive(throttle, turn, 
-                                mControlBoard.readButton(Buttons.DRIVE_QUICK_TURN),
-                                !mControlBoard.readButton(Buttons.DRIVE_SLOW)));
-            }
             if (mControlBoard.readButton(Buttons.SCISSOR_OFF))
             {
                 mLifter.setWantedState(ScissorLift.WantedState.OFF);
@@ -393,9 +386,16 @@ public class Robot extends IterativeRobot
                 mGrabber.setWantedState(ArticulatedGrabber.WantedState.PREPARE_INTAKE);
             }
             
+            // Drive control buttons
             if (mControlBoard.readButton(Buttons.VISION_CUBE_HARVEST))
             {
-                mSuperstructure.setWantedState(Superstructure.WantedState.VISION_ACQUIRE_CUBE);
+              mSuperstructure.setWantedState(Superstructure.WantedState.VISION_ACQUIRE_CUBE);
+            }
+            else
+            {
+              mDrive.setOpenLoop(mCheesyDriveHelper.cheesyDrive(throttle, turn, 
+                                            mControlBoard.readButton(Buttons.DRIVE_QUICK_TURN),
+                                            !mControlBoard.readButton(Buttons.DRIVE_SLOW)));
             }
             
             if (DriverStation.getInstance().getMatchTime() < kMatchDurationSeconds)

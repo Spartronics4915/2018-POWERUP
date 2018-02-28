@@ -456,14 +456,6 @@ public class Drive extends Subsystem
         final double dx = mVisionTargetAngleEntry.getNumber(0).doubleValue();
         final Rotation2d robotToTarget = Rotation2d.fromDegrees(-dx); 
         // angle reversed to correct for raspi coordsys
-        if (Util.epsilonEquals(dx, 0, 1)) //TODO: Double check with someone if this is how you call it (number, target, the range)
-        {
-            // TODO: Figure some way to tell if we are done
-            // STOP, OR I'LL SAY STOP, AGAIN!
-            // Very impromtu, Will need to be changed to 'resume normal driving'
-            setOpenLoop(new DriveSignal(0.0, 0.0));
-            return;
-        }
         performClosedLoopTurn(robotToTarget);
     }
     
@@ -873,5 +865,19 @@ public class Drive extends Subsystem
     public DriveControlState getDriveState()
     {
         return mDriveControlState;
+    }
+    public boolean onTargetDrive() 
+    {
+        // In a perfect world this number is useable to all of drive
+        final double dx = mVisionTargetAngleEntry.getNumber(0).doubleValue();
+        if (Util.epsilonEquals(dx, 0, 1)) {
+            // We are on target
+            return true;
+        } 
+        else
+        {
+            // We are not on target
+            return false;
+        }
     }
 }
