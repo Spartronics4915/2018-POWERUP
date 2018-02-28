@@ -16,7 +16,7 @@ public class DriveSecondCubeToCSwitchPath implements PathContainer {
     public DriveSecondCubeToCSwitchPath()
     {
         sWaypoints.add(new Waypoint(248,70,0,60));
-        sWaypoints.add(new Waypoint(225,80,0,60));
+        sWaypoints.add(new Waypoint(225,80,0,60, "harvest"));
         sWaypoints.add(new Waypoint(210,90,0,60));
 
     }
