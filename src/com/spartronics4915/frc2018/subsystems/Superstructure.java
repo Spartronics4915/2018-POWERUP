@@ -222,7 +222,7 @@ public class Superstructure extends Subsystem
                             mDrive.setWantSearchForCube(); //Begin Searching for cube
                             // IF THIS IS NOT CALLED REPEADLY, THEN THE FOLLOWING PART NEEDS TO BE CHANGED
                             // The other solution is for wantSearchForCube to tell someone when he is done, ATM he just default back to OPEN_LOOP when done.
-                            if (mDrive.getDriveState() == Drive.DriveControlState.OPEN_LOOP) // (Or whatever the state is for standard driver operation)
+                            if (mDrive.onTargetDrive()) // (Or whatever the state is for standard driver operation)
                             {
                                 newState = SystemState.VISION_HARVEST;
 
@@ -244,6 +244,7 @@ public class Superstructure extends Subsystem
                         {
                             newState = SystemState.IDLE; // Done
                                                          // Return the robot to driver control
+                            mDrive.setOpenLoop(new DriveSignal(0.0,0.0));
                         }
                         
                     default:

@@ -475,7 +475,7 @@ public class Drive extends Subsystem
         if (Util.epsilonEquals(dx, 0, 30)) {  // If our target is within reasonable bounds
             setWantAimToVisionTarget();
         }
-        if (dx > 30) {  // If we get a bogus target (The bogus target is about 198)
+        else if (dx > 30) {  // If we get a bogus target (The bogus target is about 198)
             dx = -3;
         }
         final Rotation2d robotToTarget = Rotation2d.fromDegrees(dx); 
