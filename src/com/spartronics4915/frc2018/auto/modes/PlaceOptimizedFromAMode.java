@@ -51,33 +51,34 @@ public class PlaceOptimizedFromAMode extends AutoModeBase
         runAction(new ResetPoseFromPathAction(path));
         runAction(new WaitAction(0.1)); // Give everything time to get reset
         runAction(new DrivePathAction(path));
+        runAction(new ActuateScissorLiftAction(ScissorLift.WantedState.SWITCH));
         runAction(new ActuateArticulatedGrabberAction(ArticulatedGrabber.WantedState.RELEASE_CUBE));
-        if (Util.getGameSpecificMessage().charAt(0) == 'L') // TODO: Add a way to pick up a second cube if we went to the scale
-        {
-            runAction(new ParallelAction(new SeriesAction(new WaitForPathMarkerAction("openharvester"), new ActuateHarvesterAction(Harvester.WantedState.OPEN)),
-                    new DrivePathAction(new DriveReverseToSecondCubeFromASwitchPath())));
-            runAction(new ActuateHarvesterAction(Harvester.WantedState.HARVEST));
-            runAction(new TransferCubeFromGroundAction());
-        }
-        else
-        {
-            return;
-        }
-        
-        PathContainer secondPath;
-        if (Util.getGameSpecificMessage().charAt(1) == 'L')
-        {
-            secondPath = new DriveSecondCubeToAScalePath();
-        }
-        else if (Util.getGameSpecificMessage().charAt(0) == 'L')
-        {
-            secondPath = new DriveSecondCubeToAScalePath();
-        }
-        else
-        {
-            return;
-        }
-        runAction(new DrivePathAction(secondPath));
+//        if (Util.getGameSpecificMessage().charAt(0) == 'L') // TODO: Add a way to pick up a second cube if we went to the scale
+//        {
+//            runAction(new ParallelAction(new SeriesAction(new WaitForPathMarkerAction("openharvester"), new ActuateHarvesterAction(Harvester.WantedState.OPEN)),
+//                    new DrivePathAction(new DriveReverseToSecondCubeFromASwitchPath())));
+//            runAction(new ActuateHarvesterAction(Harvester.WantedState.HARVEST));
+//            runAction(new TransferCubeFromGroundAction());
+//        }
+//        else
+//        {
+//            return;
+//        }
+//        
+//        PathContainer secondPath;
+//        if (Util.getGameSpecificMessage().charAt(1) == 'L')
+//        {
+//            secondPath = new DriveSecondCubeToAScalePath();
+//        }
+//        else if (Util.getGameSpecificMessage().charAt(0) == 'L')
+//        {
+//            secondPath = new DriveSecondCubeToAScalePath();
+//        }
+//        else
+//        {
+//            return;
+//        }
+//        runAction(new DrivePathAction(secondPath));
     }
 
 }
