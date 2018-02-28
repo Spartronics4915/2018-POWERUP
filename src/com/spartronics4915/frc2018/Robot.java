@@ -362,7 +362,8 @@ public class Robot extends IterativeRobot
             
             if(mControlBoard.readButton(Buttons.CAMERA_CHANGE_VIEW))
             {
-                if(SmartDashboard.getString("CameraView", "").equals("CubeCam"))
+                if(SmartDashboard.getString("CameraView", "").equals("CubeCam") || 
+                        SmartDashboard.getString("CameraView", "").equals("Auto"))
                 {
                     SmartDashboard.putString("CameraView", "LiftCam");
                 } 
