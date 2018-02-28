@@ -359,6 +359,18 @@ public class Robot extends IterativeRobot
             {
                 mClimber.setWantedState(Climber.WantedState.IDLE);
             }
+            
+            if(mControlBoard.readButton(Buttons.CAMERA_CHANGE_VIEW))
+            {
+                if(SmartDashboard.getString("CameraView", "").equals("CubeCam"))
+                {
+                    SmartDashboard.putString("CameraView", "LiftCam");
+                } 
+                else if(SmartDashboard.getString("CameraView", "").equals("LiftCam"))
+                {
+                    SmartDashboard.putString("CameraView", "CubeCam");
+                }
+            }
 
             if (mControlBoard.readButton(Buttons.GRABBER_TRANSPORT_TEST))
             {

@@ -25,6 +25,7 @@ public interface ControlBoardInterface
         SUPERSTRUCTURE_CARRY_CUBE,
         HARVESTER_CLIMB,
         CLIMBER_STOP,
+        CAMERA_CHANGE_VIEW,
         CLIMB_IDLE_TEST,
         GRABBER_TRANSPORT_TEST,
         GRABBER_GRAB_CUBE_TEST,
