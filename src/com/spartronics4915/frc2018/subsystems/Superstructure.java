@@ -217,10 +217,10 @@ public class Superstructure extends Subsystem
                         }
                         break;
                     case DRIVE_CUBE: //The spinning to a cube
-                        if (mDrive.getDriveState() != Drive.DriveControlState.FIND_CUBE)
+                        if (mDrive.getState() != Drive.DriveControlState.FIND_CUBE)
                         {
                             mDrive.setWantSearchForCube(); //Begin Searching for cube
-                            if (mDrive.onTargetDrive()) // Returns a true when the cube is within 1 degree of the robot. 
+                            if (mDrive.onVisionTarget()) // Returns a true when the cube is within 1 degree of the robot. 
                             {
                                 newState = SystemState.VISION_HARVEST;
                                 

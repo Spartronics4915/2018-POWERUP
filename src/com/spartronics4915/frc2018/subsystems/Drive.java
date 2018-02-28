@@ -862,13 +862,14 @@ public class Drive extends Subsystem
         return mMotorGroup.checkSystem(variant);
     }
     
-    public DriveControlState getDriveState()
+    public DriveControlState getState()
     {
+        // Get drive train state
         return mDriveControlState;
     }
-    public boolean onTargetDrive() 
+    public boolean onVisionTarget() 
     {
-        // In a perfect world this number is useable to all of drive
+        // In a perfect world this number is usable to all of drive
         final double dx = mVisionTargetAngleEntry.getNumber(0).doubleValue();
         if (Util.epsilonEquals(dx, 0, 1)) {
             // We are on target
