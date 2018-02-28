@@ -9,11 +9,11 @@ import com.spartronics4915.lib.util.math.RigidTransform2d;
 import com.spartronics4915.lib.util.math.Rotation2d;
 import com.spartronics4915.lib.util.math.Translation2d;
 
-public class DriveToSecondCubeFromCSwitchPath implements PathContainer {
+public class DriveReverseToSecondCubeFromCSwitchPath implements PathContainer {
 
     ArrayList<Waypoint> sWaypoints = new ArrayList<Waypoint>();
 
-    public DriveToSecondCubeFromCSwitchPath()
+    public DriveReverseToSecondCubeFromCSwitchPath()
     {
         sWaypoints.add(new Waypoint(160,68,0,30));
         sWaypoints.add(new Waypoint(160,40,20,60, "openharvester"));
@@ -46,5 +46,5 @@ public class DriveToSecondCubeFromCSwitchPath implements PathContainer {
     }
     // WAYPOINT_DATA: [{"position":{"x":160,"y":68},"speed":30,"radius":0,"comment":""},{"position":{"x":160,"y":40},"speed":60,"radius":20,"comment":""},{"position":{"x":248,"y":70},"speed":60,"radius":0,"comment":""}]
     // IS_REVERSED: false
-    // FILE_NAME: DriveToSecondCubeFromCSwitchPath
+    // FILE_NAME: DriveReverseToSecondCubeFromCSwitchPath
 }

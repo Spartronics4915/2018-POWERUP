@@ -19,7 +19,7 @@ import com.spartronics4915.frc2018.paths.DriveSecondCubeToAScalePath;
 import com.spartronics4915.frc2018.paths.DriveToCloseScaleFromAPath;
 import com.spartronics4915.frc2018.paths.DriveToCloseSwitchFromAPath;
 import com.spartronics4915.frc2018.paths.DriveToFarScaleFromAPath;
-import com.spartronics4915.frc2018.paths.DriveToSecondCubeFromASwitchPath;
+import com.spartronics4915.frc2018.paths.DriveReverseToSecondCubeFromASwitchPath;
 import com.spartronics4915.frc2018.paths.PathContainer;
 import com.spartronics4915.frc2018.subsystems.ArticulatedGrabber;
 import com.spartronics4915.frc2018.subsystems.Harvester;
@@ -55,7 +55,7 @@ public class PlaceOptimizedFromAMode extends AutoModeBase
         if (Util.getGameSpecificMessage().charAt(0) == 'L') // TODO: Add a way to pick up a second cube if we went to the scale
         {
             runAction(new ParallelAction(new SeriesAction(new WaitForPathMarkerAction("openharvester"), new ActuateHarvesterAction(Harvester.WantedState.OPEN)),
-                    new DrivePathAction(new DriveToSecondCubeFromASwitchPath())));
+                    new DrivePathAction(new DriveReverseToSecondCubeFromASwitchPath())));
             runAction(new ActuateHarvesterAction(Harvester.WantedState.HARVEST));
             runAction(new TransferCubeFromGroundAction());
         }

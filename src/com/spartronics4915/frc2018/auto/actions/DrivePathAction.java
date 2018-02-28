@@ -26,6 +26,7 @@ public class DrivePathAction implements Action
     {
         mPathContainer = p;
         mPath = mPathContainer.buildPath();
+        mStopMarker = "";
     }
     
     public DrivePathAction(PathContainer p, String stopMarker) {

@@ -17,7 +17,7 @@ import com.spartronics4915.frc2018.paths.DriveSecondCubeToCSwitchPath;
 import com.spartronics4915.frc2018.paths.DriveToCloseScaleFromCPath;
 import com.spartronics4915.frc2018.paths.DriveToCloseSwitchFromCPath;
 import com.spartronics4915.frc2018.paths.DriveToFarScaleFromCPath;
-import com.spartronics4915.frc2018.paths.DriveToSecondCubeFromCSwitchPath;
+import com.spartronics4915.frc2018.paths.DriveReverseToSecondCubeFromCSwitchPath;
 import com.spartronics4915.frc2018.paths.PathContainer;
 import com.spartronics4915.frc2018.subsystems.ArticulatedGrabber;
 import com.spartronics4915.frc2018.subsystems.Harvester;
@@ -48,13 +48,12 @@ public class PlaceOptimizedFromCMode extends AutoModeBase
         }
         // BUG BUG BUG! All of below is pretty wrong. Paths should really be renamed, etc.
         runAction(new ResetPoseFromPathAction(path));
-        runAction(new WaitAction(0.1)); // Give everything time to get reset
         runAction(new DrivePathAction(path));
         runAction(new ActuateArticulatedGrabberAction(ArticulatedGrabber.WantedState.RELEASE_CUBE));
         if (Util.getGameSpecificMessage().charAt(0) == 'R') // TODO: Add a way to pick up a second cube if we went to the scale
         {
             runAction(new ParallelAction(new SeriesAction(new WaitForPathMarkerAction("openharvester"), new ActuateHarvesterAction(Harvester.WantedState.OPEN)),
-                    new DrivePathAction(new DriveToSecondCubeFromCSwitchPath())));
+                    new DrivePathAction(new DriveReverseToSecondCubeFromCSwitchPath())));
             runAction(new ActuateHarvesterAction(Harvester.WantedState.HARVEST));
             runAction(new TransferCubeFromGroundAction());
         }
