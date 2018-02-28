@@ -76,7 +76,7 @@ public class Harvester extends Subsystem
             mCubeHeldSensor = new SpartIRSensor(Constants.kGrabberCubeDistanceRangeFinderId);
             mMotorRight = TalonSRX4915Factory.createDefaultMotor(Constants.kHarvesterRightMotorId); // change value of motor
             mMotorLeft = TalonSRX4915Factory.createDefaultMotor(Constants.kHarvesterLeftMotorId); // change value of motor
-            mMotorRight.configOutputPower(true, 0.5, 0, 0.75, 0, -0.75);
+            mMotorRight.configOutputPower(true, 0.5, 0, 1, 0, -1);
             mMotorLeft.configOutputPower(true, 0.5, 0, 1, 0, -1);
             mMotorRight.setInverted(true);
             mTimer = new Timer();
