@@ -2,6 +2,7 @@ package com.spartronics4915.frc2018.subsystems;
 
 import com.spartronics4915.frc2018.loops.Loop;
 import com.spartronics4915.frc2018.loops.Looper;
+import com.spartronics4915.lib.util.DriveSignal;
 import com.spartronics4915.lib.util.Logger;
 
 import edu.wpi.first.wpilibj.DriverStation;
@@ -237,6 +238,8 @@ public class Superstructure extends Subsystem
                             // We return to default drive control when the harvester has a cube.
                         }
                         // I don't know if the following 'if' statement is nested in the previous if statement, or fine in its current state
+                        mDrive.setOpenLoop(new DriveSignal(0.3, 0.3));
+                        // Drive forward very, very slowly 
                         if (mHarvester.atTarget())
                         {
                             newState = SystemState.IDLE; // Done

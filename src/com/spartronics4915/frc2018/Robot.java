@@ -17,6 +17,7 @@ import com.spartronics4915.frc2018.subsystems.ArticulatedGrabber;
 import com.spartronics4915.frc2018.subsystems.Climber;
 import com.spartronics4915.frc2018.subsystems.ConnectionMonitor;
 import com.spartronics4915.frc2018.subsystems.Drive;
+import com.spartronics4915.frc2018.subsystems.Drive.DriveControlState;
 import com.spartronics4915.frc2018.subsystems.Harvester;
 import com.spartronics4915.frc2018.subsystems.LED;
 import com.spartronics4915.frc2018.subsystems.ScissorLift;
@@ -290,11 +291,14 @@ public class Robot extends IterativeRobot
         {
             double throttle = mControlBoard.readStick(Sticks.THROTTLE);
             double turn = mControlBoard.readStick(Sticks.TURN);
-            mDrive.setOpenLoop(
-                    mCheesyDriveHelper.cheesyDrive(throttle, turn, 
-                            mControlBoard.readButton(Buttons.DRIVE_QUICK_TURN),
-                            !mControlBoard.readButton(Buttons.DRIVE_SLOW)));
 
+            if (mDrive.getDriveState() != DriveControlState.FIND_CUBE || mDrive.getDriveState() != DriveControlState.TURN_TO_ROBOTANGLE )
+            {
+                mDrive.setOpenLoop(
+                        mCheesyDriveHelper.cheesyDrive(throttle, turn, 
+                                mControlBoard.readButton(Buttons.DRIVE_QUICK_TURN),
+                                !mControlBoard.readButton(Buttons.DRIVE_SLOW)));
+            }
             if (mControlBoard.readButton(Buttons.SCISSOR_OFF))
             {
                 mLifter.setWantedState(ScissorLift.WantedState.OFF);
@@ -374,6 +378,7 @@ public class Robot extends IterativeRobot
             {
                 mSuperstructure.setWantedState(Superstructure.WantedState.VISION_ACQUIRE_CUBE);
             }
+
             allButTestPeriodic();
         }
         catch (Throwable t)
