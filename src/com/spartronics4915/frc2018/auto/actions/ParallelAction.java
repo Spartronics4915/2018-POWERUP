@@ -15,7 +15,7 @@ import java.util.List;
 public class ParallelAction implements Action
 {
 
-    private final ArrayList<Action> mActions;
+    private final List<Action> mActions;
 
     public ParallelAction(Action... actions)
     {
@@ -24,7 +24,7 @@ public class ParallelAction implements Action
     
     public ParallelAction(List<Action> actions)
     {
-        mActions = (ArrayList<Action>)actions;
+        mActions = new ArrayList<Action>(actions);
     }
 
     @Override
