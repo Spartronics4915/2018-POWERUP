@@ -360,6 +360,19 @@ public class Robot extends IterativeRobot
             {
                 mClimber.setWantedState(Climber.WantedState.IDLE);
             }
+            
+            if(mControlBoard.readButton(Buttons.CAMERA_CHANGE_VIEW))
+            {
+                if(SmartDashboard.getString("CameraView", "").equals("CubeCam") || 
+                        SmartDashboard.getString("CameraView", "").equals("Auto"))
+                {
+                    SmartDashboard.putString("CameraView", "LiftCam");
+                } 
+                else if(SmartDashboard.getString("CameraView", "").equals("LiftCam"))
+                {
+                    SmartDashboard.putString("CameraView", "CubeCam");
+                }
+            }
 
             if (mControlBoard.readButton(Buttons.GRABBER_TRANSPORT_TEST))
             {
@@ -387,16 +400,16 @@ public class Robot extends IterativeRobot
             }
             
             // Drive control buttons
-            if (mControlBoard.readButton(Buttons.VISION_CUBE_HARVEST))
-            {
-              mSuperstructure.setWantedState(Superstructure.WantedState.VISION_ACQUIRE_CUBE);
-            }
-            else
-            {
-              mDrive.setOpenLoop(mCheesyDriveHelper.cheesyDrive(throttle, turn, 
-                                            mControlBoard.readButton(Buttons.DRIVE_QUICK_TURN),
-                                            !mControlBoard.readButton(Buttons.DRIVE_SLOW)));
-            }
+//            if (mControlBoard.readButton(Buttons.VISION_CUBE_HARVEST))
+//            {
+//              mSuperstructure.setWantedState(Superstructure.WantedState.VISION_ACQUIRE_CUBE);
+//            }
+//            else
+//            {
+          mDrive.setOpenLoop(mCheesyDriveHelper.cheesyDrive(throttle, turn, 
+                                        mControlBoard.readButton(Buttons.DRIVE_QUICK_TURN),
+                                        !mControlBoard.readButton(Buttons.DRIVE_SLOW)));
+//            }
             
             // Bling settings
             if (DriverStation.getInstance().getMatchTime() < kMatchDurationSeconds)
