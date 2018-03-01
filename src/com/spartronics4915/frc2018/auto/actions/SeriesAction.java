@@ -11,7 +11,7 @@ public class SeriesAction implements Action
 {
 
     private Action mCurAction;
-    private final ArrayList<Action> mRemainingActions;
+    private final List<Action> mRemainingActions;
 
     public SeriesAction(Action... actions)
     {
@@ -20,7 +20,7 @@ public class SeriesAction implements Action
     
     public SeriesAction(List<Action> actions)
     {
-        mRemainingActions = (ArrayList<Action>)actions;
+        mRemainingActions = new ArrayList<Action>(actions);
 
         mCurAction = null;
     }

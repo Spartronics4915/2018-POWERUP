@@ -466,9 +466,14 @@ public class Drive extends Subsystem
         double dx = mVisionTargetAngleEntry.getNumber(0).doubleValue();
         if (Util.epsilonEquals(dx, 0, 30)) {  // If our target is within reasonable bounds
             setWantAimToVisionTarget();
+<<<<<<< HEAD
         }
         else if (dx > 30) {  // If we get a bogus target (The bogus target is about 198)
             dx = -3;
+=======
+        } else {
+            dx = -5;
+>>>>>>> 714d62e27e07d0718c3eaf728a6a3e237ea59a7f
         }
         final Rotation2d robotToTarget = Rotation2d.fromDegrees(dx); 
         // angle reversed to correct for raspi coordsys(???)

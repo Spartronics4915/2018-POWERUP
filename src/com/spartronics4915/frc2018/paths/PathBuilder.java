@@ -97,6 +97,10 @@ public class PathBuilder
             speed = s;
             marker = m;
         }
+        
+        public String getMarker() {
+            return marker;
+        }
     }
 
     /**
