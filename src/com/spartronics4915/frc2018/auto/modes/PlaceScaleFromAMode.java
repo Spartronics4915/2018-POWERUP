@@ -35,7 +35,6 @@ public class PlaceScaleFromAMode extends AutoModeBase
             path = mFarPath;
         }
         runAction(new ResetPoseFromPathAction(path));
-        runAction(new WaitAction(0.1)); // Give everything time to get reset
         runAction(new DrivePathAction(path));
         runAction(new ActuateScissorLiftAction(ScissorLift.WantedState.SCALE));
         runAction(new ActuateArticulatedGrabberAction(ArticulatedGrabber.WantedState.RELEASE_CUBE));

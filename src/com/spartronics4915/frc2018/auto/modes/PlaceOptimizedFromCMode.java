@@ -51,7 +51,6 @@ public class PlaceOptimizedFromCMode extends AutoModeBase
             liftPosition = ScissorLift.WantedState.SCALE;
         }
         runAction(new ResetPoseFromPathAction(path));
-        runAction(new WaitAction(0.1)); // Give everything time to get reset
         runAction(new DrivePathAction(path));
         runAction(new ActuateScissorLiftAction(liftPosition));
         runAction(new ActuateArticulatedGrabberAction(ArticulatedGrabber.WantedState.RELEASE_CUBE));

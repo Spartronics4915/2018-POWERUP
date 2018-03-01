@@ -16,9 +16,9 @@ public class DriveToCloseSwitchFromBPath implements PathContainer {
     public DriveToCloseSwitchFromBPath()
     {
         sWaypoints.add(new Waypoint(18,166,0,0));
-        sWaypoints.add(new Waypoint(55,166,10,60));
-        sWaypoints.add(new Waypoint(95,206,10,60));
-        sWaypoints.add(new Waypoint(125,206,0,40)); //Intentional overshoot
+        sWaypoints.add(new Waypoint(55,166,10,40));
+        sWaypoints.add(new Waypoint(95,206,10,40));
+        sWaypoints.add(new Waypoint(120,206,0,40));
 
     }
 
@@ -45,7 +45,7 @@ public class DriveToCloseSwitchFromBPath implements PathContainer {
     {
         return false;
     }
-    // WAYPOINT_DATA: [{"position":{"x":18,"y":166},"speed":0,"radius":0,"comment":""},{"position":{"x":55,"y":166},"speed":60,"radius":10,"comment":""},{"position":{"x":95,"y":206},"speed":60,"radius":10,"comment":""},{"position":{"x":125,"y":206},"speed":40,"radius":0,"comment":"Intentional overshoot"}]
+    // WAYPOINT_DATA: [{"position":{"x":18,"y":166},"speed":0,"radius":0,"comment":""},{"position":{"x":55,"y":166},"speed":40,"radius":10,"comment":""},{"position":{"x":95,"y":206},"speed":40,"radius":10,"comment":""},{"position":{"x":120,"y":206},"speed":40,"radius":0,"comment":""}]
     // IS_REVERSED: false
     // FILE_NAME: DriveToCloseSwitchFromBPath
 }
