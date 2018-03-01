@@ -31,6 +31,7 @@ public interface ControlBoardInterface
         GRABBER_GRAB_CUBE_TEST,
         GRABBER_PREPARE_DROP_TEST,
         GRABBER_PREPARE_INTAKE_TEST,
+        VISION_CUBE_HARVEST,
         GRABBER_TEMP_TEST
     }
     
