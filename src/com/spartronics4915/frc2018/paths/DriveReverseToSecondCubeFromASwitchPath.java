@@ -6,7 +6,7 @@ import com.spartronics4915.frc2018.paths.PathBuilder.Waypoint;
 import com.spartronics4915.lib.util.control.Path;
 import com.spartronics4915.lib.util.math.RigidTransform2d;
 
-public class DriveToSecondCubeFromASwitchPath extends DriveToSecondCubeFromCSwitchPath
+public class DriveReverseToSecondCubeFromASwitchPath extends DriveReverseToSecondCubeFromCSwitchPath
 {
     @Override
     public Path buildPath()
