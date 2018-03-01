@@ -123,6 +123,10 @@ public class BackupControlBoard implements ControlBoardInterface
             case GRABBER_PREPARE_INTAKE_TEST:
                 result = mTestsAllowed ? mDrivestick.getRawButtonPressed(12) : false;
                 break;
+            case VISION_CUBE_HARVEST:
+                // Teleop Harvest Cubes
+                result = mDrivestick.getRawButtonPressed(4);
+                break;
             default:
                 Logger.error("ControlBoard: unimplemented boolean: " + b.toString());
                 break;

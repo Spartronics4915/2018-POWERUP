@@ -133,6 +133,7 @@ public class ControlBoard implements ControlBoardInterface
                 result = mTestsAllowed ? mDrivestick.getRawButtonPressed(7) : false;
                 break;
             case GRABBER_TEMP_TEST:
+                break;
             case GRABBER_GRAB_CUBE_TEST:
                 result = mTestsAllowed ? mDrivestick.getRawButtonPressed(8) : false;
                 break;

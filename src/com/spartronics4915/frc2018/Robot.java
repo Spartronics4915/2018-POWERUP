@@ -400,16 +400,16 @@ public class Robot extends IterativeRobot
             }
             
             // Drive control buttons
-            if (mControlBoard.readButton(Buttons.VISION_CUBE_HARVEST))
-            {
-              mSuperstructure.setWantedState(Superstructure.WantedState.VISION_ACQUIRE_CUBE);
-            }
-            else
-            {
-              mDrive.setOpenLoop(mCheesyDriveHelper.cheesyDrive(throttle, turn, 
-                                            mControlBoard.readButton(Buttons.DRIVE_QUICK_TURN),
-                                            !mControlBoard.readButton(Buttons.DRIVE_SLOW)));
-            }
+//            if (mControlBoard.readButton(Buttons.VISION_CUBE_HARVEST))
+//            {
+//              mSuperstructure.setWantedState(Superstructure.WantedState.VISION_ACQUIRE_CUBE);
+//            }
+//            else
+//            {
+          mDrive.setOpenLoop(mCheesyDriveHelper.cheesyDrive(throttle, turn, 
+                                        mControlBoard.readButton(Buttons.DRIVE_QUICK_TURN),
+                                        !mControlBoard.readButton(Buttons.DRIVE_SLOW)));
+//            }
             
             // Bling settings
             if (DriverStation.getInstance().getMatchTime() < kMatchDurationSeconds)
