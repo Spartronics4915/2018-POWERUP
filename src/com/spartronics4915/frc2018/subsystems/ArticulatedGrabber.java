@@ -295,7 +295,6 @@ public class ArticulatedGrabber extends Subsystem
             case RELEASE_CUBE:
                 targetPosition = mPlacePosition;
                 break;
-
             case GRAB_CUBE:
             case PREPARE_INTAKE:
             case TEMP:
