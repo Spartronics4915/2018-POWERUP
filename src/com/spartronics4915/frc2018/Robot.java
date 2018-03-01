@@ -17,6 +17,7 @@ import com.spartronics4915.frc2018.subsystems.ArticulatedGrabber;
 import com.spartronics4915.frc2018.subsystems.Climber;
 import com.spartronics4915.frc2018.subsystems.ConnectionMonitor;
 import com.spartronics4915.frc2018.subsystems.Drive;
+import com.spartronics4915.frc2018.subsystems.Drive.DriveControlState;
 import com.spartronics4915.frc2018.subsystems.Harvester;
 import com.spartronics4915.frc2018.subsystems.LED;
 import com.spartronics4915.frc2018.subsystems.LED.BlingState;
@@ -31,6 +32,7 @@ import com.spartronics4915.lib.util.math.RigidTransform2d;
 import com.spartronics4915.frc2018.ControlBoardInterface.Sticks;
 import com.spartronics4915.frc2018.ControlBoardInterface.Buttons;
 
+import edu.wpi.first.wpilibj.DigitalOutput;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Timer;
@@ -209,6 +211,9 @@ public class Robot extends IterativeRobot
     {
         try
         {
+            
+            mLED.setVisionLampOn();
+            
             Logger.setVerbosity(SmartDashboard.getString(kRobotVerbosity, "NOTICE"));
             Logger.logAutoInit();
             Logger.notice("Auto start timestamp: " + Timer.getFPGATimestamp());
@@ -290,10 +295,6 @@ public class Robot extends IterativeRobot
         {
             double throttle = mControlBoard.readStick(Sticks.THROTTLE);
             double turn = mControlBoard.readStick(Sticks.TURN);
-            mDrive.setOpenLoop(
-                    mCheesyDriveHelper.cheesyDrive(throttle, turn, 
-                            mControlBoard.readButton(Buttons.DRIVE_QUICK_TURN),
-                            !mControlBoard.readButton(Buttons.DRIVE_SLOW)));
 
             if (mControlBoard.readButton(Buttons.SCISSOR_OFF))
             {
@@ -384,6 +385,20 @@ public class Robot extends IterativeRobot
             {
                 mGrabber.setWantedState(ArticulatedGrabber.WantedState.PREPARE_INTAKE);
             }
+            
+            // Drive control buttons
+            if (mControlBoard.readButton(Buttons.VISION_CUBE_HARVEST))
+            {
+              mSuperstructure.setWantedState(Superstructure.WantedState.VISION_ACQUIRE_CUBE);
+            }
+            else
+            {
+              mDrive.setOpenLoop(mCheesyDriveHelper.cheesyDrive(throttle, turn, 
+                                            mControlBoard.readButton(Buttons.DRIVE_QUICK_TURN),
+                                            !mControlBoard.readButton(Buttons.DRIVE_SLOW)));
+            }
+            
+            // Bling settings
             if (DriverStation.getInstance().getMatchTime() < kMatchDurationSeconds)
             {
                 mLED.setBlingState(BlingState.TELEOP);
