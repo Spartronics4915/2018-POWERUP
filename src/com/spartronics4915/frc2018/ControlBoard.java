@@ -87,7 +87,7 @@ public class ControlBoard implements ControlBoardInterface
                 result = mDrivestick.getRawButtonPressed(1);
                 break;
             case DRIVE_SLOW:
-                result = mDrivestick.getTriggerPressed(); // available!
+                result = mDrivestick.getRawButtonPressed(14);
                 break;
             case SCISSOR_OFF:
                 current = mButtonBoard.getRawAxis(2);
