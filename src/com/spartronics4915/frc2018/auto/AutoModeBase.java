@@ -2,6 +2,7 @@ package com.spartronics4915.frc2018.auto;
 
 import com.spartronics4915.frc2018.auto.actions.Action;
 import com.spartronics4915.lib.util.Logger;
+import com.spartronics4915.lib.util.Util;
 
 /**
  * An abstract class that is the basis of the robot's autonomous routines. This
@@ -21,6 +22,7 @@ public abstract class AutoModeBase
         m_active = true;
         try
         {
+            Logger.notice("Game specific message: " + Util.getGameSpecificMessage());
             routine();
         }
         catch (AutoModeEndedException e)

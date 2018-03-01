@@ -83,7 +83,7 @@ public class Superstructure extends Subsystem
 
     private final double kMatchDurationSeconds = 135;
     private final double kEndgameDurationSeconds = 30;
-    private final double kFinishGrabAfterSeconds = 0.8;
+    private final double kFinishGrabAfterSeconds = 0.3;
 
     private Superstructure()
     {
