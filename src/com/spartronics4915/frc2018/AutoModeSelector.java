@@ -42,6 +42,7 @@ public class AutoModeSelector
             new AutoModeCreator("A: Place at Switch", () -> new PlaceSwitchFromAMode()),
             new AutoModeCreator("B: Place at Switch", () -> new PlaceSwitchFromBMode()),
             new AutoModeCreator("C: Place at Switch", () -> new PlaceSwitchFromCMode()),
+            new AutoModeCreator("Other: Prepare Robot", () -> new PrepareRobotMode()),
 //            new AutoModeCreator("A: Place at optimized position", () -> new PlaceOptimizedFromAMode()),
 //            new AutoModeCreator("C: Place at optimized position", () -> new PlaceOptimizedFromCMode()),
             new AutoModeCreator("Test: Turn to Position Mode", () -> new TestTurnMode()),
