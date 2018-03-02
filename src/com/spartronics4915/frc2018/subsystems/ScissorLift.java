@@ -217,7 +217,7 @@ public class ScissorLift extends Subsystem
     @Override
     public void outputToSmartDashboard()
     {
-        dashboardPutNumber("Potentiometer", mMeasuredValue); // N/A
+        dashboardPutNumber("Potentiometer", mPotentiometer.getAverageValue());
     }
 
     @Override
