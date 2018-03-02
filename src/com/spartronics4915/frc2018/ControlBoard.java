@@ -102,17 +102,17 @@ public class ControlBoard implements ControlBoardInterface
                 break;
             case GRABBER_DROP_CUBE:
                 current = mButtonBoard.getRawAxis(3);
-                result = (mPreviousGetDropCube != current) && (current == 1.0 || mDrivestick.getRawButtonPressed(11));
+                result = ((mPreviousGetDropCube != current) && (current == 1.0)) || mDrivestick.getRawButtonPressed(11);
                 mPreviousGetDropCube = current;
                 break;
             case HARVESTER_OPEN:
-                result = mButtonBoard.getRawButtonPressed(5) || mDrivestick.getRawButtonPressed(2);
+                result = mButtonBoard.getRawButtonPressed(5) || mDrivestick.getRawButtonPressed(5);
                 break;
             case HARVESTER_CLOSE:
-                result = mButtonBoard.getRawButtonPressed(3) || mDrivestick.getRawButtonPressed(3);
+                result = mButtonBoard.getRawButtonPressed(3) || mDrivestick.getRawButtonPressed(6);
                 break;
             case HARVESTER_EJECT:
-                result = mButtonBoard.getRawButtonPressed(4) || mDrivestick.getRawButtonPressed(5);
+                result = mButtonBoard.getRawButtonPressed(4) || mDrivestick.getRawButtonPressed(3);
                 break;
             case SUPERSTRUCTURE_CARRY_CUBE:
                 result = mButtonBoard.getRawButtonPressed(6) || mDrivestick.getRawButtonPressed(13);
@@ -124,7 +124,7 @@ public class ControlBoard implements ControlBoardInterface
                 result = mButtonBoard.getRawButtonPressed(8);
                 break;
             case CAMERA_CHANGE_VIEW:
-                result = mButtonBoard.getRawButtonPressed(10) || mDrivestick.getRawButtonPressed(6);
+                result = mButtonBoard.getRawButtonPressed(10) || mDrivestick.getRawButtonPressed(2);
                 break;
             case CLIMB_IDLE_TEST:
                 result = mTestsAllowed ? mDrivestick.getRawButtonPressed(12) : false;
