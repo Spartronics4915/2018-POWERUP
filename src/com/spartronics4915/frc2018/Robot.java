@@ -406,7 +406,6 @@ public class Robot extends IterativeRobot
 //            }
 //            else
 //            {
-            SmartDashboard.putString("qt", "Quick turn: "+mControlBoard.readButton(Buttons.DRIVE_QUICK_TURN));
           mDrive.setOpenLoop(mCheesyDriveHelper.cheesyDrive(throttle, turn, 
                                         mControlBoard.readButton(Buttons.DRIVE_QUICK_TURN),
                                         !mControlBoard.readButton(Buttons.DRIVE_SLOW)));
