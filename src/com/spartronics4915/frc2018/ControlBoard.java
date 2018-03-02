@@ -84,7 +84,7 @@ public class ControlBoard implements ControlBoardInterface
         switch (b)
         {
             case DRIVE_QUICK_TURN:
-                result = mDrivestick.getRawButtonPressed(1);
+                result = mDrivestick.getRawButton(1);
                 break;
             case DRIVE_SLOW:
                 result = mDrivestick.getRawButtonPressed(14);
