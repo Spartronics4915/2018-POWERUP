@@ -17,8 +17,8 @@ public class DriveToFarSwitchFromBPath implements PathContainer {
     {
         sWaypoints.add(new Waypoint(18,166,0,0));
         sWaypoints.add(new Waypoint(60,166,18,40));
-        sWaypoints.add(new Waypoint(75,116,30,40));
-        sWaypoints.add(new Waypoint(120,116,0,40));
+        sWaypoints.add(new Waypoint(75,106,30,40));
+        sWaypoints.add(new Waypoint(120,106,0,40));
 
     }
 
@@ -45,7 +45,7 @@ public class DriveToFarSwitchFromBPath implements PathContainer {
     {
         return false;
     }
-    // WAYPOINT_DATA: [{"position":{"x":18,"y":166},"speed":0,"radius":0,"comment":""},{"position":{"x":60,"y":166},"speed":40,"radius":18,"comment":""},{"position":{"x":75,"y":116},"speed":40,"radius":30,"comment":""},{"position":{"x":120,"y":116},"speed":40,"radius":0,"comment":""}]
+    // WAYPOINT_DATA: [{"position":{"x":18,"y":166},"speed":0,"radius":0,"comment":""},{"position":{"x":60,"y":166},"speed":40,"radius":18,"comment":""},{"position":{"x":75,"y":106},"speed":40,"radius":30,"comment":""},{"position":{"x":120,"y":106},"speed":40,"radius":0,"comment":""}]
     // IS_REVERSED: false
     // FILE_NAME: DriveToFarSwitchFromBPath
 }
