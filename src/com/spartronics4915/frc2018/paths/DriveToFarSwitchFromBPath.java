@@ -15,8 +15,8 @@ public class DriveToFarSwitchFromBPath implements PathContainer {
 
     public DriveToFarSwitchFromBPath()
     {
-        sWaypoints.add(new Waypoint(18,166,0,0));
-        sWaypoints.add(new Waypoint(60,166,18,40));
+        sWaypoints.add(new Waypoint(18,158,0,0));
+        sWaypoints.add(new Waypoint(60,158,18,40));
         sWaypoints.add(new Waypoint(75,106,30,40));
         sWaypoints.add(new Waypoint(120,106,0,40));
 
@@ -37,7 +37,7 @@ public class DriveToFarSwitchFromBPath implements PathContainer {
     @Override
     public RigidTransform2d getStartPose()
     {
-        return new RigidTransform2d(new Translation2d(18, 166), Rotation2d.fromDegrees(90.0));
+        return new RigidTransform2d(new Translation2d(18, 158), Rotation2d.fromDegrees(90.0));
     }
 
     @Override
@@ -45,7 +45,7 @@ public class DriveToFarSwitchFromBPath implements PathContainer {
     {
         return false;
     }
-    // WAYPOINT_DATA: [{"position":{"x":18,"y":166},"speed":0,"radius":0,"comment":""},{"position":{"x":60,"y":166},"speed":40,"radius":18,"comment":""},{"position":{"x":75,"y":106},"speed":40,"radius":30,"comment":""},{"position":{"x":120,"y":106},"speed":40,"radius":0,"comment":""}]
+    // WAYPOINT_DATA: [{"position":{"x":18,"y":158},"speed":0,"radius":0,"comment":""},{"position":{"x":60,"y":158},"speed":40,"radius":18,"comment":""},{"position":{"x":75,"y":106},"speed":40,"radius":30,"comment":""},{"position":{"x":120,"y":106},"speed":40,"radius":0,"comment":""}]
     // IS_REVERSED: false
     // FILE_NAME: DriveToFarSwitchFromBPath
 }

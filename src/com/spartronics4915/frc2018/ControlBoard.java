@@ -147,6 +147,9 @@ public class ControlBoard implements ControlBoardInterface
                 // Teleop Harvest Cubes
                 result = mDrivestick.getRawButtonPressed(4);
                 break;
+            case GRABBER_TOGGLE:
+                result = mDrivestick.getRawButtonReleased(7);
+                break;
             default:
                 Logger.error("ControlBoard: unimplemented boolean: " + b.toString());
                 break;

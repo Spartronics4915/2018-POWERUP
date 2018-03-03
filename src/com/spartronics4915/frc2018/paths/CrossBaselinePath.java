@@ -9,16 +9,14 @@ import com.spartronics4915.lib.util.math.RigidTransform2d;
 import com.spartronics4915.lib.util.math.Rotation2d;
 import com.spartronics4915.lib.util.math.Translation2d;
 
-public class DriveToCloseScaleFromCPath implements PathContainer {
+public class CrossBaselinePath implements PathContainer {
 
     ArrayList<Waypoint> sWaypoints = new ArrayList<Waypoint>();
 
-    public DriveToCloseScaleFromCPath()
+    public CrossBaselinePath()
     {
         sWaypoints.add(new Waypoint(18,45,0,0));
-        sWaypoints.add(new Waypoint(40,45,0,60));
-        sWaypoints.add(new Waypoint(324,20,30,60));
-        sWaypoints.add(new Waypoint(324,52,0,30));
+        sWaypoints.add(new Waypoint(180,45,0,60));
 
     }
 
@@ -45,7 +43,7 @@ public class DriveToCloseScaleFromCPath implements PathContainer {
     {
         return false;
     }
-    // WAYPOINT_DATA: [{"position":{"x":18,"y":45},"speed":0,"radius":0,"comment":""},{"position":{"x":40,"y":45},"speed":60,"radius":0,"comment":""},{"position":{"x":324,"y":20},"speed":60,"radius":30,"comment":""},{"position":{"x":324,"y":52},"speed":30,"radius":0,"comment":""}]
+    // WAYPOINT_DATA: [{"position":{"x":18,"y":45},"speed":0,"radius":0,"comment":""},{"position":{"x":180,"y":45},"speed":60,"radius":0,"comment":""}]
     // IS_REVERSED: false
-    // FILE_NAME: DriveToCloseScaleFromCPath
+    // FILE_NAME: CrossBaselinePath
 }
