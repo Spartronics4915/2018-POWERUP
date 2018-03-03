@@ -24,7 +24,7 @@ public class PlaceSwitchFromAMode extends AutoModeBase
     protected void routine() throws AutoModeEndedException
     {
         PathContainer path;
-        if (Util.getGameSpecificMessage().charAt(0) == 'R')
+        if (Util.getGameSpecificMessage().charAt(0) == 'L')
         {
             path = mClosePath;
         }
