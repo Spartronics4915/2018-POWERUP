@@ -136,7 +136,7 @@ public class Climber extends Subsystem
 
     private SystemState handleClimbing()
     {
-        mWinchPrimary.set(-0.75);
+        mWinchPrimary.set(-1);
         if (mWantedState == WantedState.HOLD)
         {
             mWinchPrimary.configCurrentLimit(true, 15, 25, 500); //Continuous, peak, peak duration (ms)
