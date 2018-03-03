@@ -27,7 +27,7 @@ public interface ControlBoardInterface
         CLIMBER_STOP,
         CAMERA_CHANGE_VIEW,
         CLIMB_IDLE_TEST,
-        GRABBER_TRANSPORT_TEST,
+        GRABBER_TRANSPORT,
         GRABBER_GRAB_CUBE_TEST,
         GRABBER_PREPARE_DROP_TEST,
         GRABBER_PREPARE_INTAKE_TEST,
