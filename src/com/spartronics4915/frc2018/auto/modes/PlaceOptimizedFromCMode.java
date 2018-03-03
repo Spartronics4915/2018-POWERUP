@@ -17,6 +17,7 @@ import com.spartronics4915.frc2018.paths.DriveSecondCubeToCSwitchPath;
 import com.spartronics4915.frc2018.paths.DriveToCloseScaleFromCPath;
 import com.spartronics4915.frc2018.paths.DriveToCloseSwitchFromCPath;
 import com.spartronics4915.frc2018.paths.DriveToFarScaleFromCPath;
+import com.spartronics4915.frc2018.paths.DriveToFarSwitchFromCPath;
 import com.spartronics4915.frc2018.paths.DriveReverseToSecondCubeFromCSwitchPath;
 import com.spartronics4915.frc2018.paths.PathContainer;
 import com.spartronics4915.frc2018.subsystems.ArticulatedGrabber;
@@ -28,7 +29,7 @@ public class PlaceOptimizedFromCMode extends AutoModeBase
 {
     private PathContainer mCloseScalePath = new DriveToCloseScaleFromCPath();
     private PathContainer mCloseSwitchPath = new DriveToCloseSwitchFromCPath();
-    private PathContainer mFarScalePath = new DriveToFarScaleFromCPath();
+    private PathContainer mFarSwitchPath = new DriveToFarSwitchFromCPath();
 
     @Override
     protected void routine() throws AutoModeEndedException
@@ -38,7 +39,7 @@ public class PlaceOptimizedFromCMode extends AutoModeBase
         if (Util.getGameSpecificMessage().charAt(0) == 'R')
         {
             path = mCloseSwitchPath;
-            liftPosition = ScissorLift.WantedState.SWITCH;
+            liftPosition = ScissorLift.WantedState.OFF;
         }
         else if (Util.getGameSpecificMessage().charAt(1) == 'R')
         {
@@ -47,8 +48,8 @@ public class PlaceOptimizedFromCMode extends AutoModeBase
         }
         else
         {
-            path = mFarScalePath;
-            liftPosition = ScissorLift.WantedState.SCALE;
+            path = mFarSwitchPath;
+            liftPosition = ScissorLift.WantedState.OFF;
         }
         runAction(new ResetPoseFromPathAction(path));
         runAction(new DrivePathAction(path));
