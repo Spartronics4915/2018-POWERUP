@@ -37,9 +37,7 @@ public class PlaceSwitchFromBMode extends AutoModeBase
             path = mClosePath;
         }
         runAction(new ResetPoseFromPathAction(path));
-        runAction(new ParallelAction(
-                new ParallelSingleWaitAction(new SeriesAction(new WaitAction(10), new DrivePathAction(path))),
-                new ActuateArticulatedGrabberAction(ArticulatedGrabber.WantedState.PREPARE_DROP)));
+        runAction(PowerupHelper.getDriveSwitchActionWithTimeout(path, 8));
         runAction(new ActuateArticulatedGrabberAction(ArticulatedGrabber.WantedState.RELEASE_CUBE));
     }
 

@@ -29,17 +29,15 @@ public class PlaceSwitchFromAMode extends AutoModeBase
         if (Util.getGameSpecificMessage().charAt(0) == 'L')
         {
             path = mClosePath;
-            timeout = 10;
+            timeout = PowerupHelper.kSideSwitchCloseTimeout;
         }
         else
         {
             path = mFarPath;
-            timeout = 13;
+            timeout = PowerupHelper.kSideSwitchFarTimeout;
         }
         runAction(new ResetPoseFromPathAction(path));
-        runAction(new ParallelAction(
-                new ParallelSingleWaitAction(new SeriesAction(new WaitAction(timeout), new DrivePathAction(path))),
-                new ActuateArticulatedGrabberAction(ArticulatedGrabber.WantedState.PREPARE_DROP)));
+        runAction(PowerupHelper.getDriveSwitchActionWithTimeout(path, timeout));
         runAction(new ActuateArticulatedGrabberAction(ArticulatedGrabber.WantedState.RELEASE_CUBE));
     }
 
