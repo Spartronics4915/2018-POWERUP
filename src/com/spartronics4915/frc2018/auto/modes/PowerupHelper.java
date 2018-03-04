@@ -12,8 +12,8 @@ import com.spartronics4915.frc2018.subsystems.ArticulatedGrabber;
 public class PowerupHelper
 {
     public static final double kSideSwitchFarTimeout = 13;
-    public static final double kSideSwitchCloseTimeout = 8;
-    public static final double kMiddleSwitchTimeout = 7;
+    public static final double kSideSwitchCloseTimeout = 5;
+    public static final double kMiddleSwitchTimeout = 5;
     
     public static final double kCloseScaleTimeout = 13;
     
