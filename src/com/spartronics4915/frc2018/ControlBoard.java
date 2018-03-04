@@ -152,6 +152,7 @@ public class ControlBoard implements ControlBoardInterface
                 break;
             case HARVESTER_STOP_MOTORS:
                 result = mButtonBoard.getRawButtonPressed(4);
+                break;
             default:
                 Logger.error("ControlBoard: unimplemented boolean: " + b.toString());
                 break;
