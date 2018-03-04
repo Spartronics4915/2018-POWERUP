@@ -11,13 +11,16 @@ import com.spartronics4915.frc2018.subsystems.ArticulatedGrabber;
 
 public class PowerupHelper
 {
-    public static final double kSideSwitchFarTimeout = 10;
-    public static final double kSideSwitchCloseTimeout = 13;
+    public static final double kSideSwitchFarTimeout = 13;
+    public static final double kSideSwitchCloseTimeout = 10;
+    public static final double kMiddleSwitchTimeout = 8;
     
-    public static Action getDriveSwitchActionWithTimeout(PathContainer path, double timeout)
+    public static final double kCloseScaleTimeout = 13;
+    
+    public static Action getDriveAndArticulateActionWithTimeout(PathContainer path, double timeout, ArticulatedGrabber.WantedState grabberWantedState)
     {
         return new ParallelAction(
                 new ParallelSingleWaitAction(new WaitAction(timeout), new DrivePathAction(path)),
-                new ActuateArticulatedGrabberAction(ArticulatedGrabber.WantedState.PREPARE_DROP));
+                new ActuateArticulatedGrabberAction(grabberWantedState));
     }
 }

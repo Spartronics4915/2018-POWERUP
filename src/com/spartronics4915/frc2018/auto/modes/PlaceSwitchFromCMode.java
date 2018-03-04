@@ -37,7 +37,7 @@ public class PlaceSwitchFromCMode extends AutoModeBase
             timeout = PowerupHelper.kSideSwitchFarTimeout;
         }
         runAction(new ResetPoseFromPathAction(path));
-        runAction(PowerupHelper.getDriveSwitchActionWithTimeout(path, timeout));
+        runAction(PowerupHelper.getDriveAndArticulateActionWithTimeout(path, timeout, ArticulatedGrabber.WantedState.PREPARE_DROP));
         runAction(new ActuateArticulatedGrabberAction(ArticulatedGrabber.WantedState.RELEASE_CUBE));
     }
 
