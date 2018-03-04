@@ -150,6 +150,8 @@ public class ControlBoard implements ControlBoardInterface
             case GRABBER_TOGGLE:
                 result = mDrivestick.getRawButtonReleased(7);
                 break;
+            case HARVESTER_STOP_MOTORS:
+                result = mButtonBoard.getRawButtonPressed(4);
             default:
                 Logger.error("ControlBoard: unimplemented boolean: " + b.toString());
                 break;

@@ -407,6 +407,11 @@ public class Robot extends IterativeRobot
                 mGrabber.setWantedState(ArticulatedGrabber.WantedState.PREPARE_INTAKE);
             }
             
+            if (mControlBoard.readButton(Buttons.HARVESTER_STOP_MOTORS))
+            {
+                mHarvester.setWantedState(Harvester.WantedState.HUG);
+            }
+            
             // Drive control buttons
 //            if (mControlBoard.readButton(Buttons.VISION_CUBE_HARVEST))
 //            {

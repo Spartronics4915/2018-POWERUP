@@ -22,6 +22,7 @@ public interface ControlBoardInterface
         HARVESTER_OPEN,
         HARVESTER_CLOSE,
         HARVESTER_EJECT,
+        HARVESTER_STOP_MOTORS,
         SUPERSTRUCTURE_CARRY_CUBE,
         HARVESTER_CLIMB,
         CLIMBER_STOP,
