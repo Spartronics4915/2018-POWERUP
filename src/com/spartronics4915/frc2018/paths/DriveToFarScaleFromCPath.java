@@ -17,7 +17,7 @@ public class DriveToFarScaleFromCPath implements PathContainer {
     {
         sWaypoints.add(new Waypoint(18,45,0,0));
         sWaypoints.add(new Waypoint(238,45,70,60));
-        sWaypoints.add(new Waypoint(228,245,48,60));
+        sWaypoints.add(new Waypoint(238,245,38,60));
         sWaypoints.add(new Waypoint(282,245,0,60));
 
     }
@@ -45,7 +45,7 @@ public class DriveToFarScaleFromCPath implements PathContainer {
     {
         return false;
     }
-    // WAYPOINT_DATA: [{"position":{"x":18,"y":45},"speed":0,"radius":0,"comment":""},{"position":{"x":238,"y":45},"speed":60,"radius":70,"comment":""},{"position":{"x":228,"y":245},"speed":60,"radius":48,"comment":""},{"position":{"x":282,"y":245},"speed":60,"radius":0,"comment":""}]
+    // WAYPOINT_DATA: [{"position":{"x":18,"y":45},"speed":0,"radius":0,"comment":""},{"position":{"x":238,"y":45},"speed":60,"radius":70,"comment":""},{"position":{"x":238,"y":245},"speed":60,"radius":38,"comment":""},{"position":{"x":282,"y":245},"speed":60,"radius":0,"comment":""}]
     // IS_REVERSED: false
     // FILE_NAME: DriveToFarScaleFromCPath
 }
