@@ -36,6 +36,8 @@ public class PlaceScaleFromCMode extends AutoModeBase
         }
         runAction(new ResetPoseFromPathAction(path));
         runAction(new DrivePathAction(path));
+        if (Util.getGameSpecificMessage().charAt(1) == 'R')
+            runAction(new TurnToHeadingAction(Rotation2d.fromDegrees(90)));
         runAction(new ActuateScissorLiftAction(ScissorLift.WantedState.SCALE));
         runAction(new ActuateArticulatedGrabberAction(ArticulatedGrabber.WantedState.RELEASE_CUBE));
     }
