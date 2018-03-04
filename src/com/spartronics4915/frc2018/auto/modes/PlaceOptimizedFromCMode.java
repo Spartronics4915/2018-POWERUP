@@ -41,19 +41,19 @@ public class PlaceOptimizedFromCMode extends AutoModeBase
         ArticulatedGrabber.WantedState grabberPosition = ArticulatedGrabber.WantedState.PREPARE_DROP;
         double timeout;
         boolean doesTurn = false;
-        if (Util.getGameSpecificMessage().charAt(0) == 'R')
-        {
-            path = mCloseSwitchPath;
-            liftPosition = ScissorLift.WantedState.OFF;
-            timeout = PowerupHelper.kSideSwitchCloseTimeout;
-        }
-        else if (Util.getGameSpecificMessage().charAt(1) == 'R')
+        if (Util.getGameSpecificMessage().charAt(1) == 'R')
         {
             path = mCloseScalePath;
             liftPosition = ScissorLift.WantedState.SCALE;
             timeout = PowerupHelper.kCloseScaleTimeout;
             grabberPosition = ArticulatedGrabber.WantedState.TRANSPORT;
             doesTurn = true;
+        }
+        else if (Util.getGameSpecificMessage().charAt(0) == 'R')
+        {
+            path = mCloseSwitchPath;
+            liftPosition = ScissorLift.WantedState.OFF;
+            timeout = PowerupHelper.kSideSwitchCloseTimeout;
         }
         else
         {
