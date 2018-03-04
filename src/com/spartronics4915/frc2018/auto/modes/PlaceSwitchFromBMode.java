@@ -6,7 +6,9 @@ import com.spartronics4915.frc2018.auto.actions.ActuateArticulatedGrabberAction;
 import com.spartronics4915.frc2018.auto.actions.ActuateScissorLiftAction;
 import com.spartronics4915.frc2018.auto.actions.DrivePathAction;
 import com.spartronics4915.frc2018.auto.actions.ParallelAction;
+import com.spartronics4915.frc2018.auto.actions.ParallelSingleWaitAction;
 import com.spartronics4915.frc2018.auto.actions.ResetPoseFromPathAction;
+import com.spartronics4915.frc2018.auto.actions.SeriesAction;
 import com.spartronics4915.frc2018.auto.actions.WaitAction;
 import com.spartronics4915.frc2018.paths.DriveToCloseSwitchFromBPath;
 import com.spartronics4915.frc2018.paths.DriveToFarSwitchFromBPath;
@@ -35,7 +37,9 @@ public class PlaceSwitchFromBMode extends AutoModeBase
             path = mClosePath;
         }
         runAction(new ResetPoseFromPathAction(path));
-        runAction(new ParallelAction(new DrivePathAction(path), new ActuateArticulatedGrabberAction(ArticulatedGrabber.WantedState.PREPARE_DROP)));
+        runAction(new ParallelAction(
+                new ParallelSingleWaitAction(new SeriesAction(new WaitAction(10), new DrivePathAction(path))),
+                new ActuateArticulatedGrabberAction(ArticulatedGrabber.WantedState.PREPARE_DROP)));
         runAction(new ActuateArticulatedGrabberAction(ArticulatedGrabber.WantedState.RELEASE_CUBE));
     }
 

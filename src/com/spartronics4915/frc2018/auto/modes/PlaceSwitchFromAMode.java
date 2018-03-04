@@ -5,6 +5,7 @@ import com.spartronics4915.frc2018.auto.AutoModeEndedException;
 import com.spartronics4915.frc2018.auto.actions.ActuateArticulatedGrabberAction;
 import com.spartronics4915.frc2018.auto.actions.DrivePathAction;
 import com.spartronics4915.frc2018.auto.actions.ParallelAction;
+import com.spartronics4915.frc2018.auto.actions.ParallelSingleWaitAction;
 import com.spartronics4915.frc2018.auto.actions.ResetPoseFromPathAction;
 import com.spartronics4915.frc2018.auto.actions.SeriesAction;
 import com.spartronics4915.frc2018.auto.actions.WaitAction;
@@ -24,16 +25,21 @@ public class PlaceSwitchFromAMode extends AutoModeBase
     protected void routine() throws AutoModeEndedException
     {
         PathContainer path;
+        double timeout;
         if (Util.getGameSpecificMessage().charAt(0) == 'L')
         {
             path = mClosePath;
+            timeout = 10;
         }
         else
         {
             path = mFarPath;
+            timeout = 13;
         }
         runAction(new ResetPoseFromPathAction(path));
-        runAction(new DrivePathAction(path));
+        runAction(new ParallelAction(
+                new ParallelSingleWaitAction(new SeriesAction(new WaitAction(timeout), new DrivePathAction(path))),
+                new ActuateArticulatedGrabberAction(ArticulatedGrabber.WantedState.PREPARE_DROP)));
         runAction(new ActuateArticulatedGrabberAction(ArticulatedGrabber.WantedState.RELEASE_CUBE));
     }
 
