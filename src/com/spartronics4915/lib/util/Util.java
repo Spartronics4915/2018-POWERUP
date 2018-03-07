@@ -75,11 +75,17 @@ public class Util
     
     public static String getGameSpecificMessage()
     {
-        do
+        Timer t = new Timer();
+        String result = "";
+        DriverStation ds = DriverStation.getInstance();
+        t.start();
+        while(!t.hasPeriodPassed(3)) // wait for up to 3 sec
         {
+            result = ds.getGameSpecificMessage();
+            if(!result.equals(""))
+                break;
             Timer.delay(0.1);
         }
-        while (DriverStation.getInstance().getGameSpecificMessage().equals(""));
-        return DriverStation.getInstance().getGameSpecificMessage();
+        return result;
     }
 }
