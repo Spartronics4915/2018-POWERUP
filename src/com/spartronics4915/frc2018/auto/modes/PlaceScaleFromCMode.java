@@ -40,8 +40,8 @@ public class PlaceScaleFromCMode extends AutoModeBase
         {
             runAction(new TurnToHeadingAction(Rotation2d.fromDegrees(90)));
             runAction(new ActuateScissorLiftAction(ScissorLift.WantedState.SCALE));
+            runAction(new ActuateArticulatedGrabberAction(ArticulatedGrabber.WantedState.RELEASE_CUBE));
         }
-        runAction(new ActuateArticulatedGrabberAction(ArticulatedGrabber.WantedState.RELEASE_CUBE));
     }
 
 }
