@@ -6,6 +6,7 @@ import com.spartronics4915.frc2018.auto.actions.ActuateArticulatedGrabberAction;
 import com.spartronics4915.frc2018.auto.actions.ActuateHarvesterAction;
 import com.spartronics4915.frc2018.auto.actions.ActuateScissorLiftAction;
 import com.spartronics4915.frc2018.auto.actions.DrivePathAction;
+import com.spartronics4915.frc2018.auto.actions.ForceEndPathAction;
 import com.spartronics4915.frc2018.auto.actions.ParallelAction;
 import com.spartronics4915.frc2018.auto.actions.ResetPoseFromPathAction;
 import com.spartronics4915.frc2018.auto.actions.SeriesAction;
@@ -67,32 +68,23 @@ public class PlaceOptimizedFromCMode extends AutoModeBase
             runAction(new TurnToHeadingAction(Rotation2d.fromDegrees(90)));
         runAction(new ActuateScissorLiftAction(liftPosition));
         runAction(new ActuateArticulatedGrabberAction(ArticulatedGrabber.WantedState.RELEASE_CUBE));
-//        if (Util.getGameSpecificMessage().charAt(0) == 'R') // TODO: Add a way to pick up a second cube if we went to the scale
-//        {
-//            runAction(new ParallelAction(new SeriesAction(new WaitForPathMarkerAction("openharvester"), new ActuateHarvesterAction(Harvester.WantedState.OPEN)),
-//                    new DrivePathAction(new DriveReverseToSecondCubeFromCSwitchPath())));
-//            runAction(new ActuateHarvesterAction(Harvester.WantedState.HARVEST));
-//            runAction(new TransferCubeFromGroundAction());
-//        }
-//        else
-//        {
-//            return;
-//        }
-//        
-//        PathContainer secondPath;
-//        if (Util.getGameSpecificMessage().charAt(1) == 'R')
-//        {
-//            secondPath = new DriveSecondCubeToCScalePath();
-//        }
-//        else if (Util.getGameSpecificMessage().charAt(0) == 'R')
-//        {
-//            secondPath = new DriveSecondCubeToCSwitchPath();
-//        }
-//        else
-//        {
-//            return;
-//        }
-//        runAction(new DrivePathAction(secondPath));
+        if (Util.getGameSpecificMessage().charAt(0) == 'R') // TODO: Add a way to pick up a second cube if we went to the scale
+        {
+            PathContainer secondPath = new DriveSecondCubeToCScalePath();
+            runAction(new ParallelAction(new SeriesAction(new WaitForPathMarkerAction("openharvester"), new ActuateHarvesterAction(Harvester.WantedState.OPEN)),
+                    new DrivePathAction(new DriveReverseToSecondCubeFromCSwitchPath())));
+            runAction(new TurnToHeadingAction(Rotation2d.fromDegrees(180)));
+            runAction(new ParallelAction(new SeriesAction(new WaitForPathMarkerAction("aquirecube"), new ForceEndPathAction()),
+                    new DrivePathAction(secondPath)));
+            runAction(new ActuateHarvesterAction(Harvester.WantedState.HARVEST));
+            runAction(new TransferCubeFromGroundAction());
+            runAction(new DrivePathAction(Util.truncatePathContainerUntilMarker(secondPath, "aquirecube")));
+            runAction(new ActuateArticulatedGrabberAction(ArticulatedGrabber.WantedState.RELEASE_CUBE));
+        }
+        else
+        {
+            return;
+        }
     }
 
 }
