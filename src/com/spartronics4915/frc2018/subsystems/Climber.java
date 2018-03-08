@@ -266,6 +266,9 @@ public class Climber extends Subsystem
                 mWinchPrimary.set(0);
 
                 // XXX: should we run motors individually?  (disable, then reenable follower)
+            } else if (variant.equals("unspool"))
+            {
+                mWinchPrimary.set(-0.5);
             }
         }
         catch (Throwable e)

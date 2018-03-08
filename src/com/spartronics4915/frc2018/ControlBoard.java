@@ -112,7 +112,7 @@ public class ControlBoard implements ControlBoardInterface
                 result = mButtonBoard.getRawButtonPressed(3) || mDrivestick.getRawButtonPressed(6);
                 break;
             case HARVESTER_EJECT:
-                result = mButtonBoard.getRawButtonPressed(4) || mDrivestick.getRawButtonPressed(3);
+                result = mButtonBoard.getRawButtonPressed(9) || mDrivestick.getRawButtonPressed(3);
                 break;
             case SUPERSTRUCTURE_CARRY_CUBE:
                 result = mButtonBoard.getRawButtonPressed(6) || mDrivestick.getRawButtonPressed(13);
@@ -146,6 +146,12 @@ public class ControlBoard implements ControlBoardInterface
             case VISION_CUBE_HARVEST:
                 // Teleop Harvest Cubes
                 result = mDrivestick.getRawButtonPressed(4);
+                break;
+            case GRABBER_TOGGLE:
+                result = mDrivestick.getRawButtonReleased(7);
+                break;
+            case HARVESTER_STOP_MOTORS:
+                result = mButtonBoard.getRawButtonPressed(4);
                 break;
             default:
                 Logger.error("ControlBoard: unimplemented boolean: " + b.toString());

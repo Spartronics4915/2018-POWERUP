@@ -15,7 +15,7 @@ import java.util.List;
 public class ParallelAction implements Action
 {
 
-    private final List<Action> mActions;
+    protected final List<Action> mActions;
 
     public ParallelAction(Action... actions)
     {

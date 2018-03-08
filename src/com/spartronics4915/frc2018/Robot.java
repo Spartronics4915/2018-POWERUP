@@ -319,6 +319,14 @@ public class Robot extends IterativeRobot
             {
                 mGrabber.setWantedState(ArticulatedGrabber.WantedState.RELEASE_CUBE);
             }
+            
+            if (mControlBoard.readButton(Buttons.GRABBER_TOGGLE))
+            {
+                if (mGrabber.getWantedState() == ArticulatedGrabber.WantedState.MANUAL_OPEN)
+                    mGrabber.setWantedState(ArticulatedGrabber.WantedState.MANUAL_CLOSED);
+                else
+                    mGrabber.setWantedState(ArticulatedGrabber.WantedState.MANUAL_OPEN);
+            }
 
             if (mControlBoard.readButton(Buttons.HARVESTER_OPEN))
             {
@@ -399,6 +407,11 @@ public class Robot extends IterativeRobot
                 mGrabber.setWantedState(ArticulatedGrabber.WantedState.PREPARE_INTAKE);
             }
             
+            if (mControlBoard.readButton(Buttons.HARVESTER_STOP_MOTORS))
+            {
+                mHarvester.setWantedState(Harvester.WantedState.HUG);
+            }
+            
             // Drive control buttons
 //            if (mControlBoard.readButton(Buttons.VISION_CUBE_HARVEST))
 //            {
@@ -443,8 +456,6 @@ public class Robot extends IterativeRobot
                 mAutoModeExecuter.stop();
             }
             mAutoModeExecuter = null;
-
-            zeroAllSensors();
             
             mEnabledLooper.stop();
 
