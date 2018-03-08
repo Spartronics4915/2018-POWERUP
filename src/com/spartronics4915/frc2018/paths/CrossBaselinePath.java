@@ -9,17 +9,14 @@ import com.spartronics4915.lib.util.math.RigidTransform2d;
 import com.spartronics4915.lib.util.math.Rotation2d;
 import com.spartronics4915.lib.util.math.Translation2d;
 
-public class DriveToFarSwitchFromCPath implements PathContainer {
+public class CrossBaselinePath implements PathContainer {
 
     ArrayList<Waypoint> sWaypoints = new ArrayList<Waypoint>();
 
-    public DriveToFarSwitchFromCPath()
+    public CrossBaselinePath()
     {
         sWaypoints.add(new Waypoint(18,45,0,0));
-        sWaypoints.add(new Waypoint(228,45,51,60));
-        sWaypoints.add(new Waypoint(228,260,10,60));
-        sWaypoints.add(new Waypoint(178,290,30,60));
-        sWaypoints.add(new Waypoint(178,254,0,40));
+        sWaypoints.add(new Waypoint(180,45,0,60));
 
     }
 
@@ -46,7 +43,7 @@ public class DriveToFarSwitchFromCPath implements PathContainer {
     {
         return false;
     }
-    // WAYPOINT_DATA: [{"position":{"x":18,"y":45},"speed":0,"radius":0,"comment":""},{"position":{"x":228,"y":45},"speed":60,"radius":51,"comment":""},{"position":{"x":228,"y":260},"speed":60,"radius":10,"comment":""},{"position":{"x":178,"y":290},"speed":60,"radius":30,"comment":""},{"position":{"x":178,"y":254},"speed":40,"radius":0,"comment":""}]
+    // WAYPOINT_DATA: [{"position":{"x":18,"y":45},"speed":0,"radius":0,"comment":""},{"position":{"x":180,"y":45},"speed":60,"radius":0,"comment":""}]
     // IS_REVERSED: false
-    // FILE_NAME: DriveToFarSwitchFromCPath
+    // FILE_NAME: CrossBaselinePath
 }
