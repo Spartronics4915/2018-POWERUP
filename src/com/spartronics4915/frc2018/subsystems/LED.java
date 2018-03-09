@@ -67,7 +67,7 @@ public class LED extends Subsystem
 
     private SystemState mSystemState = SystemState.OFF;
     private WantedState mWantedState = WantedState.OFF;
-    private BlingState mBlingState = null;
+    private BlingState mBlingState = BlingState.OFF;
 
     private boolean mIsLEDOn, mIsLampOn;
     private Relay mDriverLED;

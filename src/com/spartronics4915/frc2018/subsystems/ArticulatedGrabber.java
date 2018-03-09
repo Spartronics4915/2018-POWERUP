@@ -118,6 +118,8 @@ public class ArticulatedGrabber extends Subsystem
                 logWarning("PositionMotor Invalid");
             }
 
+            mSystemState.grabberSetup = false;
+            
             // Initialize network tables during robotInit(), allows us to tweak values
             //  XXX: requires us to place best-known values into these values.
             dashboardPutNumber("Target1", kDefaultHoldOffset);
@@ -153,11 +155,8 @@ public class ArticulatedGrabber extends Subsystem
         {
             synchronized (ArticulatedGrabber.this)
             {
-                if (!mSystemState.grabberSetup) //turns on the GrabberSetup solenoid
-                {
-                    mGrabberSetup.set(true);
-                    mSystemState.grabberSetup = true;
-                }
+                mGrabberSetup.set(true);
+                mSystemState.grabberSetup = true;
 
                 updatePositions();
 
@@ -295,7 +294,6 @@ public class ArticulatedGrabber extends Subsystem
             case RELEASE_CUBE:
                 targetPosition = mPlacePosition;
                 break;
-
             case GRAB_CUBE:
             case PREPARE_INTAKE:
             case TEMP:
