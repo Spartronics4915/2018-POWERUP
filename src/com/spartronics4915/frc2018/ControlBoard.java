@@ -112,22 +112,22 @@ public class ControlBoard implements ControlBoardInterface
                 result = mButtonBoard.getRawButtonPressed(3) || mDrivestick.getRawButtonPressed(6);
                 break;
             case HARVESTER_EJECT:
-                result = mButtonBoard.getRawButtonPressed(9) || mDrivestick.getRawButtonPressed(3);
+                result = mButtonBoard.getRawButtonPressed(4) || mDrivestick.getRawButtonPressed(3);
                 break;
             case SUPERSTRUCTURE_CARRY_CUBE:
                 result = mButtonBoard.getRawButtonPressed(6) || mDrivestick.getRawButtonPressed(13);
                 break;
-            case HARVESTER_CLIMB:
+            case CLIMBER_TOGGLE:
                 result = mButtonBoard.getRawButtonPressed(7);
                 break;
-            case CLIMBER_STOP:
+            case GRABBER_FAST_OPEN:
                 result = mButtonBoard.getRawButtonPressed(8);
                 break;
             case CAMERA_CHANGE_VIEW:
                 result = mButtonBoard.getRawButtonPressed(10) || mDrivestick.getRawButtonPressed(2);
                 break;
             case GRABBER_TRANSPORT:
-                result = mButtonBoard.getRawButtonPressed(9) || mDrivestick.getRawButtonPressed(7);
+                result = mDrivestick.getRawButtonPressed(7);
                 break;
             case CLIMB_IDLE_TEST:
                 result = mTestsAllowed ? mDrivestick.getRawButtonPressed(12) : false;
@@ -149,9 +149,6 @@ public class ControlBoard implements ControlBoardInterface
                 break;
             case GRABBER_TOGGLE:
                 result = mDrivestick.getRawButtonReleased(7);
-                break;
-            case HARVESTER_STOP_MOTORS:
-                result = mButtonBoard.getRawButtonPressed(4);
                 break;
             default:
                 Logger.error("ControlBoard: unimplemented boolean: " + b.toString());
