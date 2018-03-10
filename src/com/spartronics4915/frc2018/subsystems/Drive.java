@@ -82,6 +82,7 @@ public class Drive extends Subsystem
     private NetworkTableEntry mVisionTargetAngleEntry = null;
     private boolean mIsOnTarget = false;
     private boolean mIsApproaching = false;
+    private boolean mIsSaturated = false;
 
     // Logging
     private final ReflectingCSVWriter<PathFollower.DebugOutput> mCSVWriter;
@@ -238,13 +239,9 @@ public class Drive extends Subsystem
                 dashboardPutNumber("CTE", mPathFollower.getCrossTrackError());
                 dashboardPutNumber("ATE", mPathFollower.getAlongTrackError());
             }
-            else
-            {
-                dashboardPutNumber("CTE", 0.0);
-                dashboardPutNumber("ATE", 0.0);
-            }
+            if (mDriveControlState != DriveControlState.OPEN_LOOP)
+                dashboardPutBoolean("onTarget", isOnTarget());
         }
-        dashboardPutBoolean("on target", isOnTarget());
     }
 
     public synchronized void resetEncoders()
@@ -381,8 +378,21 @@ public class Drive extends Subsystem
         {
             final double max_desired =
                     Math.max(Math.abs(left_inches_per_sec), Math.abs(right_inches_per_sec));
-            final double scale = max_desired > Constants.kDriveHighGearMaxSetpoint
-                    ? Constants.kDriveHighGearMaxSetpoint / max_desired : 1.0;
+            final double scale;
+            if(max_desired > Constants.kDriveHighGearMaxSetpoint)
+            {
+                scale = Constants.kDriveHighGearMaxSetpoint / max_desired;
+                if(!mIsSaturated)
+                    this.logWarning("drive control is saturated");
+                mIsSaturated = true;
+            }
+            else
+            {
+                scale = 1.0;
+                if(mIsSaturated)
+                    this.logNotice("drive control no longer saturated");
+                mIsSaturated = false;
+            }
             mMotorGroup.driveVelocityInchesPerSec(left_inches_per_sec * scale,
                     right_inches_per_sec * scale);
         }

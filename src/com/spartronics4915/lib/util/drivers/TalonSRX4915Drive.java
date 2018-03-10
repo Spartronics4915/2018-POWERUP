@@ -280,16 +280,17 @@ public class TalonSRX4915Drive
     public void reloadGains(int slotIdx, double kp, double ki, double kd, double kf,
             int izone, double rampRate)
     {
-       this.reloadGains(slotIdx,  kp,  ki,  kd,  kf,  kf,  izone, rampRate);;
+        this.reloadGains(slotIdx, kp, ki, kd, kf, kf, izone, rampRate);
+        ;
     }
-    
-    public void reloadGains(int slotIdx, double kp, double ki, double kd, 
+
+    public void reloadGains(int slotIdx, double kp, double ki, double kd,
             double kfL, double kfR, int izone, double rampRate)
     {
         mLeftMaster.configPID(slotIdx, kp, ki, kd, kfL, izone, rampRate);
         mRightMaster.configPID(slotIdx, kp, ki, kd, kfR, izone, rampRate);
     }
-    
+
     public void resetIntegralAccumulator()
     {
         mLeftMaster.setIntegralAccumulator(0);
@@ -306,11 +307,11 @@ public class TalonSRX4915Drive
 
     public void outputToSmartDashboard()
     {
-        final double leftSpeed = getLeftVelocityInchesPerSec();
-        final double rightSpeed = getRightVelocityInchesPerSec();
-
         // following names relied on by smartdashboard, change them with care:
         //  IMU_Heading, speed and speed error
+
+        final double leftSpeed = getLeftVelocityInchesPerSec();
+        final double rightSpeed = getRightVelocityInchesPerSec();
 
         SmartDashboard.putNumber("Drive/leftVoltage", mLeftMaster.getOutputVoltage());
         SmartDashboard.putNumber("Drive/rightVoltage", mRightMaster.getOutputVoltage());
@@ -319,18 +320,15 @@ public class TalonSRX4915Drive
         if (mLeftMaster.mControlMode == ControlMode.Velocity)
         {
             SmartDashboard.putNumber("Drive/leftSpeedErr",
-                    rpmToInchesPerSecond(leftSpeed - mLeftMaster.getSetpointRPM()));
+                    leftSpeed - rpmToInchesPerSecond(mLeftMaster.getSetpointRPM()));
             SmartDashboard.putNumber("Drive/rightSpeedErr",
-                    rpmToInchesPerSecond(rightSpeed - mRightMaster.getSetpointRPM()));
+                    rightSpeed - rpmToInchesPerSecond(mRightMaster.getSetpointRPM()));
         }
-        else
-        if(mLeftMaster.mControlMode == ControlMode.MotionMagic ||
-           mLeftMaster.mControlMode == ControlMode.Position)
+        else if (mLeftMaster.mControlMode == ControlMode.MotionMagic ||
+                mLeftMaster.mControlMode == ControlMode.Position)
         {
-            SmartDashboard.putNumber("Drive/leftTargetPt",
-                mLeftMaster.getSetpointRotations());
-            SmartDashboard.putNumber("Drive/rightTargetPt",
-                mRightMaster.getSetpointRotations());
+            SmartDashboard.putNumber("Drive/leftTargetPt", mLeftMaster.getSetpointRotations());
+            SmartDashboard.putNumber("Drive/rightTargetPt", mRightMaster.getSetpointRotations());
         }
         SmartDashboard.putNumber("Drive/IMU_Heading", getGyroAngle());
     }
@@ -415,8 +413,8 @@ public class TalonSRX4915Drive
         mLeftSlave.set(mLeftMaster.getId());
 
         logNotice("All Motor Results (fwd RPMs should be positive) ===========");
-        logNotice("RPM FWD Left:" + rpmFwdL + " Right:" + rpmFwdR + 
-                    " with: " + rpmFwdL + " rpm == " + rpmToInchesPerSecond(rpmFwdL) + " in/sec");
+        logNotice("RPM FWD Left:" + rpmFwdL + " Right:" + rpmFwdR +
+                " with: " + rpmFwdL + " rpm == " + rpmToInchesPerSecond(rpmFwdL) + " in/sec");
         logNotice("RPM REV Left: " + rpmRevL + " Right" + rpmRevR);
 
         logNotice("Single Motor Results (all RPMs and currents should be similar) ===========");
