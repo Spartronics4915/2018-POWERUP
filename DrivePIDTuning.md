@@ -82,8 +82,13 @@ to use - even small units of control result in wild and wacky behavior.
 To address this, we need to explore controlling additional integration
 parameters:
 
+* ```config_IntegralZone```:  If the (absolute) closed-loop error is outside 
+of this zone, integral accumulator is automatically cleared. This ensures 
+that integral wind up events will stop after the sensor gets far enough from 
+its target.
+
 * ```configMaxIntegralAccumulator()``` : establishes a maximum error value
-measured in closed loop error units X 1ms. Aka, izone.
+measured in closed loop error units X 1ms.
 
 * ```setIntegralAccumulator()```:  typically used to clear/zero the integral
 accumulator, however some use cases may require seeding the accumulator
@@ -94,7 +99,7 @@ motor response.
     * When a Talon is in the disabled state.
     * When the motor control profile slot has changed.
     * When the Closed Loop Error’s magnitude is smaller than the
-      “Allowable Closed Loop Error” (ie we reach the target).
+      'Allowable Closed Loop Error' (ie we reach the target).
 
 **Kd**: is the derivative gain. It modifies the closed-loop output
 according to the derivative error (change in closed-loop error each
@@ -114,7 +119,9 @@ in a few different ways. The fastest is to usually do a self-test in
 the web-based interface. This will give you both your velocity and
 your percent output. Kf is then calculated using the following formula:
 
+```
    Kf = ([Percent Output] x 1023) / [Velocity]
+```
 
 This suggests that Kf, different from other controls, is represented
 as a floating point number between -1.0 and 1.0 and conveys the power
