@@ -390,7 +390,7 @@ public class Robot extends IterativeRobot
                 }
             }
 
-            if (mControlBoard.readButton(Buttons.GRABBER_TRANSPORT))
+            if (mControlBoard.readButton(Buttons.GRABBER_TRANSPORT_TEST))
             {
                 mGrabber.setWantedState(ArticulatedGrabber.WantedState.TRANSPORT);
             }

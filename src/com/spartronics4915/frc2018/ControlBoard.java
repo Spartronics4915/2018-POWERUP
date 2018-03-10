@@ -126,8 +126,8 @@ public class ControlBoard implements ControlBoardInterface
             case CAMERA_CHANGE_VIEW:
                 result = mButtonBoard.getRawButtonPressed(10) || mDrivestick.getRawButtonPressed(2);
                 break;
-            case GRABBER_TRANSPORT:
-                result = mDrivestick.getRawButtonPressed(7);
+            case GRABBER_TRANSPORT_TEST:
+                result = mTestsAllowed ? mDrivestick.getRawButtonPressed(7): false;
                 break;
             case CLIMB_IDLE_TEST:
                 result = mTestsAllowed ? mDrivestick.getRawButtonPressed(12) : false;
