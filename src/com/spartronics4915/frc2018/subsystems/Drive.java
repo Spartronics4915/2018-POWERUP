@@ -229,7 +229,7 @@ public class Drive extends Subsystem
     {
         if (!this.isInitialized())
             return;
-        mMotorGroup.outputToSmartDashboard(usesTalonVelocityControl(mDriveControlState));
+        mMotorGroup.outputToSmartDashboard();
         synchronized (this)
         {
             dashboardPutState(mDriveControlState.toString());
