@@ -1,5 +1,17 @@
 ## Drive PID Tuning
 
+<!-- TOC depthFrom:3 depthTo:6 withLinks:1 updateOnSave:1 orderedList:0 -->
+
+- [Intro](#intro)
+- [Our basic PIDF tuning strategy from 3/9/18:](#our-basic-pidf-tuning-strategy-from-3918)
+- [Some notes on tuning gains for TalonSRX](#some-notes-on-tuning-gains-for-talonsrx)
+- [A basic strategy for tuning the PathFollower](#a-basic-strategy-for-tuning-the-pathfollower)
+- [Some notes on the PathFollower](#some-notes-on-the-pathfollower)
+- [If you prefer to read code](#if-you-prefer-to-read-code)
+
+<!-- /TOC -->
+
+### Intro
 Drivetrain PID tuning differs from simpler PID scenarios due to the
 number of different components in the drivetrain.  We'd like to control
 the drivetrain with the fewest number of knobs, but each drive assembly
@@ -123,9 +135,42 @@ closed-loop system, this is accomplished with Integral gain, however
 this method may be a simpler alternative as there is no risk of
 Integral wind-up.
 
+Note - if you prefer to learn from concrete code example, please refer
+to the code below.
+
+### A basic strategy for tuning the PathFollower
+
+1. yes we need one
+
+
+### Some notes on the PathFollower
+PathFollower is comprised of two controllers: `AdaptivePurePursuitController`
+and `ProfileFollower`. The former is used for steering control and the
+latter is used for velocity control. Since the path follower is written
+in java, all the control gains are regular floating point values.  This can
+be confusing when compared to the mostly fixed-point gains required by
+the TalonSRX API.
+
+On each update, the job of the steering control is to compute a rotation
+required to point toward a point on the path directly in front of the robot.
+The input to this calculation is the cumulative travel distance as well
+as the current robot pose (computed by the RobotStateEstimator).
+The result is a _steering command_ that forms the input for the
+velocity controller (ProfileFollower). Most of the control parameters
+govern the behavior of the velocity controller and include:
+
+* **Kp** - the proportional gain on position error.
+* **Ki** - the integral gain on position error.
+* **Kv** - proportional gain on velocity error (or derivative gain on
+    position error).
+* **Kffv** - the feedforward gain on velocity. Should be 0-1.0 if the units of
+    the profile match the units of the output.
+* **Kffa** - feedforward gain on acceleration.
+
 ## References
 
-* https://github.com/CrossTheRoadElec/Phoenix-Documentation#closed-loop-ramping
+1. [Talon 2018 Wiki](https://github.com/CrossTheRoadElec/Phoenix-Documentation#closed-loop-ramping)
+2. [Talon 2017 Users' Guide](http://www.ctr-electronics.com/Talon%20SRX%20User's%20Guide.pdf)
 
 ### If you prefer to read code
 Note that this code doesn't capture the API conventions for setting
