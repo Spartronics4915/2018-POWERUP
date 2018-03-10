@@ -114,7 +114,7 @@ in a few different ways. The fastest is to usually do a self-test in
 the web-based interface. This will give you both your velocity and
 your percent output. Kf is then calculated using the following formula:
 
-    `Kf = ([Percent Output] x 1023) / [Velocity]`
+   Kf = ([Percent Output] x 1023) / [Velocity]
 
 This suggests that Kf, different from other controls, is represented
 as a floating point number between -1.0 and 1.0 and conveys the power
