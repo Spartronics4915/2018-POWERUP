@@ -3,7 +3,7 @@
 <!-- TOC depthFrom:3 depthTo:6 withLinks:1 updateOnSave:1 orderedList:0 -->
 
 - [Intro](#intro)
-- [Our basic PIDF tuning strategy from 3/9/18:](#our-basic-pidf-tuning-strategy-from-3918)
+- [Our basic PIDF tuning strategy from 3/9/18](#our-basic-pidf-tuning-strategy-from-3918)
 - [Some notes on tuning gains for TalonSRX](#some-notes-on-tuning-gains-for-talonsrx)
 - [A basic strategy for tuning the PathFollower](#a-basic-strategy-for-tuning-the-pathfollower)
 - [Some notes on the PathFollower](#some-notes-on-the-pathfollower)
@@ -23,7 +23,7 @@ represents a higher-level control system and that it has a number of
 control knobs that must be tuned in addition to the usual parameters
 for the low-level motor controller.
 
-### Our basic PIDF tuning strategy from 3/9/18:
+### Our basic PIDF tuning strategy from 3/9/18
 
 1. make all gains except Kp = 0.  Make Kp small and verify that for a
 straight line path, it takes a while to reach the target velocity. The
@@ -114,7 +114,7 @@ in a few different ways. The fastest is to usually do a self-test in
 the web-based interface. This will give you both your velocity and
 your percent output. Kf is then calculated using the following formula:
 
-    ```Kf = ([Percent Output] x 1023) / [Velocity]```
+    `Kf = ([Percent Output] x 1023) / [Velocity]`
 
 This suggests that Kf, different from other controls, is represented
 as a floating point number between -1.0 and 1.0 and conveys the power
