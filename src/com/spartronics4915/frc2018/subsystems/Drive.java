@@ -804,7 +804,7 @@ public class Drive extends Subsystem
 
             mMotorGroup.reloadGains(kVelocityControlSlot,
                     Constants.kDriveVelocityKp, Constants.kDriveVelocityKi,
-                    Constants.kDriveVelocityKd, Constants.kDriveVelocityKf,
+                    Constants.kDriveVelocityKd, Constants.kDriveVelocityKf/*+0.35*/, Constants.kDriveVelocityKf, // +1.05 on right at 10 ips is pretty good on the 2nd robot, f of 0.2 on left and 0 on right is great for 2nd robot!
                     Constants.kDriveVelocityIZone, Constants.kDriveVelocityRampRate);
 
             logNotice("reloaded PID gains");
