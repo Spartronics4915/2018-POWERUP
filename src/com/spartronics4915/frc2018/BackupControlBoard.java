@@ -98,22 +98,20 @@ public class BackupControlBoard implements ControlBoardInterface
             case SUPERSTRUCTURE_CARRY_CUBE:
                 result = mButtonBoard.getRawButtonPressed(6) || mDrivestick.getRawButtonPressed(5);
                 break;
-            case HARVESTER_CLIMB:
+            case CLIMBER_TOGGLE:
                 result = mButtonBoard.getRawButtonPressed(7);
                 break;
-            case CLIMBER_STOP:
-                result = mButtonBoard.getRawButtonPressed(8);
-                break;
             case CAMERA_CHANGE_VIEW:
-                result = mDrivestick.getRawButtonPressed(7) || mButtonBoard.getRawButtonPressed(10);
+                result = mButtonBoard.getRawButtonPressed(10) || mDrivestick.getRawButtonPressed(7);
+                break;
+            case GRABBER_TRANSPORT_TEST:
+                result = mDrivestick.getRawButtonPressed(9);
                 break;
             case CLIMB_IDLE_TEST:
                 result = mTestsAllowed ? mDrivestick.getRawButtonPressed(8) : false;
                 break;
-            case GRABBER_TRANSPORT_TEST:
-                result = mTestsAllowed ? mDrivestick.getRawButtonPressed(9) : false;
-                break;
             case GRABBER_TEMP_TEST:
+                break;
             case GRABBER_GRAB_CUBE_TEST:
                 result = mTestsAllowed ? mDrivestick.getRawButtonPressed(10) : false;
                 break;
