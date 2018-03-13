@@ -354,16 +354,15 @@ public class Robot extends IterativeRobot
 
             if (mControlBoard.readButton(Buttons.CLIMBER_TOGGLE))
             {
-                if (mClimber.getWantedState() == Climber.WantedState.IDLE ||
-                        mClimber.getWantedState() == Climber.WantedState.HOLD)
-                {
-                    mSuperstructure.setWantedState(Superstructure.WantedState.CLIMB);
-                    mLED.setBlingState(BlingState.CLIMB);
-                }
-                else
+                if (mClimber.getWantedState() == Climber.WantedState.CLIMB)
                 {
                     mClimber.setWantedState(Climber.WantedState.HOLD);
                     mLED.setBlingState(BlingState.STOP_CLIMBER);
+                }
+                else
+                {
+                    mSuperstructure.setWantedState(Superstructure.WantedState.CLIMB);
+                    mLED.setBlingState(BlingState.CLIMB);
                 }
             }
             
