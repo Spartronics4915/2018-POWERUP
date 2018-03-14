@@ -48,7 +48,7 @@ public class Drive extends Subsystem
     private static final double kOpenLoopPeakOutput = 1; // fwd: 1, rev: -1
     private static final String kTargetVelL = "targetVelL";
     private static final String kTargetVelR = "targetVelR";
-    
+
     public static Drive getInstance()
     {
         if (mInstance == null)
@@ -367,7 +367,7 @@ public class Drive extends Subsystem
             mMotorGroup.enableBraking(true);
             dashboardPutNumber(kTargetVelL, 0);
             dashboardPutNumber(kTargetVelR, 0);
-       }
+        }
     }
 
     /**
@@ -385,10 +385,10 @@ public class Drive extends Subsystem
         {
             final double max_desired =
                     Math.max(Math.abs(leftIPS), Math.abs(rightIPS));
-            if(max_desired > Constants.kDriveHighGearMaxSetpoint)
+            if (max_desired > Constants.kDriveHighGearMaxSetpoint)
             {
                 final double scale = Constants.kDriveHighGearMaxSetpoint / max_desired;
-                if(!mIsSaturated)
+                if (!mIsSaturated)
                     this.logWarning("drive control is saturated");
                 mIsSaturated = true;
                 rightIPS *= scale;
@@ -396,11 +396,11 @@ public class Drive extends Subsystem
             }
             else
             {
-                if(mIsSaturated)
+                if (mIsSaturated)
                     this.logNotice("drive control no longer saturated");
                 mIsSaturated = false;
             }
-            
+
             dashboardPutNumber(kTargetVelL, leftIPS);
             dashboardPutNumber(kTargetVelR, rightIPS);
             mMotorGroup.driveVelocityInchesPerSec(leftIPS, rightIPS);
@@ -475,23 +475,25 @@ public class Drive extends Subsystem
         if (!this.isInitialized())
             return;
         final double dx = mVisionTargetAngleEntry.getNumber(0).doubleValue();
-        final Rotation2d robotToTarget = Rotation2d.fromDegrees(-dx); 
+        final Rotation2d robotToTarget = Rotation2d.fromDegrees(-dx);
         // angle reversed to correct for raspi coordsys
         performClosedLoopTurn(robotToTarget);
     }
-    
+
     private void searchForCube(double timestamp)
     {
         if (!this.isInitialized())
             return;
         double dx = mVisionTargetAngleEntry.getNumber(0).doubleValue();
-        if (Util.epsilonEquals(dx, 0, 30)) {  // If our target is within reasonable bounds
+        if (Util.epsilonEquals(dx, 0, 30))
+        { // If our target is within reasonable bounds
             setWantAimToVisionTarget();
         }
-        else if (dx > 30) {  // If we get a bogus target (The bogus target is about 198)
+        else if (dx > 30)
+        { // If we get a bogus target (The bogus target is about 198)
             dx = -3;
         }
-        final Rotation2d robotToTarget = Rotation2d.fromDegrees(dx); 
+        final Rotation2d robotToTarget = Rotation2d.fromDegrees(dx);
         // angle reversed to correct for raspi coordsys(???)
         performClosedLoopTurn(robotToTarget);
     }
@@ -515,7 +517,7 @@ public class Drive extends Subsystem
             mIsOnTarget = true;
             updatePositionSetpoint(mMotorGroup.getLeftDistanceInches(),
                     mMotorGroup.getRightDistanceInches());
-        } 
+        }
         else
         {
             Kinematics.DriveVelocity wheel_delta = Kinematics
@@ -688,6 +690,7 @@ public class Drive extends Subsystem
             mTargetHeading = Rotation2d.fromDegrees(mMotorGroup.getGyroAngle());
         }
     }
+
     /**
      * Configures the drivebase for auto driving
      */
@@ -825,8 +828,10 @@ public class Drive extends Subsystem
 
             mMotorGroup.reloadGains(kVelocityControlSlot,
                     Constants.kDriveVelocityKp, Constants.kDriveVelocityKi,
-                    Constants.kDriveVelocityKd, Constants.kDriveVelocityKf/*+0.35*/, Constants.kDriveVelocityKf, // +1.05 on right at 10 ips is pretty good on the 2nd robot, f of 0.2 on left and 0 on right is great for 2nd robot!
-                    Constants.kDriveVelocityIZone, Constants.kDriveVelocityRampRate, Constants.kDriveVelocityMaxIAccum);
+                    Constants.kDriveVelocityKd,
+                    Constants.kDriveVelocityKf/* +0.35 */, Constants.kDriveVelocityKf, // +1.05 on right at 10 ips is pretty good on the 2nd robot, f of 0.2 on left and 0 on right is great for 2nd robot!
+                    Constants.kDriveVelocityIZone, Constants.kDriveVelocityRampRate,
+                    Constants.kDriveVelocityMaxIAccum);
 
             logNotice("reloaded PID gains");
             logDebug("reloaded position gains:" + mMotorGroup.dumpPIDState(kPositionControlSlot));
@@ -861,7 +866,7 @@ public class Drive extends Subsystem
     protected static boolean usesTalonPositionControl(DriveControlState state)
     {
         if (state == DriveControlState.AIM_TO_GOAL ||
-                state == DriveControlState.TURN_TO_ROBOTANGLE || 
+                state == DriveControlState.TURN_TO_ROBOTANGLE ||
                 state == DriveControlState.TURN_TO_HEADING ||
                 state == DriveControlState.DRIVE_TOWARDS_GOAL_COARSE_ALIGN ||
                 state == DriveControlState.DRIVE_TOWARDS_GOAL_APPROACH)
@@ -881,17 +886,17 @@ public class Drive extends Subsystem
         }
         logNotice("checkSystem " + variant + "  ----------------");
         boolean success = true;
-        if(variant == "tuneVelocity")
+        if (variant == "tuneVelocity")
         {
             Timer timer = new Timer();
             logNotice("  enter velocity control mode");
             configureTalonsForSpeedControl();
-            
+
             logNotice("  straight: 10ips, 4 sec");
             this.setVelocitySetpoint(10, 10);
             timer.reset();
             timer.start();
-            while(!timer.hasPeriodPassed(4))
+            while (!timer.hasPeriodPassed(4))
                 this.mMotorGroup.outputToSmartDashboard();
             this.setVelocitySetpoint(0, 0);
             this.mMotorGroup.outputToSmartDashboard();
@@ -904,24 +909,24 @@ public class Drive extends Subsystem
             this.setVelocitySetpoint(0, 0);
             this.mMotorGroup.outputToSmartDashboard();
             this.stop();
-            
+
             Timer.delay(2);
             logNotice("  curve left: 4 sec");
             this.setVelocitySetpoint(5, 10);
             timer.reset();
             timer.start();
-            while(!timer.hasPeriodPassed(4))
+            while (!timer.hasPeriodPassed(4))
                 this.mMotorGroup.outputToSmartDashboard();
             this.setVelocitySetpoint(0, 0);
             this.mMotorGroup.outputToSmartDashboard();
             this.stop();
-          
+
             Timer.delay(2);
             logNotice("  curve right: 4 sec");
             this.setVelocitySetpoint(10, 5);
             timer.reset();
             timer.start();
-            while(!timer.hasPeriodPassed(4))
+            while (!timer.hasPeriodPassed(4))
                 this.mMotorGroup.outputToSmartDashboard();
             this.setVelocitySetpoint(0, 0);
             this.mMotorGroup.outputToSmartDashboard();
@@ -929,52 +934,54 @@ public class Drive extends Subsystem
 
             Timer.delay(2);
             logNotice("  mixed speeds straight: 10, 4, 20, 4");
-            
+
             this.setVelocitySetpoint(10, 10);
             timer.reset();
             timer.start();
-            while(!timer.hasPeriodPassed(2))
+            while (!timer.hasPeriodPassed(2))
                 this.mMotorGroup.outputToSmartDashboard();
-            
+
             this.setVelocitySetpoint(4, 4);
             timer.reset();
             timer.start();
-            while(!timer.hasPeriodPassed(2))
+            while (!timer.hasPeriodPassed(2))
                 this.mMotorGroup.outputToSmartDashboard();
 
             this.setVelocitySetpoint(20, 20);
             timer.reset();
             timer.start();
-            while(!timer.hasPeriodPassed(2))
+            while (!timer.hasPeriodPassed(2))
                 this.mMotorGroup.outputToSmartDashboard();
-            
+
             this.setVelocitySetpoint(4, 4);
             timer.reset();
             timer.start();
-            while(!timer.hasPeriodPassed(2))
+            while (!timer.hasPeriodPassed(2))
                 this.mMotorGroup.outputToSmartDashboard();
             this.stop();
             this.setVelocitySetpoint(0, 0);
             this.mMotorGroup.outputToSmartDashboard();
-         }
+        }
         else
             success = mMotorGroup.checkSystem(variant);
         return success;
     }
-    
+
     public DriveControlState getState()
     {
         // Get drive train state
         return mDriveControlState;
     }
-    public boolean onVisionTarget() 
+
+    public boolean onVisionTarget()
     {
         // In a perfect world this number is usable to all of drive
         final double dx = mVisionTargetAngleEntry.getNumber(0).doubleValue();
-        if (Util.epsilonEquals(dx, 0, 1)) {
+        if (Util.epsilonEquals(dx, 0, 1))
+        {
             // We are on target
             return true;
-        } 
+        }
         else
         {
             // We are not on target
