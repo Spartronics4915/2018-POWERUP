@@ -24,6 +24,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.Timer;
 
 /**
  * This subsystem consists of the robot's drivetrain: 4 CIM motors, 4 talons,
@@ -878,8 +879,87 @@ public class Drive extends Subsystem
             logWarning("can't check un-initialized system");
             return false;
         }
-        logNotice("checkSystem ---------------");
-        return mMotorGroup.checkSystem(variant);
+        logNotice("checkSystem " + variant + "  ----------------");
+        boolean success = true;
+        if(variant == "tuneVelocity")
+        {
+            Timer timer = new Timer();
+            logNotice("  enter velocity control mode");
+            configureTalonsForSpeedControl();
+            
+            logNotice("  straight: 10ips, 4 sec");
+            this.setVelocitySetpoint(10, 10);
+            timer.reset();
+            timer.start();
+            while(!timer.hasPeriodPassed(4))
+                this.mMotorGroup.outputToSmartDashboard();
+            this.setVelocitySetpoint(0, 0);
+            this.mMotorGroup.outputToSmartDashboard();
+            this.stop();
+
+            Timer.delay(2);
+            logNotice("  straight: -10ips, 4 sec");
+            this.setVelocitySetpoint(-10, -10);
+            Timer.delay(4);
+            this.setVelocitySetpoint(0, 0);
+            this.mMotorGroup.outputToSmartDashboard();
+            this.stop();
+            
+            Timer.delay(2);
+            logNotice("  curve left: 4 sec");
+            this.setVelocitySetpoint(5, 10);
+            timer.reset();
+            timer.start();
+            while(!timer.hasPeriodPassed(4))
+                this.mMotorGroup.outputToSmartDashboard();
+            this.setVelocitySetpoint(0, 0);
+            this.mMotorGroup.outputToSmartDashboard();
+            this.stop();
+          
+            Timer.delay(2);
+            logNotice("  curve right: 4 sec");
+            this.setVelocitySetpoint(10, 5);
+            timer.reset();
+            timer.start();
+            while(!timer.hasPeriodPassed(4))
+                this.mMotorGroup.outputToSmartDashboard();
+            this.setVelocitySetpoint(0, 0);
+            this.mMotorGroup.outputToSmartDashboard();
+            this.stop();
+
+            Timer.delay(2);
+            logNotice("  mixed speeds straight: 10, 4, 20, 4");
+            
+            this.setVelocitySetpoint(10, 10);
+            timer.reset();
+            timer.start();
+            while(!timer.hasPeriodPassed(2))
+                this.mMotorGroup.outputToSmartDashboard();
+            
+            this.setVelocitySetpoint(4, 4);
+            timer.reset();
+            timer.start();
+            while(!timer.hasPeriodPassed(2))
+                this.mMotorGroup.outputToSmartDashboard();
+
+            this.setVelocitySetpoint(20, 20);
+            timer.reset();
+            timer.start();
+            while(!timer.hasPeriodPassed(2))
+                this.mMotorGroup.outputToSmartDashboard();
+            
+            this.setVelocitySetpoint(4, 4);
+            timer.reset();
+            timer.start();
+            while(!timer.hasPeriodPassed(2))
+                this.mMotorGroup.outputToSmartDashboard();
+            this.stop();
+            this.setVelocitySetpoint(0, 0);
+            this.mMotorGroup.outputToSmartDashboard();
+         }
+        else
+            success = mMotorGroup.checkSystem(variant);
+        return success;
     }
     
     public DriveControlState getState()
