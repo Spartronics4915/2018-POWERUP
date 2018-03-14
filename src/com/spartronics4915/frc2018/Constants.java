@@ -103,7 +103,7 @@ public class Constants extends ConstantsBase
     public static final double kDriveVelocityRampRate = .05; // 240V/s -> 12V in .05s
     public static final double kDriveHighGearNominalOutput = 0.5;
     public static final double kDriveHighGearMaxSetpoint = 17.0 * 12.0; // 17 fps
-    public static final double kDriveVelocityMaxIAccum = 0;
+    public static final double kDriveVelocityMaxIAccum = 0; // 0 means don't enforce max iaccum
 
     // PID gains for drive position loop (LOW GEAR)
     // Units: setpoint, error, and output are in inches per second.
