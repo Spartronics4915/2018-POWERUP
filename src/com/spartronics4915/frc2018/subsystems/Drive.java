@@ -45,7 +45,9 @@ public class Drive extends Subsystem
     private static final double kOpenLoopRampRate = .5;
     private static final double kOpenLoopNominalOutput = 0.0; // fwd & rev
     private static final double kOpenLoopPeakOutput = 1; // fwd: 1, rev: -1
-
+    private static final String kTargetVelL = "targetVelL";
+    private static final String kTargetVelR = "targetVelR";
+    
     public static Drive getInstance()
     {
         if (mInstance == null)
@@ -318,6 +320,8 @@ public class Drive extends Subsystem
         mMotorGroup.beginOpenLoop(kOpenLoopRampRate, kOpenLoopNominalOutput, kOpenLoopPeakOutput);
         mMotorGroup.enableBraking(true); // drivers like to stop on a dime
         mDriveControlState = DriveControlState.OPEN_LOOP;
+        dashboardPutNumber(kTargetVelL, 0);
+        dashboardPutNumber(kTargetVelR, 0);
     }
 
     /**
@@ -360,45 +364,51 @@ public class Drive extends Subsystem
             // mRightMaster.setVoltageCompensationRampRate(Constants.kDriveVoltageCompensationRampRate);
 
             mMotorGroup.enableBraking(true);
-        }
+            dashboardPutNumber(kTargetVelL, 0);
+            dashboardPutNumber(kTargetVelR, 0);
+       }
     }
 
     /**
      * Adjust Velocity setpoint (if already in velocity mode)
      *
-     * @param left_inches_per_sec
-     * @param right_inches_per_sec
+     * @param leftIPS
+     * @param rightIPS
      */
-    private synchronized void updateVelocitySetpoint(double left_inches_per_sec,
-            double right_inches_per_sec)
+    private synchronized void updateVelocitySetpoint(double leftIPS,
+            double rightIPS)
     {
         if (!this.isInitialized())
             return;
         if (usesTalonVelocityControl(mDriveControlState))
         {
             final double max_desired =
-                    Math.max(Math.abs(left_inches_per_sec), Math.abs(right_inches_per_sec));
-            final double scale;
+                    Math.max(Math.abs(leftIPS), Math.abs(rightIPS));
             if(max_desired > Constants.kDriveHighGearMaxSetpoint)
             {
-                scale = Constants.kDriveHighGearMaxSetpoint / max_desired;
+                final double scale = Constants.kDriveHighGearMaxSetpoint / max_desired;
                 if(!mIsSaturated)
                     this.logWarning("drive control is saturated");
                 mIsSaturated = true;
+                rightIPS *= scale;
+                leftIPS *= scale;
             }
             else
             {
-                scale = 1.0;
                 if(mIsSaturated)
                     this.logNotice("drive control no longer saturated");
                 mIsSaturated = false;
             }
-            mMotorGroup.driveVelocityInchesPerSec(left_inches_per_sec * scale,
-                    right_inches_per_sec * scale);
+            
+            dashboardPutNumber(kTargetVelL, leftIPS);
+            dashboardPutNumber(kTargetVelR, rightIPS);
+            mMotorGroup.driveVelocityInchesPerSec(leftIPS, rightIPS);
         }
         else
         {
             logError("Hit a bad velocity control state");
+            dashboardPutNumber(kTargetVelL, 0);
+            dashboardPutNumber(kTargetVelR, 0);
             mMotorGroup.driveVelocityInchesPerSec(0, 0); // XXX: should we just mDrive.stop()?
         }
     }
