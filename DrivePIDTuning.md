@@ -50,24 +50,31 @@ See also, https://www.crossco.com/blog/basics-tuning-pid-loops.
 
 ### Some notes on tuning gains for TalonSRX
 
-In the TalonSRX firmware, motor control is represented in integer
-units between -1023 and 1023. We can thing of these as PctOutput
-values between -1 and 1.  Note that motor output depends upon battery
-voltage. As the battery voltage decreases (over a match), one unit
-of power-control is expected to produce less force.  If this becomes a
-problem, we may need to investigate the SRX's voltage compensation
-features. Please note: **Kp, Ki, Kd for SRX should always be integers,
-while Kf is a float**.
+In the TalonSRX firmware, motor control is represented in fixed-point 
+(integer) units between -1023 and 1023. We can think of these as PctOutput
+values between -1 and 1.  The closed loop gains all operate on a measurement
+of error which is expressed in the units of the set point (and stored in
+an int32). While not clearly stated in the documentation, gains are 
+expressed in floating-point format and converted to a fixed-point 
+representation for use on the TalonSRX firmware.  Additional parameters 
+to the control formula put bounds on the the effects of the 
+error-integration terms. The correct numerical representation for 
+these values are discussed below. It should be noted that motor output 
+depends upon battery voltage and as the battery voltage decreases 
+(over a match), one unit of power-control is expected to produce less force.  
+If this becomes a problem, the SRX's offers a voltage compensation
+feature to account for the changing battery conditions.
 
-Velocity setpoints are represented on the TalonSRX in native encoder
-units per 100ms.  Our software converts our standard velocity unit
-(inches/sec) into SRX velocity units behind the scenes.
+Position setpoints are represented in native encoder units while velocity 
+setpoints are represented in native encoder units per 100ms.  Our 
+software converts our standard velocity unit (inches/sec) into SRX 
+velocity units behind the scenes.
 
 **Kp**:  is the proportional gain. It modifies the closed-loop output
 by a proportion (the gain value) of the closed-loop error. Kp is specified
-in output unit per error unit. For example, a value of 102 is ~9.97%
-(which is 102/1023) output per 1 unit of Closed-Loop Error. Remember that
-the output units differ between position and velocity modes, so it's
+in output units per error unit. For example, a value of 2
+(which is 2046/1023) output per 1 unit of Closed-Loop Error. Remember that
+output units differ between position and velocity modes, so it's
 expected that Kp values will differ substantially for each control mode.
 Tune this until the sensed value is close to the target under typical load.
 Many prefer to simply double the P-gain until oscillations occur, then
@@ -75,20 +82,29 @@ reduce accordingly.
 
 **Ki**: is the integral gain. It modifies the closed-loop output according
 to the integral error (summation of the closed-loop error each iteration).
-I gain is specified in output units per integrated error. For example, a
-value of 10 equates to ~0.97% for each accumulated error. Integral
-accumulation is done every 1ms. In our experience, Ki has been impossible
-to use - even small units of control result in wild and wacky behavior.
-To address this, we need to explore controlling additional integration
-parameters:
+I gain is specified in output units per integrated error. Since integral
+accumulation is done every 1ms, it's typical for Ki values to be quite
+small, starting at .001 and increasng and needed. Ki is usually employed to
+nudge the output to the target value when Kp is insufficient to do so. i
+In our experience, Ki has been difficult to use - even small units of 
+control result in wild and wacky behavior.  To address this, we need to 
+explore controlling additional integration parameters:
 
-* ```config_IntegralZone```:  If the (absolute) closed-loop error is outside 
-of this zone, integral accumulator is automatically cleared. This ensures 
-that integral wind up events will stop after the sensor gets far enough from 
-its target.
+* ```config_IntegralZone (izone)```:  If the (absolute) closed-loop error 
+is outside of this zone, integral accumulator is automatically cleared. 
+This ensures that integral wind up events will stop after the sensor gets 
+far enough from its target.  Since this term operates directly on the error,
+it is expressed in the same units: an integer difference between the target
+and current values.  Note that this mode effectively disallows integral
+control when the measured/accumulated error is large.
 
 * ```configMaxIntegralAccumulator()``` : establishes a maximum error value
-measured in closed loop error units X 1ms.
+measured in closed loop error units X 1ms.  In contrast with the izone, this
+parameter allows us to constrain the effects of integral correction to within
+a bounded amount per iteration. So we can still employ this form of error
+correction even when the error is larger. Since the integral-error is 
+multiplied by Ki, the two values are coupled: a smaller max error might 
+be accompanied by a larger Ki and vice-versa.
 
 * ```setIntegralAccumulator()```:  typically used to clear/zero the integral
 accumulator, however some use cases may require seeding the accumulator
@@ -102,10 +118,13 @@ motor response.
       'Allowable Closed Loop Error' (ie we reach the target).
 
 **Kd**: is the derivative gain. It modifies the closed-loop output
-according to the derivative error (change in closed-loop error each
-iteration). Kd is specified in output units per derivative error.
-For example a value of 102 equates to ~9.97% (which is 102/1023)
-per change of Sensor Position/Velocity unit per 1ms.
+according to the derivative error defined as the change in closed-loop 
+error each 1ms iteration. Kd is specified in output units per derivative 
+error and is used to smooth out oscillations. Kd can produce negative
+side effects of its own when there is noise in the measured state.
+Typically Kd values is used to manage overshoot that occurs on account of
+aggressive Kp value.  Start with values 10 times larger than your carefully
+chosen Kp value.
 
 **Kf**: is the feed-forward gain. Feed-Forward is typically used in
 velocity and motion profile/magic closed-loop modes. Kf is multiplied
@@ -154,9 +173,9 @@ to the code below.
 PathFollower is comprised of two controllers: `AdaptivePurePursuitController`
 and `ProfileFollower`. The former is used for steering control and the
 latter is used for velocity control. Since the path follower is written
-in java, all the control gains are regular floating point values.  This can
-be confusing when compared to the mostly fixed-point gains required by
-the TalonSRX API.
+in java, all the control gains are regular floating point values and errors
+are measured in inches or inches/sec.  This can be confusing when compared 
+to the gains required by the TalonSRX API.
 
 On each update, the job of the steering control is to compute a rotation
 required to point toward a point on the path directly in front of the robot.
