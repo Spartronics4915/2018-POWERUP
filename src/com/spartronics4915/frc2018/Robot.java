@@ -352,18 +352,25 @@ public class Robot extends IterativeRobot
                 mLED.setBlingState(BlingState.CARRY_CUBE);
             }
 
-            if (mControlBoard.readButton(Buttons.HARVESTER_CLIMB))
+            if (mControlBoard.readButton(Buttons.CLIMBER_TOGGLE))
             {
-                mSuperstructure.setWantedState(Superstructure.WantedState.CLIMB);
-                mLED.setBlingState(BlingState.CLIMB);
+                if (mClimber.getWantedState() == Climber.WantedState.CLIMB)
+                {
+                    mClimber.setWantedState(Climber.WantedState.HOLD);
+                    mLED.setBlingState(BlingState.STOP_CLIMBER);
+                }
+                else
+                {
+                    mSuperstructure.setWantedState(Superstructure.WantedState.CLIMB);
+                    mLED.setBlingState(BlingState.CLIMB);
+                }
             }
-
-            if (mControlBoard.readButton(Buttons.CLIMBER_STOP))
+            
+            if (mControlBoard.readButton(Buttons.GRABBER_FAST_OPEN))
             {
-                mClimber.setWantedState(Climber.WantedState.HOLD);
-                mLED.setBlingState(BlingState.STOP_CLIMBER);
+                mGrabber.setWantedState(ArticulatedGrabber.WantedState.FAST_OPENED);
             }
-
+            
             if (mControlBoard.readButton(Buttons.CLIMB_IDLE_TEST))
             {
                 mClimber.setWantedState(Climber.WantedState.IDLE);
@@ -405,11 +412,6 @@ public class Robot extends IterativeRobot
             if (mControlBoard.readButton(Buttons.GRABBER_PREPARE_INTAKE_TEST))
             {
                 mGrabber.setWantedState(ArticulatedGrabber.WantedState.PREPARE_INTAKE);
-            }
-            
-            if (mControlBoard.readButton(Buttons.HARVESTER_STOP_MOTORS))
-            {
-                mHarvester.setWantedState(Harvester.WantedState.HUG);
             }
             
             // Drive control buttons
