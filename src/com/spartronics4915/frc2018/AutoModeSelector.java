@@ -47,7 +47,7 @@ public class AutoModeSelector
             new AutoModeCreator("All: Cross Baseline", () -> new CrossBaselineMode()),
             new AutoModeCreator("Do nothing", () -> new StandStillMode()),
             new AutoModeCreator("Other: Prepare Robot", () -> new PrepareRobotMode()),
-            new AutoModeCreator("Test: Turn to Position Mode", () -> new TestTurnMode()),
+            new AutoModeCreator("Test: Path", () -> new TestPathMode()),
             new AutoModeCreator("Test: Stress Motor Mode", () -> new StressMotorsMode()),
             new AutoModeCreator("Test: Turn to Cube Mode", () -> new TurnToCubeMode()),
             new AutoModeCreator("Test: Find the Cube Mode", () -> new FindCube()),

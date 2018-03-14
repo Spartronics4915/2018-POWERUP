@@ -185,7 +185,9 @@ java-side parameter values down to the motor controller.  Specifically,
 questions of where the fixed-point conversions take place aren't captured
 here.
 
-```
+Note that `PID_Mux_Unsigned` and `PID_Mux_Sign` are just multiplication functions.
+
+```C
 /**
  * 1ms process for PIDF closed-loop.
  * @param pid ptr to pid object

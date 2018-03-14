@@ -58,15 +58,4 @@ public class DrivePathAction implements Action
     {
         mDrive.setVelocitySetpoint(0, 0);
     }
-
-    public static void truncatePathContainerUntilMarker(PathContainer pc, String marker) {
-        boolean hasFoundMarker = false;
-        for (Waypoint w : pc.getWaypoints()) {
-            if (!hasFoundMarker)
-                if (w.getMarker().equals(marker))
-                    hasFoundMarker = true;
-                else
-                    pc.getWaypoints().remove(w);
-        }
-    }
 }

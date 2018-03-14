@@ -1215,6 +1215,13 @@ public class TalonSRX4915 implements Sendable, MotorSafety
             return false;
     }
 
+    public void configMaxIntegralAccumulator(int slotIdx, double maxIAccum)
+    {
+        if (mTalon != null)
+            return;
+        mTalon.configMaxIntegralAccumulator(slotIdx, maxIAccum, sUpdateTimeoutMS);
+    }
+    
     // MotorSafety Interface { -------------------------------------------------------------
     @Override
     public String getDescription()
