@@ -133,8 +133,9 @@ public class Drive extends Subsystem
                         updateTurnToFieldHeading(timestamp);
                         return;
                     case TURN_TO_ROBOTANGLE:
-                        updateTurnToRobotHeading(timestamp);
-                        break;
+                        //updateTurnToRobotHeading(timestamp);
+                        logWarning("TURN_TO_ROBOTANGLE unimplemented");
+                        return;
                     case DRIVE_TOWARDS_GOAL_COARSE_ALIGN:
                         updateDriveTowardsGoalCoarseAlign(timestamp);
                         return;
@@ -468,14 +469,14 @@ public class Drive extends Subsystem
 
     // I'm going to switch this up, and the name may be a bit strange for its job
     // TODO: Fix the name
-    private void updateTurnToRobotHeading(double timestamp)
+    private void updateTurnToRobotHeading(double timestamp, double heading)
     {
         if (!this.isInitialized())
             return;
-        final double dx = mVisionTargetAngleEntry.getNumber(0).doubleValue();
-        final Rotation2d robotToTarget = Rotation2d.fromDegrees(-dx);
-        // angle reversed to correct for raspi coordsys
+        final Rotation2d robotToTarget = Rotation2d.fromDegrees(heading);
         performClosedLoopTurn(robotToTarget);
+        // The angle might not need be reversed. This was probabbly from old data.
+        // angle reversed to correct for raspi coordsys
     }
 
     private void searchForCube(double timestamp)
@@ -483,17 +484,13 @@ public class Drive extends Subsystem
         if (!this.isInitialized())
             return;
         double dx = mVisionTargetAngleEntry.getNumber(0).doubleValue();
-        if (Util.epsilonEquals(dx, 0, 30))
-        { // If our target is within reasonable bounds
-            setWantAimToVisionTarget();
+        if (!Util.epsilonEquals(dx, 0, 30))
+        { 
+          // If our target is within reasonable bounds
+          dx = 17;
         }
-        else if (dx > 30)
-        { // If we get a bogus target (The bogus target is about 198)
-            dx = -3;
-        }
-        final Rotation2d robotToTarget = Rotation2d.fromDegrees(dx);
-        // angle reversed to correct for raspi coordsys(???)
-        performClosedLoopTurn(robotToTarget);
+        updateTurnToRobotHeading(timestamp, dx);
+        
     }
 
     /*
@@ -505,7 +502,7 @@ public class Drive extends Subsystem
     private void performClosedLoopTurn(Rotation2d robotToTarget)
     {
         // Check if we are on target
-        final double kGoalPosTolerance = 0.75; // degrees
+        final double kGoalPosTolerance = 1; // degrees
         final double kGoalVelTolerance = 5.0; // inches per second
         if (Math.abs(robotToTarget.getDegrees()) < kGoalPosTolerance
                 && Math.abs(mMotorGroup.getLeftVelocityInchesPerSec()) < kGoalVelTolerance
@@ -867,7 +864,8 @@ public class Drive extends Subsystem
                 state == DriveControlState.TURN_TO_ROBOTANGLE ||
                 state == DriveControlState.TURN_TO_HEADING ||
                 state == DriveControlState.DRIVE_TOWARDS_GOAL_COARSE_ALIGN ||
-                state == DriveControlState.DRIVE_TOWARDS_GOAL_APPROACH)
+                state == DriveControlState.DRIVE_TOWARDS_GOAL_APPROACH ||
+                state == DriveControlState.FIND_CUBE)
         {
             return true;
         }

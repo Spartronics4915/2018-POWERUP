@@ -267,7 +267,7 @@ public class Robot extends IterativeRobot
             mEnabledLooper.start();
             mDrive.setOpenLoop(DriveSignal.NEUTRAL);
             
-            mLED.setVisionLampOff(); // Vision not used in teleop yet TODO
+            mLED.setVisionLampOn(); // Vision not used in teleop yet TODO
         }
         catch (Throwable t)
         {
@@ -415,16 +415,16 @@ public class Robot extends IterativeRobot
             }
             
             // Drive control buttons
-//            if (mControlBoard.readButton(Buttons.VISION_CUBE_HARVEST))
-//            {
-//              mSuperstructure.setWantedState(Superstructure.WantedState.VISION_ACQUIRE_CUBE);
-//            }
-//            else
-//            {
+            if (mControlBoard.readButton(Buttons.VISION_CUBE_HARVEST))
+            {
+              mDrive.setWantSearchForCube();            
+            }
+            else
+            {
               mDrive.setOpenLoop(mCheesyDriveHelper.cheesyDrive(throttle, turn, 
                                             mControlBoard.readButton(Buttons.DRIVE_QUICK_TURN),
                                             !mControlBoard.readButton(Buttons.DRIVE_SLOW)));
-//            }
+            }
             
             // Bling settings
             if (DriverStation.getInstance().getMatchTime() < kMatchDurationSeconds)
