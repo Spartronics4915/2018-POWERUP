@@ -48,9 +48,11 @@ public class AutoModeSelector
             new AutoModeCreator("Do nothing", () -> new StandStillMode()),
             new AutoModeCreator("Other: Prepare Robot", () -> new PrepareRobotMode()),
             new AutoModeCreator("Test: Path", () -> new TestPathMode()),
+            new AutoModeCreator("Test: Velocity PID Tuning", () -> new TestDrivePIDMode("velocity")),
+            new AutoModeCreator("Test: Position PID Tuning", () -> new TestDrivePIDMode("position")),
             new AutoModeCreator("Test: Stress Motor Mode", () -> new StressMotorsMode()),
             new AutoModeCreator("Test: Turn to Cube Mode", () -> new TurnToCubeMode()),
-            new AutoModeCreator("Test: Find the Cube Mode", () -> new FindCube()),
+            new AutoModeCreator("Test: Find the Cube Mode", () -> new FindCube())
 
             // e.g. new AutoModeCreator("Boiler Gear then 10 Ball Shoot Red", () -> new BoilerGearThenShootModeRed()),
     };

@@ -183,7 +183,7 @@ public class Robot extends IterativeRobot
             PathAdapter.calculatePaths();
             zeroAllSensors();
             success = true;
-            
+
         }
         catch (Throwable t)
         {
@@ -211,9 +211,9 @@ public class Robot extends IterativeRobot
     {
         try
         {
-            
+
             mLED.setVisionLampOn();
-            
+
             Logger.setVerbosity(SmartDashboard.getString(kRobotVerbosity, "NOTICE"));
             Logger.logAutoInit();
             Logger.notice("Auto start timestamp: " + Timer.getFPGATimestamp());
@@ -233,7 +233,6 @@ public class Robot extends IterativeRobot
             mAutoModeExecuter.setAutoMode(AutoModeSelector.getSelectedAutoMode());
             mAutoModeExecuter.start();
 
-
         }
         catch (Throwable t)
         {
@@ -252,7 +251,8 @@ public class Robot extends IterativeRobot
     }
 
     /**
-     * Initializes the robot for the beginning of teleop
+     * Initializes the robot for the beginning of teleop.
+     * Note that between auto and tele, we transition to disabled state.
      */
     @Override
     public void teleopInit()
@@ -263,10 +263,12 @@ public class Robot extends IterativeRobot
             Logger.logTeleopInit();
             mControlBoard.checkForTestMode();
 
-            // Start loopers
-            mEnabledLooper.start();
+            // NB: don't call zeroAllSensors here, we aren't certain what configuration
+            // the robot is currently in.  Moreover, we don't want to lose RobotState.
+
+            mEnabledLooper.start(); // starts subsystem loopers.
             mDrive.setOpenLoop(DriveSignal.NEUTRAL);
-            
+
             mLED.setVisionLampOn(); // Vision not used in teleop yet TODO
         }
         catch (Throwable t)
@@ -280,12 +282,11 @@ public class Robot extends IterativeRobot
      * This function is called periodically during operator control.
      *
      * The code uses state machines to ensure that no matter what buttons the
-     * driver presses, the robot behaves in a
-     * safe and consistent manner.
+     * driver presses, the robot behaves in a safe and consistent manner.
      *
      * Based on driver input, the code sets a desired state for each subsystem.
-     * Each subsystem will constantly compare
-     * its desired and actual states and act to bring the two closer.
+     * Each subsystem will constantly compare its desired and actual states
+     * and act to bring the two closer.
      */
 
     @Override
@@ -319,7 +320,7 @@ public class Robot extends IterativeRobot
             {
                 mGrabber.setWantedState(ArticulatedGrabber.WantedState.RELEASE_CUBE);
             }
-            
+
             if (mControlBoard.readButton(Buttons.GRABBER_TOGGLE))
             {
                 if (mGrabber.getWantedState() == ArticulatedGrabber.WantedState.MANUAL_OPEN)
@@ -365,25 +366,25 @@ public class Robot extends IterativeRobot
                     mLED.setBlingState(BlingState.CLIMB);
                 }
             }
-            
+
             if (mControlBoard.readButton(Buttons.GRABBER_FAST_OPEN))
             {
                 mGrabber.setWantedState(ArticulatedGrabber.WantedState.FAST_OPENED);
             }
-            
+
             if (mControlBoard.readButton(Buttons.CLIMB_IDLE_TEST))
             {
                 mClimber.setWantedState(Climber.WantedState.IDLE);
             }
-            
-            if(mControlBoard.readButton(Buttons.CAMERA_CHANGE_VIEW))
+
+            if (mControlBoard.readButton(Buttons.CAMERA_CHANGE_VIEW))
             {
-                if(SmartDashboard.getString("CameraView", "").equals("CubeCam") || 
+                if (SmartDashboard.getString("CameraView", "").equals("CubeCam") ||
                         SmartDashboard.getString("CameraView", "").equals("Auto"))
                 {
                     SmartDashboard.putString("CameraView", "LiftCam");
-                } 
-                else if(SmartDashboard.getString("CameraView", "").equals("LiftCam"))
+                }
+                else if (SmartDashboard.getString("CameraView", "").equals("LiftCam"))
                 {
                     SmartDashboard.putString("CameraView", "CubeCam");
                 }
@@ -398,34 +399,34 @@ public class Robot extends IterativeRobot
             {
                 mGrabber.setWantedState(ArticulatedGrabber.WantedState.GRAB_CUBE);
             }
-            
+
             if (mControlBoard.readButton(Buttons.GRABBER_TEMP_TEST))
             {
                 mGrabber.setWantedState(ArticulatedGrabber.WantedState.TEMP);
             }
-            
+
             if (mControlBoard.readButton(Buttons.GRABBER_PREPARE_DROP_TEST))
             {
                 mGrabber.setWantedState(ArticulatedGrabber.WantedState.PREPARE_DROP);
             }
-            
+
             if (mControlBoard.readButton(Buttons.GRABBER_PREPARE_INTAKE_TEST))
             {
                 mGrabber.setWantedState(ArticulatedGrabber.WantedState.PREPARE_INTAKE);
             }
-            
+
             // Drive control buttons
             if (mControlBoard.readButton(Buttons.VISION_CUBE_HARVEST))
             {
-              mDrive.setWantSearchForCube();            
+                mDrive.setWantSearchForCube();
             }
             else
             {
-              mDrive.setOpenLoop(mCheesyDriveHelper.cheesyDrive(throttle, turn, 
-                                            mControlBoard.readButton(Buttons.DRIVE_QUICK_TURN),
-                                            !mControlBoard.readButton(Buttons.DRIVE_SLOW)));
+                mDrive.setOpenLoop(mCheesyDriveHelper.cheesyDrive(throttle, turn,
+                        mControlBoard.readButton(Buttons.DRIVE_QUICK_TURN),
+                        !mControlBoard.readButton(Buttons.DRIVE_SLOW)));
             }
-            
+
             // Bling settings
             if (DriverStation.getInstance().getMatchTime() < kMatchDurationSeconds)
             {
@@ -458,7 +459,7 @@ public class Robot extends IterativeRobot
                 mAutoModeExecuter.stop();
             }
             mAutoModeExecuter = null;
-            
+
             mEnabledLooper.stop();
 
             // Call stop on all our Subsystems.
@@ -467,7 +468,7 @@ public class Robot extends IterativeRobot
             mDrive.setOpenLoop(DriveSignal.NEUTRAL);
 
             PathAdapter.calculatePaths();
-            
+
             mLED.setVisionLampOff();
         }
         catch (Throwable t)
