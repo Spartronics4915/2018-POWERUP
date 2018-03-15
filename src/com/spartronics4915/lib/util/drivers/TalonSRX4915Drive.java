@@ -280,11 +280,11 @@ public class TalonSRX4915Drive
     public void reloadGains(int slotIdx, double kp, double ki, double kd, double kf,
             int izone, double rampRate)
     {
-        this.reloadGains(slotIdx, kp, ki, kd, kf, kf, izone, rampRate, 0);
+        this.reloadGains(slotIdx, kp, ki, kd, kf, kf, izone, 0, rampRate);
     }
 
     public void reloadGains(int slotIdx, double kp, double ki, double kd,
-            double kfL, double kfR, int izone, double rampRate, double maxIAccum)
+            double kfL, double kfR, int izone, double maxIAccum, double rampRate)
     {
         mLeftMaster.configPID(slotIdx, kp, ki, kd, kfL, izone, rampRate);
         mRightMaster.configPID(slotIdx, kp, ki, kd, kfR, izone, rampRate);

@@ -865,16 +865,28 @@ public class Drive extends Subsystem
         if (mMotorGroup.isInitialized())
         {
             mMotorGroup.reloadGains(kPositionControlSlot,
-                    Constants.kDrivePositionKp, Constants.kDrivePositionKi,
-                    Constants.kDrivePositionKd, Constants.kDrivePositionKf,
-                    Constants.kDrivePositionIZone, Constants.kDrivePositionRampRate);
+                    Constants.kDrivePositionKp, 
+                    Constants.kDrivePositionKi,
+                    Constants.kDrivePositionKd, 
+                    Constants.kDrivePositionKf, // left
+                    Constants.kDrivePositionKf, // right
+                    Constants.kDrivePositionIZone, 
+                    Constants.kDrivePositionMaxIAccum,
+                    Constants.kDrivePositionRampRate);
 
             mMotorGroup.reloadGains(kVelocityControlSlot,
-                    Constants.kDriveVelocityKp, Constants.kDriveVelocityKi,
+                    Constants.kDriveVelocityKp, 
+                    Constants.kDriveVelocityKi,
                     Constants.kDriveVelocityKd,
-                    Constants.kDriveVelocityKf/* +0.35 */, Constants.kDriveVelocityKf, // +1.05 on right at 10 ips is pretty good on the 2nd robot, f of 0.2 on left and 0 on right is great for 2nd robot!
-                    Constants.kDriveVelocityIZone, Constants.kDriveVelocityRampRate,
-                    Constants.kDriveVelocityMaxIAccum);
+                    Constants.kDriveVelocityKf, // left 
+                    Constants.kDriveVelocityKf, // right 
+                    Constants.kDriveVelocityIZone, 
+                    Constants.kDriveVelocityMaxIAccum,
+                    Constants.kDriveVelocityRampRate);
+            
+            // old Kf notes (when we'd forgotten to set up correct initial pose):
+            //      +1.05 on right at 10 ips is pretty good on the 2nd robot, 
+            //      f of 0.2 on left and 0 on right is great for 2nd robot!
 
             logNotice("reloaded PID gains");
             logDebug("reloaded position gains:" + mMotorGroup.dumpPIDState(kPositionControlSlot));
