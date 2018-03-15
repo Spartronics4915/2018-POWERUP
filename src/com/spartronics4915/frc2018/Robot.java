@@ -319,6 +319,14 @@ public class Robot extends IterativeRobot
             {
                 mGrabber.setWantedState(ArticulatedGrabber.WantedState.RELEASE_CUBE);
             }
+            
+            if (mControlBoard.readButton(Buttons.GRABBER_TOGGLE))
+            {
+                if (mGrabber.getWantedState() == ArticulatedGrabber.WantedState.MANUAL_OPEN)
+                    mGrabber.setWantedState(ArticulatedGrabber.WantedState.MANUAL_CLOSED);
+                else
+                    mGrabber.setWantedState(ArticulatedGrabber.WantedState.MANUAL_OPEN);
+            }
 
             if (mControlBoard.readButton(Buttons.HARVESTER_OPEN))
             {
@@ -344,21 +352,41 @@ public class Robot extends IterativeRobot
                 mLED.setBlingState(BlingState.CARRY_CUBE);
             }
 
-            if (mControlBoard.readButton(Buttons.HARVESTER_CLIMB))
+            if (mControlBoard.readButton(Buttons.CLIMBER_TOGGLE))
             {
-                mSuperstructure.setWantedState(Superstructure.WantedState.CLIMB);
-                mLED.setBlingState(BlingState.CLIMB);
+                if (mClimber.getWantedState() == Climber.WantedState.CLIMB)
+                {
+                    mClimber.setWantedState(Climber.WantedState.HOLD);
+                    mLED.setBlingState(BlingState.STOP_CLIMBER);
+                }
+                else
+                {
+                    mSuperstructure.setWantedState(Superstructure.WantedState.CLIMB);
+                    mLED.setBlingState(BlingState.CLIMB);
+                }
             }
-
-            if (mControlBoard.readButton(Buttons.CLIMBER_STOP))
+            
+            if (mControlBoard.readButton(Buttons.GRABBER_FAST_OPEN))
             {
-                mClimber.setWantedState(Climber.WantedState.HOLD);
-                mLED.setBlingState(BlingState.STOP_CLIMBER);
+                mGrabber.setWantedState(ArticulatedGrabber.WantedState.FAST_OPENED);
             }
-
+            
             if (mControlBoard.readButton(Buttons.CLIMB_IDLE_TEST))
             {
                 mClimber.setWantedState(Climber.WantedState.IDLE);
+            }
+            
+            if(mControlBoard.readButton(Buttons.CAMERA_CHANGE_VIEW))
+            {
+                if(SmartDashboard.getString("CameraView", "").equals("CubeCam") || 
+                        SmartDashboard.getString("CameraView", "").equals("Auto"))
+                {
+                    SmartDashboard.putString("CameraView", "LiftCam");
+                } 
+                else if(SmartDashboard.getString("CameraView", "").equals("LiftCam"))
+                {
+                    SmartDashboard.putString("CameraView", "CubeCam");
+                }
             }
 
             if (mControlBoard.readButton(Buttons.GRABBER_TRANSPORT_TEST))
@@ -387,16 +415,16 @@ public class Robot extends IterativeRobot
             }
             
             // Drive control buttons
-            if (mControlBoard.readButton(Buttons.VISION_CUBE_HARVEST))
-            {
-              mSuperstructure.setWantedState(Superstructure.WantedState.VISION_ACQUIRE_CUBE);
-            }
-            else
-            {
+//            if (mControlBoard.readButton(Buttons.VISION_CUBE_HARVEST))
+//            {
+//              mSuperstructure.setWantedState(Superstructure.WantedState.VISION_ACQUIRE_CUBE);
+//            }
+//            else
+//            {
               mDrive.setOpenLoop(mCheesyDriveHelper.cheesyDrive(throttle, turn, 
                                             mControlBoard.readButton(Buttons.DRIVE_QUICK_TURN),
                                             !mControlBoard.readButton(Buttons.DRIVE_SLOW)));
-            }
+//            }
             
             // Bling settings
             if (DriverStation.getInstance().getMatchTime() < kMatchDurationSeconds)
@@ -430,8 +458,6 @@ public class Robot extends IterativeRobot
                 mAutoModeExecuter.stop();
             }
             mAutoModeExecuter = null;
-
-            zeroAllSensors();
             
             mEnabledLooper.stop();
 

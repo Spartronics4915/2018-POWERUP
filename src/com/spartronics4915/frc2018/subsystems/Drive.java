@@ -24,6 +24,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.Timer;
 
 /**
  * This subsystem consists of the robot's drivetrain: 4 CIM motors, 4 talons,
@@ -45,6 +46,8 @@ public class Drive extends Subsystem
     private static final double kOpenLoopRampRate = .5;
     private static final double kOpenLoopNominalOutput = 0.0; // fwd & rev
     private static final double kOpenLoopPeakOutput = 1; // fwd: 1, rev: -1
+    private static final String kTargetVelL = "targetVelL";
+    private static final String kTargetVelR = "targetVelR";
 
     public static Drive getInstance()
     {
@@ -82,6 +85,7 @@ public class Drive extends Subsystem
     private NetworkTableEntry mVisionTargetAngleEntry = null;
     private boolean mIsOnTarget = false;
     private boolean mIsApproaching = false;
+    private boolean mIsSaturated = false;
 
     // Logging
     private final ReflectingCSVWriter<PathFollower.DebugOutput> mCSVWriter;
@@ -229,7 +233,7 @@ public class Drive extends Subsystem
     {
         if (!this.isInitialized())
             return;
-        mMotorGroup.outputToSmartDashboard(usesTalonVelocityControl(mDriveControlState));
+        mMotorGroup.outputToSmartDashboard();
         synchronized (this)
         {
             dashboardPutState(mDriveControlState.toString());
@@ -238,13 +242,9 @@ public class Drive extends Subsystem
                 dashboardPutNumber("CTE", mPathFollower.getCrossTrackError());
                 dashboardPutNumber("ATE", mPathFollower.getAlongTrackError());
             }
-            else
-            {
-                dashboardPutNumber("CTE", 0.0);
-                dashboardPutNumber("ATE", 0.0);
-            }
+            if (mDriveControlState != DriveControlState.OPEN_LOOP)
+                dashboardPutBoolean("onTarget", isOnTarget());
         }
-        dashboardPutBoolean("on target", isOnTarget());
     }
 
     public synchronized void resetEncoders()
@@ -321,6 +321,8 @@ public class Drive extends Subsystem
         mMotorGroup.beginOpenLoop(kOpenLoopRampRate, kOpenLoopNominalOutput, kOpenLoopPeakOutput);
         mMotorGroup.enableBraking(true); // drivers like to stop on a dime
         mDriveControlState = DriveControlState.OPEN_LOOP;
+        dashboardPutNumber(kTargetVelL, 0);
+        dashboardPutNumber(kTargetVelR, 0);
     }
 
     /**
@@ -363,32 +365,51 @@ public class Drive extends Subsystem
             // mRightMaster.setVoltageCompensationRampRate(Constants.kDriveVoltageCompensationRampRate);
 
             mMotorGroup.enableBraking(true);
+            dashboardPutNumber(kTargetVelL, 0);
+            dashboardPutNumber(kTargetVelR, 0);
         }
     }
 
     /**
      * Adjust Velocity setpoint (if already in velocity mode)
      *
-     * @param left_inches_per_sec
-     * @param right_inches_per_sec
+     * @param leftIPS
+     * @param rightIPS
      */
-    private synchronized void updateVelocitySetpoint(double left_inches_per_sec,
-            double right_inches_per_sec)
+    private synchronized void updateVelocitySetpoint(double leftIPS,
+            double rightIPS)
     {
         if (!this.isInitialized())
             return;
         if (usesTalonVelocityControl(mDriveControlState))
         {
             final double max_desired =
-                    Math.max(Math.abs(left_inches_per_sec), Math.abs(right_inches_per_sec));
-            final double scale = max_desired > Constants.kDriveHighGearMaxSetpoint
-                    ? Constants.kDriveHighGearMaxSetpoint / max_desired : 1.0;
-            mMotorGroup.driveVelocityInchesPerSec(left_inches_per_sec * scale,
-                    right_inches_per_sec * scale);
+                    Math.max(Math.abs(leftIPS), Math.abs(rightIPS));
+            if (max_desired > Constants.kDriveHighGearMaxSetpoint)
+            {
+                final double scale = Constants.kDriveHighGearMaxSetpoint / max_desired;
+                if (!mIsSaturated)
+                    this.logWarning("drive control is saturated");
+                mIsSaturated = true;
+                rightIPS *= scale;
+                leftIPS *= scale;
+            }
+            else
+            {
+                if (mIsSaturated)
+                    this.logNotice("drive control no longer saturated");
+                mIsSaturated = false;
+            }
+
+            dashboardPutNumber(kTargetVelL, leftIPS);
+            dashboardPutNumber(kTargetVelR, rightIPS);
+            mMotorGroup.driveVelocityInchesPerSec(leftIPS, rightIPS);
         }
         else
         {
             logError("Hit a bad velocity control state");
+            dashboardPutNumber(kTargetVelL, 0);
+            dashboardPutNumber(kTargetVelR, 0);
             mMotorGroup.driveVelocityInchesPerSec(0, 0); // XXX: should we just mDrive.stop()?
         }
     }
@@ -454,28 +475,25 @@ public class Drive extends Subsystem
         if (!this.isInitialized())
             return;
         final double dx = mVisionTargetAngleEntry.getNumber(0).doubleValue();
-        final Rotation2d robotToTarget = Rotation2d.fromDegrees(-dx); 
+        final Rotation2d robotToTarget = Rotation2d.fromDegrees(-dx);
         // angle reversed to correct for raspi coordsys
         performClosedLoopTurn(robotToTarget);
     }
-    
+
     private void searchForCube(double timestamp)
     {
         if (!this.isInitialized())
             return;
         double dx = mVisionTargetAngleEntry.getNumber(0).doubleValue();
-        if (Util.epsilonEquals(dx, 0, 30)) {  // If our target is within reasonable bounds
+        if (Util.epsilonEquals(dx, 0, 30))
+        { // If our target is within reasonable bounds
             setWantAimToVisionTarget();
-<<<<<<< HEAD
         }
-        else if (dx > 30) {  // If we get a bogus target (The bogus target is about 198)
+        else if (dx > 30)
+        { // If we get a bogus target (The bogus target is about 198)
             dx = -3;
-=======
-        } else {
-            dx = -5;
->>>>>>> 714d62e27e07d0718c3eaf728a6a3e237ea59a7f
         }
-        final Rotation2d robotToTarget = Rotation2d.fromDegrees(dx); 
+        final Rotation2d robotToTarget = Rotation2d.fromDegrees(dx);
         // angle reversed to correct for raspi coordsys(???)
         performClosedLoopTurn(robotToTarget);
     }
@@ -499,7 +517,7 @@ public class Drive extends Subsystem
             mIsOnTarget = true;
             updatePositionSetpoint(mMotorGroup.getLeftDistanceInches(),
                     mMotorGroup.getRightDistanceInches());
-        } 
+        }
         else
         {
             Kinematics.DriveVelocity wheel_delta = Kinematics
@@ -672,6 +690,7 @@ public class Drive extends Subsystem
             mTargetHeading = Rotation2d.fromDegrees(mMotorGroup.getGyroAngle());
         }
     }
+
     /**
      * Configures the drivebase for auto driving
      */
@@ -809,8 +828,10 @@ public class Drive extends Subsystem
 
             mMotorGroup.reloadGains(kVelocityControlSlot,
                     Constants.kDriveVelocityKp, Constants.kDriveVelocityKi,
-                    Constants.kDriveVelocityKd, Constants.kDriveVelocityKf,
-                    Constants.kDriveVelocityIZone, Constants.kDriveVelocityRampRate);
+                    Constants.kDriveVelocityKd,
+                    Constants.kDriveVelocityKf/* +0.35 */, Constants.kDriveVelocityKf, // +1.05 on right at 10 ips is pretty good on the 2nd robot, f of 0.2 on left and 0 on right is great for 2nd robot!
+                    Constants.kDriveVelocityIZone, Constants.kDriveVelocityRampRate,
+                    Constants.kDriveVelocityMaxIAccum);
 
             logNotice("reloaded PID gains");
             logDebug("reloaded position gains:" + mMotorGroup.dumpPIDState(kPositionControlSlot));
@@ -845,7 +866,7 @@ public class Drive extends Subsystem
     protected static boolean usesTalonPositionControl(DriveControlState state)
     {
         if (state == DriveControlState.AIM_TO_GOAL ||
-                state == DriveControlState.TURN_TO_ROBOTANGLE || 
+                state == DriveControlState.TURN_TO_ROBOTANGLE ||
                 state == DriveControlState.TURN_TO_HEADING ||
                 state == DriveControlState.DRIVE_TOWARDS_GOAL_COARSE_ALIGN ||
                 state == DriveControlState.DRIVE_TOWARDS_GOAL_APPROACH)
@@ -863,23 +884,104 @@ public class Drive extends Subsystem
             logWarning("can't check un-initialized system");
             return false;
         }
-        logNotice("checkSystem ---------------");
-        return mMotorGroup.checkSystem(variant);
+        logNotice("checkSystem " + variant + "  ----------------");
+        boolean success = true;
+        if (variant == "tuneVelocity")
+        {
+            Timer timer = new Timer();
+            logNotice("  enter velocity control mode");
+            configureTalonsForSpeedControl();
+
+            logNotice("  straight: 10ips, 4 sec");
+            this.setVelocitySetpoint(10, 10);
+            timer.reset();
+            timer.start();
+            while (!timer.hasPeriodPassed(4))
+                this.mMotorGroup.outputToSmartDashboard();
+            this.setVelocitySetpoint(0, 0);
+            this.mMotorGroup.outputToSmartDashboard();
+            this.stop();
+
+            Timer.delay(2);
+            logNotice("  straight: -10ips, 4 sec");
+            this.setVelocitySetpoint(-10, -10);
+            Timer.delay(4);
+            this.setVelocitySetpoint(0, 0);
+            this.mMotorGroup.outputToSmartDashboard();
+            this.stop();
+
+            Timer.delay(2);
+            logNotice("  curve left: 4 sec");
+            this.setVelocitySetpoint(5, 10);
+            timer.reset();
+            timer.start();
+            while (!timer.hasPeriodPassed(4))
+                this.mMotorGroup.outputToSmartDashboard();
+            this.setVelocitySetpoint(0, 0);
+            this.mMotorGroup.outputToSmartDashboard();
+            this.stop();
+
+            Timer.delay(2);
+            logNotice("  curve right: 4 sec");
+            this.setVelocitySetpoint(10, 5);
+            timer.reset();
+            timer.start();
+            while (!timer.hasPeriodPassed(4))
+                this.mMotorGroup.outputToSmartDashboard();
+            this.setVelocitySetpoint(0, 0);
+            this.mMotorGroup.outputToSmartDashboard();
+            this.stop();
+
+            Timer.delay(2);
+            logNotice("  mixed speeds straight: 10, 4, 20, 4");
+
+            this.setVelocitySetpoint(10, 10);
+            timer.reset();
+            timer.start();
+            while (!timer.hasPeriodPassed(2))
+                this.mMotorGroup.outputToSmartDashboard();
+
+            this.setVelocitySetpoint(4, 4);
+            timer.reset();
+            timer.start();
+            while (!timer.hasPeriodPassed(2))
+                this.mMotorGroup.outputToSmartDashboard();
+
+            this.setVelocitySetpoint(20, 20);
+            timer.reset();
+            timer.start();
+            while (!timer.hasPeriodPassed(2))
+                this.mMotorGroup.outputToSmartDashboard();
+
+            this.setVelocitySetpoint(4, 4);
+            timer.reset();
+            timer.start();
+            while (!timer.hasPeriodPassed(2))
+                this.mMotorGroup.outputToSmartDashboard();
+            this.stop();
+            this.setVelocitySetpoint(0, 0);
+            this.mMotorGroup.outputToSmartDashboard();
+        }
+        else
+            success = mMotorGroup.checkSystem(variant);
+        return success;
     }
-    
+
     public DriveControlState getState()
     {
         // Get drive train state
         return mDriveControlState;
     }
-    public boolean onVisionTarget() 
+
+    public boolean onVisionTarget()
     {
         // In a perfect world this number is usable to all of drive
         final double dx = mVisionTargetAngleEntry.getNumber(0).doubleValue();
-        if (Util.epsilonEquals(dx, 0, 1)) {
+        if (Util.epsilonEquals(dx, 0, 1))
+        {
             // We are on target
             return true;
-        } 
+        }
         else
         {
             // We are not on target

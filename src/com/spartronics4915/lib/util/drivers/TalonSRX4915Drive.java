@@ -280,10 +280,18 @@ public class TalonSRX4915Drive
     public void reloadGains(int slotIdx, double kp, double ki, double kd, double kf,
             int izone, double rampRate)
     {
-        mLeftMaster.configPID(slotIdx, kp, ki, kd, kf, izone, rampRate);
-        mRightMaster.configPID(slotIdx, kp, ki, kd, kf, izone, rampRate);
+        this.reloadGains(slotIdx, kp, ki, kd, kf, kf, izone, rampRate, 0);
     }
-    
+
+    public void reloadGains(int slotIdx, double kp, double ki, double kd,
+            double kfL, double kfR, int izone, double rampRate, double maxIAccum)
+    {
+        mLeftMaster.configPID(slotIdx, kp, ki, kd, kfL, izone, rampRate);
+        mRightMaster.configPID(slotIdx, kp, ki, kd, kfR, izone, rampRate);
+        mLeftMaster.configMaxIntegralAccumulator(slotIdx, maxIAccum);
+        mRightMaster.configMaxIntegralAccumulator(slotIdx, maxIAccum);
+    }
+
     public void resetIntegralAccumulator()
     {
         mLeftMaster.setIntegralAccumulator(0);
@@ -298,33 +306,31 @@ public class TalonSRX4915Drive
         return result;
     }
 
-    public void outputToSmartDashboard(boolean usesVelocityControl)
+    public void outputToSmartDashboard()
     {
-        final double left_speed = getLeftVelocityInchesPerSec();
-        final double right_speed = getRightVelocityInchesPerSec();
+        // following names relied on by smartdashboard, change them with care:
+        //  IMU_Heading, speed and speed error
 
-        SmartDashboard.putNumber("Drive/left voltage (V)", mLeftMaster.getOutputVoltage());
-        SmartDashboard.putNumber("Drive/right voltage (V)", mRightMaster.getOutputVoltage());
-        SmartDashboard.putNumber("Drive/left speed (ips)", left_speed);
-        SmartDashboard.putNumber("Drive/right speed (ips)", right_speed);
-        if (usesVelocityControl)
-        {
-            SmartDashboard.putNumber("Drive/left speed error (ips)",
-                    rpmToInchesPerSecond(mLeftMaster.getSetpointRPM()) - left_speed);
-            SmartDashboard.putNumber("Drive/right speed error (ips)",
-                    rpmToInchesPerSecond(mRightMaster.getSetpointRPM()) - right_speed);
-        }
-        else
-        {
-            SmartDashboard.putNumber("Drive/left speed error (ips)", 0.0);
-            SmartDashboard.putNumber("Drive/right speed error (ips)", 0.0);
-        }
-        SmartDashboard.putNumber("Drive/left position setpoint (rotations)",
-                mLeftMaster.getSetpointRotations());
-        SmartDashboard.putNumber("Drive/right position setpoint (rotations)",
-                mRightMaster.getSetpointRotations());
+        final double leftSpeed = getLeftVelocityInchesPerSec();
+        final double rightSpeed = getRightVelocityInchesPerSec();
 
-        // following names relied upon by dashboard.
+        SmartDashboard.putNumber("Drive/leftVoltage", mLeftMaster.getOutputVoltage());
+        SmartDashboard.putNumber("Drive/rightVoltage", mRightMaster.getOutputVoltage());
+        SmartDashboard.putNumber("Drive/leftSpeed", leftSpeed); // (ips)
+        SmartDashboard.putNumber("Drive/rightSpeed", rightSpeed); // (ips)
+        if (mLeftMaster.mControlMode == ControlMode.Velocity)
+        {
+            SmartDashboard.putNumber("Drive/leftSpeedErr",
+                    leftSpeed - rpmToInchesPerSecond(mLeftMaster.getSetpointRPM()));
+            SmartDashboard.putNumber("Drive/rightSpeedErr",
+                    rightSpeed - rpmToInchesPerSecond(mRightMaster.getSetpointRPM()));
+        }
+        else if (mLeftMaster.mControlMode == ControlMode.MotionMagic ||
+                mLeftMaster.mControlMode == ControlMode.Position)
+        {
+            SmartDashboard.putNumber("Drive/leftTargetPt", mLeftMaster.getSetpointRotations());
+            SmartDashboard.putNumber("Drive/rightTargetPt", mRightMaster.getSetpointRotations());
+        }
         SmartDashboard.putNumber("Drive/IMU_Heading", getGyroAngle());
     }
 
@@ -408,8 +414,8 @@ public class TalonSRX4915Drive
         mLeftSlave.set(mLeftMaster.getId());
 
         logNotice("All Motor Results (fwd RPMs should be positive) ===========");
-        logNotice("RPM FWD Left:" + rpmFwdL + " Right:" + rpmFwdR + 
-                    " with: " + rpmFwdL + " rpm == " + rpmToInchesPerSecond(rpmFwdL) + " in/sec");
+        logNotice("RPM FWD Left:" + rpmFwdL + " Right:" + rpmFwdR +
+                " with: " + rpmFwdL + " rpm == " + rpmToInchesPerSecond(rpmFwdL) + " in/sec");
         logNotice("RPM REV Left: " + rpmRevL + " Right" + rpmRevR);
 
         logNotice("Single Motor Results (all RPMs and currents should be similar) ===========");
