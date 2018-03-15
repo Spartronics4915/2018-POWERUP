@@ -549,7 +549,8 @@ public class Robot extends IterativeRobot
     @Override
     public void testPeriodic()
     {
-        // nothing to do here.
+        mRobotState.outputToSmartDashboard();
+        mSubsystemManager.outputToSmartDashboard();
     }
 
     /**

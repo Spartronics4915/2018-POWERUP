@@ -8,7 +8,6 @@ import com.spartronics4915.frc2018.RobotState;
 import com.spartronics4915.frc2018.ShooterAimingParameters;
 import com.spartronics4915.frc2018.loops.Loop;
 import com.spartronics4915.frc2018.loops.Looper;
-import com.spartronics4915.frc2018.subsystems.Climber.WantedState;
 import com.spartronics4915.lib.util.DriveSignal;
 import com.spartronics4915.lib.util.ReflectingCSVWriter;
 import com.spartronics4915.lib.util.Util;
@@ -23,7 +22,6 @@ import com.spartronics4915.lib.util.math.Twist2d;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.Timer;
 
 /**
@@ -886,7 +884,7 @@ public class Drive extends Subsystem
         }
         logNotice("checkSystem " + variant + "  ----------------");
         boolean success = true;
-        if (variant == "tuneVelocity")
+        if (variant == "velocityControl")
         {
             Timer timer = new Timer();
             logNotice("  enter velocity control mode");
@@ -897,39 +895,54 @@ public class Drive extends Subsystem
             timer.reset();
             timer.start();
             while (!timer.hasPeriodPassed(4))
-                this.mMotorGroup.outputToSmartDashboard();
+            {
+                Timer.delay(.05);
+                this.outputToSmartDashboard();
+            }
             this.setVelocitySetpoint(0, 0);
-            this.mMotorGroup.outputToSmartDashboard();
+            this.outputToSmartDashboard();
             this.stop();
 
             Timer.delay(2);
             logNotice("  straight: -10ips, 4 sec");
             this.setVelocitySetpoint(-10, -10);
-            Timer.delay(4);
+            timer.reset();
+            timer.start();
+            while (!timer.hasPeriodPassed(4))
+            {
+                Timer.delay(.05);
+                this.outputToSmartDashboard();
+            }
             this.setVelocitySetpoint(0, 0);
-            this.mMotorGroup.outputToSmartDashboard();
+            this.outputToSmartDashboard();
             this.stop();
 
             Timer.delay(2);
             logNotice("  curve left: 4 sec");
-            this.setVelocitySetpoint(5, 10);
+            this.setVelocitySetpoint(3, 5);
             timer.reset();
             timer.start();
             while (!timer.hasPeriodPassed(4))
-                this.mMotorGroup.outputToSmartDashboard();
+            {
+                Timer.delay(.05);
+                this.outputToSmartDashboard();
+            }
             this.setVelocitySetpoint(0, 0);
-            this.mMotorGroup.outputToSmartDashboard();
+            this.outputToSmartDashboard();
             this.stop();
 
             Timer.delay(2);
             logNotice("  curve right: 4 sec");
-            this.setVelocitySetpoint(10, 5);
+            this.setVelocitySetpoint(5, 3);
             timer.reset();
             timer.start();
             while (!timer.hasPeriodPassed(4))
-                this.mMotorGroup.outputToSmartDashboard();
+            {
+                Timer.delay(.05);
+                this.outputToSmartDashboard();
+            }
             this.setVelocitySetpoint(0, 0);
-            this.mMotorGroup.outputToSmartDashboard();
+            this.outputToSmartDashboard();
             this.stop();
 
             Timer.delay(2);
@@ -939,28 +952,40 @@ public class Drive extends Subsystem
             timer.reset();
             timer.start();
             while (!timer.hasPeriodPassed(2))
-                this.mMotorGroup.outputToSmartDashboard();
+            {
+                Timer.delay(.05);
+                this.outputToSmartDashboard();
+            }
 
             this.setVelocitySetpoint(4, 4);
             timer.reset();
             timer.start();
             while (!timer.hasPeriodPassed(2))
-                this.mMotorGroup.outputToSmartDashboard();
+            {
+                Timer.delay(.05);
+                this.outputToSmartDashboard();
+            }
 
+            timer.reset();
+            timer.start();
             this.setVelocitySetpoint(20, 20);
-            timer.reset();
-            timer.start();
             while (!timer.hasPeriodPassed(2))
-                this.mMotorGroup.outputToSmartDashboard();
+            {
+                Timer.delay(.05);
+                this.outputToSmartDashboard();
+            }
 
             this.setVelocitySetpoint(4, 4);
             timer.reset();
             timer.start();
             while (!timer.hasPeriodPassed(2))
-                this.mMotorGroup.outputToSmartDashboard();
+            {
+                Timer.delay(.05);
+                this.outputToSmartDashboard();
+            }
             this.stop();
             this.setVelocitySetpoint(0, 0);
-            this.mMotorGroup.outputToSmartDashboard();
+            this.outputToSmartDashboard();
         }
         else
             success = mMotorGroup.checkSystem(variant);
