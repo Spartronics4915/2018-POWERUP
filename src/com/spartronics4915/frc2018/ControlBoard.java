@@ -145,7 +145,7 @@ public class ControlBoard implements ControlBoardInterface
                 break;
             case VISION_CUBE_HARVEST:
                 // Teleop Harvest Cubes
-                result = mDrivestick.getRawButtonPressed(4);
+                result = mDrivestick.getRawButton(4);
                 break;
             case GRABBER_TOGGLE:
                 result = mDrivestick.getRawButtonReleased(7);
