@@ -8,7 +8,6 @@ import com.spartronics4915.frc2018.RobotState;
 import com.spartronics4915.frc2018.ShooterAimingParameters;
 import com.spartronics4915.frc2018.loops.Loop;
 import com.spartronics4915.frc2018.loops.Looper;
-import com.spartronics4915.frc2018.subsystems.Climber.WantedState;
 import com.spartronics4915.lib.util.DriveSignal;
 import com.spartronics4915.lib.util.ReflectingCSVWriter;
 import com.spartronics4915.lib.util.Util;
@@ -23,7 +22,6 @@ import com.spartronics4915.lib.util.math.Twist2d;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.Timer;
 
 /**
@@ -63,6 +61,7 @@ public class Drive extends Subsystem
     {
         OPEN_LOOP, // open loop voltage control
         VELOCITY_SETPOINT, // velocity PID control
+        POSITION_SETPOINT, // position PID control
         PATH_FOLLOWING, // used for autonomous driving
         AIM_TO_GOAL, // TransitoryState - Goal is a target expressed in field coordinates
         TURN_TO_ROBOTANGLE, // TURN_TO_HEADING, but operates in robot-relative coords
@@ -121,8 +120,8 @@ public class Drive extends Subsystem
                 switch (mDriveControlState)
                 {
                     case OPEN_LOOP:
-                        return;
                     case VELOCITY_SETPOINT:
+                    case POSITION_SETPOINT:
                         return;
                     case PATH_FOLLOWING:
                         if (mPathFollower != null)
@@ -279,19 +278,61 @@ public class Drive extends Subsystem
     }
 
     /**
-     * Start up velocity mode. This sets the drive train in high gear as well.
+     * Start up velocity mode. Note that other control states may imply
+     * the underlying speedControl mode but are initialized through a
+     * different code path. ie: only call this method if you want direct
+     * control over the velocity setpoint.
      *
-     * @param leftInchesPerSec
-     * @param rightInchesPerSec
+     * @param leftIPS
+     * @param rightIPS
      */
-    public synchronized void setVelocitySetpoint(double leftInchesPerSec,
-            double rightInchesPerSec)
+    public synchronized void setVelocitySetpoint(double leftIPS, double rightIPS)
     {
         if (!this.isInitialized())
             return;
-        configureTalonsForSpeedControl();
-        mDriveControlState = DriveControlState.VELOCITY_SETPOINT;
-        updateVelocitySetpoint(leftInchesPerSec, rightInchesPerSec);
+        if (mDriveControlState != DriveControlState.VELOCITY_SETPOINT)
+        {
+            configureTalonsForSpeedControl();
+            mDriveControlState = DriveControlState.VELOCITY_SETPOINT;
+        }
+        updateVelocitySetpoint(leftIPS, rightIPS);
+    }
+
+    /**
+     * Start up position mode. Note that other control states may imply
+     * the underlying positionControl mode but are initialized through a
+     * different code path. ie: only call this method if you want direct
+     * control over the position setpoint.
+     *
+     * @param leftInches
+     * @param rightInches
+     */
+    public synchronized void setPositionSetpoint(double leftInches, double rightInches)
+    {
+        if (!this.isInitialized())
+            return;
+        if (mDriveControlState != DriveControlState.POSITION_SETPOINT)
+        {
+            configureTalonsForPositionControl();
+            mDriveControlState = DriveControlState.POSITION_SETPOINT;
+        }
+        updatePositionSetpoint(leftInches, rightInches);
+    }
+
+    /**
+     * Startup in position mode with a setpoint expressed relative to
+     * the current position. NB: this call should only be made if
+     * the current position is a reliably stable value.
+     * 
+     * @param leftInches
+     * @param rightInches
+     */
+    public synchronized void setRelativePosition(double leftInches, double rightInches)
+    {
+        if (!this.isInitialized())
+            return;
+        setPositionSetpoint(mMotorGroup.getLeftDistanceInches() + leftInches,
+                mMotorGroup.getRightDistanceInches() + rightInches);
     }
 
     public double getLeftDistanceInches()
@@ -418,17 +459,17 @@ public class Drive extends Subsystem
     /**
      * Adjust position setpoint (if already in position mode)
      *
-     * @param left_inches_per_sec
-     * @param right_inches_per_sec
+     * @param leftPosInches
+     * @param rightPosInches
      */
-    private synchronized void updatePositionSetpoint(double left_position_inches,
-            double right_position_inches)
+    private synchronized void updatePositionSetpoint(double leftPosInches,
+            double rightPosInches)
     {
         if (!this.isInitialized())
             return;
         if (usesTalonPositionControl(mDriveControlState))
         {
-            mMotorGroup.drivePositionInches(left_position_inches, right_position_inches);
+            mMotorGroup.drivePositionInches(leftPosInches, rightPosInches);
         }
         else
         {
@@ -487,12 +528,12 @@ public class Drive extends Subsystem
             return;
         double dx = mVisionTargetAngleEntry.getNumber(0).doubleValue();
         if (!Util.epsilonEquals(dx, 0, 30))
-        { 
-          // If our target is within reasonable bounds
-          dx = 17;
+        {
+            // If our target is within reasonable bounds
+            dx = 17;
         }
         updateTurnToRobotHeading(timestamp, dx);
-        
+
     }
 
     /*
@@ -643,6 +684,11 @@ public class Drive extends Subsystem
     {
         return mDriveControlState == DriveControlState.AIM_TO_GOAL;
     }
+
+    // public synchronized void setWantPositionControl()
+    // public synchronized void setWantVelocityControl()
+    //  these methods are already implemented above but with an inconsistent naming
+    //  see: setVelocitySetpoint, setPositionSetpoint, setRelativePosition, setOpenLoop
 
     /**
      * Configures the drivebase for auto aiming
@@ -819,16 +865,28 @@ public class Drive extends Subsystem
         if (mMotorGroup.isInitialized())
         {
             mMotorGroup.reloadGains(kPositionControlSlot,
-                    Constants.kDrivePositionKp, Constants.kDrivePositionKi,
-                    Constants.kDrivePositionKd, Constants.kDrivePositionKf,
-                    Constants.kDrivePositionIZone, Constants.kDrivePositionRampRate);
+                    Constants.kDrivePositionKp, 
+                    Constants.kDrivePositionKi,
+                    Constants.kDrivePositionKd, 
+                    Constants.kDrivePositionKf, // left
+                    Constants.kDrivePositionKf, // right
+                    Constants.kDrivePositionIZone, 
+                    Constants.kDrivePositionMaxIAccum,
+                    Constants.kDrivePositionRampRate);
 
             mMotorGroup.reloadGains(kVelocityControlSlot,
-                    Constants.kDriveVelocityKp, Constants.kDriveVelocityKi,
+                    Constants.kDriveVelocityKp, 
+                    Constants.kDriveVelocityKi,
                     Constants.kDriveVelocityKd,
-                    Constants.kDriveVelocityKf/* +0.35 */, Constants.kDriveVelocityKf, // +1.05 on right at 10 ips is pretty good on the 2nd robot, f of 0.2 on left and 0 on right is great for 2nd robot!
-                    Constants.kDriveVelocityIZone, Constants.kDriveVelocityRampRate,
-                    Constants.kDriveVelocityMaxIAccum);
+                    Constants.kDriveVelocityKf, // left 
+                    Constants.kDriveVelocityKf, // right 
+                    Constants.kDriveVelocityIZone, 
+                    Constants.kDriveVelocityMaxIAccum,
+                    Constants.kDriveVelocityRampRate);
+            
+            // old Kf notes (when we'd forgotten to set up correct initial pose):
+            //      +1.05 on right at 10 ips is pretty good on the 2nd robot, 
+            //      f of 0.2 on left and 0 on right is great for 2nd robot!
 
             logNotice("reloaded PID gains");
             logDebug("reloaded position gains:" + mMotorGroup.dumpPIDState(kPositionControlSlot));
@@ -862,7 +920,8 @@ public class Drive extends Subsystem
      */
     protected static boolean usesTalonPositionControl(DriveControlState state)
     {
-        if (state == DriveControlState.AIM_TO_GOAL ||
+        if (state == DriveControlState.POSITION_SETPOINT ||
+                state == DriveControlState.AIM_TO_GOAL ||
                 state == DriveControlState.TURN_TO_ROBOTANGLE ||
                 state == DriveControlState.TURN_TO_HEADING ||
                 state == DriveControlState.DRIVE_TOWARDS_GOAL_COARSE_ALIGN ||
@@ -884,7 +943,7 @@ public class Drive extends Subsystem
         }
         logNotice("checkSystem " + variant + "  ----------------");
         boolean success = true;
-        if (variant == "tuneVelocity")
+        if (variant == "velocityControl")
         {
             Timer timer = new Timer();
             logNotice("  enter velocity control mode");
@@ -895,39 +954,54 @@ public class Drive extends Subsystem
             timer.reset();
             timer.start();
             while (!timer.hasPeriodPassed(4))
-                this.mMotorGroup.outputToSmartDashboard();
+            {
+                Timer.delay(.05);
+                this.outputToSmartDashboard();
+            }
             this.setVelocitySetpoint(0, 0);
-            this.mMotorGroup.outputToSmartDashboard();
+            this.outputToSmartDashboard();
             this.stop();
 
             Timer.delay(2);
             logNotice("  straight: -10ips, 4 sec");
             this.setVelocitySetpoint(-10, -10);
-            Timer.delay(4);
+            timer.reset();
+            timer.start();
+            while (!timer.hasPeriodPassed(4))
+            {
+                Timer.delay(.05);
+                this.outputToSmartDashboard();
+            }
             this.setVelocitySetpoint(0, 0);
-            this.mMotorGroup.outputToSmartDashboard();
+            this.outputToSmartDashboard();
             this.stop();
 
             Timer.delay(2);
             logNotice("  curve left: 4 sec");
-            this.setVelocitySetpoint(5, 10);
+            this.setVelocitySetpoint(3, 5);
             timer.reset();
             timer.start();
             while (!timer.hasPeriodPassed(4))
-                this.mMotorGroup.outputToSmartDashboard();
+            {
+                Timer.delay(.05);
+                this.outputToSmartDashboard();
+            }
             this.setVelocitySetpoint(0, 0);
-            this.mMotorGroup.outputToSmartDashboard();
+            this.outputToSmartDashboard();
             this.stop();
 
             Timer.delay(2);
             logNotice("  curve right: 4 sec");
-            this.setVelocitySetpoint(10, 5);
+            this.setVelocitySetpoint(5, 3);
             timer.reset();
             timer.start();
             while (!timer.hasPeriodPassed(4))
-                this.mMotorGroup.outputToSmartDashboard();
+            {
+                Timer.delay(.05);
+                this.outputToSmartDashboard();
+            }
             this.setVelocitySetpoint(0, 0);
-            this.mMotorGroup.outputToSmartDashboard();
+            this.outputToSmartDashboard();
             this.stop();
 
             Timer.delay(2);
@@ -937,28 +1011,40 @@ public class Drive extends Subsystem
             timer.reset();
             timer.start();
             while (!timer.hasPeriodPassed(2))
-                this.mMotorGroup.outputToSmartDashboard();
+            {
+                Timer.delay(.05);
+                this.outputToSmartDashboard();
+            }
 
             this.setVelocitySetpoint(4, 4);
             timer.reset();
             timer.start();
             while (!timer.hasPeriodPassed(2))
-                this.mMotorGroup.outputToSmartDashboard();
+            {
+                Timer.delay(.05);
+                this.outputToSmartDashboard();
+            }
 
+            timer.reset();
+            timer.start();
             this.setVelocitySetpoint(20, 20);
-            timer.reset();
-            timer.start();
             while (!timer.hasPeriodPassed(2))
-                this.mMotorGroup.outputToSmartDashboard();
+            {
+                Timer.delay(.05);
+                this.outputToSmartDashboard();
+            }
 
             this.setVelocitySetpoint(4, 4);
             timer.reset();
             timer.start();
             while (!timer.hasPeriodPassed(2))
-                this.mMotorGroup.outputToSmartDashboard();
+            {
+                Timer.delay(.05);
+                this.outputToSmartDashboard();
+            }
             this.stop();
             this.setVelocitySetpoint(0, 0);
-            this.mMotorGroup.outputToSmartDashboard();
+            this.outputToSmartDashboard();
         }
         else
             success = mMotorGroup.checkSystem(variant);
