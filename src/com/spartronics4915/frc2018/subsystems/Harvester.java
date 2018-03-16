@@ -339,7 +339,7 @@ public class Harvester extends Subsystem
         return t;
     }
 
-    private boolean isCubeHeld()
+    public boolean isCubeHeld()
     {
         return mCubeHeldSensor.isTargetAcquired();
     }
