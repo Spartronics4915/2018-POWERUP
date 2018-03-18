@@ -145,11 +145,11 @@ public class Constants extends ConstantsBase
     public static final double kSegmentCompletionTolerance = 0.05; // inches
     public static final double kPathFollowingMaxAccel = 120.0; // inches per second^2
     public static final double kPathFollowingMaxVel = 120.0; // inches per second
-    public static final double kPathFollowingProfileKp = 20.00;
+    public static final double kPathFollowingProfileKp = 4;
     public static final double kPathFollowingProfileKi = 0.08;
-    public static final double kPathFollowingProfileKv = 0.02;
-    public static final double kPathFollowingProfileKffv = 1.0;
-    public static final double kPathFollowingProfileKffa = 0.05;
+    public static final double kPathFollowingProfileKv = 0;
+    public static final double kPathFollowingProfileKffv = 0.8;
+    public static final double kPathFollowingProfileKffa = 0;
     public static final double kPathFollowingGoalPosTolerance = 0.75;
     public static final double kPathFollowingGoalVelTolerance = 12.0;
     public static final double kPathStopSteeringDistance = 9.0;
