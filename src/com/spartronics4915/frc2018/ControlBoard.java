@@ -114,6 +114,9 @@ public class ControlBoard implements ControlBoardInterface
             case HARVESTER_EJECT:
                 result = mButtonBoard.getRawButtonPressed(4) || mDrivestick.getRawButtonPressed(3);
                 break;
+            case HARVESTER_PARTIALLY_CLOSE:
+                result = mButtonBoard.getRawButtonPressed(9);
+                break;
             case SUPERSTRUCTURE_CARRY_CUBE:
                 result = mButtonBoard.getRawButtonPressed(6) || mDrivestick.getRawButtonPressed(13);
                 break;

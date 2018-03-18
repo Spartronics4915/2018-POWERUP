@@ -337,7 +337,7 @@ public class Robot extends IterativeRobot
             
             if (mControlBoard.readButton(Buttons.HARVESTER_OPEN))
             {
-                mHarvester.setWantedState(Harvester.WantedState.OPEN);
+                mHarvester.setWantedState(Harvester.WantedState.FULLOPEN);
                 mLED.setBlingState(BlingState.SOLID);
                 mLED.setBlingState(BlingState.BLUE);
             }
@@ -345,6 +345,13 @@ public class Robot extends IterativeRobot
             if (mControlBoard.readButton(Buttons.HARVESTER_CLOSE))
             {
                 mHarvester.setWantedState(Harvester.WantedState.HARVEST);
+                mLED.setBlingState(BlingState.BLINK);
+                mLED.setBlingState(BlingState.BLUE);
+            }
+            
+            if (mControlBoard.readButton(Buttons.HARVESTER_PARTIALLY_CLOSE))
+            {
+                mHarvester.setWantedState(Harvester.WantedState.PARTIALLYCLOSE);
                 mLED.setBlingState(BlingState.BLINK);
                 mLED.setBlingState(BlingState.BLUE);
             }

@@ -71,7 +71,7 @@ public class PlaceOptimizedFromCMode extends AutoModeBase
         if (Util.getGameSpecificMessage().charAt(0) == 'R') // TODO: Add a way to pick up a second cube if we went to the scale
         {
             PathContainer secondPath = new DriveSecondCubeToCScalePath();
-            runAction(new ParallelAction(new SeriesAction(new WaitForPathMarkerAction("openharvester"), new ActuateHarvesterAction(Harvester.WantedState.OPEN)),
+            runAction(new ParallelAction(new SeriesAction(new WaitForPathMarkerAction("openharvester"), new ActuateHarvesterAction(Harvester.WantedState.PARTIALLYCLOSE)),
                     new DrivePathAction(new DriveReverseToSecondCubeFromCSwitchPath())));
             runAction(new TurnToHeadingAction(Rotation2d.fromDegrees(180)));
             runAction(new ParallelAction(new SeriesAction(new WaitForPathMarkerAction("aquirecube"), new ForceEndPathAction()),
