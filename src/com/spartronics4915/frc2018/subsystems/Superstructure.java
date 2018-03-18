@@ -2,6 +2,7 @@ package com.spartronics4915.frc2018.subsystems;
 
 import com.spartronics4915.frc2018.loops.Loop;
 import com.spartronics4915.frc2018.loops.Looper;
+import com.spartronics4915.lib.util.DriveSignal;
 import com.spartronics4915.lib.util.Logger;
 
 import edu.wpi.first.wpilibj.DriverStation;
@@ -61,6 +62,8 @@ public class Superstructure extends Subsystem
         TRANSPORTING_ARTICULATED_GRABBER_DELAY,
         RELEASING_SCISSOR, // Climb
         CLIMBING,
+        DRIVE_CUBE, // turn to cube
+        VISION_HARVEST // drive to, and harvest cube
     };
 
     // Desired function from user
@@ -69,6 +72,7 @@ public class Superstructure extends Subsystem
         IDLE,
         TRANSFER_CUBE_TO_GRABBER,
         CLIMB,
+        VISION_ACQUIRE_CUBE, // drive to, and acquire the cube
     }
 
     private SystemState mSystemState = SystemState.IDLE;
@@ -83,7 +87,7 @@ public class Superstructure extends Subsystem
 
     private final double kMatchDurationSeconds = 135;
     private final double kEndgameDurationSeconds = 30;
-    private final double kFinishGrabAfterSeconds = 0.8;
+    private final double kFinishGrabAfterSeconds = 0.3;
 
     private Superstructure()
     {
@@ -212,6 +216,34 @@ public class Superstructure extends Subsystem
                             newState = SystemState.IDLE; // Done
                         }
                         break;
+                    case DRIVE_CUBE: //The spinning to a cube
+                        if (mDrive.getState() != Drive.DriveControlState.FIND_CUBE)
+                        {
+                            mDrive.setWantSearchForCube(); //Begin Searching for cube
+                            if (mDrive.onVisionTarget()) // Returns a true when the cube is within 1 degree of the robot. 
+                            {
+                                newState = SystemState.VISION_HARVEST;
+                                
+                            }
+                        }
+                        else
+                            newState = SystemState.IDLE;
+                    case VISION_HARVEST: //Drive forward until we have the cube, then dump controls back to the driver
+                        if (mHarvester.getWantedState() != Harvester.WantedState.HARVEST)
+                        {
+                            mHarvester.setWantedState(Harvester.WantedState.HARVEST);
+                            // We return to default drive control when the harvester has a cube.
+                        }
+                        // I don't know if the following 'if' statement is nested in the previous if statement, or fine in its current state
+                        mDrive.setOpenLoop(new DriveSignal(0.3, 0.3));
+                        // Drive forward very, very slowly 
+                        if (mHarvester.atTarget())
+                        {
+                            newState = SystemState.IDLE; // Done
+                                                         // Return the robot to driver control
+                            mDrive.setOpenLoop(new DriveSignal(0.0,0.0));
+                        }
+                        
                     default:
                         newState = defaultStateTransfer();
                 }
@@ -249,6 +281,9 @@ public class Superstructure extends Subsystem
                 //                    return; This is commented out to make testing easier. Re-add it once this is verified.
                 newState = SystemState.RELEASING_SCISSOR; // First state
                 break;
+            case VISION_ACQUIRE_CUBE:
+                // Begin the spin
+                newState = SystemState.DRIVE_CUBE;
             default:
                 newState = SystemState.IDLE;
                 break;

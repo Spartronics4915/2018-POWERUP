@@ -17,6 +17,7 @@ import com.spartronics4915.frc2018.subsystems.ArticulatedGrabber;
 import com.spartronics4915.frc2018.subsystems.Climber;
 import com.spartronics4915.frc2018.subsystems.ConnectionMonitor;
 import com.spartronics4915.frc2018.subsystems.Drive;
+import com.spartronics4915.frc2018.subsystems.Drive.DriveControlState;
 import com.spartronics4915.frc2018.subsystems.Harvester;
 import com.spartronics4915.frc2018.subsystems.LED;
 import com.spartronics4915.frc2018.subsystems.LED.BlingState;
@@ -31,6 +32,7 @@ import com.spartronics4915.lib.util.math.RigidTransform2d;
 import com.spartronics4915.frc2018.ControlBoardInterface.Sticks;
 import com.spartronics4915.frc2018.ControlBoardInterface.Buttons;
 
+import edu.wpi.first.wpilibj.DigitalOutput;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Timer;
@@ -181,7 +183,7 @@ public class Robot extends IterativeRobot
             PathAdapter.calculatePaths();
             zeroAllSensors();
             success = true;
-            
+
         }
         catch (Throwable t)
         {
@@ -209,6 +211,9 @@ public class Robot extends IterativeRobot
     {
         try
         {
+
+            mLED.setVisionLampOn();
+
             Logger.setVerbosity(SmartDashboard.getString(kRobotVerbosity, "NOTICE"));
             Logger.logAutoInit();
             Logger.notice("Auto start timestamp: " + Timer.getFPGATimestamp());
@@ -228,7 +233,6 @@ public class Robot extends IterativeRobot
             mAutoModeExecuter.setAutoMode(AutoModeSelector.getSelectedAutoMode());
             mAutoModeExecuter.start();
 
-
         }
         catch (Throwable t)
         {
@@ -247,7 +251,8 @@ public class Robot extends IterativeRobot
     }
 
     /**
-     * Initializes the robot for the beginning of teleop
+     * Initializes the robot for the beginning of teleop.
+     * Note that between auto and tele, we transition to disabled state.
      */
     @Override
     public void teleopInit()
@@ -258,17 +263,16 @@ public class Robot extends IterativeRobot
             Logger.logTeleopInit();
             mControlBoard.checkForTestMode();
 
-            // Start loopers
-            mEnabledLooper.start();
+            // NB: don't call zeroAllSensors here, we aren't certain what configuration
+            // the robot is currently in.  Moreover, we don't want to lose RobotState.
+
+            mEnabledLooper.start(); // starts subsystem loopers.
             mDrive.setOpenLoop(DriveSignal.NEUTRAL);
-            
-<<<<<<< HEAD
             mLED.setVisionLampOn();
             mLED.setBlingState(BlingState.SOLID);
             mLED.setBlingState(BlingState.BLUE);
-=======
             mLED.setVisionLampOff(); // Vision not used in teleop yet TODO
->>>>>>> 714d62e27e07d0718c3eaf728a6a3e237ea59a7f
+            mLED.setVisionLampOn(); // Vision not used in teleop yet TODO
         }
         catch (Throwable t)
         {
@@ -281,12 +285,11 @@ public class Robot extends IterativeRobot
      * This function is called periodically during operator control.
      *
      * The code uses state machines to ensure that no matter what buttons the
-     * driver presses, the robot behaves in a
-     * safe and consistent manner.
+     * driver presses, the robot behaves in a safe and consistent manner.
      *
      * Based on driver input, the code sets a desired state for each subsystem.
-     * Each subsystem will constantly compare
-     * its desired and actual states and act to bring the two closer.
+     * Each subsystem will constantly compare its desired and actual states
+     * and act to bring the two closer.
      */
 
     @Override
@@ -296,10 +299,6 @@ public class Robot extends IterativeRobot
         {
             double throttle = mControlBoard.readStick(Sticks.THROTTLE);
             double turn = mControlBoard.readStick(Sticks.TURN);
-            mDrive.setOpenLoop(
-                    mCheesyDriveHelper.cheesyDrive(throttle, turn, 
-                            mControlBoard.readButton(Buttons.DRIVE_QUICK_TURN),
-                            !mControlBoard.readButton(Buttons.DRIVE_SLOW)));
 
             if (mControlBoard.readButton(Buttons.SCISSOR_OFF))
             {
@@ -328,6 +327,14 @@ public class Robot extends IterativeRobot
                 mGrabber.setWantedState(ArticulatedGrabber.WantedState.RELEASE_CUBE);
             }
 
+            if (mControlBoard.readButton(Buttons.GRABBER_TOGGLE))
+            {
+                if (mGrabber.getWantedState() == ArticulatedGrabber.WantedState.MANUAL_OPEN)
+                    mGrabber.setWantedState(ArticulatedGrabber.WantedState.MANUAL_CLOSED);
+                else
+                    mGrabber.setWantedState(ArticulatedGrabber.WantedState.MANUAL_OPEN);
+            }
+            
             if (mControlBoard.readButton(Buttons.HARVESTER_OPEN))
             {
                 mHarvester.setWantedState(Harvester.WantedState.OPEN);
@@ -356,23 +363,47 @@ public class Robot extends IterativeRobot
                 mLED.setBlingState(BlingState.GREEN);
             }
 
-            if (mControlBoard.readButton(Buttons.HARVESTER_CLIMB))
+            if (mControlBoard.readButton(Buttons.CLIMBER_TOGGLE))
             {
                 mSuperstructure.setWantedState(Superstructure.WantedState.CLIMB);
                 mLED.setBlingState(BlingState.SOLID);
                 mLED.setBlingState(BlingState.RED);
+                if (mClimber.getWantedState() == Climber.WantedState.CLIMB)
+                {
+                    mClimber.setWantedState(Climber.WantedState.HOLD);
+                //    mLED.setBlingState(BlingState.STOP_CLIMBER);
+                }
+                else
+                {
+                    mSuperstructure.setWantedState(Superstructure.WantedState.CLIMB);
+                    mLED.setBlingState(BlingState.CLIMB);
+                }
             }
 
-            if (mControlBoard.readButton(Buttons.CLIMBER_STOP))
+            if (mControlBoard.readButton(Buttons.GRABBER_FAST_OPEN))
             {
                 mClimber.setWantedState(Climber.WantedState.HOLD);
                 mLED.setBlingState(BlingState.BLINK);
                 mLED.setBlingState(BlingState.RED);
+                mGrabber.setWantedState(ArticulatedGrabber.WantedState.FAST_OPENED);
             }
 
             if (mControlBoard.readButton(Buttons.CLIMB_IDLE_TEST))
             {
                 mClimber.setWantedState(Climber.WantedState.IDLE);
+            }
+
+            if (mControlBoard.readButton(Buttons.CAMERA_CHANGE_VIEW))
+            {
+                if (SmartDashboard.getString("CameraView", "").equals("CubeCam") ||
+                        SmartDashboard.getString("CameraView", "").equals("Auto"))
+                {
+                    SmartDashboard.putString("CameraView", "LiftCam");
+                }
+                else if (SmartDashboard.getString("CameraView", "").equals("LiftCam"))
+                {
+                    SmartDashboard.putString("CameraView", "CubeCam");
+                }
             }
 
             if (mControlBoard.readButton(Buttons.GRABBER_TRANSPORT_TEST))
@@ -384,21 +415,44 @@ public class Robot extends IterativeRobot
             {
                 mGrabber.setWantedState(ArticulatedGrabber.WantedState.GRAB_CUBE);
             }
-            
+
             if (mControlBoard.readButton(Buttons.GRABBER_TEMP_TEST))
             {
                 mGrabber.setWantedState(ArticulatedGrabber.WantedState.TEMP);
             }
-            
+
             if (mControlBoard.readButton(Buttons.GRABBER_PREPARE_DROP_TEST))
             {
                 mGrabber.setWantedState(ArticulatedGrabber.WantedState.PREPARE_DROP);
             }
-            
+
             if (mControlBoard.readButton(Buttons.GRABBER_PREPARE_INTAKE_TEST))
             {
                 mGrabber.setWantedState(ArticulatedGrabber.WantedState.PREPARE_INTAKE);
             }
+
+
+            // Drive control buttons
+            if (mControlBoard.readButton(Buttons.VISION_CUBE_HARVEST))
+            {
+                mDrive.setWantSearchForCube();
+            }
+            else
+            {
+                mDrive.setOpenLoop(mCheesyDriveHelper.cheesyDrive(throttle, turn,
+                        mControlBoard.readButton(Buttons.DRIVE_QUICK_TURN),
+                        !mControlBoard.readButton(Buttons.DRIVE_SLOW)));
+            }
+
+            // Bling settings
+         /*   if (DriverStation.getInstance().getMatchTime() < kMatchDurationSeconds)
+            {
+                mLED.setBlingState(BlingState.TELEOP);
+            }
+            if (DriverStation.getInstance().getMatchTime() < kEndgameDurationSeconds)
+            {
+                mLED.setBlingState(BlingState.ENDGAME);
+            } */
             allButTestPeriodic();
         }
         catch (Throwable t)
@@ -423,8 +477,6 @@ public class Robot extends IterativeRobot
             }
             mAutoModeExecuter = null;
 
-            zeroAllSensors();
-            
             mEnabledLooper.stop();
 
             // Call stop on all our Subsystems.
@@ -433,7 +485,7 @@ public class Robot extends IterativeRobot
             mDrive.setOpenLoop(DriveSignal.NEUTRAL);
 
             PathAdapter.calculatePaths();
-            
+
             mLED.setVisionLampOff();
         }
         catch (Throwable t)
@@ -515,7 +567,8 @@ public class Robot extends IterativeRobot
     @Override
     public void testPeriodic()
     {
-        // nothing to do here.
+        mRobotState.outputToSmartDashboard();
+        mSubsystemManager.outputToSmartDashboard();
     }
 
     /**

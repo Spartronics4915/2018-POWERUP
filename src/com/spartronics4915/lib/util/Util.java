@@ -2,6 +2,9 @@ package com.spartronics4915.lib.util;
 
 import java.util.List;
 
+import com.spartronics4915.frc2018.paths.PathContainer;
+import com.spartronics4915.frc2018.paths.PathBuilder.Waypoint;
+
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Solenoid;
@@ -75,11 +78,29 @@ public class Util
     
     public static String getGameSpecificMessage()
     {
-        do
+        Timer t = new Timer();
+        String result = "";
+        DriverStation ds = DriverStation.getInstance();
+        t.start();
+        while(!t.hasPeriodPassed(3)) // wait for up to 3 sec
         {
+            result = ds.getGameSpecificMessage();
+            if(!result.equals(""))
+                break;
             Timer.delay(0.1);
         }
-        while (DriverStation.getInstance().getGameSpecificMessage().equals(""));
-        return DriverStation.getInstance().getGameSpecificMessage();
+        return result;
+    }
+    
+    public static PathContainer truncatePathContainerUntilMarker(PathContainer pc, String marker) {
+        boolean hasFoundMarker = false;
+        for (Waypoint w : pc.getWaypoints()) {
+            if (!hasFoundMarker)
+                if (w.getMarker().equals(marker))
+                    hasFoundMarker = true;
+                else
+                    pc.getWaypoints().remove(w);
+        }
+        return pc;
     }
 }

@@ -71,7 +71,6 @@ public class Constants extends ConstantsBase
     public static final int kGrabberAnglePotentiometerId = 1;
     public static final int kGrabberCubeDistanceRangeFinderId = 2;
 
-    
     // Software configuration constants ----------------------------------------------------------
     public static final double kLooperDt = 0.005;
     
@@ -95,14 +94,15 @@ public class Constants extends ConstantsBase
 
     // PID gains for drive velocity loop (HIGH GEAR)
     // Units: setpoint, error, and output are in inches per second.
-    public static final double kDriveVelocityKp = 0.11;
-    public static final double kDriveVelocityKi = 0.0;
-    public static final double kDriveVelocityKd = 400;
-    public static final double kDriveVelocityKf = 0.35;
+    public static final double kDriveVelocityKp = 0.45;
+    public static final double kDriveVelocityKi = 0;
+    public static final double kDriveVelocityKd = 0;
+    public static final double kDriveVelocityKf = 0;
     public static final int kDriveVelocityIZone = 0;
+    public static final double kDriveVelocityMaxIAccum = 0; // 0 means n/a
     public static final double kDriveVelocityRampRate = .05; // 240V/s -> 12V in .05s
     public static final double kDriveHighGearNominalOutput = 0.5;
-    public static final double kDriveHighGearMaxSetpoint = 17.0 * 12.0; // 17 fps
+    public static final double kDriveHighGearMaxSetpoint = 17 * 12; // 17 fps in ips
 
     // PID gains for drive position loop (LOW GEAR)
     // Units: setpoint, error, and output are in inches per second.
@@ -111,14 +111,15 @@ public class Constants extends ConstantsBase
     public static final double kDrivePositionKd = 300.0;
     public static final double kDrivePositionKf = 0;
     public static final int kDrivePositionIZone = 0;
-    public static final double kDrivePositionRampRate = .25; // 48.0 V/s -> 12V in .25s
+    public static final int kDrivePositionMaxIAccum = 0; // 0 means n/a
+    public static final double kDrivePositionRampRate = .05; // 240V/s -> 12V in .05s
     public static final double kDriveLowGearNominalOutput = 0.5; // pct
-    public static final double kDriveLowGearMaxVelocity = 3.0 * 12.0 * 60.0 / (Math.PI * kDriveWheelDiameterInches); // 6 fps
-                                                                                                               // in RPM
-    public static final double kDriveLowGearMaxAccel = 15.0 * 12.0 * 60.0 / (Math.PI * kDriveWheelDiameterInches); // 15 fps/s
-                                                                                                             // in RPM/s
+    public static final double kDriveLowGearMaxVelocity = 3*12*60 / (Math.PI * kDriveWheelDiameterInches); 
+        // max velocity is 3 fps, represented in RPM
+    public static final double kDriveLowGearMaxAccel = 15*12*60 / (Math.PI * kDriveWheelDiameterInches); 
+        // max accel is 15 fps/s, represented in RPM/s
+
     public static final double kDriveVoltageCompensationRampRate = 0.0;
-    
     
     // Drive ------------------------------------------------------
     // Encoder: https://cdn.usdigital.com/assets/datasheets/E4P_datasheet.pdf?k=636523267170919858
@@ -130,18 +131,17 @@ public class Constants extends ConstantsBase
     //                          ^ ^ Default cover, Default base
     public static final int kEncoderCodesPerRev = 360;
 
-
     // Path following constants -----------------------------------
     public static final double kMinLookAhead = 12.0; // inches
-    public static final double kMinLookAheadSpeed = 9.0; // inches per second
     public static final double kMaxLookAhead = 24.0; // inches
-    public static final double kMaxLookAheadSpeed = 120.0; // inches per second
     public static final double kDeltaLookAhead = kMaxLookAhead - kMinLookAhead;
-    public static final double kDeltaLookAheadSpeed = kMaxLookAheadSpeed - kMinLookAheadSpeed;
 
-    public static final double kInertiaSteeringGain = 0.0; // angular velocity command is multiplied by this gain *
-                                                     // our speed
-                                                     // in inches per sec
+    public static final double kMinLookAheadSpeed = 9.0; // inches per second
+    public static final double kMaxLookAheadSpeed = 120.0; // inches per second
+    public static final double kDeltaLookAheadSpeed = kMaxLookAheadSpeed - kMinLookAheadSpeed;
+    
+    public static final double kInertiaSteeringGain = 0.0; 
+        // angular velocity command is multiplied by this gain * our speed in ips
     public static final double kSegmentCompletionTolerance = 0.05; // inches
     public static final double kPathFollowingMaxAccel = 120.0; // inches per second^2
     public static final double kPathFollowingMaxVel = 120.0; // inches per second
@@ -160,25 +160,21 @@ public class Constants extends ConstantsBase
     public static final double kCameraFrameRate = 30.0;
     public static final double kTrackReportComparatorStablityWeight = 1.0;
     public static final double kTrackReportComparatorAgeWeight = 1.0;
+    public static final double kShooterOptimalRangeCeiling = 80.0; // unused
+    public static final double kShooterOptimalRangeFloor = 70.0; // unused
 
-    // Pose of the camera frame w.r.t. the robot frame
-    public static final String kVisionTableName = "Vision"; // name in networktables below root
-    public static final String kVisionTargetAngleName = "ax"; // "clock", "ay" are also available
+    // Pose of the camera frame w.r.t. the robot frame, used by RobotState, but
+    // not relied upon for POWERUP.
     public static final double kCameraXOffset = -3.3211;
     public static final double kCameraYOffset = 0.0;
     public static final double kCameraZOffset = 20.9;
     public static final double kCameraPitchAngleDegrees = 29.56; // Measured on 4/26
     public static final double kCameraYawAngleDegrees = 0.0;
     public static final double kCameraDeadband = 0.0;
-
-    public static final double kShooterOptimalRange = 100.0;
-    public static final double kShooterOptimalRangeFloor = 95.0;
-    public static final double kShooterOptimalRangeCeiling = 105.0;
-
-    public static final double kShooterAbsoluteRangeFloor = 90.0;
-    public static final double kShooterAbsoluteRangeCeiling = 130.0;
+    public static final String kVisionTableName = "Vision"; // name in nettab below root
+    public static final String kVisionTargetAngleName = "ax"; // "clock", "ay" also available
     
-    // Field constants
+    // Field constants (inches)
     public static final double kFieldWidth = 648;
     public static final double kFieldHeight = 324;
     public static final Translation2d kFieldDimensionTranslation = new Translation2d(kFieldWidth, kFieldHeight);

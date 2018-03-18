@@ -891,6 +891,8 @@ public class TalonSRX4915 implements Sendable, MotorSafety
      * Native velocity is Native Units per 100 milliseconds.
      * configMotorAndEncoder must have been called for
      * this to work!
+     * 
+     * NB: we return integer ticks.
      */
     public int rpmToNativeVelocity(double rpm)
     {
@@ -914,13 +916,17 @@ public class TalonSRX4915 implements Sendable, MotorSafety
      * edge (4X). So a 250 count encoder will produce 1000 edge events
      * per rotation. An example speed of 200 would then equate to 20%
      * of a rotation per 100ms, or 10 rotations per second.
+     * 
+     * NB: we only accept native velocity as a double because the setpoint
+     *   plays numerous roles in CTRE-land.  For velocity, nativeVelocity
+     *   is measured in integer-native-units per 100ms.
      */
-    private int nativeVelocityToRPM(double nativeVelocity)
+    private double nativeVelocityToRPM(double nativeVelocity)
     {
         if (mQuadCodesPerRev == 0)
-            return (int) Math.round(nativeVelocity);
+            return nativeVelocity;
         double nativeUnitsPerMinute = nativeVelocity * 10 * 60;
-        return (int) Math.round(nativeUnitsPerMinute / mQuadCodesPerRev);
+        return (nativeUnitsPerMinute / mQuadCodesPerRev);
     }
 
     /**
@@ -1209,6 +1215,13 @@ public class TalonSRX4915 implements Sendable, MotorSafety
             return false;
     }
 
+    public void configMaxIntegralAccumulator(int slotIdx, double maxIAccum)
+    {
+        if (mTalon != null)
+            return;
+        mTalon.configMaxIntegralAccumulator(slotIdx, maxIAccum, sUpdateTimeoutMS);
+    }
+    
     // MotorSafety Interface { -------------------------------------------------------------
     @Override
     public String getDescription()

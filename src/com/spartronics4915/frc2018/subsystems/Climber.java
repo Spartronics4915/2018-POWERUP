@@ -136,7 +136,7 @@ public class Climber extends Subsystem
 
     private SystemState handleClimbing()
     {
-        mWinchPrimary.set(-0.75);
+        mWinchPrimary.set(-1);
         if (mWantedState == WantedState.HOLD)
         {
             mWinchPrimary.configCurrentLimit(true, 15, 25, 500); //Continuous, peak, peak duration (ms)
@@ -266,6 +266,9 @@ public class Climber extends Subsystem
                 mWinchPrimary.set(0);
 
                 // XXX: should we run motors individually?  (disable, then reenable follower)
+            } else if (variant.equals("unspool"))
+            {
+                mWinchPrimary.set(-0.5);
             }
         }
         catch (Throwable e)

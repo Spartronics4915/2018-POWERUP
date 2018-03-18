@@ -61,7 +61,9 @@ public class ArticulatedGrabber extends Subsystem
         MANUAL_OPEN, //for now sets the grabber state open, but doesn't change the position
         MANUAL_CLOSED, //for now sets the grabber state closed, but doesn't change the position
         DISABLED, //Initial and Emergency State
-        TEMP //A State for testing purposes
+        TEMP, //A State for testing purposes
+        FAST_OPENED,
+        FAST_CLOSED
     }
 
     //Maximum Motor Speed: used in handlePosition method and configure for mPositionMotor
@@ -70,6 +72,7 @@ public class ArticulatedGrabber extends Subsystem
 
     private final int kDefaultHoldOffset = 50; //offset from the reverse limit switch
     private final int kDefaultPlaceOffset = 175;
+    private final int kDefaultFastOffset = 500;
     //we are not using pick we are just running to the limit switch for now
 
     private int mFwdLimitPotentiometerValue = 917;
@@ -79,6 +82,7 @@ public class ArticulatedGrabber extends Subsystem
     private boolean mRevLimitFlag = false;
 
     // these actual positions are computed from measured pot values at limit switches
+    private int mFastPosition = 965;
     private int mPlacePosition = 738;
     private int mHoldPosition = 500;
 
@@ -118,11 +122,13 @@ public class ArticulatedGrabber extends Subsystem
                 logWarning("PositionMotor Invalid");
             }
 
+            mSystemState.grabberSetup = false;
+            
             // Initialize network tables during robotInit(), allows us to tweak values
             //  XXX: requires us to place best-known values into these values.
             dashboardPutNumber("Target1", kDefaultHoldOffset);
             dashboardPutNumber("Target2", kDefaultPlaceOffset);
-            //dashboardPutNumber("Target3", kDefaultPickOffset);
+            dashboardPutNumber("Target3", kDefaultFastOffset);
 
         }
         catch (Exception e)
@@ -153,11 +159,8 @@ public class ArticulatedGrabber extends Subsystem
         {
             synchronized (ArticulatedGrabber.this)
             {
-                if (!mSystemState.grabberSetup) //turns on the GrabberSetup solenoid
-                {
-                    mGrabberSetup.set(true);
-                    mSystemState.grabberSetup = true;
-                }
+                mGrabberSetup.set(true);
+                mSystemState.grabberSetup = true;
 
                 updatePositions();
 
@@ -210,6 +213,7 @@ public class ArticulatedGrabber extends Subsystem
             case TRANSPORT:
             case PREPARE_DROP:
             case TEMP:
+            case FAST_CLOSED:
                 if (mNextState.grabberClosed)
                 {
                     mGrabber.set(true);
@@ -227,6 +231,7 @@ public class ArticulatedGrabber extends Subsystem
             case MANUAL_OPEN:
             case PREPARE_INTAKE:
             case PREPARE_EXCHANGE:
+            case FAST_OPENED:
                 if (!mNextState.grabberClosed)
                 {
                     mGrabber.set(false);
@@ -286,6 +291,10 @@ public class ArticulatedGrabber extends Subsystem
                 mPositionMotor.set(0);
                 return potValue;
 
+            case FAST_OPENED:
+            case FAST_CLOSED:
+                targetPosition = mFastPosition;
+                
             case TRANSPORT:
             case PREPARE_EXCHANGE:
                 targetPosition = mHoldPosition;
@@ -295,7 +304,7 @@ public class ArticulatedGrabber extends Subsystem
             case RELEASE_CUBE:
                 targetPosition = mPlacePosition;
                 break;
-
+                
             case GRAB_CUBE:
             case PREPARE_INTAKE:
             case TEMP:
@@ -392,6 +401,16 @@ public class ArticulatedGrabber extends Subsystem
                 if (!mLimitSwitchFwd.get() && !mSystemState.grabberClosed)
                     t = true;
                 break;
+            case FAST_CLOSED: 
+                if (Util.epsilonEquals(potValue, mFastPosition, kAcceptablePositionError)
+                        && mSystemState.grabberClosed)
+                    t = true;
+                break;
+            case FAST_OPENED: 
+                if (Util.epsilonEquals(potValue, mFastPosition, kAcceptablePositionError)
+                        && !mSystemState.grabberClosed)
+                    t = true;
+                break;
             case DISABLED:
                 if (mPositionMotor.get() == 0)
                     t = true;
@@ -435,6 +454,8 @@ public class ArticulatedGrabber extends Subsystem
                 dashboardGetNumber("Target1", kDefaultHoldOffset).intValue();
         mPlacePosition = mRevLimitPotentiometerValue +
                 dashboardGetNumber("Target2", kDefaultPlaceOffset).intValue();
+        mFastPosition = mRevLimitPotentiometerValue +
+                dashboardGetNumber("Target3", kDefaultPlaceOffset).intValue();
     }
 
     @Override
