@@ -95,10 +95,10 @@ public class Constants extends ConstantsBase
 
     // PID gains for drive velocity loop (HIGH GEAR)
     // Units: setpoint, error, and output are in inches per second.
-    public static final double kDriveVelocityKp = 0.2;
+    public static final double kDriveVelocityKp = 0.11;
     public static final double kDriveVelocityKi = 0.0;
-    public static final double kDriveVelocityKd = 150;
-    public static final double kDriveVelocityKf = .25;
+    public static final double kDriveVelocityKd = 400;
+    public static final double kDriveVelocityKf = 0.35;
     public static final int kDriveVelocityIZone = 0;
     public static final double kDriveVelocityRampRate = .05; // 240V/s -> 12V in .05s
     public static final double kDriveHighGearNominalOutput = 0.5;
@@ -106,11 +106,11 @@ public class Constants extends ConstantsBase
 
     // PID gains for drive position loop (LOW GEAR)
     // Units: setpoint, error, and output are in inches per second.
-    public static final double kDrivePositionKp = 0.85;
-    public static final double kDrivePositionKi = 0.002;
-    public static final double kDrivePositionKd = 100.0;
-    public static final double kDrivePositionKf = .45;
-    public static final int kDrivePositionIZone = 700;
+    public static final double kDrivePositionKp = 2;
+    public static final double kDrivePositionKi = 0;
+    public static final double kDrivePositionKd = 300.0;
+    public static final double kDrivePositionKf = 0;
+    public static final int kDrivePositionIZone = 0;
     public static final double kDrivePositionRampRate = .25; // 48.0 V/s -> 12V in .25s
     public static final double kDriveLowGearNominalOutput = 0.5; // pct
     public static final double kDriveLowGearMaxVelocity = 3.0 * 12.0 * 60.0 / (Math.PI * kDriveWheelDiameterInches); // 6 fps

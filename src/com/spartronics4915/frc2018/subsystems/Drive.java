@@ -464,8 +464,7 @@ public class Drive extends Subsystem
         double dx = mVisionTargetAngleEntry.getNumber(0).doubleValue();
         if (dx != 0.0) {
             setWantAimToVisionTarget();
-        }
-        if (dx == 0.0) {
+        } else {
             dx = -5;
         }
         final Rotation2d robotToTarget = Rotation2d.fromDegrees(dx); 

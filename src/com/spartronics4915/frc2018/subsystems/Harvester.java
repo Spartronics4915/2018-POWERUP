@@ -22,6 +22,7 @@ public class Harvester extends Subsystem
     private static final boolean kSolenoidOpen = true;
     private static final boolean kSolenoidClose = false;
     private static final double kCloseTimePeriod = 1;
+    private static final double kEjectTimePeriod = 2.3;
 
     public static Harvester getInstance()
     {
@@ -76,7 +77,7 @@ public class Harvester extends Subsystem
             mCubeHeldSensor = new SpartIRSensor(Constants.kGrabberCubeDistanceRangeFinderId);
             mMotorRight = TalonSRX4915Factory.createDefaultMotor(Constants.kHarvesterRightMotorId); // change value of motor
             mMotorLeft = TalonSRX4915Factory.createDefaultMotor(Constants.kHarvesterLeftMotorId); // change value of motor
-            mMotorRight.configOutputPower(true, 0.5, 0, 0.75, 0, -0.75);
+            mMotorRight.configOutputPower(true, 0.5, 0, 1, 0, -1);
             mMotorLeft.configOutputPower(true, 0.5, 0, 1, 0, -1);
             mMotorRight.setInverted(true);
             mTimer = new Timer();
@@ -265,7 +266,7 @@ public class Harvester extends Subsystem
         //motors in reverse and bars closing, close when cube is gone
         mMotorRight.set(-1.0);
         mMotorLeft.set(-1.0);
-        if (!isCubeHeld())
+        if (!isCubeHeld() && mTimer.hasPeriodPassed(kEjectTimePeriod))
         { //Cube is gone!  Transition to Open (turn off motor) to prevent damage
             mSolenoid.set(kSolenoidOpen);
             setWantedState(WantedState.OPEN);

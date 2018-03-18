@@ -262,9 +262,13 @@ public class Robot extends IterativeRobot
             mEnabledLooper.start();
             mDrive.setOpenLoop(DriveSignal.NEUTRAL);
             
+<<<<<<< HEAD
             mLED.setVisionLampOn();
             mLED.setBlingState(BlingState.SOLID);
             mLED.setBlingState(BlingState.BLUE);
+=======
+            mLED.setVisionLampOff(); // Vision not used in teleop yet TODO
+>>>>>>> 714d62e27e07d0718c3eaf728a6a3e237ea59a7f
         }
         catch (Throwable t)
         {
@@ -379,6 +383,11 @@ public class Robot extends IterativeRobot
             if (mControlBoard.readButton(Buttons.GRABBER_GRAB_CUBE_TEST))
             {
                 mGrabber.setWantedState(ArticulatedGrabber.WantedState.GRAB_CUBE);
+            }
+            
+            if (mControlBoard.readButton(Buttons.GRABBER_TEMP_TEST))
+            {
+                mGrabber.setWantedState(ArticulatedGrabber.WantedState.TEMP);
             }
             
             if (mControlBoard.readButton(Buttons.GRABBER_PREPARE_DROP_TEST))

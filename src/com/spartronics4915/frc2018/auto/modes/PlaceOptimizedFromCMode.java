@@ -13,10 +13,11 @@ import com.spartronics4915.frc2018.auto.actions.TransferCubeFromGroundAction;
 import com.spartronics4915.frc2018.auto.actions.WaitAction;
 import com.spartronics4915.frc2018.auto.actions.WaitForPathMarkerAction;
 import com.spartronics4915.frc2018.paths.DriveSecondCubeToCScalePath;
+import com.spartronics4915.frc2018.paths.DriveSecondCubeToCSwitchPath;
 import com.spartronics4915.frc2018.paths.DriveToCloseScaleFromCPath;
 import com.spartronics4915.frc2018.paths.DriveToCloseSwitchFromCPath;
 import com.spartronics4915.frc2018.paths.DriveToFarScaleFromCPath;
-import com.spartronics4915.frc2018.paths.DriveToSecondCubeFromCSwitchPath;
+import com.spartronics4915.frc2018.paths.DriveReverseToSecondCubeFromCSwitchPath;
 import com.spartronics4915.frc2018.paths.PathContainer;
 import com.spartronics4915.frc2018.subsystems.ArticulatedGrabber;
 import com.spartronics4915.frc2018.subsystems.Harvester;
@@ -33,49 +34,53 @@ public class PlaceOptimizedFromCMode extends AutoModeBase
     protected void routine() throws AutoModeEndedException
     {
         PathContainer path;
+        ScissorLift.WantedState liftPosition;
         if (Util.getGameSpecificMessage().charAt(0) == 'R')
         {
             path = mCloseSwitchPath;
+            liftPosition = ScissorLift.WantedState.SWITCH;
         }
         else if (Util.getGameSpecificMessage().charAt(1) == 'R')
         {
             path = mCloseScalePath;
+            liftPosition = ScissorLift.WantedState.SCALE;
         }
         else
         {
             path = mFarScalePath;
+            liftPosition = ScissorLift.WantedState.SCALE;
         }
         runAction(new ResetPoseFromPathAction(path));
         runAction(new WaitAction(0.1)); // Give everything time to get reset
         runAction(new DrivePathAction(path));
-        runAction(new ActuateScissorLiftAction(ScissorLift.WantedState.SCALE));
+        runAction(new ActuateScissorLiftAction(liftPosition));
         runAction(new ActuateArticulatedGrabberAction(ArticulatedGrabber.WantedState.RELEASE_CUBE));
-        if (Util.getGameSpecificMessage().charAt(0) == 'R') // TODO: Add a way to pick up a second cube if we went to the scale
-        {
-            runAction(new ParallelAction(new SeriesAction(new WaitForPathMarkerAction("openharvester"), new ActuateHarvesterAction(Harvester.WantedState.OPEN)),
-                    new DrivePathAction(new DriveToSecondCubeFromCSwitchPath())));
-            runAction(new ActuateHarvesterAction(Harvester.WantedState.HARVEST));
-            runAction(new TransferCubeFromGroundAction());
-        }
-        else
-        {
-            return;
-        }
-        
-        PathContainer secondPath;
-        if (Util.getGameSpecificMessage().charAt(1) == 'R')
-        {
-            secondPath = new DriveSecondCubeToCScalePath();
-        }
-        else if (Util.getGameSpecificMessage().charAt(0) == 'R')
-        {
-            secondPath = new DriveSecondCubeToCScalePath();
-        }
-        else
-        {
-            return;
-        }
-        runAction(new DrivePathAction(secondPath));
+//        if (Util.getGameSpecificMessage().charAt(0) == 'R') // TODO: Add a way to pick up a second cube if we went to the scale
+//        {
+//            runAction(new ParallelAction(new SeriesAction(new WaitForPathMarkerAction("openharvester"), new ActuateHarvesterAction(Harvester.WantedState.OPEN)),
+//                    new DrivePathAction(new DriveReverseToSecondCubeFromCSwitchPath())));
+//            runAction(new ActuateHarvesterAction(Harvester.WantedState.HARVEST));
+//            runAction(new TransferCubeFromGroundAction());
+//        }
+//        else
+//        {
+//            return;
+//        }
+//        
+//        PathContainer secondPath;
+//        if (Util.getGameSpecificMessage().charAt(1) == 'R')
+//        {
+//            secondPath = new DriveSecondCubeToCScalePath();
+//        }
+//        else if (Util.getGameSpecificMessage().charAt(0) == 'R')
+//        {
+//            secondPath = new DriveSecondCubeToCSwitchPath();
+//        }
+//        else
+//        {
+//            return;
+//        }
+//        runAction(new DrivePathAction(secondPath));
     }
 
 }

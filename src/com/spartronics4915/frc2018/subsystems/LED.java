@@ -307,6 +307,8 @@ public class LED extends Subsystem
 
     public synchronized void setBlingState(BlingState b)
     {
+        if (!isInitialized())
+            return;
         if (mBlingState != b)
         {
             switch (b)
