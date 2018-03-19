@@ -389,10 +389,9 @@ public class Robot extends IterativeRobot
 
             if (mControlBoard.readButton(Buttons.GRABBER_FAST_OPEN))
             {
-                mClimber.setWantedState(Climber.WantedState.HOLD);
+                mGrabber.setWantedState(ArticulatedGrabber.WantedState.FAST_OPENED);
                 mLED.setBlingState(BlingState.BLINK);
                 mLED.setBlingState(BlingState.RED);
-                mGrabber.setWantedState(ArticulatedGrabber.WantedState.FAST_OPENED);
             }
 
             if (mControlBoard.readButton(Buttons.CLIMB_IDLE_TEST))

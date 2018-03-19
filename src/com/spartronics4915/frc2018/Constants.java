@@ -40,7 +40,7 @@ public class Constants extends ConstantsBase
     public static final int kHarvesterLeftMotorId = kUseTestbedConstants ? 18 : 8;
     public static final int kHarvesterRightMotorId = kUseTestbedConstants ? 16 : 9;
  
-    public static final int kNumTalons = 9; // total talon count on robot (not testbed)
+    public static final int kNumTalons = 8; // total talon count on robot (not testbed)
     
     public static final int kNumPDPs = 1; // doesn't always show up in CANProbe
     public static final int kNumPCMs = 1; // Pressure control module (pneumatics)
@@ -53,9 +53,7 @@ public class Constants extends ConstantsBase
     public static final int kGrabberSetupSolenoidId = 3; //PCM 0
     public static final int kGrabberSolenoidId = 4; //PCM 0
     public static final int kHarvesterSolenoid1Id = 5; //PCM 0
-    public static final int kHarvesterSolenoid2Id = 8; //PCM 0
-    public static final int kClimberStabilizationSolenoidId1 = 6; //PCM 0
-    public static final int kClimberStabilizationSolenoidId2 = 7; //PCM 0
+    public static final int kHarvesterSolenoid2Id = 6; //PCM 0
 
     // PWM (Servo) Pins ----------------------------
     

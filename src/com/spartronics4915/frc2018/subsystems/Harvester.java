@@ -308,7 +308,7 @@ public class Harvester extends Subsystem
         //motors off and bars closing go to closed when cube is gone
         mMotorLeft.set(0.0);
         mMotorRight.set(0.0);
-        if (mWantedState == WantedState.PARTIALLYCLOSE || mWantedState == WantedState.EJECT)
+        if (mWantedState == WantedState.PARTIALLYCLOSE || mWantedState == WantedState.EJECT || mWantedState == WantedState.HARVEST || mWantedState == WantedState.FULLOPEN)
         {
             return defaultStateTransfer();
         }
@@ -374,8 +374,8 @@ public class Harvester extends Subsystem
     {
         if (!isInitialized())
         {
-            dashboardPutBoolean("IRSensor CubeHeld", isCubeHeld());
-            dashboardPutNumber("Cube Distance: ", mCubeHeldSensor.getDistance());
+//            dashboardPutBoolean("IRSensor CubeHeld", isCubeHeld());
+//            dashboardPutNumber("Cube Distance: ", mCubeHeldSensor.getDistance());
             return;
         }
         dashboardPutState(mSystemState.toString());
