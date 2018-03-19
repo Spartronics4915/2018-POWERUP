@@ -35,8 +35,11 @@ public class Harvester extends Subsystem
 
     public enum SystemState
     {
-        CLOSING,
-        OPENING,
+        FULLOPENING,
+        PARTIALLYCLOSING,
+        //FULLCLOSING,
+        //CLOSING,
+        //PARTIALLYCLOSING,
         HARVESTING,
         EJECTING,
         HUGGING,
@@ -46,7 +49,11 @@ public class Harvester extends Subsystem
 
     public enum WantedState
     {
-        OPEN,
+        FULLOPEN,
+        PARTIALLYCLOSE,
+        //CUBEHOLD,
+        //FULLCLOSE,
+        //PARTIALLYCLOSE,
         HARVEST,
         EJECT,
         HUG,
@@ -57,7 +64,8 @@ public class Harvester extends Subsystem
     private SystemState mSystemState = SystemState.DISABLING;
     private WantedState mWantedState = WantedState.DISABLE;
     private SpartIRSensor mCubeHeldSensor = null;
-    private LazySolenoid mSolenoid = null;
+    private LazySolenoid mSolenoid1 = null;
+    private LazySolenoid mSolenoid2 = null;
     private TalonSRX4915 mMotorRight = null;
     private TalonSRX4915 mMotorLeft = null;
     private Timer mTimer;
@@ -73,7 +81,8 @@ public class Harvester extends Subsystem
 
         try
         {
-            mSolenoid = new LazySolenoid(Constants.kHarvesterSolenoidId); // Changes value of Solenoid
+            mSolenoid1 = new LazySolenoid(Constants.kHarvesterSolenoid1Id); // Changes value of Solenoid1
+            mSolenoid2 = new LazySolenoid(Constants.kHarvesterSolenoid2Id); // Changes value of Solenoid2
             mCubeHeldSensor = new SpartIRSensor(Constants.kGrabberCubeDistanceRangeFinderId);
             mMotorRight = TalonSRX4915Factory.createDefaultMotor(Constants.kHarvesterRightMotorId); // change value of motor
             mMotorLeft = TalonSRX4915Factory.createDefaultMotor(Constants.kHarvesterLeftMotorId); // change value of motor
@@ -92,9 +101,14 @@ public class Harvester extends Subsystem
                 logError("Left Motor is invalid");
                 success = false;
             }
-            if (!mSolenoid.isValid())
+            if (!mSolenoid1.isValid())
             {
-                logError("Solenoid is invalid");
+                logError("Solenoid 1 is invalid");
+                success = false;
+            }
+            if (!mSolenoid2.isValid())
+            {
+                logError("Solenoid 2 is invalid");
                 success = false;
             }
         }
@@ -118,7 +132,7 @@ public class Harvester extends Subsystem
             {
 
                 if (mSystemState == SystemState.DISABLING)
-                    mSystemState = SystemState.CLOSING;
+                    mSystemState = SystemState.FULLOPENING;
             }
         }
 
@@ -130,11 +144,11 @@ public class Harvester extends Subsystem
                 SystemState newState; // calls the wanted handle case for the given systemState
                 switch (mSystemState)
                 {
-                    case CLOSING:
-                        newState = handleClosing();
+                    case FULLOPENING:
+                        newState = handleFullOpening();
                         break;
-                    case OPENING:
-                        newState = handleOpening();
+                    case PARTIALLYCLOSING:
+                        newState = handlePartiallyClosing();
                         break;
                     case HARVESTING:
                         newState = handleHarvesting();
@@ -149,10 +163,10 @@ public class Harvester extends Subsystem
                         newState = handleAutoHarvesting();
                         break;
                     case DISABLING:
-                        newState = handleClosing();
+                        newState = handleFullOpening();
                         break;
                     default:
-                        newState = handleClosing();
+                        newState = handleFullOpening();
                 }
                 if (newState != mSystemState)
                 {
@@ -179,44 +193,53 @@ public class Harvester extends Subsystem
 
         switch (mWantedState)
         {
-            case OPEN:
-                mSolenoid.set(kSolenoidOpen);
-                return SystemState.OPENING;
+            case FULLOPEN:
+                mSolenoid1.set(kSolenoidClose);
+                mSolenoid2.set(kSolenoidClose);
+                return SystemState.FULLOPENING;
+            case PARTIALLYCLOSE:
+                mSolenoid1.set(kSolenoidOpen);
+                mSolenoid2.set(kSolenoidClose);
+                return SystemState.PARTIALLYCLOSING;
             case HARVEST:
-                mSolenoid.set(kSolenoidClose);
+                mSolenoid1.set(kSolenoidOpen);
+                mSolenoid2.set(kSolenoidOpen);
                 return SystemState.HARVESTING;
             case EJECT:
-                mSolenoid.set(kSolenoidClose);
+                mSolenoid1.set(kSolenoidOpen);
+                mSolenoid2.set(kSolenoidOpen);
                 return SystemState.EJECTING;
             case HUG:
-                mSolenoid.set(kSolenoidClose);
+                mSolenoid1.set(kSolenoidOpen);
+                mSolenoid2.set(kSolenoidOpen);
                 return SystemState.HUGGING;
             case AUTOHARVEST:
-                mSolenoid.set(kSolenoidOpen);
+                mSolenoid1.set(kSolenoidOpen);
+                mSolenoid2.set(kSolenoidClose);
                 return SystemState.AUTOHARVESTING;
             default:
                 return mSystemState;
         }
     }
 
-    private SystemState handleClosing()
+    private SystemState handleFullOpening()
     {
-        //motors off and bars in
         mMotorLeft.set(0.0);
         mMotorRight.set(0.0);
-        if (mWantedState == WantedState.OPEN || mWantedState ==  WantedState.AUTOHARVEST)
+        if (mWantedState == WantedState.PARTIALLYCLOSE || mWantedState == WantedState.AUTOHARVEST || mWantedState == WantedState.HARVEST)
         {
-            return defaultStateTransfer(); //all defaultStateTransfers return the wanted state
+            return defaultStateTransfer();
         }
-        return SystemState.CLOSING;
+        return SystemState.FULLOPENING;
     }
 
-    private SystemState handleOpening()
+    private SystemState handlePartiallyClosing()
     {
         // due to mechanical stuck issue, run motors reverse, open bars and turn off motors after timeout
         mMotorLeft.set(0.0);
         mMotorRight.set(0.0);
-        if (mWantedState == WantedState.HARVEST || mWantedState == WantedState.EJECT || mWantedState == WantedState.AUTOHARVEST)
+        if (mWantedState == WantedState.HARVEST || mWantedState == WantedState.EJECT || mWantedState == WantedState.AUTOHARVEST
+                || mWantedState == WantedState.FULLOPEN)
         {
             return defaultStateTransfer();
         }
@@ -226,9 +249,9 @@ public class Harvester extends Subsystem
             //mMotorLeft.set(-1.0);
             //mMotorRight.set(-1.0);
         }
-        return SystemState.OPENING;
+        return SystemState.PARTIALLYCLOSING;
     }
-    
+
     private SystemState handleAutoHarvesting()
     {
         mMotorLeft.set(0.0);
@@ -268,9 +291,11 @@ public class Harvester extends Subsystem
         mMotorLeft.set(-1.0);
         if (!isCubeHeld() && mTimer.hasPeriodPassed(kEjectTimePeriod))
         { //Cube is gone!  Transition to Open (turn off motor) to prevent damage
-            mSolenoid.set(kSolenoidOpen);
-            setWantedState(WantedState.OPEN);
-            return SystemState.OPENING;
+            mSolenoid1.set(kSolenoidOpen);
+            mMotorRight.set(0.0);
+            mMotorLeft.set(0.0);
+            setWantedState(WantedState.PARTIALLYCLOSE);
+            return SystemState.PARTIALLYCLOSING;
         }
         else
         {
@@ -283,13 +308,13 @@ public class Harvester extends Subsystem
         //motors off and bars closing go to closed when cube is gone
         mMotorLeft.set(0.0);
         mMotorRight.set(0.0);
-        if (mWantedState == WantedState.OPEN || mWantedState == WantedState.EJECT)
+        if (mWantedState == WantedState.PARTIALLYCLOSE || mWantedState == WantedState.EJECT || mWantedState == WantedState.HARVEST || mWantedState == WantedState.FULLOPEN)
         {
             return defaultStateTransfer();
         }
         return SystemState.HUGGING;
     }
-    
+
     public WantedState getWantedState()
     {
         return mWantedState;
@@ -297,7 +322,7 @@ public class Harvester extends Subsystem
 
     public void setWantedState(WantedState wantedState)
     {
-        if (wantedState == WantedState.HARVEST || wantedState == WantedState.OPEN)
+        if (wantedState == WantedState.HARVEST || wantedState == WantedState.PARTIALLYCLOSE)
         {
             logNotice("TIMER SET---------------------------------------------");
             mTimer.reset();
@@ -312,8 +337,8 @@ public class Harvester extends Subsystem
         boolean t = false;
         switch (mSystemState)
         {
-            case OPENING:
-                if (mWantedState == WantedState.OPEN)
+            case PARTIALLYCLOSING:
+                if (mWantedState == WantedState.PARTIALLYCLOSE)
                     t = true;
                 break;
             case HARVESTING:
@@ -347,10 +372,16 @@ public class Harvester extends Subsystem
     @Override
     public void outputToSmartDashboard()
     {
-        if(!isInitialized()) return;
+        if (!isInitialized())
+        {
+//            dashboardPutBoolean("IRSensor CubeHeld", isCubeHeld());
+//            dashboardPutNumber("Cube Distance: ", mCubeHeldSensor.getDistance());
+            return;
+        }
         dashboardPutState(mSystemState.toString());
         dashboardPutWantedState(mWantedState.toString());
-        dashboardPutBoolean("mSolenoid", mSolenoid.get());
+        dashboardPutBoolean("mSolenoid1", mSolenoid1.get());
+        dashboardPutBoolean("mSolenoid2", mSolenoid2.get());
         dashboardPutBoolean("IRSensor CubeHeld", isCubeHeld());
         dashboardPutNumber("MotorRight", mMotorRight.get());
         dashboardPutNumber("MotorLeft", mMotorLeft.get());
@@ -362,7 +393,7 @@ public class Harvester extends Subsystem
     {
         mSystemState = SystemState.DISABLING;
         mWantedState = WantedState.DISABLE;
-        mSolenoid.set(kSolenoidClose);
+        mSolenoid1.set(kSolenoidClose);
         mMotorLeft.set(0.0);
         mMotorRight.set(0.0);
     }
@@ -397,24 +428,24 @@ public class Harvester extends Subsystem
                 logNotice("basic check ------");
                 logNotice("  mMotorRight:\n" + mMotorRight.dumpState());
                 logNotice("  mMotorLeft:\n" + mMotorLeft.dumpState());
-                logNotice("  mSolenoid: " + mSolenoid.get());
+                logNotice("  mSolenoid: " + mSolenoid1.get());
                 logNotice("  isCubeHeld: " + isCubeHeld());
             }
             if (variant.equals("solenoid") || allTests)
             {
                 logNotice("solenoid check ------");
                 logNotice("on 4s");
-                mSolenoid.set(kSolenoidOpen);
+                mSolenoid1.set(kSolenoidOpen);
                 Timer.delay(4.0);
                 logNotice("  isCubeHeld: " + isCubeHeld());
                 logNotice("off");
-                mSolenoid.set(kSolenoidClose);
+                mSolenoid1.set(kSolenoidClose);
             }
             if (variant.equals("motors") || allTests)
             {
                 logNotice("motors check ------");
                 logNotice("open arms (2s)");
-                mSolenoid.set(kSolenoidOpen);
+                mSolenoid1.set(kSolenoidOpen);
                 Timer.delay(2.0);
 
                 logNotice("left motor fwd .5 (4s)"); // in
@@ -439,7 +470,7 @@ public class Harvester extends Subsystem
                 mMotorRight.set(0);
 
                 Timer.delay(.5); // let motors spin down
-                mSolenoid.set(kSolenoidClose);
+                mSolenoid1.set(kSolenoidClose);
             }
             if (variant.equals("IRSensor") || allTests)
             {

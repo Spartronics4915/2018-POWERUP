@@ -268,7 +268,10 @@ public class Robot extends IterativeRobot
 
             mEnabledLooper.start(); // starts subsystem loopers.
             mDrive.setOpenLoop(DriveSignal.NEUTRAL);
-
+            mLED.setVisionLampOn();
+            mLED.setBlingState(BlingState.SOLID);
+            mLED.setBlingState(BlingState.BLUE);
+            mLED.setVisionLampOff(); // Vision not used in teleop yet TODO
             mLED.setVisionLampOn(); // Vision not used in teleop yet TODO
         }
         catch (Throwable t)
@@ -301,19 +304,22 @@ public class Robot extends IterativeRobot
             {
                 mLifter.setWantedState(ScissorLift.WantedState.OFF);
                 mGrabber.setWantedState(ArticulatedGrabber.WantedState.TRANSPORT);
-                mLED.setBlingState(BlingState.SCISSOR_OFF);
+                mLED.setBlingState(BlingState.SOLID);
+                mLED.setBlingState(BlingState.YELLOW);
             }
 
             if (mControlBoard.readButton(Buttons.SCISSOR_SWITCH))
             {
                 mLifter.setWantedState(ScissorLift.WantedState.SWITCH);
-                mLED.setBlingState(BlingState.SCISSOR_SWITCH);
+                mLED.setBlingState(BlingState.BLINK);
+                mLED.setBlingState(BlingState.YELLOW);
             }
 
             if (mControlBoard.readButton(Buttons.SCISSOR_SCALE))
             {
                 mLifter.setWantedState(ScissorLift.WantedState.SCALE);
-                mLED.setBlingState(BlingState.SCISSOR_SCALE);
+                mLED.setBlingState(BlingState.FAST_BLINK);
+                mLED.setBlingState(BlingState.YELLOW);
             }
 
             if (mControlBoard.readButton(Buttons.GRABBER_DROP_CUBE))
@@ -328,37 +334,51 @@ public class Robot extends IterativeRobot
                 else
                     mGrabber.setWantedState(ArticulatedGrabber.WantedState.MANUAL_OPEN);
             }
-
+            
             if (mControlBoard.readButton(Buttons.HARVESTER_OPEN))
             {
-                mHarvester.setWantedState(Harvester.WantedState.OPEN);
-                mLED.setBlingState(BlingState.OPEN_HARVESTER);
+                mHarvester.setWantedState(Harvester.WantedState.FULLOPEN);
+                mLED.setBlingState(BlingState.SOLID);
+                mLED.setBlingState(BlingState.BLUE);
             }
 
             if (mControlBoard.readButton(Buttons.HARVESTER_CLOSE))
             {
                 mHarvester.setWantedState(Harvester.WantedState.HARVEST);
-                mLED.setBlingState(BlingState.CLOSE_HARVESTER);
+                mLED.setBlingState(BlingState.BLINK);
+                mLED.setBlingState(BlingState.BLUE);
+            }
+            
+            if (mControlBoard.readButton(Buttons.HARVESTER_PARTIALLY_CLOSE))
+            {
+                mHarvester.setWantedState(Harvester.WantedState.PARTIALLYCLOSE);
+                mLED.setBlingState(BlingState.BLINK);
+                mLED.setBlingState(BlingState.BLUE);
             }
 
             if (mControlBoard.readButton(Buttons.HARVESTER_EJECT))
             {
                 mHarvester.setWantedState(Harvester.WantedState.EJECT);
-                mLED.setBlingState(BlingState.EJECT_HARVESTER);
+                mLED.setBlingState(BlingState.FAST_BLINK);
+                mLED.setBlingState(BlingState.BLUE);
             }
 
             if (mControlBoard.readButton(Buttons.SUPERSTRUCTURE_CARRY_CUBE))
             {
                 mSuperstructure.setWantedState(Superstructure.WantedState.TRANSFER_CUBE_TO_GRABBER);
-                mLED.setBlingState(BlingState.CARRY_CUBE);
+                mLED.setBlingState(BlingState.BLINK);
+                mLED.setBlingState(BlingState.GREEN);
             }
 
             if (mControlBoard.readButton(Buttons.CLIMBER_TOGGLE))
             {
+                mSuperstructure.setWantedState(Superstructure.WantedState.CLIMB);
+                mLED.setBlingState(BlingState.SOLID);
+                mLED.setBlingState(BlingState.RED);
                 if (mClimber.getWantedState() == Climber.WantedState.CLIMB)
                 {
                     mClimber.setWantedState(Climber.WantedState.HOLD);
-                    mLED.setBlingState(BlingState.STOP_CLIMBER);
+                //    mLED.setBlingState(BlingState.STOP_CLIMBER);
                 }
                 else
                 {
@@ -370,6 +390,8 @@ public class Robot extends IterativeRobot
             if (mControlBoard.readButton(Buttons.GRABBER_FAST_OPEN))
             {
                 mGrabber.setWantedState(ArticulatedGrabber.WantedState.FAST_OPENED);
+                mLED.setBlingState(BlingState.BLINK);
+                mLED.setBlingState(BlingState.RED);
             }
 
             if (mControlBoard.readButton(Buttons.CLIMB_IDLE_TEST))
@@ -415,6 +437,7 @@ public class Robot extends IterativeRobot
                 mGrabber.setWantedState(ArticulatedGrabber.WantedState.PREPARE_INTAKE);
             }
 
+
             // Drive control buttons
             if (mControlBoard.readButton(Buttons.VISION_CUBE_HARVEST))
             {
@@ -428,14 +451,14 @@ public class Robot extends IterativeRobot
             }
 
             // Bling settings
-            if (DriverStation.getInstance().getMatchTime() < kMatchDurationSeconds)
+         /*   if (DriverStation.getInstance().getMatchTime() < kMatchDurationSeconds)
             {
                 mLED.setBlingState(BlingState.TELEOP);
             }
             if (DriverStation.getInstance().getMatchTime() < kEndgameDurationSeconds)
             {
                 mLED.setBlingState(BlingState.ENDGAME);
-            }
+            } */
             allButTestPeriodic();
         }
         catch (Throwable t)

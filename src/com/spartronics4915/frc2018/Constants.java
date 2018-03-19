@@ -52,9 +52,8 @@ public class Constants extends ConstantsBase
     public static final int kScissorBrakeSolenoidId = 2; //PCM 0
     public static final int kGrabberSetupSolenoidId = 3; //PCM 0
     public static final int kGrabberSolenoidId = 4; //PCM 0
-    public static final int kHarvesterSolenoidId = 5; //PCM 0
-    public static final int kClimberStabilizationSolenoidId1 = 6; //PCM 0
-    public static final int kClimberStabilizationSolenoidId2 = 7; //PCM 0
+    public static final int kHarvesterSolenoid1Id = 5; //PCM 0
+    public static final int kHarvesterSolenoid2Id = 6; //PCM 0
 
     // PWM (Servo) Pins ----------------------------
     
