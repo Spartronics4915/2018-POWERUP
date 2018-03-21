@@ -64,9 +64,9 @@ public class PlaceOptimizedFromCMode extends AutoModeBase
         }
         runAction(new ResetPoseFromPathAction(path));
         runAction(PowerupHelper.getDriveAndArticulateActionWithTimeout(path, timeout, grabberPosition));
+        runAction(new ActuateScissorLiftAction(liftPosition));
         if (doesTurn)
             runAction(new TurnToHeadingAction(Rotation2d.fromDegrees(90)));
-        runAction(new ActuateScissorLiftAction(liftPosition));
         runAction(new ActuateArticulatedGrabberAction(ArticulatedGrabber.WantedState.RELEASE_CUBE));
         if (Util.getGameSpecificMessage().charAt(0) == 'R') // TODO: Add a way to pick up a second cube if we went to the scale
         {
@@ -80,10 +80,6 @@ public class PlaceOptimizedFromCMode extends AutoModeBase
             runAction(new TransferCubeFromGroundAction());
             runAction(new DrivePathAction(Util.truncatePathContainerUntilMarker(secondPath, "aquirecube")));
             runAction(new ActuateArticulatedGrabberAction(ArticulatedGrabber.WantedState.RELEASE_CUBE));
-        }
-        else
-        {
-            return;
         }
     }
 
