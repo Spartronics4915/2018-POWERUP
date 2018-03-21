@@ -294,7 +294,7 @@ public class ArticulatedGrabber extends Subsystem
             case FAST_OPENED:
             case FAST_CLOSED:
                 targetPosition = mFastPosition;
-                
+                break;
             case TRANSPORT:
             case PREPARE_EXCHANGE:
                 targetPosition = mHoldPosition;
