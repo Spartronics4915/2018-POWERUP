@@ -14,15 +14,11 @@ import com.spartronics4915.frc2018.auto.actions.TransferCubeFromGroundAction;
 import com.spartronics4915.frc2018.auto.actions.TurnToHeadingAction;
 import com.spartronics4915.frc2018.auto.actions.WaitAction;
 import com.spartronics4915.frc2018.auto.actions.WaitForPathMarkerAction;
-import com.spartronics4915.frc2018.paths.DriveSecondCubeToCScalePath;
 import com.spartronics4915.frc2018.paths.DriveSecondCubeToCSwitchPath;
 import com.spartronics4915.frc2018.paths.DriveToCloseScaleFromAPath;
-import com.spartronics4915.frc2018.paths.DriveToCloseScaleFromCPath;
 import com.spartronics4915.frc2018.paths.DriveToCloseSwitchFromAPath;
-import com.spartronics4915.frc2018.paths.DriveToCloseSwitchFromCPath;
-import com.spartronics4915.frc2018.paths.DriveToFarScaleFromCPath;
 import com.spartronics4915.frc2018.paths.DriveToFarSwitchFromAPath;
-import com.spartronics4915.frc2018.paths.DriveToFarSwitchFromCPath;
+import com.spartronics4915.frc2018.paths.DriveSecondCubeToSwitchFromAScalePath;
 import com.spartronics4915.frc2018.paths.DriveReverseToSecondCubeFromCSwitchPath;
 import com.spartronics4915.frc2018.paths.PathContainer;
 import com.spartronics4915.frc2018.subsystems.ArticulatedGrabber;
@@ -71,17 +67,31 @@ public class PlaceOptimizedFromAMode extends AutoModeBase
         if (doesTurn)
             runAction(new TurnToHeadingAction(Rotation2d.fromDegrees(-90)));
         runAction(new ActuateArticulatedGrabberAction(ArticulatedGrabber.WantedState.RELEASE_CUBE));
-        if (Util.getGameSpecificMessage().charAt(0) == 'L') // TODO: Add a way to pick up a second cube if we went to the scale
+        if (Util.getGameSpecificMessage().charAt(1) == 'L')
         {
-            PathContainer secondPath = new DriveSecondCubeToCScalePath();
+            PathContainer secondPath = new DriveSecondCubeToSwitchFromAScalePath();
+            runAction(new TurnToHeadingAction(Rotation2d.fromDegrees(180)));
+            runAction(new ActuateScissorLiftAction(ScissorLift.WantedState.OFF));
+            runAction(new ParallelAction(new SeriesAction(new WaitForPathMarkerAction("openharvester"), new ActuateHarvesterAction(Harvester.WantedState.OPEN)),
+                    new DrivePathAction(secondPath),
+                    new SeriesAction(new WaitForPathMarkerAction("acquirecube"), new ForceEndPathAction())));
+            runAction(new ActuateHarvesterAction(Harvester.WantedState.HARVEST));
+            runAction(new WaitAction(0.5));
+            runAction(new TransferCubeFromGroundAction());
+            runAction(new DrivePathAction(Util.truncatePathContainerUntilMarker(secondPath, "acquirecube")));
+            runAction(new ActuateArticulatedGrabberAction(ArticulatedGrabber.WantedState.RELEASE_CUBE));
+        }
+        else if (Util.getGameSpecificMessage().charAt(0) == 'N') // TODO: Add a way to pick up a second cube if we went to the scale
+        {
+            PathContainer secondPath = new DriveSecondCubeToCSwitchPath();
             runAction(new ParallelAction(new SeriesAction(new WaitForPathMarkerAction("openharvester"), new ActuateHarvesterAction(Harvester.WantedState.OPEN)),
                     new DrivePathAction(new DriveReverseToSecondCubeFromCSwitchPath())));
             runAction(new TurnToHeadingAction(Rotation2d.fromDegrees(180)));
-            runAction(new ParallelAction(new SeriesAction(new WaitForPathMarkerAction("aquirecube"), new ForceEndPathAction()),
+            runAction(new ParallelAction(new SeriesAction(new WaitForPathMarkerAction("acquirecube"), new ForceEndPathAction()),
                     new DrivePathAction(secondPath)));
             runAction(new ActuateHarvesterAction(Harvester.WantedState.HARVEST));
             runAction(new TransferCubeFromGroundAction());
-            runAction(new DrivePathAction(Util.truncatePathContainerUntilMarker(secondPath, "aquirecube")));
+            runAction(new DrivePathAction(Util.truncatePathContainerUntilMarker(secondPath, "acquirecube")));
             runAction(new ActuateArticulatedGrabberAction(ArticulatedGrabber.WantedState.RELEASE_CUBE));
         }
     }

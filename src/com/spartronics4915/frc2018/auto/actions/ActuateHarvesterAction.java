@@ -5,7 +5,7 @@ import com.spartronics4915.frc2018.subsystems.Harvester;
 public class ActuateHarvesterAction implements Action
 {
 
-    Harvester mLifter = null;
+    Harvester mHarvester = null;
     Harvester.WantedState mWantedState;
     
     public ActuateHarvesterAction(Harvester.WantedState wantedState)
@@ -16,7 +16,7 @@ public class ActuateHarvesterAction implements Action
     @Override
     public boolean isFinished()
     {
-        return mLifter.atTarget();
+        return mHarvester.atTarget();
     }
 
     @Override
@@ -35,8 +35,8 @@ public class ActuateHarvesterAction implements Action
     @Override
     public void start()
     {
-        mLifter = Harvester.getInstance();
-        mLifter.setWantedState(mWantedState);
+        mHarvester = Harvester.getInstance();
+        mHarvester.setWantedState(mWantedState);
     }
 
 }
