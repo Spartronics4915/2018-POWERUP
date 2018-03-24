@@ -300,7 +300,7 @@ public class Robot extends IterativeRobot
             if (mControlBoard.readButton(Buttons.SCISSOR_OFF))
             {
                 mLifter.setWantedState(ScissorLift.WantedState.OFF);
-                mGrabber.setWantedState(ArticulatedGrabber.WantedState.TRANSPORT);
+                mGrabber.setWantedState(ArticulatedGrabber.WantedState.PREPARE_DROP);
                 mLED.setBlingState(BlingState.SCISSOR_OFF);
             }
 
