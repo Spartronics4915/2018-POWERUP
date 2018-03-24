@@ -352,7 +352,7 @@ function drawRotatedRect(pos,w,h,angle,strokeColor,fillColor,noFill){
 		ctx.fill();
 	if(strokeColor != null) {
 		ctx.strokeStyle = strokeColor;
-		ctx.lineWidth = 4;
+		ctx.lineWidth = 1;
 		ctx.stroke();
 	}
 	ctx.rotate(-angle);
