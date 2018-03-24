@@ -7,17 +7,18 @@ var fieldHeight = 324; // in inches
 var robotWidth = 30.75;
 var robotHeight = 35.25;
 var pointRadius = 5;
+var lineWidth = 3;
 var turnRadius = 30;
 var kEpsilon = 1E-9;
 var image;
 var imageFlipped;
 var wto;
 
-var maxSpeed = 120;
-var maxSpeedColor = [0, 255, 0];
+var maxSpeed = 70;
+var maxSpeedColor = [255, 255, 0];
 var minSpeed = 0;
-var minSpeedColor = [255, 0, 0];
-var pathFillColor = "rgba(150, 150, 150, 0.5)";
+var minSpeedColor = [0, 0, 255];
+var pathFillColor = "rgba(150, 150, 200, 0.5)";
 
 const TRANSPARENT_IMAGE = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
 
@@ -128,7 +129,7 @@ class Line {
 			ctx.strokeStyle = "#00ff00"
 		}
 
-        ctx.lineWidth = pointRadius * 2;
+        ctx.lineWidth = lineWidth;
         ctx.stroke();
         this.pointA.draw();
         this.pointB.draw();
@@ -352,7 +353,7 @@ function drawRotatedRect(pos,w,h,angle,strokeColor,fillColor,noFill){
 		ctx.fill();
 	if(strokeColor != null) {
 		ctx.strokeStyle = strokeColor;
-		ctx.lineWidth = 1;
+		ctx.lineWidth = lineWidth;
 		ctx.stroke();
 	}
 	ctx.rotate(-angle);
