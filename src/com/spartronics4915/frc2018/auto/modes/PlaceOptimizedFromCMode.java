@@ -79,6 +79,8 @@ public class PlaceOptimizedFromCMode extends AutoModeBase
             runAction(new ActuateHarvesterAction(Harvester.WantedState.HARVEST));
             runAction(new WaitAction(0.5));
             runAction(new TransferCubeFromGroundAction());
+            runAction(new ActuateHarvesterAction(Harvester.WantedState.HARVEST));
+            runAction(new WaitAction(0.5));
             runAction(new DrivePathAction(Util.truncatePathContainerUntilMarker(secondPath, "acquirecube")));
             if (Util.getGameSpecificMessage().charAt(0) == 'R')
                 runAction(new ActuateArticulatedGrabberAction(ArticulatedGrabber.WantedState.RELEASE_CUBE));

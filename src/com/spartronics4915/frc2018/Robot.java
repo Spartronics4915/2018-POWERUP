@@ -211,8 +211,8 @@ public class Robot extends IterativeRobot
     {
         try
         {
-
-            mLED.setVisionLampOn();
+            mLED.setVisionLampOff();
+//            mLED.setVisionLampOn();
 
             Logger.setVerbosity(SmartDashboard.getString(kRobotVerbosity, "NOTICE"));
             Logger.logAutoInit();
@@ -269,7 +269,7 @@ public class Robot extends IterativeRobot
             mEnabledLooper.start(); // starts subsystem loopers.
             mDrive.setOpenLoop(DriveSignal.NEUTRAL);
 
-            mLED.setVisionLampOn(); // Vision not used in teleop yet TODO
+//            mLED.setVisionLampOn(); // Vision not used in teleop yet TODO
         }
         catch (Throwable t)
         {
