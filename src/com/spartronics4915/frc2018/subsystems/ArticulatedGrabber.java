@@ -82,7 +82,7 @@ public class ArticulatedGrabber extends Subsystem
     private boolean mRevLimitFlag = false;
 
     // these actual positions are computed from measured pot values at limit switches
-    private int mFastPosition = 965;
+    private int mFastPosition = 830;
     private int mPlacePosition = 738;
     private int mHoldPosition = 500;
 
