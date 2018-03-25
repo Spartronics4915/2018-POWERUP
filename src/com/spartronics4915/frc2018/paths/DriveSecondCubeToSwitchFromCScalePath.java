@@ -16,9 +16,9 @@ public class DriveSecondCubeToSwitchFromCScalePath implements PathContainer {
     public DriveSecondCubeToSwitchFromCScalePath()
     {
         sWaypoints.add(new Waypoint(324,53,0,60));
-        sWaypoints.add(new Waypoint(265,53,20,60));
+        sWaypoints.add(new Waypoint(265,53,20,60, "openharvester"));
         sWaypoints.add(new Waypoint(245,92,13,60));
-        sWaypoints.add(new Waypoint(226,92,0,60));
+        sWaypoints.add(new Waypoint(226,92,0,60, "acquirecube"));
         sWaypoints.add(new Waypoint(213,92,0,60));
 
     }

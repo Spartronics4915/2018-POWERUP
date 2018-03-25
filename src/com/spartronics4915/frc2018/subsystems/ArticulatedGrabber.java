@@ -71,7 +71,7 @@ public class ArticulatedGrabber extends Subsystem
     private final int kAcceptablePositionError = 20; //margin of error
 
     private final int kDefaultHoldOffset = 50; //offset from the reverse limit switch
-    private final int kDefaultPlaceOffset = 135;
+    private final int kDefaultPlaceOffset = 155;
     private final int kDefaultFastOffset = 80; // this is offset from the forward limit switch
     //we are not using pick we are just running to the limit switch for now
 

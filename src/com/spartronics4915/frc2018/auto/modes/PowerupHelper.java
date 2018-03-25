@@ -13,7 +13,7 @@ public class PowerupHelper
 {
     public static final double kSideSwitchFarTimeout = 13;
     public static final double kSideSwitchCloseTimeout = 5;
-    public static final double kMiddleSwitchTimeout = 5;
+    public static final double kMiddleSwitchTimeout = 4;
     
     public static final double kCloseScaleTimeout = 13;
     
