@@ -104,7 +104,7 @@ public class BackupControlBoard implements ControlBoardInterface
             case CAMERA_CHANGE_VIEW:
                 result = mButtonBoard.getRawButtonPressed(10) || mDrivestick.getRawButtonPressed(7);
                 break;
-            case GRABBER_TRANSPORT_TEST:
+            case GRABBER_TRANSPORT:
                 result = mDrivestick.getRawButtonPressed(9);
                 break;
             case CLIMB_IDLE_TEST:

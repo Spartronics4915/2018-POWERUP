@@ -145,7 +145,7 @@ public class Superstructure extends Subsystem
                         }
                         break;
                     case OPENING_HARVESTER: // Transfer cube from harvester to scissor
-                        if (mHarvester.getWantedState() != Harvester.WantedState.OPEN)
+                        if (mHarvester.getWantedState() != Harvester.WantedState.OPEN || mHarvester.getWantedState() != Harvester.WantedState.DISABLE)
                             mHarvester.setWantedState(Harvester.WantedState.OPEN);
                         if (mWantedState == WantedState.TRANSFER_CUBE_TO_GRABBER)
                         {

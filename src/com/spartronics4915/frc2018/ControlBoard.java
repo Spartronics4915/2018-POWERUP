@@ -41,6 +41,8 @@ public class ControlBoard implements ControlBoardInterface
     private final Joystick mButtonBoard;
     private double mPreviousGetReadyToHarvest;
     private double mPreviousGetDropCube;
+    private double mPreviousFastOpen;
+    private double mPreviousTransport;
     private boolean mTestsAllowed;
 
     protected ControlBoard()
@@ -49,6 +51,8 @@ public class ControlBoard implements ControlBoardInterface
         mButtonBoard = new Joystick(1);
         mPreviousGetReadyToHarvest = 0.0;
         mPreviousGetDropCube = 0.0;
+        mPreviousFastOpen = 0.0;
+        mPreviousTransport = 0.0;
         checkForTestMode();
     }
     
@@ -121,13 +125,17 @@ public class ControlBoard implements ControlBoardInterface
                 result = mButtonBoard.getRawButtonPressed(7);
                 break;
             case GRABBER_FAST_OPEN:
-                result = mButtonBoard.getRawButtonPressed(8);
+                current = mButtonBoard.getRawAxis(1);
+                result = (mPreviousFastOpen != current) && (current == 1.0);
+                mPreviousFastOpen = current;
                 break;
             case CAMERA_CHANGE_VIEW:
                 result = mButtonBoard.getRawButtonPressed(10) || mDrivestick.getRawButtonPressed(2);
                 break;
-            case GRABBER_TRANSPORT_TEST:
-                result = mTestsAllowed ? mDrivestick.getRawButtonPressed(7): false;
+            case GRABBER_TRANSPORT:
+                current = mButtonBoard.getRawAxis(1);
+                result = ((mPreviousTransport != current) && (current == -1.0)) || mDrivestick.getRawButtonPressed(7);
+                mPreviousTransport = current;
                 break;
             case CLIMB_IDLE_TEST:
                 result = mTestsAllowed ? mDrivestick.getRawButtonPressed(12) : false;

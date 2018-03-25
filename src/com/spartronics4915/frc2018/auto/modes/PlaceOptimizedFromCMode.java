@@ -71,16 +71,12 @@ public class PlaceOptimizedFromCMode extends AutoModeBase
         if (Util.getGameSpecificMessage().charAt(1) == 'R')
         {
             PathContainer secondPath = new DriveSecondCubeToSwitchFromCScalePath();
+            runAction(new WaitAction(0.7));
             runAction(new TurnToHeadingAction(Rotation2d.fromDegrees(180)));
             runAction(new ActuateScissorLiftAction(ScissorLift.WantedState.OFF));
-            runAction(new ParallelAction(new SeriesAction(new WaitForPathMarkerAction("openharvester"), new ActuateHarvesterAction(Harvester.WantedState.OPEN)),
-                    new DrivePathAction(secondPath),
+            runAction(new ParallelAction(new DrivePathAction(secondPath),
                     new SeriesAction(new WaitForPathMarkerAction("acquirecube"), new ForceEndPathAction())));
-            runAction(new ActuateHarvesterAction(Harvester.WantedState.HARVEST));
-            runAction(new WaitAction(0.5));
             runAction(new TransferCubeFromGroundAction());
-            runAction(new ActuateHarvesterAction(Harvester.WantedState.HARVEST));
-            runAction(new WaitAction(0.5));
             runAction(new DrivePathAction(Util.truncatePathContainerUntilMarker(secondPath, "acquirecube")));
             if (Util.getGameSpecificMessage().charAt(0) == 'R')
                 runAction(new ActuateArticulatedGrabberAction(ArticulatedGrabber.WantedState.RELEASE_CUBE));
