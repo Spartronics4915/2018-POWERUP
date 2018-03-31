@@ -44,7 +44,6 @@ public class Superstructure extends Subsystem
     }
 
     private LED mLED = null;
-    private ArticulatedGrabber mGrabber = null;
     private Climber mClimber = null;
     private Harvester mHarvester = null;
     private ScissorLift mLifter = null;
@@ -56,21 +55,15 @@ public class Superstructure extends Subsystem
     public enum SystemState
     {
         IDLE,
-        OPENING_HARVESTER, // Transfer cube from harvester to scissor
-        GRABBING_ARTICULATED_GRABBER,
-        TRANSPORTING_ARTICULATED_GRABBER,
-        TRANSPORTING_ARTICULATED_GRABBER_DELAY,
         RELEASING_SCISSOR, // Climb
         CLIMBING,
         DRIVE_CUBE, // turn to cube
-        VISION_HARVEST // drive to, and harvest cube
     };
 
     // Desired function from user
     public enum WantedState
     {
         IDLE,
-        TRANSFER_CUBE_TO_GRABBER,
         CLIMB,
         VISION_ACQUIRE_CUBE, // drive to, and acquire the cube
     }
@@ -92,7 +85,6 @@ public class Superstructure extends Subsystem
     private Superstructure()
     {
         mLED = LED.getInstance();
-        mGrabber = ArticulatedGrabber.getInstance();
         mClimber = Climber.getInstance();
         mHarvester = Harvester.getInstance();
         mLifter = ScissorLift.getInstance();
@@ -134,67 +126,12 @@ public class Superstructure extends Subsystem
                     case IDLE:
                         switch(mWantedState)
                         {
-                            case TRANSFER_CUBE_TO_GRABBER:
-                                newState = SystemState.OPENING_HARVESTER;
-                                break;
                             case CLIMB:
                                 newState = SystemState.RELEASING_SCISSOR;
                                 break;
                             default: // either idle or unimplemented
                                 break;
                         }
-                        break;
-                    case OPENING_HARVESTER: // Transfer cube from harvester to scissor
-                        if (mHarvester.getWantedState() != Harvester.WantedState.OPEN || mHarvester.getWantedState() != Harvester.WantedState.DISABLE)
-                            mHarvester.setWantedState(Harvester.WantedState.OPEN);
-                        if (mWantedState == WantedState.TRANSFER_CUBE_TO_GRABBER)
-                        {
-                            if (mHarvester.atTarget())
-                                newState = SystemState.GRABBING_ARTICULATED_GRABBER;
-                        }
-                        else
-                            newState = SystemState.IDLE;
-                        break;
-                    case GRABBING_ARTICULATED_GRABBER:
-                        if (mGrabber.getWantedState() != ArticulatedGrabber.WantedState.GRAB_CUBE)
-                            mGrabber.setWantedState(ArticulatedGrabber.WantedState.GRAB_CUBE);
-                        if (mWantedState == WantedState.TRANSFER_CUBE_TO_GRABBER)
-                        {
-                            if (mGrabber.atTarget())
-                            {
-                                newState = SystemState.TRANSPORTING_ARTICULATED_GRABBER_DELAY;
-                                mTimer.reset();
-                                mTimer.start();
-                           }
-                        }
-                        else
-                            newState = SystemState.IDLE;
-                        break;
-                    case TRANSPORTING_ARTICULATED_GRABBER_DELAY:
-                        if(mWantedState == WantedState.TRANSFER_CUBE_TO_GRABBER)
-                        {
-                            if(mTimer.hasPeriodPassed(kFinishGrabAfterSeconds))
-                            {
-                                newState = SystemState.TRANSPORTING_ARTICULATED_GRABBER;
-                            }
-                        }
-                        else
-                            newState = SystemState.IDLE;
-                        break;
-                    case TRANSPORTING_ARTICULATED_GRABBER:
-                        if (mWantedState == WantedState.TRANSFER_CUBE_TO_GRABBER)
-                        {
-                           if(mGrabber.getWantedState() != ArticulatedGrabber.WantedState.PREPARE_DROP)
-                               mGrabber.setWantedState(ArticulatedGrabber.WantedState.PREPARE_DROP);
-                            if (mGrabber.atTarget())
-                            {
-                                mHarvester.setWantedState(Harvester.WantedState.DISABLE);
-                                mWantedState = WantedState.IDLE;
-                                newState = SystemState.IDLE; // Done
-                            }
-                        }
-                        else
-                            newState = SystemState.IDLE;
                         break;
                     case RELEASING_SCISSOR: // Climb
                         if (mLifter.getWantedState() != ScissorLift.WantedState.OFF)
@@ -216,34 +153,6 @@ public class Superstructure extends Subsystem
                             newState = SystemState.IDLE; // Done
                         }
                         break;
-                    case DRIVE_CUBE: //The spinning to a cube
-                        if (mDrive.getState() != Drive.DriveControlState.FIND_CUBE)
-                        {
-                            mDrive.setWantSearchForCube(); //Begin Searching for cube
-                            if (mDrive.onVisionTarget()) // Returns a true when the cube is within 1 degree of the robot. 
-                            {
-                                newState = SystemState.VISION_HARVEST;
-                                
-                            }
-                        }
-                        else
-                            newState = SystemState.IDLE;
-                    case VISION_HARVEST: //Drive forward until we have the cube, then dump controls back to the driver
-                        if (mHarvester.getWantedState() != Harvester.WantedState.HARVEST)
-                        {
-                            mHarvester.setWantedState(Harvester.WantedState.HARVEST);
-                            // We return to default drive control when the harvester has a cube.
-                        }
-                        // I don't know if the following 'if' statement is nested in the previous if statement, or fine in its current state
-                        mDrive.setOpenLoop(new DriveSignal(0.3, 0.3));
-                        // Drive forward very, very slowly 
-                        if (mHarvester.atTarget())
-                        {
-                            newState = SystemState.IDLE; // Done
-                                                         // Return the robot to driver control
-                            mDrive.setOpenLoop(new DriveSignal(0.0,0.0));
-                        }
-                        
                     default:
                         newState = defaultStateTransfer();
                 }
@@ -272,9 +181,6 @@ public class Superstructure extends Subsystem
         {
             case IDLE:
                 newState = SystemState.IDLE;
-                break;
-            case TRANSFER_CUBE_TO_GRABBER:
-                newState = SystemState.OPENING_HARVESTER; // First state
                 break;
             case CLIMB:
                 //                if (DriverStation.getInstance().getMatchTime() < kMatchDurationSeconds - kEndgameDurationSeconds) // Don't extend the scissor if we're not in the endgame

@@ -4,10 +4,14 @@ import com.spartronics4915.frc2018.Constants;
 import com.spartronics4915.frc2018.loops.Loop;
 import com.spartronics4915.frc2018.loops.Looper;
 import com.spartronics4915.lib.util.Logger;
+import com.spartronics4915.lib.util.Util;
 import com.spartronics4915.lib.util.drivers.LazySolenoid;
 import com.spartronics4915.lib.util.drivers.SpartIRSensor;
 import com.spartronics4915.lib.util.drivers.TalonSRX4915;
 import com.spartronics4915.lib.util.drivers.TalonSRX4915Factory;
+
+import edu.wpi.first.wpilibj.AnalogInput;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Timer;
 
 /**
@@ -19,11 +23,13 @@ public class Harvester extends Subsystem
 {
 
     private static Harvester sInstance = null;
-    private static final boolean kSolenoidOpen = true;
-    private static final boolean kSolenoidClose = false;
-    private static final double kCloseTimePeriod = 1;
-    private static final double kEjectTimePeriod = 2.3;
-
+    
+    private static final boolean kFloatingSolenoidEngaged = true;
+    private static final boolean kGrabbingSolenoidEngaged = true;
+    private static final double kFlipperSpeed = 1; // This is direction-independent
+    private static final double kFlipperAllowedError = 20;
+    private static final double kSlideDropOffset = 155; // In potentiometer ticks
+    
     public static Harvester getInstance()
     {
         if (sInstance == null)
@@ -35,32 +41,40 @@ public class Harvester extends Subsystem
 
     public enum SystemState
     {
-        CLOSING,
-        OPENING,
-        HARVESTING,
-        EJECTING,
-        HUGGING,
-        AUTOHARVESTING,
         DISABLING,
+        INTAKING,
+        GRABBING,
+        EJECTING,
+        DEPLOYING,
+        STOWING,
+        SLIDE_DROPPING,
     }
 
     public enum WantedState
     {
-        OPEN,
-        HARVEST,
-        EJECT,
-        HUG,
-        AUTOHARVEST,
         DISABLE,
+        INTAKE,
+        GRAB,
+        EJECT,
+        DEPLOY,
+        STOW,
+        SLIDE_DROP,
     }
 
-    private SystemState mSystemState = SystemState.DISABLING;
+    private SystemState mSystemState = SystemState.DISABLING; // We don't want to modify the state of any of the hardware when we start up
     private WantedState mWantedState = WantedState.DISABLE;
+    private LazySolenoid mGrabbingSolenoid = null;
+    private LazySolenoid mFloatingSolenoid = null;
+    private AnalogInput mFlipperPotentiometer = null;
+    private DigitalInput mReverseLimit = null;
+    private DigitalInput mForwardLimit = null;
     private SpartIRSensor mCubeHeldSensor = null;
-    private LazySolenoid mSolenoid = null;
-    private TalonSRX4915 mMotorRight = null;
-    private TalonSRX4915 mMotorLeft = null;
+    private TalonSRX4915 mIntakeMotorRight = null;
+    private TalonSRX4915 mIntakeMotorLeft = null;
+    private TalonSRX4915 mFlipperMotor = null;
     private Timer mTimer;
+    
+    private double mReverseLimitPosition = 0;
 
     // Actuators and sensors should be initialized as private members with a value of null here
 
@@ -68,33 +82,40 @@ public class Harvester extends Subsystem
     {
         boolean success = true;
 
-        // Instantiate your actuator and sensor objects here
-        // If !mMyMotor.isValid() then success should be set to false
-
         try
         {
-            mSolenoid = new LazySolenoid(Constants.kHarvesterSolenoidId); // Changes value of Solenoid
+            mGrabbingSolenoid = new LazySolenoid(Constants.kGrabberSolenoidId);
+            mFloatingSolenoid = new LazySolenoid(Constants.kGrabberSetupSolenoidId);
+            mFlipperPotentiometer = new AnalogInput(Constants.kGrabberAnglePotentiometerId);
+            mReverseLimit = new DigitalInput(Constants.kFlipperRevLimitSwitchId);
+            mForwardLimit = new DigitalInput(Constants.kFlipperFwdLimitSwitchId);
             mCubeHeldSensor = new SpartIRSensor(Constants.kGrabberCubeDistanceRangeFinderId);
-            mMotorRight = TalonSRX4915Factory.createDefaultMotor(Constants.kHarvesterRightMotorId); // change value of motor
-            mMotorLeft = TalonSRX4915Factory.createDefaultMotor(Constants.kHarvesterLeftMotorId); // change value of motor
-            mMotorRight.configOutputPower(true, 0.5, 0, 1, 0, -1);
-            mMotorLeft.configOutputPower(true, 0.5, 0, 1, 0, -1);
-            mMotorRight.setInverted(true);
+            mIntakeMotorRight = TalonSRX4915Factory.createDefaultMotor(Constants.kHarvesterRightMotorId); // change value of motor
+            mIntakeMotorLeft = TalonSRX4915Factory.createDefaultMotor(Constants.kHarvesterLeftMotorId); // change value of motor
+            mFlipperMotor = TalonSRX4915Factory.createDefaultMotor(Constants.kGrabberFlipperMotorId);
+            mIntakeMotorRight.configOutputPower(true, 0.5, 0, 1, 0, -1);
+            mIntakeMotorLeft.configOutputPower(true, 0.5, 0, 1, 0, -1);
+            mIntakeMotorRight.setInverted(true);
             mTimer = new Timer();
 
-            if (!mMotorRight.isValid())
+            if (!mIntakeMotorRight.isValid())
             {
                 logError("Right Motor is invalid");
                 success = false;
             }
-            if (!mMotorLeft.isValid())
+            if (!mIntakeMotorLeft.isValid())
             {
                 logError("Left Motor is invalid");
                 success = false;
             }
-            if (!mSolenoid.isValid())
+            if (!mGrabbingSolenoid.isValid())
             {
-                logError("Solenoid is invalid");
+                logError("Grabbing solenoid is invalid");
+                success = false;
+            }
+            if (!mFloatingSolenoid.isValid())
+            {
+                logError("Floating solenoid is invalid");
                 success = false;
             }
         }
@@ -118,7 +139,7 @@ public class Harvester extends Subsystem
             {
 
                 if (mSystemState == SystemState.DISABLING)
-                    mSystemState = SystemState.CLOSING;
+                    mSystemState = SystemState.GRABBING;
             }
         }
 
@@ -127,32 +148,56 @@ public class Harvester extends Subsystem
         {
             synchronized (Harvester.this)
             {
-                SystemState newState; // calls the wanted handle case for the given systemState
+                if (!mReverseLimit.get())
+                    mReverseLimitPosition = mFlipperPotentiometer.getAverageValue();
+                
+                SystemState newState = SystemState.DISABLING; // calls the wanted handle case for the given systemState
                 switch (mSystemState)
                 {
-                    case CLOSING:
-                        newState = handleClosing();
+                    case DISABLING:
+                        mIntakeMotorRight.set(0);
+                        mIntakeMotorLeft.set(0);
+                        // Don't change the hardware in this state
+                        newState = handleDisabling();
                         break;
-                    case OPENING:
-                        newState = handleOpening();
+                    case INTAKING:
+                        setSolenoidsToFloating();
+                        mIntakeMotorRight.set(1);
+                        mIntakeMotorLeft.set(1);
+                        newState = defaultStateTransfer();
                         break;
-                    case HARVESTING:
-                        newState = handleHarvesting();
+                    case GRABBING:
+                        setSolenoidsToGrabbing();
+                        mIntakeMotorRight.set(0);
+                        mIntakeMotorLeft.set(0);
+                        newState = defaultStateTransfer();
                         break;
                     case EJECTING:
-                        newState = handleEjecting();
+                        setSolenoidsToFloating();
+                        mIntakeMotorRight.set(-1);
+                        mIntakeMotorLeft.set(-1);
+                        newState = defaultStateTransfer();
                         break;
-                    case HUGGING:
-                        newState = handleHugging();
+                    case DEPLOYING:
+                        setSolenoidsToOpening();
+                        flipperForward();
+                        newState = defaultStateTransfer();
                         break;
-                    case AUTOHARVESTING:
-                        newState = handleAutoHarvesting();
+                    case SLIDE_DROPPING:
+                        boolean onTarget = flipperToTarget(mReverseLimitPosition + kSlideDropOffset);
+                        if (onTarget) // We could have another state for this, but there's not benefit
+                        {
+                            setSolenoidsToOpening();
+                        }
                         break;
-                    case DISABLING:
-                        newState = handleClosing();
+                    case STOWING:
+                        setSolenoidsToGrabbing();
+                        flipperReverse();
+                        if (mWantedState == WantedState.DEPLOY)
+                            newState = defaultStateTransfer();
                         break;
                     default:
-                        newState = handleClosing();
+                        newState = handleDisabling();
                 }
                 if (newState != mSystemState)
                 {
@@ -174,120 +219,63 @@ public class Harvester extends Subsystem
 
     };
 
+    private SystemState handleDisabling()
+    {
+        return defaultStateTransfer(); // Don't touch the hardware in this state
+    }
+    
     private SystemState defaultStateTransfer() // transitions the systemState given what the wantedState is
     {
 
         switch (mWantedState)
         {
-            case OPEN:
-                mSolenoid.set(kSolenoidOpen);
-                return SystemState.OPENING;
-            case HARVEST:
-                mSolenoid.set(kSolenoidClose);
-                return SystemState.HARVESTING;
+            case DISABLE:
+                return SystemState.DISABLING;
+            case INTAKE:
+                return SystemState.INTAKING;
+            case GRAB:
+                return SystemState.GRABBING;
             case EJECT:
-                mSolenoid.set(kSolenoidClose);
                 return SystemState.EJECTING;
-            case HUG:
-                mSolenoid.set(kSolenoidClose);
-                return SystemState.HUGGING;
-            case AUTOHARVEST:
-                mSolenoid.set(kSolenoidOpen);
-                return SystemState.AUTOHARVESTING;
+            case DEPLOY:
+                return SystemState.DEPLOYING;
+            case STOW:
+                return SystemState.STOWING;
+            case SLIDE_DROP:
+                return SystemState.SLIDE_DROPPING;
             default:
                 return mSystemState;
         }
     }
-
-    private SystemState handleClosing()
+    
+    private boolean flipperToTarget(double target)
     {
-        //motors off and bars in
-        mMotorLeft.set(0.0);
-        mMotorRight.set(0.0);
-        if (mWantedState == WantedState.OPEN || mWantedState ==  WantedState.AUTOHARVEST)
+        if (Util.epsilonGreaterThan(mFlipperPotentiometer.getAverageValue(), target, kFlipperAllowedError))
+            flipperForward();
+        else if (Util.epsilonLessThan(mFlipperPotentiometer.getAverageValue(), target, kFlipperAllowedError))
+            flipperReverse();
+        else
         {
-            return defaultStateTransfer(); //all defaultStateTransfers return the wanted state
+            mFlipperMotor.set(0);
+            return true;
         }
-        return SystemState.CLOSING;
-    }
-
-    private SystemState handleOpening()
-    {
-        // due to mechanical stuck issue, run motors reverse, open bars and turn off motors after timeout
-        mMotorLeft.set(0.0);
-        mMotorRight.set(0.0);
-        if (mWantedState == WantedState.HARVEST || mWantedState == WantedState.EJECT || mWantedState == WantedState.AUTOHARVEST)
-        {
-            return defaultStateTransfer();
-        }
-        // if timeout reached, turn off motors
-        if (!mTimer.hasPeriodPassed(kCloseTimePeriod))
-        {
-            //mMotorLeft.set(-1.0);
-            //mMotorRight.set(-1.0);
-        }
-        return SystemState.OPENING;
+        return false;
     }
     
-    private SystemState handleAutoHarvesting()
+    private void flipperForward()
     {
-        mMotorLeft.set(0.0);
-        mMotorRight.set(0.0);
-        //Checks if cube is held and transitions to Harvest when there is
-        if (isCubeHeld())
-        {
-            setWantedState(WantedState.HARVEST);
-            return SystemState.HARVESTING;
-        }
+        if (mForwardLimit.get())
+            mFlipperMotor.set(kFlipperSpeed);
         else
-        {
-            return defaultStateTransfer();
-        }
+            mFlipperMotor.set(0);
     }
-
-    private SystemState handleHarvesting()
+    
+    private void flipperReverse()
     {
-        //motors on forward and bars closing, hug when cube is gone
-        mMotorLeft.set(1.0);
-        mMotorRight.set(1.0);
-        if (mTimer.hasPeriodPassed(kCloseTimePeriod))
-        {
-            setWantedState(WantedState.HUG);
-            return SystemState.HUGGING; // checks if cube is in the robot and will transitions to hugging when the cube is fully in
-        }
+        if (mReverseLimit.get())
+            mFlipperMotor.set(-kFlipperSpeed);
         else
-        {
-            return defaultStateTransfer();
-        }
-    }
-
-    private SystemState handleEjecting()
-    {
-        //motors in reverse and bars closing, close when cube is gone
-        mMotorRight.set(-1.0);
-        mMotorLeft.set(-1.0);
-        if (!isCubeHeld() && mTimer.hasPeriodPassed(kEjectTimePeriod))
-        { //Cube is gone!  Transition to Open (turn off motor) to prevent damage
-            mSolenoid.set(kSolenoidOpen);
-            setWantedState(WantedState.OPEN);
-            return SystemState.OPENING;
-        }
-        else
-        {
-            return defaultStateTransfer();
-        }
-    }
-
-    private SystemState handleHugging()
-    {
-        //motors off and bars closing go to closed when cube is gone
-        mMotorLeft.set(0.0);
-        mMotorRight.set(0.0);
-        if (mWantedState == WantedState.OPEN || mWantedState == WantedState.EJECT)
-        {
-            return defaultStateTransfer();
-        }
-        return SystemState.HUGGING;
+            mFlipperMotor.set(0);
     }
     
     public WantedState getWantedState()
@@ -297,12 +285,6 @@ public class Harvester extends Subsystem
 
     public void setWantedState(WantedState wantedState)
     {
-        if (wantedState == WantedState.HARVEST || wantedState == WantedState.OPEN)
-        {
-            logNotice("TIMER SET---------------------------------------------");
-            mTimer.reset();
-            mTimer.start();
-        }
         mWantedState = wantedState;
         dashboardPutWantedState(mWantedState.toString());
     }
@@ -312,26 +294,30 @@ public class Harvester extends Subsystem
         boolean t = false;
         switch (mSystemState)
         {
-            case OPENING:
-                if (mWantedState == WantedState.OPEN)
-                    t = true;
-                break;
-            case HARVESTING:
-                if (mWantedState == WantedState.HARVEST)
-                    t = true;
-                break;
-            case EJECTING:
-                if (mWantedState == WantedState.EJECT)
-                    t = true;
-                break;
-            case HUGGING:
-                if (mWantedState == WantedState.HUG)
-                    t = true;
-                break;
             case DISABLING:
                 if (mWantedState == WantedState.DISABLE)
                     t = true;
-                break;
+            case INTAKING:
+                if (mWantedState == WantedState.INTAKE)
+                    t = true;
+            case GRABBING:
+                if (mWantedState == WantedState.GRAB)
+                    t = true;
+            case EJECTING:
+                if (mWantedState == WantedState.EJECT)
+                    t = true;
+            case DEPLOYING:
+                if (mWantedState == WantedState.DEPLOY
+                     && !mForwardLimit.get())
+                    t = true;
+            case STOWING:
+                if (mWantedState == WantedState.STOW
+                     && !mReverseLimit.get())
+                    t = true;
+            case SLIDE_DROPPING:
+                if (mWantedState == WantedState.SLIDE_DROP
+                     && Util.epsilonEquals(mFlipperPotentiometer.getAverageValue(), mReverseLimitPosition + kSlideDropOffset, kFlipperAllowedError))
+                    t = true;
             default:
                 t = false;
                 break;
@@ -350,10 +336,14 @@ public class Harvester extends Subsystem
         if(!isInitialized()) return;
         dashboardPutState(mSystemState.toString());
         dashboardPutWantedState(mWantedState.toString());
-        dashboardPutBoolean("mSolenoid", mSolenoid.get());
+        dashboardPutBoolean("mGrabbingSolenoid", mGrabbingSolenoid.get());
+        dashboardPutNumber("mFlipperPotentiometer", mFlipperPotentiometer.getAverageValue());
+        dashboardPutBoolean("mReverseLimit", mReverseLimit.get());
+        dashboardPutBoolean("mForwardLimit", mForwardLimit.get());
         dashboardPutBoolean("IRSensor CubeHeld", isCubeHeld());
-        dashboardPutNumber("MotorRight", mMotorRight.get());
-        dashboardPutNumber("MotorLeft", mMotorLeft.get());
+        dashboardPutNumber("mIntakeMotorRight", mIntakeMotorRight.get());
+        dashboardPutNumber("mIntakeMotorLeft", mIntakeMotorLeft.get());
+        dashboardPutNumber("FlipperMotor", mFlipperMotor.get());
         dashboardPutNumber("Cube Distance: ", mCubeHeldSensor.getDistance());
     }
 
@@ -362,14 +352,16 @@ public class Harvester extends Subsystem
     {
         mSystemState = SystemState.DISABLING;
         mWantedState = WantedState.DISABLE;
-        mSolenoid.set(kSolenoidClose);
-        mMotorLeft.set(0.0);
-        mMotorRight.set(0.0);
+        setSolenoidsToFloating();
+        mIntakeMotorLeft.set(0.0);
+        mIntakeMotorRight.set(0.0);
     }
 
     @Override
     public void zeroSensors()
     {
+        if (!mReverseLimit.get())
+            mReverseLimitPosition = mFlipperPotentiometer.getAverageValue();
     }
 
     @Override
@@ -378,6 +370,24 @@ public class Harvester extends Subsystem
         enabledLooper.register(mLoop);
     }
 
+    private void setSolenoidsToFloating()
+    {
+        mFloatingSolenoid.set(!kFloatingSolenoidEngaged);
+        mGrabbingSolenoid.set(!kGrabbingSolenoidEngaged);
+    }
+    
+    private void setSolenoidsToGrabbing()
+    {
+        mFloatingSolenoid.set(!kFloatingSolenoidEngaged);
+        mGrabbingSolenoid.set(kGrabbingSolenoidEngaged);
+    }
+    
+    private void setSolenoidsToOpening()
+    {
+        mFloatingSolenoid.set(kFloatingSolenoidEngaged);
+        mGrabbingSolenoid.set(!kGrabbingSolenoidEngaged);
+    }
+    
     @Override
     public boolean checkSystem(String variant)
     {
@@ -395,51 +405,55 @@ public class Harvester extends Subsystem
             if (variant.equals("basic") || allTests)
             {
                 logNotice("basic check ------");
-                logNotice("  mMotorRight:\n" + mMotorRight.dumpState());
-                logNotice("  mMotorLeft:\n" + mMotorLeft.dumpState());
-                logNotice("  mSolenoid: " + mSolenoid.get());
+                logNotice("  mIntakeMotorRight:\n" + mIntakeMotorRight.dumpState());
+                logNotice("  mIntakeMotorLeft:\n" + mIntakeMotorLeft.dumpState());
                 logNotice("  isCubeHeld: " + isCubeHeld());
             }
             if (variant.equals("solenoid") || allTests)
             {
                 logNotice("solenoid check ------");
-                logNotice("on 4s");
-                mSolenoid.set(kSolenoidOpen);
-                Timer.delay(4.0);
+                logNotice("grabbing 1s");
+                setSolenoidsToGrabbing();
+                Timer.delay(1.0);
+                logNotice("opening 1s");
+                setSolenoidsToOpening();
+                Timer.delay(1.0);
+                logNotice("floating 1s");
+                setSolenoidsToFloating();
+                Timer.delay(1.0);
                 logNotice("  isCubeHeld: " + isCubeHeld());
-                logNotice("off");
-                mSolenoid.set(kSolenoidClose);
+                logNotice("slow close 1s");
+                mFloatingSolenoid.set(kFloatingSolenoidEngaged);
+                mGrabbingSolenoid.set(kGrabbingSolenoidEngaged);
             }
             if (variant.equals("motors") || allTests)
             {
                 logNotice("motors check ------");
                 logNotice("open arms (2s)");
-                mSolenoid.set(kSolenoidOpen);
                 Timer.delay(2.0);
 
                 logNotice("left motor fwd .5 (4s)"); // in
-                mMotorLeft.set(.5);
+                mIntakeMotorLeft.set(.5);
                 Timer.delay(4.0);
-                logNotice("  current: " + mMotorLeft.getOutputCurrent());
-                mMotorLeft.set(0);
+                logNotice("  current: " + mIntakeMotorLeft.getOutputCurrent());
+                mIntakeMotorLeft.set(0);
 
                 logNotice("right motor fwd .5 (4s)");
-                mMotorRight.set(.5);
+                mIntakeMotorRight.set(.5);
                 Timer.delay(4.0);
-                logNotice("  current: " + mMotorRight.getOutputCurrent());
-                mMotorRight.set(0);
+                logNotice("  current: " + mIntakeMotorRight.getOutputCurrent());
+                mIntakeMotorRight.set(0);
 
                 logNotice("both motors rev .5 (4s)"); // out
-                mMotorLeft.set(-.5);
-                mMotorRight.set(-.5);
+                mIntakeMotorLeft.set(-.5);
+                mIntakeMotorRight.set(-.5);
                 Timer.delay(4.0);
-                logNotice("  left current: " + mMotorLeft.getOutputCurrent());
-                logNotice("  right current: " + mMotorRight.getOutputCurrent());
-                mMotorLeft.set(0);
-                mMotorRight.set(0);
+                logNotice("  left current: " + mIntakeMotorLeft.getOutputCurrent());
+                logNotice("  right current: " + mIntakeMotorRight.getOutputCurrent());
+                mIntakeMotorLeft.set(0);
+                mIntakeMotorRight.set(0);
 
                 Timer.delay(.5); // let motors spin down
-                mSolenoid.set(kSolenoidClose);
             }
             if (variant.equals("IRSensor") || allTests)
             {
