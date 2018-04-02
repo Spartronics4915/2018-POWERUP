@@ -25,10 +25,10 @@ public class Harvester extends Subsystem
     private static Harvester sInstance = null;
     
     private static final boolean kFloatingSolenoidEngaged = true;
-    private static final boolean kGrabbingSolenoidEngaged = true;
-    private static final double kFlipperSpeed = 1; // This is direction-independent
-    private static final double kFlipperAllowedError = 20;
-    private static final double kSlideDropOffset = 155; // In potentiometer ticks
+    private static final boolean kGrabbingSolenoidEngaged = false;
+    private static final double kOneHundredPercentSpeed = 1; // This is direction-independent
+    private static final double kFlipperAllowedError = 50;
+    private static final double kSlideDropOffset = 200; // In potentiometer ticks
     
     public static Harvester getInstance()
     {
@@ -46,6 +46,8 @@ public class Harvester extends Subsystem
         GRABBING,
         EJECTING,
         DEPLOYING,
+        OPENING,
+        FLOATING,
         STOWING,
         SLIDE_DROPPING,
     }
@@ -57,6 +59,8 @@ public class Harvester extends Subsystem
         GRAB,
         EJECT,
         DEPLOY,
+        OPEN,
+        FLOAT,
         STOW,
         SLIDE_DROP,
     }
@@ -96,6 +100,8 @@ public class Harvester extends Subsystem
             mIntakeMotorRight.configOutputPower(true, 0.5, 0, 1, 0, -1);
             mIntakeMotorLeft.configOutputPower(true, 0.5, 0, 1, 0, -1);
             mIntakeMotorRight.setInverted(true);
+            mFlipperMotor.configOutputPower(true, 0.5, 0, 0.8, 0, -1);
+            mFlipperMotor.setBrakeMode(true);
             mTimer = new Timer();
 
             if (!mIntakeMotorRight.isValid())
@@ -149,15 +155,15 @@ public class Harvester extends Subsystem
             synchronized (Harvester.this)
             {
                 if (!mReverseLimit.get())
+                {
                     mReverseLimitPosition = mFlipperPotentiometer.getAverageValue();
+                    logNotice("Setting reverse limit potentiometer position.");
+                }
                 
-                SystemState newState = SystemState.DISABLING; // calls the wanted handle case for the given systemState
+                SystemState newState = SystemState.DISABLING;
                 switch (mSystemState)
                 {
                     case DISABLING:
-                        mIntakeMotorRight.set(0);
-                        mIntakeMotorLeft.set(0);
-                        // Don't change the hardware in this state
                         newState = handleDisabling();
                         break;
                     case INTAKING:
@@ -183,18 +189,25 @@ public class Harvester extends Subsystem
                         flipperForward();
                         newState = defaultStateTransfer();
                         break;
+                    case OPENING:
+                        setSolenoidsToOpening();
+                        newState = defaultStateTransfer();
+                        break;
+                    case FLOATING:
+                        setSolenoidsToFloating();
+                        newState = defaultStateTransfer();
+                        break;
                     case SLIDE_DROPPING:
-                        boolean onTarget = flipperToTarget(mReverseLimitPosition + kSlideDropOffset);
-                        if (onTarget) // We could have another state for this, but there's not benefit
-                        {
-                            setSolenoidsToOpening();
-                        }
+                        flipperToTarget(mReverseLimitPosition + kSlideDropOffset);
+                        newState = defaultStateTransfer();
                         break;
                     case STOWING:
                         setSolenoidsToGrabbing();
-                        flipperReverse();
+                        runFlipper(kOneHundredPercentSpeed * -0.4);
                         if (mWantedState == WantedState.DEPLOY)
                             newState = defaultStateTransfer();
+                        else
+                            newState = SystemState.STOWING;
                         break;
                     default:
                         newState = handleDisabling();
@@ -221,7 +234,10 @@ public class Harvester extends Subsystem
 
     private SystemState handleDisabling()
     {
-        return defaultStateTransfer(); // Don't touch the hardware in this state
+        mIntakeMotorRight.set(0);
+        mIntakeMotorLeft.set(0);
+        mFlipperMotor.set(0);
+        return defaultStateTransfer();
     }
     
     private SystemState defaultStateTransfer() // transitions the systemState given what the wantedState is
@@ -239,6 +255,10 @@ public class Harvester extends Subsystem
                 return SystemState.EJECTING;
             case DEPLOY:
                 return SystemState.DEPLOYING;
+            case OPEN:
+                return SystemState.OPENING;
+            case FLOAT:
+                return SystemState.FLOATING;
             case STOW:
                 return SystemState.STOWING;
             case SLIDE_DROP:
@@ -251,9 +271,9 @@ public class Harvester extends Subsystem
     private boolean flipperToTarget(double target)
     {
         if (Util.epsilonGreaterThan(mFlipperPotentiometer.getAverageValue(), target, kFlipperAllowedError))
-            flipperForward();
-        else if (Util.epsilonLessThan(mFlipperPotentiometer.getAverageValue(), target, kFlipperAllowedError))
             flipperReverse();
+        else if (Util.epsilonLessThan(mFlipperPotentiometer.getAverageValue(), target, kFlipperAllowedError))
+            flipperForward();
         else
         {
             mFlipperMotor.set(0);
@@ -264,18 +284,31 @@ public class Harvester extends Subsystem
     
     private void flipperForward()
     {
-        if (mForwardLimit.get())
-            mFlipperMotor.set(kFlipperSpeed);
-        else
-            mFlipperMotor.set(0);
+        runFlipper(kOneHundredPercentSpeed);
     }
     
     private void flipperReverse()
     {
-        if (mReverseLimit.get())
-            mFlipperMotor.set(-kFlipperSpeed);
+        runFlipper(-kOneHundredPercentSpeed);
+    }
+    
+    private void runFlipper(double speed)
+    {
+        if (mReverseLimit.get() && Math.abs(speed) != speed)
+        {
+            logNotice("Running flipper reverse.");
+            mFlipperMotor.set(speed);
+        }
+        else if (mForwardLimit.get() && Math.abs(speed) == speed)
+        {
+            logNotice("Running flipper forward.");
+            mFlipperMotor.set(kOneHundredPercentSpeed);
+        }
         else
+        {
             mFlipperMotor.set(0);
+            logWarning("Attempt to run flipper forward would overrun the reverse limit!");
+        }
     }
     
     public WantedState getWantedState()
@@ -297,27 +330,38 @@ public class Harvester extends Subsystem
             case DISABLING:
                 if (mWantedState == WantedState.DISABLE)
                     t = true;
+                break;
             case INTAKING:
                 if (mWantedState == WantedState.INTAKE)
                     t = true;
+                break;
             case GRABBING:
                 if (mWantedState == WantedState.GRAB)
                     t = true;
+                break;
             case EJECTING:
                 if (mWantedState == WantedState.EJECT)
                     t = true;
+                break;
             case DEPLOYING:
                 if (mWantedState == WantedState.DEPLOY
                      && !mForwardLimit.get())
                     t = true;
+                break;
+            case OPENING:
+                if (mWantedState == WantedState.OPEN)
+                    t = true;
+                break;
             case STOWING:
                 if (mWantedState == WantedState.STOW
                      && !mReverseLimit.get())
                     t = true;
+                break;
             case SLIDE_DROPPING:
                 if (mWantedState == WantedState.SLIDE_DROP
                      && Util.epsilonEquals(mFlipperPotentiometer.getAverageValue(), mReverseLimitPosition + kSlideDropOffset, kFlipperAllowedError))
                     t = true;
+                break;
             default:
                 t = false;
                 break;
@@ -378,7 +422,7 @@ public class Harvester extends Subsystem
     
     private void setSolenoidsToGrabbing()
     {
-        mFloatingSolenoid.set(!kFloatingSolenoidEngaged);
+        mFloatingSolenoid.set(kFloatingSolenoidEngaged);
         mGrabbingSolenoid.set(kGrabbingSolenoidEngaged);
     }
     
@@ -454,6 +498,13 @@ public class Harvester extends Subsystem
                 mIntakeMotorRight.set(0);
 
                 Timer.delay(.5); // let motors spin down
+            }
+            if (variant.equals("flipper") || allTests)
+            {
+                logNotice("flipper check ------");
+                mFlipperMotor.set(1);
+                Timer.delay(0.2);
+                mFlipperMotor.set(0);
             }
             if (variant.equals("IRSensor") || allTests)
             {

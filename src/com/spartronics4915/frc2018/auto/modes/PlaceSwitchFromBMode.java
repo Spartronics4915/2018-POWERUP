@@ -2,20 +2,12 @@ package com.spartronics4915.frc2018.auto.modes;
 
 import com.spartronics4915.frc2018.auto.AutoModeBase;
 import com.spartronics4915.frc2018.auto.AutoModeEndedException;
-import com.spartronics4915.frc2018.auto.actions.ActuateArticulatedGrabberAction;
-import com.spartronics4915.frc2018.auto.actions.ActuateScissorLiftAction;
-import com.spartronics4915.frc2018.auto.actions.DrivePathAction;
-import com.spartronics4915.frc2018.auto.actions.ParallelAction;
-import com.spartronics4915.frc2018.auto.actions.ParallelSingleWaitAction;
+import com.spartronics4915.frc2018.auto.actions.ActuateHarvesterAction;
 import com.spartronics4915.frc2018.auto.actions.ResetPoseFromPathAction;
-import com.spartronics4915.frc2018.auto.actions.SeriesAction;
-import com.spartronics4915.frc2018.auto.actions.WaitAction;
 import com.spartronics4915.frc2018.paths.DriveToCloseSwitchFromBPath;
 import com.spartronics4915.frc2018.paths.DriveToFarSwitchFromBPath;
 import com.spartronics4915.frc2018.paths.PathContainer;
-import com.spartronics4915.frc2018.subsystems.ArticulatedGrabber;
-import com.spartronics4915.frc2018.subsystems.ScissorLift;
-import com.spartronics4915.lib.util.Logger;
+import com.spartronics4915.frc2018.subsystems.Harvester;
 import com.spartronics4915.lib.util.Util;
 
 public class PlaceSwitchFromBMode extends AutoModeBase
@@ -37,8 +29,8 @@ public class PlaceSwitchFromBMode extends AutoModeBase
             path = mClosePath;
         }
         runAction(new ResetPoseFromPathAction(path));
-        runAction(PowerupHelper.getDriveAndArticulateActionWithTimeout(path, PowerupHelper.kMiddleSwitchTimeout, ArticulatedGrabber.WantedState.PREPARE_DROP));
-        runAction(new ActuateArticulatedGrabberAction(ArticulatedGrabber.WantedState.RELEASE_CUBE));
+        runAction(PowerupHelper.getDriveActionWithTimeout(path, PowerupHelper.kMiddleSwitchTimeout));
+        runAction(new ActuateHarvesterAction(Harvester.WantedState.SLIDE_DROP));
     }
 
 }

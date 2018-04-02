@@ -40,7 +40,7 @@ public class ControlBoard implements ControlBoardInterface
     private final Joystick mDrivestick;
     private final Joystick mButtonBoard;
     private double mPreviousGetReadyToHarvest;
-    private double mPreviousGetDropCube;
+    private double mPreviousGetSlideDropCube;
     private double mPreviousFastOpen;
     private double mPreviousTransport;
     private boolean mTestsAllowed;
@@ -50,7 +50,7 @@ public class ControlBoard implements ControlBoardInterface
         mDrivestick = new Joystick(0);
         mButtonBoard = new Joystick(1);
         mPreviousGetReadyToHarvest = 0.0;
-        mPreviousGetDropCube = 0.0;
+        mPreviousGetSlideDropCube = 0.0;
         mPreviousFastOpen = 0.0;
         mPreviousTransport = 0.0;
         checkForTestMode();
@@ -104,59 +104,36 @@ public class ControlBoard implements ControlBoardInterface
             case SCISSOR_SCALE:
                 result = mButtonBoard.getRawButtonPressed(2);
                 break;
-            case GRABBER_DROP_CUBE:
-                current = mButtonBoard.getRawAxis(3);
-                result = ((mPreviousGetDropCube != current) && (current == 1.0)) || mDrivestick.getRawButtonPressed(11);
-                mPreviousGetDropCube = current;
-                break;
-            case HARVESTER_OPEN:
-                result = mButtonBoard.getRawButtonPressed(5) || mDrivestick.getRawButtonPressed(5);
-                break;
-            case HARVESTER_CLOSE:
-                result = mButtonBoard.getRawButtonPressed(3) || mDrivestick.getRawButtonPressed(6);
-                break;
             case HARVESTER_EJECT:
                 result = mButtonBoard.getRawButtonPressed(4) || mDrivestick.getRawButtonPressed(3);
-                break;
-            case SUPERSTRUCTURE_CARRY_CUBE:
-                result = mButtonBoard.getRawButtonPressed(6) || mDrivestick.getRawButtonPressed(13);
                 break;
             case CLIMBER_TOGGLE:
                 result = mButtonBoard.getRawButtonPressed(7);
                 break;
-            case GRABBER_FAST_OPEN:
-                current = mButtonBoard.getRawAxis(1);
-                result = (mPreviousFastOpen != current) && (current == 1.0);
-                mPreviousFastOpen = current;
-                break;
             case CAMERA_CHANGE_VIEW:
                 result = mButtonBoard.getRawButtonPressed(10) || mDrivestick.getRawButtonPressed(2);
                 break;
-            case GRABBER_TRANSPORT:
-                current = mButtonBoard.getRawAxis(1);
-                result = ((mPreviousTransport != current) && (current == -1.0)) || mDrivestick.getRawButtonPressed(7);
-                mPreviousTransport = current;
+            case HARVESTER_GRAB:
+                result = mButtonBoard.getRawButtonPressed(3);
                 break;
-            case CLIMB_IDLE_TEST:
-                result = mTestsAllowed ? mDrivestick.getRawButtonPressed(12) : false;
+            case HARVESTER_INTAKE:
+                result = mButtonBoard.getRawButtonPressed(5);
                 break;
-            case GRABBER_TEMP_TEST:
+            case HARVESTER_FLOAT:
+                result = mButtonBoard.getRawButtonPressed(9);
                 break;
-            case GRABBER_GRAB_CUBE_TEST:
-                result = mTestsAllowed ? mDrivestick.getRawButtonPressed(8) : false;
+            case HARVESTER_OPEN:
+                result = mButtonBoard.getRawButtonPressed(6);
                 break;
-            case GRABBER_PREPARE_DROP_TEST:
-                result = mTestsAllowed ? mDrivestick.getRawButtonPressed(9) : false;
+            case HARVESTER_SLIDE_DROP:
+                result = (mButtonBoard.getRawAxis(1) == -1);
                 break;
-            case GRABBER_PREPARE_INTAKE_TEST:
-                result = mTestsAllowed ? mDrivestick.getRawButtonPressed(10) : false;
+            case HARVESTER_DEPLOY:
+                result = (mButtonBoard.getRawAxis(1) == 1);
                 break;
             case VISION_CUBE_HARVEST:
                 // Teleop Harvest Cubes
                 result = mDrivestick.getRawButton(4);
-                break;
-            case GRABBER_TOGGLE:
-                result = mDrivestick.getRawButtonReleased(7);
                 break;
             default:
                 Logger.error("ControlBoard: unimplemented boolean: " + b.toString());

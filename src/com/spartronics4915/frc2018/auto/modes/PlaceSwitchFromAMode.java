@@ -2,7 +2,7 @@ package com.spartronics4915.frc2018.auto.modes;
 
 import com.spartronics4915.frc2018.auto.AutoModeBase;
 import com.spartronics4915.frc2018.auto.AutoModeEndedException;
-import com.spartronics4915.frc2018.auto.actions.ActuateArticulatedGrabberAction;
+import com.spartronics4915.frc2018.auto.actions.ActuateHarvesterAction;
 import com.spartronics4915.frc2018.auto.actions.DrivePathAction;
 import com.spartronics4915.frc2018.auto.actions.ParallelAction;
 import com.spartronics4915.frc2018.auto.actions.ParallelSingleWaitAction;
@@ -12,7 +12,7 @@ import com.spartronics4915.frc2018.auto.actions.WaitAction;
 import com.spartronics4915.frc2018.paths.DriveToCloseSwitchFromAPath;
 import com.spartronics4915.frc2018.paths.DriveToFarSwitchFromAPath;
 import com.spartronics4915.frc2018.paths.PathContainer;
-import com.spartronics4915.frc2018.subsystems.ArticulatedGrabber;
+import com.spartronics4915.frc2018.subsystems.Harvester;
 import com.spartronics4915.lib.util.Util;
 
 public class PlaceSwitchFromAMode extends AutoModeBase
@@ -37,8 +37,8 @@ public class PlaceSwitchFromAMode extends AutoModeBase
             timeout = PowerupHelper.kSideSwitchFarTimeout;
         }
         runAction(new ResetPoseFromPathAction(path));
-        runAction(PowerupHelper.getDriveAndArticulateActionWithTimeout(path, timeout, ArticulatedGrabber.WantedState.PREPARE_DROP));
-        runAction(new ActuateArticulatedGrabberAction(ArticulatedGrabber.WantedState.RELEASE_CUBE));
+        runAction(PowerupHelper.getDriveActionWithTimeout(path, timeout));
+        runAction(new ActuateHarvesterAction(Harvester.WantedState.SLIDE_DROP));
     }
 
 }

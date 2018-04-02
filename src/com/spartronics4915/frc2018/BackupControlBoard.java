@@ -81,45 +81,16 @@ public class BackupControlBoard implements ControlBoardInterface
             case SCISSOR_SCALE:
                 result = mButtonBoard.getRawButtonPressed(2);
                 break;
-            case GRABBER_DROP_CUBE:
+            case GRABBER_SLIDE_DROP_CUBE:
                 current = mButtonBoard.getRawAxis(3);
                 result = (mPreviousGetDropCube != current) && (current == 1.0 || mDrivestick.getRawButtonPressed(6));
                 mPreviousGetDropCube = current;
-                break;
-            case HARVESTER_OPEN:
-                result = mButtonBoard.getRawButtonPressed(5) || mDrivestick.getRawButtonPressed(2);
-                break;
-            case HARVESTER_CLOSE:
-                result = mButtonBoard.getRawButtonPressed(3) || mDrivestick.getRawButtonPressed(3);
-                break;
-            case HARVESTER_EJECT:
-                result = mButtonBoard.getRawButtonPressed(4);
-                break;
-            case SUPERSTRUCTURE_CARRY_CUBE:
-                result = mButtonBoard.getRawButtonPressed(6) || mDrivestick.getRawButtonPressed(5);
                 break;
             case CLIMBER_TOGGLE:
                 result = mButtonBoard.getRawButtonPressed(7);
                 break;
             case CAMERA_CHANGE_VIEW:
                 result = mButtonBoard.getRawButtonPressed(10) || mDrivestick.getRawButtonPressed(7);
-                break;
-            case GRABBER_TRANSPORT:
-                result = mDrivestick.getRawButtonPressed(9);
-                break;
-            case CLIMB_IDLE_TEST:
-                result = mTestsAllowed ? mDrivestick.getRawButtonPressed(8) : false;
-                break;
-            case GRABBER_TEMP_TEST:
-                break;
-            case GRABBER_GRAB_CUBE_TEST:
-                result = mTestsAllowed ? mDrivestick.getRawButtonPressed(10) : false;
-                break;
-            case GRABBER_PREPARE_DROP_TEST:
-                result = mTestsAllowed ? mDrivestick.getRawButtonPressed(11) : false;
-                break;
-            case GRABBER_PREPARE_INTAKE_TEST:
-                result = mTestsAllowed ? mDrivestick.getRawButtonPressed(12) : false;
                 break;
             case VISION_CUBE_HARVEST:
                 // Teleop Harvest Cubes

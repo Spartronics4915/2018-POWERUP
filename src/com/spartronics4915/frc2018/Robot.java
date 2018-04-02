@@ -13,7 +13,6 @@ import com.spartronics4915.frc2018.loops.Looper;
 import com.spartronics4915.frc2018.loops.RobotStateEstimator;
 import com.spartronics4915.frc2018.loops.VisionProcessor;
 import com.spartronics4915.frc2018.paths.profiles.PathAdapter;
-import com.spartronics4915.frc2018.subsystems.ArticulatedGrabber;
 import com.spartronics4915.frc2018.subsystems.Climber;
 import com.spartronics4915.frc2018.subsystems.ConnectionMonitor;
 import com.spartronics4915.frc2018.subsystems.Drive;
@@ -67,7 +66,6 @@ public class Robot extends IterativeRobot
     private Drive mDrive = null;
     private Superstructure mSuperstructure = null;
     private LED mLED = null;
-    private ArticulatedGrabber mGrabber = null;
     private Climber mClimber = null;
     private Harvester mHarvester = null;
     private ScissorLift mLifter = null;
@@ -150,7 +148,6 @@ public class Robot extends IterativeRobot
             // Subsystem instances
             mDrive = Drive.getInstance();
             mLED = LED.getInstance();
-            mGrabber = ArticulatedGrabber.getInstance();
             mClimber = Climber.getInstance();
             mHarvester = Harvester.getInstance();
             mLifter = ScissorLift.getInstance();
@@ -161,7 +158,7 @@ public class Robot extends IterativeRobot
             mConnectionMonitor = ConnectionMonitor.getInstance();
             mSubsystemManager = new SubsystemManager(
                     Arrays.asList(mDrive, mSuperstructure,
-                            mConnectionMonitor, mLED, mGrabber, mClimber, mHarvester, mLifter));
+                            mConnectionMonitor, mLED, mClimber, mHarvester, mLifter));
 
             // Initialize other helper objects
             mCheesyDriveHelper = new CheesyDriveHelper();
@@ -300,7 +297,6 @@ public class Robot extends IterativeRobot
             if (mControlBoard.readButton(Buttons.SCISSOR_OFF))
             {
                 mLifter.setWantedState(ScissorLift.WantedState.OFF);
-                mGrabber.setWantedState(ArticulatedGrabber.WantedState.PREPARE_DROP);
                 mLED.setBlingState(BlingState.SCISSOR_OFF);
             }
 
@@ -316,41 +312,29 @@ public class Robot extends IterativeRobot
                 mLED.setBlingState(BlingState.SCISSOR_SCALE);
             }
 
-            if (mControlBoard.readButton(Buttons.GRABBER_DROP_CUBE))
-            {
-                mGrabber.setWantedState(ArticulatedGrabber.WantedState.RELEASE_CUBE);
-            }
-
-            if (mControlBoard.readButton(Buttons.GRABBER_TOGGLE))
-            {
-                if (mGrabber.getWantedState() == ArticulatedGrabber.WantedState.MANUAL_OPEN)
-                    mGrabber.setWantedState(ArticulatedGrabber.WantedState.MANUAL_CLOSED);
-                else
-                    mGrabber.setWantedState(ArticulatedGrabber.WantedState.MANUAL_OPEN);
-            }
-
-            if (mControlBoard.readButton(Buttons.HARVESTER_OPEN))
-            {
-                mHarvester.setWantedState(Harvester.WantedState.DEPLOY);
-                mLED.setBlingState(BlingState.OPEN_HARVESTER);
-            }
-
-            if (mControlBoard.readButton(Buttons.HARVESTER_CLOSE))
-            {
-                mHarvester.setWantedState(Harvester.WantedState.HARVEST);
-                mLED.setBlingState(BlingState.CLOSE_HARVESTER);
-            }
-
             if (mControlBoard.readButton(Buttons.HARVESTER_EJECT))
             {
                 mHarvester.setWantedState(Harvester.WantedState.EJECT);
                 mLED.setBlingState(BlingState.EJECT_HARVESTER);
-            }
-
-            if (mControlBoard.readButton(Buttons.SUPERSTRUCTURE_CARRY_CUBE))
+            } else if (mControlBoard.readButton(Buttons.HARVESTER_FLOAT))
             {
-                mSuperstructure.setWantedState(Superstructure.WantedState.TRANSFER_CUBE_TO_GRABBER);
-                mLED.setBlingState(BlingState.CARRY_CUBE);
+                mHarvester.setWantedState(Harvester.WantedState.FLOAT);
+            }
+            else if (mControlBoard.readButton(Buttons.HARVESTER_GRAB))
+            {
+                mHarvester.setWantedState(Harvester.WantedState.GRAB);
+            }
+            else if (mControlBoard.readButton(Buttons.HARVESTER_INTAKE))
+            {
+                mHarvester.setWantedState(Harvester.WantedState.INTAKE);
+            }
+            else if (mControlBoard.readButton(Buttons.HARVESTER_SLIDE_DROP))
+            {
+                mHarvester.setWantedState(Harvester.WantedState.SLIDE_DROP);
+            }
+            else if (mControlBoard.readButton(Buttons.HARVESTER_DEPLOY))
+            {
+                mHarvester.setWantedState(Harvester.WantedState.DEPLOY);
             }
 
             if (mControlBoard.readButton(Buttons.CLIMBER_TOGGLE))
@@ -367,16 +351,6 @@ public class Robot extends IterativeRobot
                 }
             }
 
-            if (mControlBoard.readButton(Buttons.GRABBER_FAST_OPEN))
-            {
-                mGrabber.setWantedState(ArticulatedGrabber.WantedState.FAST_OPENED);
-            }
-
-            if (mControlBoard.readButton(Buttons.CLIMB_IDLE_TEST))
-            {
-                mClimber.setWantedState(Climber.WantedState.IDLE);
-            }
-
             if (mControlBoard.readButton(Buttons.CAMERA_CHANGE_VIEW))
             {
                 if (SmartDashboard.getString("CameraView", "").equals("CubeCam") ||
@@ -388,32 +362,7 @@ public class Robot extends IterativeRobot
                 {
                     SmartDashboard.putString("CameraView", "CubeCam");
                 }
-            }
-
-            if (mControlBoard.readButton(Buttons.GRABBER_TRANSPORT))
-            {
-                mGrabber.setWantedState(ArticulatedGrabber.WantedState.TRANSPORT);
-            }
-
-            if (mControlBoard.readButton(Buttons.GRABBER_GRAB_CUBE_TEST))
-            {
-                mGrabber.setWantedState(ArticulatedGrabber.WantedState.GRAB_CUBE);
-            }
-
-            if (mControlBoard.readButton(Buttons.GRABBER_TEMP_TEST))
-            {
-                mGrabber.setWantedState(ArticulatedGrabber.WantedState.TEMP);
-            }
-
-            if (mControlBoard.readButton(Buttons.GRABBER_PREPARE_DROP_TEST))
-            {
-                mGrabber.setWantedState(ArticulatedGrabber.WantedState.PREPARE_DROP);
-            }
-
-            if (mControlBoard.readButton(Buttons.GRABBER_PREPARE_INTAKE_TEST))
-            {
-                mGrabber.setWantedState(ArticulatedGrabber.WantedState.PREPARE_INTAKE);
-            }
+            } 
 
             // Drive control buttons
             if (mControlBoard.readButton(Buttons.VISION_CUBE_HARVEST))
@@ -507,11 +456,6 @@ public class Robot extends IterativeRobot
         Timer.delay(5);
 
         boolean success = true;
-        if (testMode.equals("ArticulatedGrabber") || testMode.equals("All"))
-        {
-            success &= mGrabber.checkSystem(testVariant);
-        }
-
         if (testMode.equals("Drive") || testMode.equals("All"))
         {
             success &= mDrive.checkSystem(testVariant);
