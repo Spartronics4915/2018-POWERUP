@@ -336,6 +336,10 @@ public class Robot extends IterativeRobot
             {
                 mHarvester.setWantedState(Harvester.WantedState.DEPLOY);
             }
+            else if (mControlBoard.readButton(Buttons.HARVESTER_OPEN))
+            {
+                mHarvester.setWantedState(Harvester.WantedState.OPEN);
+            }
 
             if (mControlBoard.readButton(Buttons.CLIMBER_TOGGLE))
             {
