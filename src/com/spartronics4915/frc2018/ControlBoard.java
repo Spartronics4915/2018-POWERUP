@@ -40,8 +40,8 @@ public class ControlBoard implements ControlBoardInterface
     private final Joystick mDrivestick;
     private final Joystick mButtonBoard;
     private double mPreviousGetReadyToHarvest;
-    private double mPreviousGetSlideDropCube;
-    private double mPreviousFastOpen;
+    private double mPreviousSlideDrop;
+    private double mPreviousDeploy;
     private double mPreviousTransport;
     private boolean mTestsAllowed;
 
@@ -50,8 +50,8 @@ public class ControlBoard implements ControlBoardInterface
         mDrivestick = new Joystick(0);
         mButtonBoard = new Joystick(1);
         mPreviousGetReadyToHarvest = 0.0;
-        mPreviousGetSlideDropCube = 0.0;
-        mPreviousFastOpen = 0.0;
+        mPreviousSlideDrop = 0.0;
+        mPreviousDeploy = 0.0;
         mPreviousTransport = 0.0;
         checkForTestMode();
     }
@@ -105,7 +105,7 @@ public class ControlBoard implements ControlBoardInterface
                 result = mButtonBoard.getRawButtonPressed(2);
                 break;
             case HARVESTER_EJECT:
-                result = mButtonBoard.getRawButtonPressed(4) || mDrivestick.getRawButtonPressed(3);
+                result = mButtonBoard.getRawButtonPressed(4);
                 break;
             case CLIMBER_TOGGLE:
                 result = mButtonBoard.getRawButtonPressed(7);
@@ -126,10 +126,14 @@ public class ControlBoard implements ControlBoardInterface
                 result = mButtonBoard.getRawButtonPressed(6);
                 break;
             case HARVESTER_SLIDE_DROP:
-                result = (mButtonBoard.getRawAxis(1) == -1);
+                current = mButtonBoard.getRawAxis(3);
+                result = (mPreviousSlideDrop != current) && (current == 1.0);
+                mPreviousSlideDrop = current;
                 break;
             case HARVESTER_DEPLOY:
-                result = (mButtonBoard.getRawAxis(1) == 1);
+                current = mButtonBoard.getRawAxis(1);
+                result = (mPreviousDeploy != current) && (current == 1.0);
+                mPreviousDeploy = current;
                 break;
             case VISION_CUBE_HARVEST:
                 // Teleop Harvest Cubes
