@@ -300,16 +300,18 @@ public class Robot extends IterativeRobot
                 mLED.setBlingState(BlingState.SCISSOR_OFF);
             }
 
-            if (mControlBoard.readButton(Buttons.SCISSOR_SWITCH))
+            if (mControlBoard.readButton(Buttons.SCISSOR_LOW_SCALE))
             {
-                mLifter.setWantedState(ScissorLift.WantedState.SWITCH);
+                mLifter.setWantedState(ScissorLift.WantedState.LOW_SCALE);
                 mLED.setBlingState(BlingState.SCISSOR_SWITCH);
             }
-
-            if (mControlBoard.readButton(Buttons.SCISSOR_SCALE))
+            else if (mControlBoard.readButton(Buttons.SCISSOR_SCALE))
             {
                 mLifter.setWantedState(ScissorLift.WantedState.SCALE);
                 mLED.setBlingState(BlingState.SCISSOR_SCALE);
+            } else if (mControlBoard.readButton(Buttons.SCISSOR_SWITCH))
+            {
+                mLifter.setWantedState(ScissorLift.WantedState.SWITCH);
             }
 
             if (mControlBoard.readButton(Buttons.HARVESTER_EJECT))

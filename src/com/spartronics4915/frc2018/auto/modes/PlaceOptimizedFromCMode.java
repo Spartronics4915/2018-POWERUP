@@ -34,6 +34,7 @@ public class PlaceOptimizedFromCMode extends AutoModeBase
     @Override
     protected void routine() throws AutoModeEndedException
     {
+        runAction(new ActuateHarvesterAction(Harvester.WantedState.GRAB));
         PathContainer path;
         ScissorLift.WantedState liftPosition;
         double timeout;
@@ -58,11 +59,12 @@ public class PlaceOptimizedFromCMode extends AutoModeBase
             timeout = PowerupHelper.kSideSwitchFarTimeout;
         }
         runAction(new ResetPoseFromPathAction(path));
-        runAction(PowerupHelper.getDriveActionWithTimeout(path, timeout));
+        runAction(PowerupHelper.getDriveSwitchActionWithTimeout(path, timeout));
         runAction(new ActuateScissorLiftAction(liftPosition));
         if (doesTurn)
             runAction(new TurnToHeadingAction(Rotation2d.fromDegrees(90)));
         runAction(new ActuateHarvesterAction(Harvester.WantedState.SLIDE_DROP));
+        runAction(new ActuateHarvesterAction(Harvester.WantedState.OPEN));
 //        if (Util.getGameSpecificMessage().charAt(1) == 'R')
 //        {
 //            PathContainer secondPath = new DriveSecondCubeToSwitchFromCScalePath();

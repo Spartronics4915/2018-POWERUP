@@ -28,8 +28,10 @@ public class Harvester extends Subsystem
     private static final boolean kGrabbingSolenoidEngaged = false;
     private static final double kOneHundredPercentSpeed = 1; // This is direction-independent
     private static final double kFlipperAllowedError = 50;
-    private static final double kSlideDropOffset = 200; // In potentiometer ticks
-    
+    private static final double kSlideDropOffset = 165; // In potentiometer ticks, from the reverse limit
+    private static final double kForwardSoftLimitOffset = 440; // From the reverse limit
+    private static final double kReverseSoftLimitOffset = 52; // From the reverse limit
+            
     public static Harvester getInstance()
     {
         if (sInstance == null)
@@ -76,7 +78,6 @@ public class Harvester extends Subsystem
     private TalonSRX4915 mIntakeMotorRight = null;
     private TalonSRX4915 mIntakeMotorLeft = null;
     private TalonSRX4915 mFlipperMotor = null;
-    private Timer mTimer;
     
     private double mReverseLimitPosition = 0;
 
@@ -102,7 +103,6 @@ public class Harvester extends Subsystem
             mIntakeMotorRight.setInverted(true);
             mFlipperMotor.configOutputPower(true, 0.5, 0, 0.8, 0, -1);
             mFlipperMotor.setBrakeMode(true);
-            mTimer = new Timer();
 
             if (!mIntakeMotorRight.isValid())
             {
@@ -179,18 +179,19 @@ public class Harvester extends Subsystem
                         newState = defaultStateTransfer();
                         break;
                     case EJECTING:
-                        setSolenoidsToFloating();
+                        setSolenoidsToGrabbing();
+                        mFlipperMotor.set(0);
                         mIntakeMotorRight.set(-1);
                         mIntakeMotorLeft.set(-1);
                         newState = defaultStateTransfer();
                         break;
                     case DEPLOYING:
-                        setSolenoidsToOpening();
                         flipperForward();
                         newState = defaultStateTransfer();
                         break;
                     case OPENING:
                         setSolenoidsToOpening();
+                        mFlipperMotor.set(0);
                         newState = defaultStateTransfer();
                         break;
                     case FLOATING:
@@ -203,7 +204,7 @@ public class Harvester extends Subsystem
                         break;
                     case STOWING:
                         setSolenoidsToGrabbing();
-                        runFlipper(kOneHundredPercentSpeed * -0.4);
+                        runFlipper(kOneHundredPercentSpeed * -0.4, false);
                         if (mWantedState == WantedState.DEPLOY)
                             newState = defaultStateTransfer();
                         else
@@ -291,23 +292,32 @@ public class Harvester extends Subsystem
     {
         runFlipper(-kOneHundredPercentSpeed);
     }
-    
+
     private void runFlipper(double speed)
+    {
+        runFlipper(speed, true);
+    }
+    
+    private void runFlipper(double speed, boolean softLimitScaling)
     {
         if (mReverseLimit.get() && Math.abs(speed) != speed)
         {
+            if (mFlipperPotentiometer.getAverageValue() < kReverseSoftLimitOffset + mReverseLimitPosition && softLimitScaling)
+                speed *= 0.1;
             logNotice("Running flipper reverse.");
             mFlipperMotor.set(speed);
         }
         else if (mForwardLimit.get() && Math.abs(speed) == speed)
         {
+            if (mFlipperPotentiometer.getAverageValue() > kForwardSoftLimitOffset + mReverseLimitPosition && softLimitScaling)
+                speed *= 0.1;
             logNotice("Running flipper forward.");
-            mFlipperMotor.set(kOneHundredPercentSpeed);
+            mFlipperMotor.set(speed);
         }
         else
         {
             mFlipperMotor.set(0);
-            logWarning("Attempt to run flipper forward would overrun the reverse limit!");
+            logWarning("Attempt to run flipper would overrun a limit!");
         }
     }
     

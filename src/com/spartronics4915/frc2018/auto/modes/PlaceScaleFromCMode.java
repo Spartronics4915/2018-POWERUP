@@ -30,6 +30,7 @@ public class PlaceScaleFromCMode extends AutoModeBase
     @Override
     protected void routine() throws AutoModeEndedException
     {
+        runAction(new ActuateHarvesterAction(Harvester.WantedState.GRAB));
         PathContainer path;
         if (Util.getGameSpecificMessage().charAt(1) == 'R')
         {
@@ -47,15 +48,17 @@ public class PlaceScaleFromCMode extends AutoModeBase
             runAction(new TurnToHeadingAction(Rotation2d.fromDegrees(90)));
         }
         runAction(new ActuateHarvesterAction(Harvester.WantedState.SLIDE_DROP));
+        runAction(new ActuateHarvesterAction(Harvester.WantedState.OPEN));
         if (Util.getGameSpecificMessage().charAt(1) == 'R')
         {
             PathContainer secondPath = new DriveSecondCubeToSwitchFromCScalePath();
             runAction(new WaitAction(0.7));
             runAction(new TurnToHeadingAction(Rotation2d.fromDegrees(180)));
+            runAction(new ActuateHarvesterAction(Harvester.WantedState.GRAB));
             runAction(new ActuateScissorLiftAction(ScissorLift.WantedState.OFF));
             runAction(new ActuateHarvesterAction(Harvester.WantedState.DEPLOY));
             runAction(new ParallelAction(new DrivePathAction(secondPath),
-                    new SeriesAction(new WaitForPathMarkerAction("harvest"), new ActuateHarvesterAction(Harvester.WantedState.INTAKE)),
+                    new SeriesAction(new WaitForPathMarkerAction("harvest"), new ActuateHarvesterAction(Harvester.WantedState.OPEN)),
                     new SeriesAction(new WaitForPathMarkerAction("acquirecube"), new ForceEndPathAction())));
             runAction(new ActuateHarvesterAction(Harvester.WantedState.GRAB));
             if (Util.getGameSpecificMessage().charAt(0) == 'R')

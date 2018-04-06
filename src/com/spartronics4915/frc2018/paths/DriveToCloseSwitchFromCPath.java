@@ -17,7 +17,7 @@ public class DriveToCloseSwitchFromCPath implements PathContainer {
     {
         sWaypoints.add(new Waypoint(18,45,0,0));
         sWaypoints.add(new Waypoint(170,45,15,60));
-        sWaypoints.add(new Waypoint(170,69,0,30));
+        sWaypoints.add(new Waypoint(170,66,0,30));
 
     }
 
@@ -44,7 +44,7 @@ public class DriveToCloseSwitchFromCPath implements PathContainer {
     {
         return false;
     }
-    // WAYPOINT_DATA: [{"position":{"x":18,"y":45},"speed":0,"radius":0,"comment":""},{"position":{"x":170,"y":45},"speed":60,"radius":15,"comment":""},{"position":{"x":170,"y":69},"speed":30,"radius":0,"comment":""}]
+    // WAYPOINT_DATA: [{"position":{"x":18,"y":45},"speed":0,"radius":0,"comment":""},{"position":{"x":170,"y":45},"speed":60,"radius":15,"comment":""},{"position":{"x":170,"y":66},"speed":30,"radius":0,"comment":""}]
     // IS_REVERSED: false
     // FILE_NAME: DriveToCloseSwitchFromCPath
 }

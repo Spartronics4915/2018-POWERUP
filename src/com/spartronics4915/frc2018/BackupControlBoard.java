@@ -75,7 +75,7 @@ public class BackupControlBoard implements ControlBoardInterface
                 result = (mPreviousGetReadyToHarvest != current) && (current == 1.0);
                 mPreviousGetReadyToHarvest = current;
                 break;
-            case SCISSOR_SWITCH:
+            case SCISSOR_LOW_SCALE:
                 result = mButtonBoard.getRawButtonPressed(1);
                 break;
             case SCISSOR_SCALE:

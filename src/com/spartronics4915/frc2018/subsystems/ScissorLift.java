@@ -43,8 +43,9 @@ public class ScissorLift extends Subsystem
     // values during reboot, so we must update these compile-time constants
     // with our best-known values.
     private static final int kDefaultRetractedOffset = 0;
-    private static final int kDefaultSwitchOffset = 1550;
-    private static final int kDefaultScaleOffset = 2051;
+    private static final int kDefaultSwitchOffset = 300;
+    private static final int kDefaultLowScaleOffset = 1550;
+    private static final int kDefaultScaleOffset = 1901;
     private static final int kDefaultClimbOffset = 2294;
     private static final int kPotentiometerAllowedError = 50;
     private static final double kBrakeTimePeriod = .1;
@@ -65,8 +66,9 @@ public class ScissorLift extends Subsystem
     {
         OFF, // == 0,  is off different from retracted?
         RETRACTED,
-        SWITCH,
+        LOW_SCALE,
         SCALE,
+        SWITCH,
         CLIMB,
         MANUALUP,
         MANUALDOWN,
@@ -112,6 +114,7 @@ public class ScissorLift extends Subsystem
             dashboardPutNumber("Target2", kDefaultSwitchOffset);
             dashboardPutNumber("Target3", kDefaultScaleOffset);
             dashboardPutNumber("Target4", kDefaultClimbOffset);
+            dashboardPutNumber("Target5", kDefaultLowScaleOffset);
             zeroPotentiometer(); // this is where we establish our base potentiometer value
             // TODO: Is there a way to validate our potentiometer state? We can't detect
             //  wiring mishaps, since reading the analog pin will always return a value.
@@ -199,7 +202,7 @@ public class ScissorLift extends Subsystem
                 break;
             case HOLDING:
                 matches = (mWantedState == WantedState.RETRACTED || mWantedState == WantedState.OFF
-                        || mWantedState == WantedState.SWITCH || mWantedState == WantedState.SCALE);
+                        || mWantedState == WantedState.LOW_SCALE || mWantedState == WantedState.SCALE);
                 break;
             case BRAKING:
                 matches = false;
@@ -240,10 +243,15 @@ public class ScissorLift extends Subsystem
         //potentiometer numbers get smaller as Scissor Lift gets higher so we think of our targets as offsets
         return mPotentiometerHome - dashboardGetNumber("Target1", kDefaultRetractedOffset).intValue();
     }
-
+    
     private int getSwitchOffset()
     {
         return mPotentiometerHome - dashboardGetNumber("Target2", kDefaultSwitchOffset).intValue(); 
+    }
+
+    private int getLowScaleOffset()
+    {
+        return mPotentiometerHome - dashboardGetNumber("Target5", kDefaultLowScaleOffset).intValue(); 
     }
 
     private int getScaleOffset()
@@ -263,7 +271,8 @@ public class ScissorLift extends Subsystem
         // we could also auto-calibrate our 'zero" here if we're in a known position.
         mWantedStateMap[WantedState.OFF.ordinal()] = getRetractedOffset();
         mWantedStateMap[WantedState.RETRACTED.ordinal()] = getRetractedOffset();
-        mWantedStateMap[WantedState.SWITCH.ordinal()] =  getSwitchOffset();
+        mWantedStateMap[WantedState.LOW_SCALE.ordinal()] =  getLowScaleOffset();
+        mWantedStateMap[WantedState.SWITCH.ordinal()] = getSwitchOffset();
         mWantedStateMap[WantedState.SCALE.ordinal()] = getScaleOffset();
         mWantedStateMap[WantedState.CLIMB.ordinal()] = getClimbOffset();
     }

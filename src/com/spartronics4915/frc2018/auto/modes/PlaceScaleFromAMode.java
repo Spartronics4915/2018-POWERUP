@@ -31,6 +31,7 @@ public class PlaceScaleFromAMode extends AutoModeBase
     @Override
     protected void routine() throws AutoModeEndedException
     {
+        runAction(new ActuateHarvesterAction(Harvester.WantedState.GRAB));
         PathContainer path;
         if (Util.getGameSpecificMessage().charAt(1) == 'L')
         {
@@ -48,11 +49,13 @@ public class PlaceScaleFromAMode extends AutoModeBase
             runAction(new TurnToHeadingAction(Rotation2d.fromDegrees(-90)));
         }
         runAction(new ActuateHarvesterAction(Harvester.WantedState.SLIDE_DROP));
+        runAction(new ActuateHarvesterAction(Harvester.WantedState.OPEN));
         if (Util.getGameSpecificMessage().charAt(1) == 'L')
         {
             PathContainer secondPath = new DriveSecondCubeToSwitchFromCScalePath();
             runAction(new WaitAction(0.7));
             runAction(new TurnToHeadingAction(Rotation2d.fromDegrees(180)));
+            runAction(new ActuateHarvesterAction(Harvester.WantedState.GRAB));
             runAction(new ActuateScissorLiftAction(ScissorLift.WantedState.OFF));
             runAction(new ActuateHarvesterAction(Harvester.WantedState.DEPLOY));
             runAction(new ParallelAction(new DrivePathAction(secondPath),

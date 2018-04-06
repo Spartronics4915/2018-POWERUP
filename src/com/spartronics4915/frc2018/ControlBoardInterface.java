@@ -17,6 +17,7 @@ public interface ControlBoardInterface
         DRIVE_SLOW,
         SCISSOR_OFF,
         SCISSOR_SWITCH,
+        SCISSOR_LOW_SCALE,
         SCISSOR_SCALE,
         GRABBER_SLIDE_DROP_CUBE,
         HARVESTER_GRAB,

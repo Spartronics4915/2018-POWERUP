@@ -40,8 +40,9 @@ public class ControlBoard implements ControlBoardInterface
     private final Joystick mDrivestick;
     private final Joystick mButtonBoard;
     private double mPreviousGetReadyToHarvest;
-    private double mPreviousSlideDrop;
+    private double mPreviousSwitch;
     private double mPreviousDeploy;
+    private double mPreviousSlideDrop;
     private double mPreviousTransport;
     private boolean mTestsAllowed;
 
@@ -50,7 +51,7 @@ public class ControlBoard implements ControlBoardInterface
         mDrivestick = new Joystick(0);
         mButtonBoard = new Joystick(1);
         mPreviousGetReadyToHarvest = 0.0;
-        mPreviousSlideDrop = 0.0;
+        mPreviousSwitch = 0.0;
         mPreviousDeploy = 0.0;
         mPreviousTransport = 0.0;
         checkForTestMode();
@@ -99,6 +100,11 @@ public class ControlBoard implements ControlBoardInterface
                 mPreviousGetReadyToHarvest = current;
                 break;
             case SCISSOR_SWITCH:
+                current = mButtonBoard.getRawAxis(3);
+                result = (mPreviousSwitch != current) && (current == 1.0);
+                mPreviousSwitch = current;
+                break;
+            case SCISSOR_LOW_SCALE:
                 result = mButtonBoard.getRawButtonPressed(1);
                 break;
             case SCISSOR_SCALE:
@@ -126,8 +132,8 @@ public class ControlBoard implements ControlBoardInterface
                 result = mButtonBoard.getRawButtonPressed(6);
                 break;
             case HARVESTER_SLIDE_DROP:
-                current = mButtonBoard.getRawAxis(3);
-                result = (mPreviousSlideDrop != current) && (current == 1.0);
+                current = mButtonBoard.getRawAxis(1);
+                result = (mPreviousSlideDrop != current) && (current == -1.0);
                 mPreviousSlideDrop = current;
                 break;
             case HARVESTER_DEPLOY:

@@ -24,6 +24,7 @@ public class PlaceSwitchFromAMode extends AutoModeBase
     @Override
     protected void routine() throws AutoModeEndedException
     {
+        runAction(new ActuateHarvesterAction(Harvester.WantedState.GRAB));
         PathContainer path;
         double timeout;
         if (Util.getGameSpecificMessage().charAt(0) == 'L')
@@ -37,8 +38,9 @@ public class PlaceSwitchFromAMode extends AutoModeBase
             timeout = PowerupHelper.kSideSwitchFarTimeout;
         }
         runAction(new ResetPoseFromPathAction(path));
-        runAction(PowerupHelper.getDriveActionWithTimeout(path, timeout));
+        runAction(PowerupHelper.getDriveSwitchActionWithTimeout(path, timeout));
         runAction(new ActuateHarvesterAction(Harvester.WantedState.SLIDE_DROP));
+        runAction(new ActuateHarvesterAction(Harvester.WantedState.OPEN));
     }
 
 }
