@@ -59,7 +59,7 @@ public class PlaceScaleFromAMode extends AutoModeBase
             runAction(new ActuateScissorLiftAction(ScissorLift.WantedState.OFF));
             runAction(new ActuateHarvesterAction(Harvester.WantedState.DEPLOY));
             runAction(new ParallelAction(new DrivePathAction(secondPath),
-                    new SeriesAction(new WaitForPathMarkerAction("harvest"), new ActuateHarvesterAction(Harvester.WantedState.INTAKE)),
+                    new SeriesAction(new WaitForPathMarkerAction("harvest"), new ActuateHarvesterAction(Harvester.WantedState.OPEN)),
                     new SeriesAction(new WaitForPathMarkerAction("acquirecube"), new ForceEndPathAction())));
             runAction(new ActuateHarvesterAction(Harvester.WantedState.GRAB));
             if (Util.getGameSpecificMessage().charAt(0) == 'L')

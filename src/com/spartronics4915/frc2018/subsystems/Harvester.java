@@ -29,7 +29,7 @@ public class Harvester extends Subsystem
     private static final double kOneHundredPercentSpeed = 1; // This is direction-independent
     private static final double kFlipperAllowedError = 50;
     private static final double kSlideDropOffset = 165; // In potentiometer ticks, from the reverse limit
-    private static final double kForwardSoftLimitOffset = 440; // From the reverse limit
+    private static final double kForwardSoftLimitOffset = 400; // From the reverse limit
     private static final double kReverseSoftLimitOffset = 52; // From the reverse limit
             
     public static Harvester getInstance()

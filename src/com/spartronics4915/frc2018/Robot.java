@@ -226,6 +226,8 @@ public class Robot extends IterativeRobot
             mAutoModeExecuter = null;
 
             mEnabledLooper.start();
+            mHarvester.setWantedState(Harvester.WantedState.GRAB); // Make sure the solenoids are doing what we want
+            
             mAutoModeExecuter = new AutoModeExecuter();
             mAutoModeExecuter.setAutoMode(AutoModeSelector.getSelectedAutoMode());
             mAutoModeExecuter.start();
@@ -265,7 +267,8 @@ public class Robot extends IterativeRobot
 
             mEnabledLooper.start(); // starts subsystem loopers.
             mDrive.setOpenLoop(DriveSignal.NEUTRAL);
-
+            mHarvester.setWantedState(Harvester.WantedState.GRAB); // Make sure the solenoids are doing what we want
+            
 //            mLED.setVisionLampOn(); // Vision not used in teleop yet TODO
         }
         catch (Throwable t)
@@ -414,7 +417,7 @@ public class Robot extends IterativeRobot
                 mAutoModeExecuter.stop();
             }
             mAutoModeExecuter = null;
-
+            
             mEnabledLooper.stop();
 
             // Call stop on all our Subsystems.
