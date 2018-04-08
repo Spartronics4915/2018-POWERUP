@@ -43,17 +43,17 @@ public class PlaceScaleFromAMode extends AutoModeBase
         }
         runAction(new ResetPoseFromPathAction(path));
         runAction(new ParallelAction(new DrivePathAction(path), 
-                new ActuateScissorLiftAction(ScissorLift.WantedState.SCALE)));
+                new ActuateScissorLiftAction(ScissorLift.WantedState.SCALE),
+                new ActuateHarvesterAction(Harvester.WantedState.SLIDE_DROP)));
         if (Util.getGameSpecificMessage().charAt(1) == 'L')
         {
             runAction(new TurnToHeadingAction(Rotation2d.fromDegrees(-90)));
         }
-        runAction(new ActuateHarvesterAction(Harvester.WantedState.SLIDE_DROP));
         runAction(new ActuateHarvesterAction(Harvester.WantedState.OPEN));
         if (Util.getGameSpecificMessage().charAt(1) == 'L')
         {
             PathContainer secondPath = new DriveSecondCubeToSwitchFromCScalePath();
-            runAction(new WaitAction(0.7));
+            runAction(new WaitAction(0.3));
             runAction(new TurnToHeadingAction(Rotation2d.fromDegrees(180)));
             runAction(new ActuateHarvesterAction(Harvester.WantedState.GRAB));
             runAction(new ActuateScissorLiftAction(ScissorLift.WantedState.OFF));
