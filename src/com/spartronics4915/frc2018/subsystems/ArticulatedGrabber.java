@@ -450,8 +450,7 @@ public class ArticulatedGrabber extends Subsystem
     private void updatePositions() //Finds the ideal positions for the flipper by adding the offset to the revL
     {
         //Pick Position is not calculated because we decided to just run the flipper to mFwdLimitSwitch
-        mHoldPosition = mRevLimitPotentiometerValue +
-                dashboardGetNumber("Target1", kDefaultHoldOffset).intValue();
+        mHoldPosition = -1;
         mPlacePosition = mRevLimitPotentiometerValue +
                 dashboardGetNumber("Target2", kDefaultPlaceOffset).intValue();
         mFastPosition = mFwdLimitPotentiometerValue -
