@@ -374,7 +374,7 @@ public class Robot extends IterativeRobot
             } 
 
             // Drive control buttons
-            if (mControlBoard.readButton(Buttons.VISION_CUBE_HARVEST))
+            if (mControlBoard.readButton(Buttons.VISION_CUBE_HARVEST) && !mHarvester.isCubeHeld())
             {
                 mDrive.setWantSearchForCube();
             }
