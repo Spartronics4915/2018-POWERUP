@@ -22,6 +22,7 @@ import com.spartronics4915.frc2018.subsystems.LED;
 import com.spartronics4915.frc2018.subsystems.LED.BlingState;
 import com.spartronics4915.frc2018.subsystems.ScissorLift;
 import com.spartronics4915.frc2018.subsystems.Superstructure;
+import com.spartronics4915.lib.util.ArcadeDriveHelper;
 import com.spartronics4915.lib.util.CANProbe;
 import com.spartronics4915.lib.util.CheesyDriveHelper;
 import com.spartronics4915.lib.util.Logger;
@@ -227,7 +228,7 @@ public class Robot extends IterativeRobot
 
             mEnabledLooper.start();
             mHarvester.setWantedState(Harvester.WantedState.GRAB); // Make sure the solenoids are doing what we want
-            
+
             mAutoModeExecuter = new AutoModeExecuter();
             mAutoModeExecuter.setAutoMode(AutoModeSelector.getSelectedAutoMode());
             mAutoModeExecuter.start();
@@ -268,7 +269,7 @@ public class Robot extends IterativeRobot
             mEnabledLooper.start(); // starts subsystem loopers.
             mDrive.setOpenLoop(DriveSignal.NEUTRAL);
             mHarvester.setWantedState(Harvester.WantedState.GRAB); // Make sure the solenoids are doing what we want
-            
+
 //            mLED.setVisionLampOn(); // Vision not used in teleop yet TODO
         }
         catch (Throwable t)
@@ -371,7 +372,7 @@ public class Robot extends IterativeRobot
                 {
                     SmartDashboard.putString("CameraView", "CubeCam");
                 }
-            } 
+            }
 
             // Drive control buttons
             if (mControlBoard.readButton(Buttons.VISION_CUBE_HARVEST))
@@ -380,9 +381,7 @@ public class Robot extends IterativeRobot
             }
             else
             {
-                mDrive.setOpenLoop(mCheesyDriveHelper.cheesyDrive(throttle, turn,
-                        mControlBoard.readButton(Buttons.DRIVE_QUICK_TURN),
-                        !mControlBoard.readButton(Buttons.DRIVE_SLOW)));
+                mDrive.setOpenLoop(ArcadeDriveHelper.arcadeDrive(throttle, turn, mControlBoard.readButton(Buttons.DRIVE_SLOW)));
             }
 
             // Bling settings
@@ -417,7 +416,7 @@ public class Robot extends IterativeRobot
                 mAutoModeExecuter.stop();
             }
             mAutoModeExecuter = null;
-            
+
             mEnabledLooper.stop();
 
             // Call stop on all our Subsystems.

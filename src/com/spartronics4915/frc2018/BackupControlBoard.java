@@ -8,11 +8,11 @@ import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
- * Contains the button mappings for the backup drive stick 
+ * Contains the button mappings for the backup drive stick
  * and the mechanism controller.
  * A singleton.
  * Implements the ControlBoardInterface.
- * 
+ *
  * @see ControlBoardInterface.java
  */
 
@@ -32,7 +32,7 @@ public class BackupControlBoard implements ControlBoardInterface
         mPreviousGetDropCube = 0.0;
         checkForTestMode();
     }
-    
+
     public void checkForTestMode()
     {
         mTestsAllowed = SmartDashboard.getBoolean("TestingGUI", false);
@@ -64,11 +64,8 @@ public class BackupControlBoard implements ControlBoardInterface
         double current;
         switch (b)
         {
-            case DRIVE_QUICK_TURN:
-                result = mDrivestick.getRawButtonPressed(1);
-                break;
             case DRIVE_SLOW:
-                result = mDrivestick.getTriggerPressed(); // available!
+                result = mDrivestick.getRawButtonPressed(1);
                 break;
             case SCISSOR_OFF:
                 current = mButtonBoard.getRawAxis(2);

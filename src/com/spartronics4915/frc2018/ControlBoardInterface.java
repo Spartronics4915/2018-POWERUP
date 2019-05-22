@@ -10,10 +10,9 @@ public interface ControlBoardInterface
         THROTTLE,
         TURN,
     }
-    
+
     enum Buttons
     {
-        DRIVE_QUICK_TURN,
         DRIVE_SLOW,
         SCISSOR_OFF,
         SCISSOR_SWITCH,
@@ -31,7 +30,7 @@ public interface ControlBoardInterface
         CAMERA_CHANGE_VIEW,
         VISION_CUBE_HARVEST,
     }
-    
+
     double readStick(Sticks a);
     boolean readButton(Buttons b);
     void checkForTestMode();

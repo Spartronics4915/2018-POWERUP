@@ -11,14 +11,14 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  * object is created upon startup, then other methods request the singleton
  * ControlBoard instance. Implements the
  * ControlBoardInterface.
- * 
+ *
  * @see ControlBoardInterface.java
  */
 public class ControlBoard implements ControlBoardInterface
 {
 
     private static ControlBoardInterface mInstance = null;
-    
+
     private static final boolean kUseBackupDrivestick = false;
 
     public static ControlBoardInterface getInstance()
@@ -56,7 +56,7 @@ public class ControlBoard implements ControlBoardInterface
         mPreviousTransport = 0.0;
         checkForTestMode();
     }
-    
+
     public void checkForTestMode()
     {
         mTestsAllowed = SmartDashboard.getBoolean("TestingGUI", false);
@@ -88,11 +88,8 @@ public class ControlBoard implements ControlBoardInterface
         double current;
         switch (b)
         {
-            case DRIVE_QUICK_TURN:
-                result = mDrivestick.getRawButton(1);
-                break;
             case DRIVE_SLOW:
-                result = mDrivestick.getRawButton(14);
+                result = mDrivestick.getRawButton(1);
                 break;
             case SCISSOR_OFF:
                 current = mButtonBoard.getRawAxis(2);
